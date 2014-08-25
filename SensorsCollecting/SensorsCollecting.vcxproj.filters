@@ -1,0 +1,253 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Файлы исходного кода">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Заголовочные файлы">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="Файлы ресурсов">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="_core">
+      <UniqueIdentifier>{2bafbf42-50dc-456d-b614-55e46ef5f5ae}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="_libraries">
+      <UniqueIdentifier>{c9aef647-8610-4120-b2ed-a9a2e8f2b29a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="_libraries\Ethernet">
+      <UniqueIdentifier>{90f7dd67-eb05-4290-ba7f-83f35d319f40}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="_libraries\SoftwareSerial">
+      <UniqueIdentifier>{c7f9146b-6fc6-4a21-a008-accd0cc99578}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="_libraries\Fat16">
+      <UniqueIdentifier>{3981f354-85e7-43fd-9fe0-10ff10b8db63}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="_libraries\EEPROM">
+      <UniqueIdentifier>{df363b28-0d6e-45d3-a23d-b19dfe548ad0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="_libraries\FreeSixIMU">
+      <UniqueIdentifier>{bf8a5754-8081-4761-9f4a-1aa61ee9e15c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="_libraries\HMC5883L">
+      <UniqueIdentifier>{177256bb-afa0-428f-86e4-4e2c21b2cd7f}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="SensorsCollecting.ino" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\..\Program Files (x86)\Arduino\libraries\Ethernet\Dhcp.h">
+      <Filter>_libraries\Ethernet</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Program Files (x86)\Arduino\libraries\Ethernet\Dns.h">
+      <Filter>_libraries\Ethernet</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Program Files (x86)\Arduino\libraries\Ethernet\Ethernet.h">
+      <Filter>_libraries\Ethernet</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Program Files (x86)\Arduino\libraries\Ethernet\EthernetClient.h">
+      <Filter>_libraries\Ethernet</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Program Files (x86)\Arduino\libraries\Ethernet\EthernetServer.h">
+      <Filter>_libraries\Ethernet</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Program Files (x86)\Arduino\libraries\Ethernet\EthernetUdp.h">
+      <Filter>_libraries\Ethernet</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Program Files (x86)\Arduino\libraries\Ethernet\util.h">
+      <Filter>_libraries\Ethernet</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Program Files (x86)\Arduino\libraries\SoftwareSerial\SoftwareSerial.h">
+      <Filter>_libraries\SoftwareSerial</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Program Files (x86)\Arduino\libraries\Fat16\Fat16.h">
+      <Filter>_libraries\Fat16</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Program Files (x86)\Arduino\libraries\Fat16\Fat16Config.h">
+      <Filter>_libraries\Fat16</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Program Files (x86)\Arduino\libraries\Fat16\Fat16mainpage.h">
+      <Filter>_libraries\Fat16</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Program Files (x86)\Arduino\libraries\Fat16\Fat16util.h">
+      <Filter>_libraries\Fat16</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Program Files (x86)\Arduino\libraries\Fat16\FatStructs.h">
+      <Filter>_libraries\Fat16</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Program Files (x86)\Arduino\libraries\Fat16\SdCard.h">
+      <Filter>_libraries\Fat16</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Program Files (x86)\Arduino\libraries\Fat16\SdInfo.h">
+      <Filter>_libraries\Fat16</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Program Files (x86)\Arduino\libraries\EEPROM\EEPROM.h">
+      <Filter>_libraries\EEPROM</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Program Files (x86)\Arduino\hardware\arduino\cores\arduino\Arduino.h">
+      <Filter>_core</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Program Files (x86)\Arduino\hardware\arduino\cores\arduino\binary.h">
+      <Filter>_core</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Program Files (x86)\Arduino\hardware\arduino\cores\arduino\Client.h">
+      <Filter>_core</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Program Files (x86)\Arduino\hardware\arduino\cores\arduino\HardwareSerial.h">
+      <Filter>_core</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Program Files (x86)\Arduino\hardware\arduino\cores\arduino\IPAddress.h">
+      <Filter>_core</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Program Files (x86)\Arduino\hardware\arduino\cores\arduino\new.h">
+      <Filter>_core</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Program Files (x86)\Arduino\hardware\arduino\cores\arduino\Platform.h">
+      <Filter>_core</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Program Files (x86)\Arduino\hardware\arduino\cores\arduino\Print.h">
+      <Filter>_core</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Program Files (x86)\Arduino\hardware\arduino\cores\arduino\Printable.h">
+      <Filter>_core</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Program Files (x86)\Arduino\hardware\arduino\cores\arduino\Server.h">
+      <Filter>_core</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Program Files (x86)\Arduino\hardware\arduino\cores\arduino\Stream.h">
+      <Filter>_core</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Program Files (x86)\Arduino\hardware\arduino\cores\arduino\Udp.h">
+      <Filter>_core</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Program Files (x86)\Arduino\hardware\arduino\cores\arduino\USBAPI.h">
+      <Filter>_core</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Program Files (x86)\Arduino\hardware\arduino\cores\arduino\USBCore.h">
+      <Filter>_core</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Program Files (x86)\Arduino\hardware\arduino\cores\arduino\USBDesc.h">
+      <Filter>_core</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Program Files (x86)\Arduino\hardware\arduino\cores\arduino\WCharacter.h">
+      <Filter>_core</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Program Files (x86)\Arduino\hardware\arduino\cores\arduino\wiring_private.h">
+      <Filter>_core</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Program Files (x86)\Arduino\hardware\arduino\cores\arduino\WString.h">
+      <Filter>_core</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Program Files (x86)\Arduino\hardware\arduino\variants\standard\pins_arduino.h">
+      <Filter>_core</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Program Files (x86)\Arduino\libraries\FreeSixIMU\CommunicationUtils.h">
+      <Filter>_libraries\FreeSixIMU</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Program Files (x86)\Arduino\libraries\FreeSixIMU\DebugUtils.h">
+      <Filter>_libraries\FreeSixIMU</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Program Files (x86)\Arduino\libraries\FreeSixIMU\FIMU_ADXL345.h">
+      <Filter>_libraries\FreeSixIMU</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Program Files (x86)\Arduino\libraries\FreeSixIMU\FIMU_ITG3200.h">
+      <Filter>_libraries\FreeSixIMU</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Program Files (x86)\Arduino\libraries\FreeSixIMU\FreeSixIMU.h">
+      <Filter>_libraries\FreeSixIMU</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Program Files (x86)\Arduino\libraries\HMC5883L\HMC5883L.h">
+      <Filter>_libraries\HMC5883L</Filter>
+    </ClInclude>
+    <ClInclude Include="Visual Micro\.SensorsCollecting.vsarduino.h">
+      <Filter>Заголовочные файлы</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\..\Program Files (x86)\Arduino\libraries\Ethernet\Dhcp.cpp">
+      <Filter>_libraries\Ethernet</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Program Files (x86)\Arduino\libraries\Ethernet\Dns.cpp">
+      <Filter>_libraries\Ethernet</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Program Files (x86)\Arduino\libraries\Ethernet\Ethernet.cpp">
+      <Filter>_libraries\Ethernet</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Program Files (x86)\Arduino\libraries\Ethernet\EthernetClient.cpp">
+      <Filter>_libraries\Ethernet</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Program Files (x86)\Arduino\libraries\Ethernet\EthernetServer.cpp">
+      <Filter>_libraries\Ethernet</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Program Files (x86)\Arduino\libraries\Ethernet\EthernetUdp.cpp">
+      <Filter>_libraries\Ethernet</Filter>
+    </ClCompile>
+    <ClCompile Include="BMP085.ino" />
+    <ClCompile Include="..\..\..\Program Files (x86)\Arduino\libraries\SoftwareSerial\SoftwareSerial.cpp">
+      <Filter>_libraries\SoftwareSerial</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Program Files (x86)\Arduino\libraries\Fat16\Fat16.cpp">
+      <Filter>_libraries\Fat16</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Program Files (x86)\Arduino\libraries\Fat16\SdCard.cpp">
+      <Filter>_libraries\Fat16</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Program Files (x86)\Arduino\libraries\EEPROM\EEPROM.cpp">
+      <Filter>_libraries\EEPROM</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Program Files (x86)\Arduino\hardware\arduino\cores\arduino\Stream.cpp">
+      <Filter>_core</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Program Files (x86)\Arduino\hardware\arduino\cores\arduino\Tone.cpp">
+      <Filter>_core</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Program Files (x86)\Arduino\hardware\arduino\cores\arduino\USBCore.cpp">
+      <Filter>_core</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Program Files (x86)\Arduino\hardware\arduino\cores\arduino\WInterrupts.c">
+      <Filter>_core</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Program Files (x86)\Arduino\hardware\arduino\cores\arduino\wiring.c">
+      <Filter>_core</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Program Files (x86)\Arduino\hardware\arduino\cores\arduino\wiring_analog.c">
+      <Filter>_core</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Program Files (x86)\Arduino\hardware\arduino\cores\arduino\wiring_digital.c">
+      <Filter>_core</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Program Files (x86)\Arduino\hardware\arduino\cores\arduino\wiring_pulse.c">
+      <Filter>_core</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Program Files (x86)\Arduino\hardware\arduino\cores\arduino\wiring_shift.c">
+      <Filter>_core</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Program Files (x86)\Arduino\hardware\arduino\cores\arduino\WMath.cpp">
+      <Filter>_core</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Program Files (x86)\Arduino\hardware\arduino\cores\arduino\WString.cpp">
+      <Filter>_core</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Program Files (x86)\Arduino\libraries\FreeSixIMU\CommunicationUtils.cpp">
+      <Filter>_libraries\FreeSixIMU</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Program Files (x86)\Arduino\libraries\FreeSixIMU\FIMU_ADXL345.cpp">
+      <Filter>_libraries\FreeSixIMU</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Program Files (x86)\Arduino\libraries\FreeSixIMU\FIMU_ITG3200.cpp">
+      <Filter>_libraries\FreeSixIMU</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Program Files (x86)\Arduino\libraries\FreeSixIMU\FreeSixIMU.cpp">
+      <Filter>_libraries\FreeSixIMU</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Program Files (x86)\Arduino\libraries\HMC5883L\HMC5883L.cpp">
+      <Filter>_libraries\HMC5883L</Filter>
+    </ClCompile>
+  </ItemGroup>
+</Project>

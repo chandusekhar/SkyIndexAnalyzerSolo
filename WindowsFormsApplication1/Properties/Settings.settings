@@ -1,0 +1,48 @@
+﻿<?xml version='1.0' encoding='utf-8'?>
+<SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="SkyIndexAnalyzerSolo.Properties" GeneratedClassName="Settings">
+  <Profiles />
+  <Settings>
+    <Setting Name="GrIxDefaultSkyCloudMarginWithoutSun" Type="System.String" Scope="User">
+      <Value Profile="(Default)">0,9</Value>
+    </Setting>
+    <Setting Name="GrIxDefaultSkyCloudMarginWithSun" Type="System.String" Scope="User">
+      <Value Profile="(Default)">0,1</Value>
+    </Setting>
+    <Setting Name="GrIxSunDetectionMinimalSunAreaPartial" Type="System.String" Scope="User">
+      <Value Profile="(Default)">0,003</Value>
+    </Setting>
+    <Setting Name="GrIxSunDetectionMaximalSunAreaPartial" Type="System.String" Scope="User">
+      <Value Profile="(Default)">0,05</Value>
+    </Setting>
+    <Setting Name="GrIxAnalysisImageCircledCropFactor" Type="System.String" Scope="User">
+      <Value Profile="(Default)">0,9</Value>
+    </Setting>
+    <Setting Name="JapanCloudSkySeparationValue" Type="System.String" Scope="User">
+      <Value Profile="(Default)">0,1</Value>
+    </Setting>
+    <Setting Name="GermanCloudSkySeparationValue" Type="System.String" Scope="User">
+      <Value Profile="(Default)">0,8</Value>
+    </Setting>
+    <Setting Name="GrIxStdDevMarginValueDefiningTrueSkyArea" Type="System.String" Scope="User">
+      <Value Profile="(Default)">0,65</Value>
+    </Setting>
+    <Setting Name="BatchProcessingDirectory" Type="System.String" Scope="User">
+      <Value Profile="(Default)">G:\_gulevlab\SkyIndexAnalyzerSolo_appData\2014-03-MassiveProcessingResult\images\</Value>
+    </Setting>
+    <Setting Name="DefaultDataFilesLocation" Type="System.String" Scope="User">
+      <Value Profile="(Default)">G:\_gulevlab\SkyIndexAnalyzerSolo_appData\2014-03-MassiveProcessingResult\</Value>
+    </Setting>
+    <Setting Name="DefaultScalingFactor" Type="System.String" Scope="User">
+      <Value Profile="(Default)">0,125</Value>
+    </Setting>
+    <Setting Name="GrIxProcessingVerbosityLevel" Type="System.String" Scope="User">
+      <Value Profile="(Default)">2</Value>
+    </Setting>
+    <Setting Name="DefaultMaxImageSize" Type="System.String" Scope="User">
+      <Value Profile="(Default)">512</Value>
+    </Setting>
+    <Setting Name="GrIxSunDetectionDesiredSunAreaPartial" Type="System.String" Scope="User">
+      <Value Profile="(Default)">0,01</Value>
+    </Setting>
+  </Settings>
+</SettingsFile>

@@ -1,0 +1,97 @@
+﻿<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<InfoWarnings>
+  <Info>11.11.2013 19:56:48 Begin full analysis with NDepend v5.0.0.8085</Info>
+  <Info>No Baseline for Comparison loaded.</Info>
+  <Warning>Can't load the assembly {SkyIndexAnalyzerSolo}:
+Several .NET assemblies have the name {SkyIndexAnalyzerSolo} but they are different.
+ - C:\_gulevlab\SkyIndexAnalyzerSolo\WindowsFormsApplication1\bin\Debug\SkyIndexAnalyzerSolo.exe   v0.0  1 234 944 bytes
+ - C:\_gulevlab\SkyIndexAnalyzerSolo\#_bin\SkyIndexAnalyzerSolo.exe   v0.0  1 231 872 bytes
+</Warning>
+  <Warning>Can't load the assembly {MRG.Controls.UI}:
+Several .NET assemblies have the name {MRG.Controls.UI} but they are different.
+ - C:\_gulevlab\SkyIndexAnalyzerSolo\WindowsFormsApplication1\bin\Debug\MRG.Controls.UI.dll   v0.0  11 776 bytes
+ - C:\_gulevlab\SkyIndexAnalyzerSolo\#_bin\MRG.Controls.UI.dll   v0.0  11 264 bytes
+</Warning>
+  <Warning>Can't load the assembly {SkyIndexAnalyzerLibraries}:
+Several .NET assemblies have the name {SkyIndexAnalyzerLibraries} but they are different.
+ - C:\_gulevlab\SkyIndexAnalyzerSolo\WindowsFormsApplication1\bin\Debug\SkyIndexAnalyzerLibraries.dll   v0.0  60 928 bytes
+ - C:\_gulevlab\SkyIndexAnalyzerSolo\#_bin\SkyIndexAnalyzerLibraries.dll   v0.0  62 976 bytes
+</Warning>
+  <Warning>Can't load the assembly {Microsoft.VisualStudio.HostingProcess.Utilities.Sync}:
+Can't find the .NET assembly {Microsoft.VisualStudio.HostingProcess.Utilities.Sync} in specified folders. 
+Has it been compiled properly? 
+Is the NDepend project missing the containing folder of the .NET assembly?</Warning>
+  <Info>Concurrent mode</Info>
+  <Warning>The file name {DataCollectorAutomator.vshost} of the assembly loaded from file {C:\_gulevlab\SkyIndexAnalyzerSolo\#_bin\DataCollectorAutomator.vshost.exe} is not the same as the assembly name {vshost32} found in the assembly manifest. NDepend might consider this assembly as not found and won't likely find its PDB file and source files.</Warning>
+  <Warning>The file name {ArduinoUDPconversation.vshost} of the assembly loaded from file {C:\_gulevlab\SkyIndexAnalyzerSolo\#_bin\ArduinoUDPconversation.vshost.exe} is not the same as the assembly name {vshost} found in the assembly manifest. NDepend might consider this assembly as not found and won't likely find its PDB file and source files.</Warning>
+  <Warning>The file name {SkyIndexAnalyzerSolo.vshost} of the assembly loaded from file {C:\_gulevlab\SkyIndexAnalyzerSolo\WindowsFormsApplication1\bin\Debug\SkyIndexAnalyzerSolo.vshost.exe} is not the same as the assembly name {vshost32} found in the assembly manifest. NDepend might consider this assembly as not found and won't likely find its PDB file and source files.</Warning>
+  <Warning>Source code info won't be available for the assembly {SharpDX.D3DCompiler}: Corresponding PDB file not found in any of the folder specified.
+PDB file production can be enabled in Visual Studio:  Project -&gt; Properties -&gt; Build -&gt; Advanced... -&gt; Debug Info = 'full' or 'pdb-only'</Warning>
+  <Warning>Source code info won't be available for the assembly {DirectShowLib-2005}: Corresponding PDB file not found in any of the folder specified.</Warning>
+  <Warning>Source code info won't be available for the assembly {SharpDX}: Corresponding PDB file not found in any of the folder specified.</Warning>
+  <Warning>Source code info won't be available for the assembly {SkyIndexAnalyzerSolo.vshost}: Corresponding PDB file not found in any of the folder specified.</Warning>
+  <Warning>Source code info won't be available for the assembly {SharpDX.Direct3D11}: Corresponding PDB file not found in any of the folder specified.</Warning>
+  <Warning>Source code info won't be available for the assembly {SharpDX.DXGI}: Corresponding PDB file not found in any of the folder specified.</Warning>
+  <Warning>Source code info won't be available for the assembly {ZedGraph}: Corresponding PDB file not found in any of the folder specified.</Warning>
+  <Warning>Source code info won't be available for the assembly {SharpDX.Direct3D11.Effects}: Corresponding PDB file not found in any of the folder specified.</Warning>
+  <Warning>Source code info won't be available for the assembly {ArduinoUDPconversation.vshost}: Corresponding PDB file not found in any of the folder specified.</Warning>
+  <Warning>Source code info won't be available for the assembly {DataCollectorAutomator.vshost}: Corresponding PDB file not found in any of the folder specified.</Warning>
+  <Warning>Found corrupted PDB file {C:\_gulevlab\SkyIndexAnalyzerSolo\#_bin\MathNet.Numerics.IO.pdb} corresponding to the assembly {MathNet.Numerics.IO}. Source code info won't be available for this assembly.</Warning>
+  <Warning>Found corrupted PDB file {C:\_gulevlab\SkyIndexAnalyzerSolo\#_bin\MathNet.Numerics.pdb} corresponding to the assembly {MathNet.Numerics}. Source code info won't be available for this assembly.</Warning>
+  <Info>.NET Assemblies loaded from {C:\_gulevlab\SkyIndexAnalyzerSolo\WindowsFormsApplication1\bin\Debug} 
+   DirectShowLib-2005.dll   v2.1.0.31601
+   Emgu.CV.UI.dll   v2.4.9.1847
+   Emgu.Util.dll   v2.4.9.1847
+   ZedGraph.dll   v5.1.5.28844
+   MathNet.Numerics.IO.dll   v2.5.0.27
+   SkyIndexAnalyzerSolo.vshost.exe   v11.0.0.0
+   Emgu.CV.dll   v2.4.9.1847
+   MathNet.Numerics.dll   v2.5.0.27</Info>
+  <Info>.NET Assemblies loaded from {C:\_gulevlab\SkyIndexAnalyzerSolo\#_bin} 
+   SharpDX.Direct3D11.Effects.dll   v2.5.0.0
+   SharpDX.D3DCompiler.dll   v2.5.0.0
+   SharpDX.dll   v2.5.0.0
+   SharpDX.Direct3D11.dll   v2.5.0.0
+   ArduinoUDPconversation.exe   v1.0.0.0
+   DataCollectorAutomator.exe   v1.0.0.0
+   DataCollectorAutomator.vshost.exe   v11.0.0.0
+   SharpDX.DXGI.dll   v2.5.0.0
+   ArduinoUDPconversation.vshost.exe   v11.0.0.0</Info>
+  <Info>.NET Assemblies loaded from {C:\windows\Microsoft.NET\Framework\v4.0.30319} 
+   mscorlib.dll   v4.0.0.0
+   System.Drawing.dll   v4.0.0.0
+   System.dll   v4.0.0.0
+   System.Xml.dll   v4.0.0.0
+   System.Core.dll   v4.0.0.0
+   System.ServiceModel.dll   v4.0.0.0
+   System.Windows.Forms.dll   v4.0.0.0
+   System.Data.dll   v4.0.0.0</Info>
+  <Warning>No application or third party assembly found in folder {C:\windows\Microsoft.NET\Framework\v4.0.30319\WPF}</Warning>
+  <Warning>Assembly {MRG.Controls.UI} is referenced by {DataCollectorAutomator} but is not found.</Warning>
+  <Warning>Assembly {SkyIndexAnalyzerLibraries} is referenced by {DataCollectorAutomator} but is not found.</Warning>
+  <Warning>Versioning issue: Assembly {DataCollectorAutomator v1.0.0.0} references {MathNet.Numerics v2.6.1.30} but NDepend has loaded {MathNet.Numerics v2.5.0.27}</Warning>
+  <Warning>Assembly {System.Numerics} is referenced by {MathNet.Numerics.IO} but is not found.</Warning>
+  <Warning>Assembly {Microsoft.VisualStudio.HostingProcess.Utilities.Sync} is referenced by {SkyIndexAnalyzerSolo.vshost} but is not found.</Warning>
+  <Warning>Assembly {Microsoft.VisualStudio.HostingProcess.Utilities.Sync} is referenced by {DataCollectorAutomator.vshost} but is not found.</Warning>
+  <Warning>Assembly {Microsoft.VisualStudio.HostingProcess.Utilities.Sync} is referenced by {ArduinoUDPconversation.vshost} but is not found.</Warning>
+  <Warning>Assembly {System.Numerics} is referenced by {MathNet.Numerics} but is not found.</Warning>
+  <Warning>The source file {c:\_gulevlab\libemgucv-windows-universal-gpu-2.4.9.1847\Emgu.CV\PInvoke\CvInvokeCore.cs} (last modified 29.10.2013 14:35:07) and the PDB file of the assembly {Emgu.CV} (last modified 16.05.2013 17:21:42) are not in-sync.</Warning>
+  <Info>262 source files parsed ; all source files found ; 1 source file not in-sync with PDB</Info>
+  <Info>0 code rule has been extracted from code.</Info>
+  <Info>No dependency cycle detected in assemblies referencement graph.</Info>
+  <Info>11.11.2013 19:56:56 Analyse dependencies of your application.</Info>
+  <Info>11.11.2013 19:56:56 Building the report (standard).</Info>
+  <Warning>11 critical rules are violated.
+  - Types too big - critical
+  - Methods too complex - critical
+  - Methods with too many parameters - critical
+  - Do not hide base class methods
+  - Avoid namespaces mutually dependent
+  - Potentially dead Types
+  - Potentially dead Methods
+  - Potentially dead Fields
+  - Constructors of abstract classes should be declared as protected or private
+  - Don't assign a field from many methods
+  - ...</Warning>
+  <Info>11.11.2013 19:57:03 Log trend metrics values.</Info>
+</InfoWarnings>

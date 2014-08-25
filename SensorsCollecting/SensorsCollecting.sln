@@ -1,0 +1,20 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2012
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SensorsCollecting", "SensorsCollecting.vcxproj", "{F0993E20-F8D2-4552-8FEE-0510D1B4E0BB}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{F0993E20-F8D2-4552-8FEE-0510D1B4E0BB}.Debug|Win32.ActiveCfg = Debug|Win32
+		{F0993E20-F8D2-4552-8FEE-0510D1B4E0BB}.Debug|Win32.Build.0 = Debug|Win32
+		{F0993E20-F8D2-4552-8FEE-0510D1B4E0BB}.Release|Win32.ActiveCfg = Release|Win32
+		{F0993E20-F8D2-4552-8FEE-0510D1B4E0BB}.Release|Win32.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

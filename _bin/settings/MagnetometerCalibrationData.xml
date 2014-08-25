@@ -1,0 +1,19 @@
+<?xml version="1.0" standalone="yes"?>
+<DataSet xmlns="NetFrameWork">
+  <table>
+    <key>magnCalibratedZeroX</key>
+    <value>855,986</value>
+  </table>
+  <table>
+    <key>magnCalibratedZeroY</key>
+    <value>39,026</value>
+  </table>
+  <table>
+    <key>magnCalibratedZeroZ</key>
+    <value>21,982</value>
+  </table>
+  <table>
+    <key>magnCalibratedAngleShift</key>
+    <value>263,49760811220085</value>
+  </table>
+</DataSet>

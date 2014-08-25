@@ -1,0 +1,15 @@
+<?xml version="1.0" standalone="yes"?>
+<DataSet xmlns="NetFrameWork">
+  <table>
+    <key>InitialLogFilesDirectory</key>
+    <value>G:\_gulevlab\SkyIndexAnalyzerSolo\_bin\logs</value>
+  </table>
+  <table>
+    <key>ProcessedDataOutputDirectory</key>
+    <value>G:\_gulevlab\SkyIndexAnalyzerSolo\_bin\logs\old-style-logs\output</value>
+  </table>
+  <table>
+    <key>SourceDataDirectory</key>
+    <value>G:\_gulevlab\SkyIndexAnalyzerSolo\_bin\logs\old-style-logs</value>
+  </table>
+</DataSet>
