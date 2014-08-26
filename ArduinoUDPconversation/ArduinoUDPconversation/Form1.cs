@@ -208,7 +208,7 @@ namespace ArduinoUDPconversation
             }
 
 
-            if ((tb2update == tbResponseLog) && (tb2update.Lines.Length > Settings.Default.BroadcastLogHistorySizeLines))
+            if ((tb2update == tbResponseLog1) && (tb2update.Lines.Length > Settings.Default.BroadcastLogHistorySizeLines))
             {
                 swapResponseLog();
                 Note(text, tb2update);
@@ -216,7 +216,7 @@ namespace ArduinoUDPconversation
         }
         public void Note(string text)
         {
-            SetTextTB(tbResponseLog, text + Environment.NewLine, true);
+            SetTextTB(tbResponseLog1, text + Environment.NewLine, true);
         }
         #endregion
 
@@ -788,13 +788,13 @@ namespace ArduinoUDPconversation
 
         private void btnCancelWaitingResponse_Click(object sender, EventArgs e)
         {
-            currCommand = textBoxCommand.Text.Trim().Replace("\0", string.Empty);
+            currCommand = textBoxCommand1.Text.Trim().Replace("\0", string.Empty);
             if (currCommand.Length == 0)
             {
                 return;
             }
-            SetTextTB(textBoxCommand, "", false);
-            SetTextTB(tbResponseLog, ">>> " + currCommand + Environment.NewLine, true);
+            SetTextTB(textBoxCommand1, "", false);
+            SetTextTB(tbResponseLog1, ">>> " + currCommand + Environment.NewLine, true);
             PerformSendCommand();
         }
 
@@ -835,11 +835,11 @@ namespace ArduinoUDPconversation
 
             filename1 = Directory.GetCurrentDirectory() + "\\ResponseLog-" + DateTime.Now.Year + "-" + DateTime.Now.Month + "-" + DateTime.Now.Day + "-" + DateTime.Now.Hour + "-" + DateTime.Now.Minute + "-" + DateTime.Now.Second + ".log";
             FileStream dataFile = new FileStream(filename1, FileMode.Append, FileAccess.Write);
-            strtowrite = tbResponseLog.Text;
+            strtowrite = tbResponseLog1.Text;
             info2write = new UTF8Encoding(true).GetBytes(strtowrite);
             dataFile.Write(info2write, 0, info2write.Length);
             dataFile.Close();
-            SetTextTB(tbResponseLog, "", false);
+            SetTextTB(tbResponseLog1, "", false);
         }
 
 
@@ -855,7 +855,7 @@ namespace ArduinoUDPconversation
 
         private void button2_Click(object sender, EventArgs e)
         {
-            tbResponseLog.Text = "";
+            tbResponseLog1.Text = "";
         }
         
 

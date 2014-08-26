@@ -37,12 +37,12 @@
             this.tbBcstListeningLog = new System.Windows.Forms.TextBox();
             this.label1 = new System.Windows.Forms.Label();
             this.btnFindArduino = new System.Windows.Forms.Button();
-            this.textBoxCommand = new System.Windows.Forms.TextBox();
+            this.textBoxCommand1 = new System.Windows.Forms.TextBox();
             this.textBox2 = new System.Windows.Forms.TextBox();
-            this.tbResponseLog = new System.Windows.Forms.TextBox();
+            this.tbResponseLog1 = new System.Windows.Forms.TextBox();
             this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
-            this.button2 = new System.Windows.Forms.Button();
-            this.btnResponseLog = new System.Windows.Forms.Button();
+            this.btnClearRsponceLog1 = new System.Windows.Forms.Button();
+            this.btnSwapResponseLog1 = new System.Windows.Forms.Button();
             this.label2 = new System.Windows.Forms.Label();
             this.bgwUDPmessagesParser = new System.ComponentModel.BackgroundWorker();
             this.tableLayoutPanel1.SuspendLayout();
@@ -91,10 +91,10 @@
             this.tableLayoutPanel1.SetColumnSpan(this.tbBcstListeningPort, 2);
             this.tbBcstListeningPort.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tbBcstListeningPort.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.tbBcstListeningPort.Location = new System.Drawing.Point(789, 738);
+            this.tbBcstListeningPort.Location = new System.Drawing.Point(789, 478);
             this.tbBcstListeningPort.Multiline = true;
             this.tbBcstListeningPort.Name = "tbBcstListeningPort";
-            this.tbBcstListeningPort.Size = new System.Drawing.Size(258, 34);
+            this.tbBcstListeningPort.Size = new System.Drawing.Size(258, 189);
             this.tbBcstListeningPort.TabIndex = 39;
             this.tbBcstListeningPort.TextChanged += new System.EventHandler(this.tbBcstListeningPort_TextChanged);
             // 
@@ -104,9 +104,9 @@
             this.btnStartStopBdcstListening.Dock = System.Windows.Forms.DockStyle.Fill;
             this.btnStartStopBdcstListening.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnStartStopBdcstListening.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.btnStartStopBdcstListening.Location = new System.Drawing.Point(527, 738);
+            this.btnStartStopBdcstListening.Location = new System.Drawing.Point(527, 478);
             this.btnStartStopBdcstListening.Name = "btnStartStopBdcstListening";
-            this.btnStartStopBdcstListening.Size = new System.Drawing.Size(256, 34);
+            this.btnStartStopBdcstListening.Size = new System.Drawing.Size(256, 189);
             this.btnStartStopBdcstListening.TabIndex = 38;
             this.btnStartStopBdcstListening.Text = "Start listening on port:";
             this.btnStartStopBdcstListening.UseVisualStyleBackColor = true;
@@ -122,7 +122,7 @@
             this.tbBcstListeningLog.Name = "tbBcstListeningLog";
             this.tableLayoutPanel1.SetRowSpan(this.tbBcstListeningLog, 4);
             this.tbBcstListeningLog.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
-            this.tbBcstListeningLog.Size = new System.Drawing.Size(520, 609);
+            this.tbBcstListeningLog.Size = new System.Drawing.Size(520, 309);
             this.tbBcstListeningLog.TabIndex = 36;
             this.tbBcstListeningLog.WordWrap = false;
             // 
@@ -145,51 +145,51 @@
             this.btnFindArduino.Dock = System.Windows.Forms.DockStyle.Fill;
             this.btnFindArduino.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnFindArduino.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.btnFindArduino.Location = new System.Drawing.Point(789, 698);
+            this.btnFindArduino.Location = new System.Drawing.Point(265, 438);
             this.btnFindArduino.Name = "btnFindArduino";
-            this.btnFindArduino.Size = new System.Drawing.Size(258, 34);
+            this.btnFindArduino.Size = new System.Drawing.Size(256, 34);
             this.btnFindArduino.TabIndex = 33;
-            this.btnFindArduino.Text = "search for Arduino board";
+            this.btnFindArduino.Text = "search for board ID1";
             this.btnFindArduino.UseVisualStyleBackColor = true;
             this.btnFindArduino.Click += new System.EventHandler(this.btnFindArduino_Click);
             // 
-            // textBoxCommand
+            // textBoxCommand1
             // 
-            this.tableLayoutPanel1.SetColumnSpan(this.textBoxCommand, 4);
-            this.textBoxCommand.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.textBoxCommand.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.textBoxCommand.Location = new System.Drawing.Point(3, 738);
-            this.textBoxCommand.Name = "textBoxCommand";
-            this.textBoxCommand.Size = new System.Drawing.Size(518, 26);
-            this.textBoxCommand.TabIndex = 32;
-            this.textBoxCommand.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.textBoxCommand_KeyPress);
+            this.tableLayoutPanel1.SetColumnSpan(this.textBoxCommand1, 4);
+            this.textBoxCommand1.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.textBoxCommand1.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.textBoxCommand1.Location = new System.Drawing.Point(3, 398);
+            this.textBoxCommand1.Name = "textBoxCommand1";
+            this.textBoxCommand1.Size = new System.Drawing.Size(518, 26);
+            this.textBoxCommand1.TabIndex = 32;
+            this.textBoxCommand1.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.textBoxCommand_KeyPress);
             // 
             // textBox2
             // 
             this.tableLayoutPanel1.SetColumnSpan(this.textBox2, 2);
             this.textBox2.Dock = System.Windows.Forms.DockStyle.Fill;
             this.textBox2.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.textBox2.Location = new System.Drawing.Point(527, 698);
+            this.textBox2.Location = new System.Drawing.Point(3, 438);
             this.textBox2.Multiline = true;
             this.textBox2.Name = "textBox2";
             this.textBox2.Size = new System.Drawing.Size(256, 34);
             this.textBox2.TabIndex = 31;
             this.textBox2.TextChanged += new System.EventHandler(this.textBox2_TextChanged);
             // 
-            // tbResponseLog
+            // tbResponseLog1
             // 
-            this.tbResponseLog.AcceptsReturn = true;
-            this.tableLayoutPanel1.SetColumnSpan(this.tbResponseLog, 4);
-            this.tbResponseLog.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.tbResponseLog.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.tbResponseLog.HideSelection = false;
-            this.tbResponseLog.Location = new System.Drawing.Point(3, 83);
-            this.tbResponseLog.Multiline = true;
-            this.tbResponseLog.Name = "tbResponseLog";
-            this.tableLayoutPanel1.SetRowSpan(this.tbResponseLog, 5);
-            this.tbResponseLog.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
-            this.tbResponseLog.Size = new System.Drawing.Size(518, 649);
-            this.tbResponseLog.TabIndex = 0;
+            this.tbResponseLog1.AcceptsReturn = true;
+            this.tableLayoutPanel1.SetColumnSpan(this.tbResponseLog1, 4);
+            this.tbResponseLog1.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.tbResponseLog1.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.tbResponseLog1.HideSelection = false;
+            this.tbResponseLog1.Location = new System.Drawing.Point(3, 83);
+            this.tbResponseLog1.Multiline = true;
+            this.tbResponseLog1.Name = "tbResponseLog1";
+            this.tableLayoutPanel1.SetRowSpan(this.tbResponseLog1, 4);
+            this.tbResponseLog1.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
+            this.tbResponseLog1.Size = new System.Drawing.Size(518, 309);
+            this.tbResponseLog1.TabIndex = 0;
             // 
             // tableLayoutPanel1
             // 
@@ -202,59 +202,65 @@
             this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 12.5F));
             this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 12.5F));
             this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 12.5F));
-            this.tableLayoutPanel1.Controls.Add(this.button2, 0, 1);
-            this.tableLayoutPanel1.Controls.Add(this.btnResponseLog, 1, 1);
-            this.tableLayoutPanel1.Controls.Add(this.tbResponseLog, 0, 2);
-            this.tableLayoutPanel1.Controls.Add(this.textBox2, 4, 6);
-            this.tableLayoutPanel1.Controls.Add(this.textBoxCommand, 0, 7);
-            this.tableLayoutPanel1.Controls.Add(this.btnFindArduino, 6, 6);
+            this.tableLayoutPanel1.Controls.Add(this.btnClearRsponceLog1, 0, 1);
+            this.tableLayoutPanel1.Controls.Add(this.btnSwapResponseLog1, 1, 1);
+            this.tableLayoutPanel1.Controls.Add(this.tbResponseLog1, 0, 2);
+            this.tableLayoutPanel1.Controls.Add(this.textBox2, 0, 7);
+            this.tableLayoutPanel1.Controls.Add(this.textBoxCommand1, 0, 6);
+            this.tableLayoutPanel1.Controls.Add(this.btnFindArduino, 2, 7);
             this.tableLayoutPanel1.Controls.Add(this.label1, 0, 0);
             this.tableLayoutPanel1.Controls.Add(this.tbBcstListeningLog, 4, 2);
-            this.tableLayoutPanel1.Controls.Add(this.btnStartStopBdcstListening, 4, 7);
-            this.tableLayoutPanel1.Controls.Add(this.tbBcstListeningPort, 6, 7);
+            this.tableLayoutPanel1.Controls.Add(this.btnStartStopBdcstListening, 4, 8);
+            this.tableLayoutPanel1.Controls.Add(this.tbBcstListeningPort, 6, 8);
             this.tableLayoutPanel1.Controls.Add(this.btnSwapBcstLog, 6, 1);
             this.tableLayoutPanel1.Controls.Add(this.btnClearBcstLog, 7, 1);
             this.tableLayoutPanel1.Controls.Add(this.label2, 4, 0);
             this.tableLayoutPanel1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tableLayoutPanel1.Location = new System.Drawing.Point(0, 0);
             this.tableLayoutPanel1.Name = "tableLayoutPanel1";
-            this.tableLayoutPanel1.RowCount = 8;
+            this.tableLayoutPanel1.RowCount = 14;
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 40F));
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 40F));
-            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
+            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 50F));
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 40F));
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 40F));
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 40F));
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 40F));
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 40F));
-            this.tableLayoutPanel1.Size = new System.Drawing.Size(1050, 775);
+            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 50F));
+            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 40F));
+            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 40F));
+            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 40F));
+            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 40F));
+            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 40F));
+            this.tableLayoutPanel1.Size = new System.Drawing.Size(1050, 870);
             this.tableLayoutPanel1.TabIndex = 0;
             // 
-            // button2
+            // btnClearRsponceLog1
             // 
-            this.button2.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.button2.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.button2.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.button2.Location = new System.Drawing.Point(3, 43);
-            this.button2.Name = "button2";
-            this.button2.Size = new System.Drawing.Size(125, 34);
-            this.button2.TabIndex = 45;
-            this.button2.Text = "Clear";
-            this.button2.UseVisualStyleBackColor = true;
-            this.button2.Click += new System.EventHandler(this.button2_Click);
+            this.btnClearRsponceLog1.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.btnClearRsponceLog1.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnClearRsponceLog1.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.btnClearRsponceLog1.Location = new System.Drawing.Point(3, 43);
+            this.btnClearRsponceLog1.Name = "btnClearRsponceLog1";
+            this.btnClearRsponceLog1.Size = new System.Drawing.Size(125, 34);
+            this.btnClearRsponceLog1.TabIndex = 45;
+            this.btnClearRsponceLog1.Text = "Clear";
+            this.btnClearRsponceLog1.UseVisualStyleBackColor = true;
+            this.btnClearRsponceLog1.Click += new System.EventHandler(this.button2_Click);
             // 
-            // btnResponseLog
+            // btnSwapResponseLog1
             // 
-            this.btnResponseLog.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.btnResponseLog.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnResponseLog.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.btnResponseLog.Location = new System.Drawing.Point(134, 43);
-            this.btnResponseLog.Name = "btnResponseLog";
-            this.btnResponseLog.Size = new System.Drawing.Size(125, 34);
-            this.btnResponseLog.TabIndex = 44;
-            this.btnResponseLog.Text = "Swap response";
-            this.btnResponseLog.UseVisualStyleBackColor = true;
-            this.btnResponseLog.Click += new System.EventHandler(this.button1_Click_1);
+            this.btnSwapResponseLog1.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.btnSwapResponseLog1.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnSwapResponseLog1.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.btnSwapResponseLog1.Location = new System.Drawing.Point(134, 43);
+            this.btnSwapResponseLog1.Name = "btnSwapResponseLog1";
+            this.btnSwapResponseLog1.Size = new System.Drawing.Size(125, 34);
+            this.btnSwapResponseLog1.TabIndex = 44;
+            this.btnSwapResponseLog1.Text = "Swap response";
+            this.btnSwapResponseLog1.UseVisualStyleBackColor = true;
+            this.btnSwapResponseLog1.Click += new System.EventHandler(this.button1_Click_1);
             // 
             // label2
             // 
@@ -278,7 +284,7 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1050, 775);
+            this.ClientSize = new System.Drawing.Size(1050, 870);
             this.Controls.Add(this.tableLayoutPanel1);
             this.Name = "ArduinoConversationForm";
             this.Text = "Arduino conversation";
@@ -300,15 +306,15 @@
         private System.Windows.Forms.TextBox tbBcstListeningPort;
         private System.Windows.Forms.Button btnStartStopBdcstListening;
         private System.Windows.Forms.TableLayoutPanel tableLayoutPanel1;
-        private System.Windows.Forms.TextBox tbResponseLog;
+        private System.Windows.Forms.TextBox tbResponseLog1;
         private System.Windows.Forms.TextBox textBox2;
-        private System.Windows.Forms.TextBox textBoxCommand;
+        private System.Windows.Forms.TextBox textBoxCommand1;
         private System.Windows.Forms.Button btnFindArduino;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.TextBox tbBcstListeningLog;
         private System.Windows.Forms.Label label2;
-        private System.Windows.Forms.Button button2;
-        private System.Windows.Forms.Button btnResponseLog;
+        private System.Windows.Forms.Button btnClearRsponceLog1;
+        private System.Windows.Forms.Button btnSwapResponseLog1;
         private System.ComponentModel.BackgroundWorker bgwUDPmessagesParser;
     }
 }
