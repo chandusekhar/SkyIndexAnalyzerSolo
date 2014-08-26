@@ -7,6 +7,7 @@
 #include <Ethernet.h>
 #include <stdlib.h>
 #include <EthernetUdp.h>
+#include <Ethernet.h>
 #include <util.h>
 #include <SPI.h>
 #include <Wire.h>
@@ -30,7 +31,10 @@ int accel_z;
 
 #define localPort 5555
 #define RemoteBroadcastPort 4444
+//#define TCP_TX_PACKET_MAX_SIZE 64
 EthernetUDP Udp;
+//EthernetServer ethSrv = EthernetServer(23);
+//EthernetClient ethClnt;
 bool broadcastSensorsData = false;
 
 long timecntr = 0;
@@ -49,7 +53,7 @@ void(* resetFunc) (void) = 0;
 
 void setup()
 {
-	byte mac[] = {0x90, 0xA2, 0xDA, 0x0D, 0x2B, 0xC1};
+	byte mac[] = {0x90, 0xA2, 0xDA, 0x0D, 0x2B, 0xC0};
 	String error1 = "";
 	Serial.begin(9600);
 
@@ -143,7 +147,7 @@ void writeTo(int device, byte address, byte val)
 
 void init_sensors()
 {
-	int error = 0;
+	//int error = 0;
 	String error1 = "";
 
 	// Set Gyro settings
@@ -201,6 +205,10 @@ void loop()
 			}
 			//tmpString = "";
 		}
+
+
+
+
 
 		timecntr = millis();
 		if (timecntr - timeTimer >= TimePeriod)
@@ -280,6 +288,27 @@ bool getUDPmessage(char UDPstr[UDP_TX_PACKET_MAX_SIZE])
 
 	return true;
 }
+
+
+
+//
+//bool GetTCPmessage(char TCPstr[TCP_TX_PACKET_MAX_SIZE])
+//{
+//	char packetBuffer[TCP_TX_PACKET_MAX_SIZE];
+//	memset(&packetBuffer[0], 0, sizeof(packetBuffer));
+//
+//	ethClnt = ethSrv.available();
+//	if (ethClnt)
+//	{
+//		ethClnt.read(packetBuffer, TCP_TX_PACKET_MAX_SIZE);
+//		String s = String(packetBuffer);
+//		s.trim();
+//		s.toCharArray(TCPstr, TCP_TX_PACKET_MAX_SIZE);
+//		memset(&packetBuffer[0], 0, sizeof(packetBuffer));
+//		return true;
+//	}
+//}
+
 
 
 
@@ -616,7 +645,7 @@ void ProcessGPSstring()
 	if (currentGPSstrBuf.substring(0, 7) == String("$GPGGA,"))
 	{
 		int strLen = currentGPSstrBuf.length();
-		
+
 		if (currentGPSstrBuf.substring(strLen-3, strLen-2) != "*")
 		{
 			GPSstoredString = currentGPSstrBuf;
