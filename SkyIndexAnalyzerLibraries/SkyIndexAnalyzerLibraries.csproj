@@ -122,6 +122,7 @@
     <Compile Include="GradientDescentApproximator.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="PropertyHelper.cs" />
     <Compile Include="ServiceDataClasses.cs" />
     <Compile Include="simpleMultipleImagesShow.cs">
       <SubType>Form</SubType>

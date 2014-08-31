@@ -31,11 +31,11 @@
     <Filter Include="_libraries\EEPROM">
       <UniqueIdentifier>{df363b28-0d6e-45d3-a23d-b19dfe548ad0}</UniqueIdentifier>
     </Filter>
-    <Filter Include="_libraries\FreeSixIMU">
-      <UniqueIdentifier>{bf8a5754-8081-4761-9f4a-1aa61ee9e15c}</UniqueIdentifier>
-    </Filter>
     <Filter Include="_libraries\HMC5883L">
       <UniqueIdentifier>{177256bb-afa0-428f-86e4-4e2c21b2cd7f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="_libraries\FreeSixIMU">
+      <UniqueIdentifier>{e9814a5a-48c3-4442-8ed5-e0467ce041cc}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -147,6 +147,12 @@
     <ClInclude Include="C:\Program Files (x86)\Arduino\hardware\arduino\variants\standard\pins_arduino.h">
       <Filter>_core</Filter>
     </ClInclude>
+    <ClInclude Include="C:\Program Files (x86)\Arduino\libraries\HMC5883L\HMC5883L.h">
+      <Filter>_libraries\HMC5883L</Filter>
+    </ClInclude>
+    <ClInclude Include="Visual Micro\.SensorsCollecting.vsarduino.h">
+      <Filter>Заголовочные файлы</Filter>
+    </ClInclude>
     <ClInclude Include="C:\Program Files (x86)\Arduino\libraries\FreeSixIMU\CommunicationUtils.h">
       <Filter>_libraries\FreeSixIMU</Filter>
     </ClInclude>
@@ -161,12 +167,6 @@
     </ClInclude>
     <ClInclude Include="C:\Program Files (x86)\Arduino\libraries\FreeSixIMU\FreeSixIMU.h">
       <Filter>_libraries\FreeSixIMU</Filter>
-    </ClInclude>
-    <ClInclude Include="C:\Program Files (x86)\Arduino\libraries\HMC5883L\HMC5883L.h">
-      <Filter>_libraries\HMC5883L</Filter>
-    </ClInclude>
-    <ClInclude Include="Visual Micro\.SensorsCollecting.vsarduino.h">
-      <Filter>Заголовочные файлы</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -234,6 +234,9 @@
     <ClCompile Include="C:\Program Files (x86)\Arduino\hardware\arduino\cores\arduino\WString.cpp">
       <Filter>_core</Filter>
     </ClCompile>
+    <ClCompile Include="C:\Program Files (x86)\Arduino\libraries\HMC5883L\HMC5883L.cpp">
+      <Filter>_libraries\HMC5883L</Filter>
+    </ClCompile>
     <ClCompile Include="C:\Program Files (x86)\Arduino\libraries\FreeSixIMU\CommunicationUtils.cpp">
       <Filter>_libraries\FreeSixIMU</Filter>
     </ClCompile>
@@ -245,9 +248,6 @@
     </ClCompile>
     <ClCompile Include="C:\Program Files (x86)\Arduino\libraries\FreeSixIMU\FreeSixIMU.cpp">
       <Filter>_libraries\FreeSixIMU</Filter>
-    </ClCompile>
-    <ClCompile Include="C:\Program Files (x86)\Arduino\libraries\HMC5883L\HMC5883L.cpp">
-      <Filter>_libraries\HMC5883L</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

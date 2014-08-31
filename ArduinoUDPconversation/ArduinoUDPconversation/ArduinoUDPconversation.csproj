@@ -144,6 +144,12 @@
   <ItemGroup>
     <Content Include="arduino_icon.ico" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\SkyIndexAnalyzerLibraries\SkyIndexAnalyzerLibraries.csproj">
+      <Project>{7beac8e4-e53f-466a-b824-1fe69e60d114}</Project>
+      <Name>SkyIndexAnalyzerLibraries</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

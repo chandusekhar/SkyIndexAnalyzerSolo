@@ -14,6 +14,7 @@ using System.Net.NetworkInformation;
 using System.Reflection;
 using System.IO;
 using ArduinoUDPconversation.Properties;
+using SkyIndexAnalyzerLibraries;
 
 
 namespace ArduinoUDPconversation
@@ -41,15 +42,16 @@ namespace ArduinoUDPconversation
 
     public partial class ArduinoConversationForm : Form
     {
-        delegate void SetTextCallback(Label textbox, string text, bool AppendMode);
-        delegate void SetTextTBCallback(TextBox textbox, string text, bool AppendMode);
-        delegate void UpdateProgressBarCallback(ProgressBar ProgressBarControl, int PBvalue);
-        delegate void UpdatePictureBoxCallback(PictureBox PictureBoxControl, Image Image2Show);
-        delegate void SetButtonEnabledStatusCallback(Button Control, bool ControlEnabled);
-        delegate void SetTrackBarEnabledStatusCallback(TrackBar Control, bool ControlEnabled);
-        delegate void MoveTrackBarCallback(TrackBar TrackBarControl, int TBValue);
-        delegate void ToggleButtonStateCallback(Button ButtonControl, bool ControlEnabled, string ButtonText, bool ButtonFontBold);
-        delegate void ShowPictureCallback(String FilePath, int timeout = 0);
+        //delegate void SetTextCallback(Label textbox, string text, bool AppendMode);
+        //delegate void SetTextTBCallback(TextBox textbox, string text, bool AppendMode);
+        //delegate void UpdateProgressBarCallback(ProgressBar ProgressBarControl, int PBvalue);
+        //delegate void UpdatePictureBoxCallback(PictureBox PictureBoxControl, Image Image2Show);
+        //delegate void SetButtonEnabledStatusCallback(Button Control, bool ControlEnabled);
+        //delegate void SetTrackBarEnabledStatusCallback(TrackBar Control, bool ControlEnabled);
+        //delegate void MoveTrackBarCallback(TrackBar TrackBarControl, int TBValue);
+        //delegate void ToggleButtonStateCallback(Button ButtonControl, bool ControlEnabled, string ButtonText, bool ButtonFontBold);
+        //delegate void ShowPictureCallback(String FilePath, int timeout = 0);
+
         //private DataSocketReader reader;
         //private UdpClient UDPreader;
         //public VisualizingForm VForm;
@@ -58,10 +60,9 @@ namespace ArduinoUDPconversation
         private int portBcstRecvng = 4444;
         private string currCommand;
         private static bool bcstMessageReceived = false;
-        //private static String bcstMessage = "";
-        //private static bool udpMessageReceived = false;
-        private static String udpMessage = "";
-        private static bool needsToDiscoverArduinoBoard = false;
+        //private static String udpMessage = "";
+        private static bool needsToDiscoverArduinoBoardID1 = false;
+        private static bool needsToDiscoverArduinoBoardID2 = false;
         private static DateTime JanFirst1970 = new DateTime(1970, 1, 1);
         private static bool recievedData = false;
         IntPtr m_ip = IntPtr.Zero;
@@ -71,7 +72,8 @@ namespace ArduinoUDPconversation
         private static bool gyroDatahasBeenChanged = false;
 
 
-        private static Queue<string> quArduinoUDPCatchedMessages = new Queue<string>();
+        //private static Queue<string> quArduinoUDPCatchedMessages = new Queue<string>();
+        private static Queue<IncomingUDPmessageBoundle> quArduinoUDPCatchedMessages = new Queue<IncomingUDPmessageBoundle>();
         private static SocketAddress remoteSktAddr;
 
 
@@ -83,124 +85,126 @@ namespace ArduinoUDPconversation
 
 
 
+        //#region stuff
+        //private static void SetText(Label textbox, string text, bool AppendMode)
+        //{
+        //    if (textbox.InvokeRequired)
+        //    {
+        //        SetTextCallback d = SetText;
+        //        textbox.Invoke(d, new object[] { textbox, text, AppendMode });
+        //    }
+        //    else
+        //    {
+        //        if (AppendMode)
+        //        {
+        //            textbox.Text += text;
+        //        }
+        //        else
+        //        {
+        //            textbox.Text = text;
+        //        }
+        //    }
+        //}
+        //private static void SetTextTB(TextBox textbox, string text, bool AppendMode)
+        //{
+        //    if (textbox.InvokeRequired)
+        //    {
+        //        SetTextTBCallback d = SetTextTB;
+        //        textbox.Invoke(d, new object[] { textbox, text, AppendMode });
+        //    }
+        //    else
+        //    {
+        //        if (AppendMode)
+        //        {
+        //            textbox.Text = text + textbox.Text;
+        //        }
+        //        else
+        //        {
+        //            textbox.Text = text;
+        //        }
+
+        //    }
+        //}
+        //private static void UpdateProgressBar(ProgressBar ProgressBarControl, int PBvalue)
+        //{
+        //    if (ProgressBarControl.InvokeRequired)
+        //    {
+        //        UpdateProgressBarCallback d = UpdateProgressBar;
+        //        ProgressBarControl.Invoke(d, new object[] { ProgressBarControl, PBvalue });
+        //    }
+        //    else
+        //    {
+        //        ProgressBarControl.Value = PBvalue;
+        //    }
+        //}
+        //private static void UpdatePictureBox(PictureBox PictureBoxControl, Image Image2Show)
+        //{
+        //    if (PictureBoxControl.InvokeRequired)
+        //    {
+        //        UpdatePictureBoxCallback d = UpdatePictureBox;
+        //        PictureBoxControl.Invoke(d, new object[] { PictureBoxControl, Image2Show });
+        //    }
+        //    else
+        //    {
+        //        PictureBoxControl.Image = Image2Show;
+        //    }
+        //}
+        //private static void MoveTrackBar(TrackBar TrackBarControl, int TBValue)
+        //{
+        //    if (TrackBarControl.InvokeRequired)
+        //    {
+        //        MoveTrackBarCallback d = MoveTrackBar;
+        //        TrackBarControl.Invoke(d, new object[] { TrackBarControl, TBValue });
+        //    }
+        //    else
+        //    {
+        //        TrackBarControl.Value = TBValue;
+        //    }
+        //}
+        //public static void ToggleButtonState(Button ButtonControl, bool ControlEnabled, string ButtonText, bool ButtonFontBold)
+        //{
+        //    FontStyle newfontstyle;
+        //    if (ButtonControl.InvokeRequired)
+        //    {
+        //        ToggleButtonStateCallback d = ToggleButtonState;
+        //        ButtonControl.Invoke(d, new object[] { ButtonControl, ControlEnabled, ButtonText, ButtonFontBold });
+        //    }
+        //    else
+        //    {
+        //        if (ButtonFontBold)
+        //        {
+        //            newfontstyle = FontStyle.Bold;
+        //        }
+        //        else
+        //        {
+        //            newfontstyle = FontStyle.Regular;
+        //        }
+        //        Font newfont = new Font(ButtonControl.Font, newfontstyle);
+        //        ButtonControl.Font = newfont;
+        //        ButtonControl.Text = ButtonText;
+        //        SetButtonEnabledStatus(ButtonControl, ControlEnabled);
+
+        //    }
+        //}
+        //public static void SetButtonEnabledStatus(Button ButtonControl, bool ControlEnabled)
+        //{
+        //    if (ButtonControl.InvokeRequired)
+        //    {
+        //        SetButtonEnabledStatusCallback d = SetButtonEnabledStatus;
+        //        ButtonControl.Invoke(d, new object[] { ButtonControl, ControlEnabled });
+        //    }
+        //    else
+        //    {
+        //        ButtonControl.Enabled = ControlEnabled;
+        //    }
+        //}
+        //#endregion
 
 
-        #region stuff
-        private static void SetText(Label textbox, string text, bool AppendMode)
-        {
-            if (textbox.InvokeRequired)
-            {
-                SetTextCallback d = SetText;
-                textbox.Invoke(d, new object[] { textbox, text, AppendMode });
-            }
-            else
-            {
-                if (AppendMode)
-                {
-                    textbox.Text += text;
-                }
-                else
-                {
-                    textbox.Text = text;
-                }
-            }
-        }
-        private static void SetTextTB(TextBox textbox, string text, bool AppendMode)
-        {
-            if (textbox.InvokeRequired)
-            {
-                SetTextTBCallback d = SetTextTB;
-                textbox.Invoke(d, new object[] { textbox, text, AppendMode });
-            }
-            else
-            {
-                if (AppendMode)
-                {
-                    textbox.Text = text + textbox.Text;
-                }
-                else
-                {
-                    textbox.Text = text;
-                }
 
-            }
-        }
-        private static void UpdateProgressBar(ProgressBar ProgressBarControl, int PBvalue)
-        {
-            if (ProgressBarControl.InvokeRequired)
-            {
-                UpdateProgressBarCallback d = UpdateProgressBar;
-                ProgressBarControl.Invoke(d, new object[] { ProgressBarControl, PBvalue });
-            }
-            else
-            {
-                ProgressBarControl.Value = PBvalue;
-            }
-        }
-        private static void UpdatePictureBox(PictureBox PictureBoxControl, Image Image2Show)
-        {
-            if (PictureBoxControl.InvokeRequired)
-            {
-                UpdatePictureBoxCallback d = UpdatePictureBox;
-                PictureBoxControl.Invoke(d, new object[] { PictureBoxControl, Image2Show });
-            }
-            else
-            {
-                PictureBoxControl.Image = Image2Show;
-            }
-        }
-        private static void MoveTrackBar(TrackBar TrackBarControl, int TBValue)
-        {
-            if (TrackBarControl.InvokeRequired)
-            {
-                MoveTrackBarCallback d = MoveTrackBar;
-                TrackBarControl.Invoke(d, new object[] { TrackBarControl, TBValue });
-            }
-            else
-            {
-                TrackBarControl.Value = TBValue;
-            }
-        }
-        public static void ToggleButtonState(Button ButtonControl, bool ControlEnabled, string ButtonText, bool ButtonFontBold)
-        {
-            FontStyle newfontstyle;
-            if (ButtonControl.InvokeRequired)
-            {
-                ToggleButtonStateCallback d = ToggleButtonState;
-                ButtonControl.Invoke(d, new object[] { ButtonControl, ControlEnabled, ButtonText, ButtonFontBold });
-            }
-            else
-            {
-                if (ButtonFontBold)
-                {
-                    newfontstyle = FontStyle.Bold;
-                }
-                else
-                {
-                    newfontstyle = FontStyle.Regular;
-                }
-                Font newfont = new Font(ButtonControl.Font, newfontstyle);
-                ButtonControl.Font = newfont;
-                ButtonControl.Text = ButtonText;
-                SetButtonEnabledStatus(ButtonControl, ControlEnabled);
-
-            }
-        }
-        public static void SetButtonEnabledStatus(Button ButtonControl, bool ControlEnabled)
-        {
-            if (ButtonControl.InvokeRequired)
-            {
-                SetButtonEnabledStatusCallback d = SetButtonEnabledStatus;
-                ButtonControl.Invoke(d, new object[] { ButtonControl, ControlEnabled });
-            }
-            else
-            {
-                ButtonControl.Enabled = ControlEnabled;
-            }
-        }
         public void Note(string text, TextBox tb2update)
         {
-            SetTextTB(tb2update, text + Environment.NewLine, true);
+            ThreadSafeOperations.SetTextTB(tb2update, text + Environment.NewLine, true);
             if ((tb2update == tbBcstListeningLog) && (tb2update.Lines.Length > Settings.Default.BroadcastLogHistorySizeLines))
             {
                 swapBcstLog();
@@ -210,15 +214,16 @@ namespace ArduinoUDPconversation
 
             if ((tb2update == tbResponseLog1) && (tb2update.Lines.Length > Settings.Default.BroadcastLogHistorySizeLines))
             {
-                swapResponseLog();
+                swapResponseLog(btnSwapResponseLog1);
                 Note(text, tb2update);
             }
         }
+
+
         public void Note(string text)
         {
-            SetTextTB(tbResponseLog1, text + Environment.NewLine, true);
+            ThreadSafeOperations.SetTextTB(tbResponseLog1, text + Environment.NewLine, true);
         }
-        #endregion
 
 
         //#region GetSensorsDataCycle
@@ -316,7 +321,7 @@ namespace ArduinoUDPconversation
         //}
 
 
-        
+
 
         //private void GetSensorsDataCycle_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
         //{
@@ -351,9 +356,9 @@ namespace ArduinoUDPconversation
         //        SetTextTB(textBox1, curDate + Environment.NewLine + inDataString + Environment.NewLine, true);
         //        return inDataString;
         //    }
-
+        //
         //    outDataString += Environment.NewLine + curDate.ToString() + Environment.NewLine;
-
+        //
         //    int inDataType = Convert.ToInt16(dataArray[1]);
         //    string strDataType = "unknown";
         //    switch (inDataType)
@@ -384,7 +389,7 @@ namespace ArduinoUDPconversation
         //                return inDataString;
         //            }
         //    }
-
+        //
         //    switch (strDataType)
         //    {
         //        case "gps":
@@ -396,15 +401,15 @@ namespace ArduinoUDPconversation
         //                sensorData.altitude = Convert.ToDouble(dataArray[4].Replace(".", ","));
         //                sensorData.horizAccuracy = Convert.ToDouble(dataArray[5].Replace(".", ","));
         //                sensorData.vertAccuracy = Convert.ToDouble(dataArray[6].Replace(".", ","));
-
+        //
         //                SetText(GPSDateLabel, sensorData.date.ToString(), false);
         //                SetText(GPSLatitudeLabel, sensorData.latitude.ToString(), false);
         //                SetText(GPSLongitudeLabel, sensorData.longitude.ToString(), false);
         //                SetText(GPSAltitudeLabel, sensorData.altitude.ToString(), false);
         //                SetText(GPSHorizAccLabel, sensorData.horizAccuracy.ToString(), false);
         //                SetText(GPSVertAccLabel, sensorData.vertAccuracy.ToString(), false);
-
-
+        //
+        //
         //                break;
         //            }
         //        case "compass":
@@ -413,11 +418,11 @@ namespace ArduinoUDPconversation
         //                sensorData.date = curDate;
         //                sensorData.MagneticHeading = Convert.ToDouble(dataArray[2].Replace(".", ","));
         //                sensorData.trueHeading = Convert.ToDouble(dataArray[3].Replace(".", ","));
-
+        //
         //                SetText(CompassDateLabel, sensorData.date.ToString(), false);
         //                SetText(CompassMagheadLabel, sensorData.MagneticHeading.ToString(), false);
         //                SetText(CompassTrueheadLabel, sensorData.trueHeading.ToString(), false);
-
+        //
         //                break;
         //            }
         //        case "accel":
@@ -427,13 +432,13 @@ namespace ArduinoUDPconversation
         //                sensorData.AccelerationX = Convert.ToDouble(dataArray[2].Replace(".", ","));
         //                sensorData.AccelerationY = Convert.ToDouble(dataArray[3].Replace(".", ","));
         //                sensorData.AccelerationZ = Convert.ToDouble(dataArray[4].Replace(".", ","));
-
+        //
         //                SetText(AccelDateLabel, sensorData.date.ToString(), false);
         //                SetText(AccelXLabel, sensorData.AccelerationX.ToString(), false);
         //                SetText(AccelYLabel, sensorData.AccelerationY.ToString(), false);
         //                SetText(AccelZLabel, sensorData.AccelerationZ.ToString(), false);
-
-
+        //
+        //
         //                VForm.ClearImage();
         //                double width = VForm.bmpObject.Width;
         //                double height = VForm.bmpObject.Height;
@@ -444,16 +449,16 @@ namespace ArduinoUDPconversation
         //                double dl = Math.Sqrt(dx * dx + dy * dy);
         //                double dz = sensorData.AccelerationZ;
         //                double tg = Math.Sqrt(dx * dx + dy * dy) / dz;
-
+        //
         //                PointF p1 = new PointF();
         //                p1.X = center.X - (float)(0.5 * length * Math.Cos(Math.Atan(tg)));
         //                p1.Y = center.Y - (float)(0.5 * length * Math.Sin(Math.Atan(tg)));
         //                PointF p2 = new PointF();
         //                p2.X = center.X + (float)(0.5 * length * Math.Cos(Math.Atan(tg)));
         //                p2.Y = center.Y + (float)(0.5 * length * Math.Sin(Math.Atan(tg)));
-
+        //
         //                VForm.DrawLine(p1, p2, Color.Black, (float)2.0);
-
+        //
         //                break;
         //            }
         //        case "gyro":
@@ -463,15 +468,15 @@ namespace ArduinoUDPconversation
         //                sensorData.GyroscopeX = Convert.ToDouble(dataArray[2].Replace(".", ","));
         //                sensorData.GyroscopeY = Convert.ToDouble(dataArray[3].Replace(".", ","));
         //                sensorData.GyroscopeZ = Convert.ToDouble(dataArray[4].Replace(".", ","));
-
+        //
         //                SetText(AccelDateLabel, sensorData.date.ToString(), false);
         //                SetText(GyroXLabel, sensorData.GyroscopeX.ToString(), false);
         //                SetText(GyroYLabel, sensorData.GyroscopeY.ToString(), false);
         //                SetText(GyroZLabel, sensorData.GyroscopeZ.ToString(), false);
-
+        //
         //                //SetTextTB(textBox1, curDate + Environment.NewLine + inDataString + Environment.NewLine, true);
         //                //return inDataString;
-
+        //
         //                break;
         //            }
         //        default:
@@ -481,16 +486,15 @@ namespace ArduinoUDPconversation
         //                //break;
         //            }
         //    }
-
-
+        //
+        //
         //    return outDataString;
         //}
 
 
-
         private void textBox2_TextChanged(object sender, EventArgs e)
         {
-            ip2Listen = textBox2.Text;
+            ip2Listen = tbDev1IPstr.Text;
         }
 
 
@@ -500,11 +504,21 @@ namespace ArduinoUDPconversation
             if (arduinoBoardSearchingWorker.IsBusy)
             {
                 arduinoBoardSearchingWorker.CancelAsync();
-
-                //UpdateProgressBar(progressBar1, 0);
             }
             else
             {
+                if (sender == btnFindArduino1)
+                {
+                    needsToDiscoverArduinoBoardID1 = true;
+                }
+                else if (sender == btnFindArduino2)
+                {
+                    needsToDiscoverArduinoBoardID2 = true;
+                }
+
+                ThreadSafeOperations.ToggleButtonState(btnFindArduino1, true, "CANCEL", true);
+                ThreadSafeOperations.ToggleButtonState(btnFindArduino2, true, "CANCEL", true);
+
                 arduinoBoardSearchingWorker.RunWorkerAsync();
             }
         }
@@ -514,7 +528,7 @@ namespace ArduinoUDPconversation
         private void arduinoBoardSearchingWorker_DoWork(object sender, DoWorkEventArgs e)
         {
             BackgroundWorker SelfWorker = sender as BackgroundWorker;
-            needsToDiscoverArduinoBoard = true;
+
             bool needsToSwitchCatchingOff = false;
             if (!udpCatchingJob.IsBusy)
             {
@@ -524,15 +538,17 @@ namespace ArduinoUDPconversation
             }
 
 
-            while (needsToDiscoverArduinoBoard)
+            while (needsToDiscoverArduinoBoardID1 || needsToDiscoverArduinoBoardID2)
             {
                 if (SelfWorker.CancellationPending)
                 {
                     e.Cancel = true;
                     break;
                 }
-            }
 
+                Application.DoEvents();
+                Thread.Sleep(0);
+            }
 
             if (needsToSwitchCatchingOff)
             {
@@ -556,10 +572,10 @@ namespace ArduinoUDPconversation
         //    Skt.SendTimeout = 10;
         //    //string testingIP = "192.168.192." + i.ToString();//!!!!!!!!!!!!!!!!!!!!!! определить подсеть по текущему IP и маске
         //    //testingIPaddr = IPAddress.Parse(testingIP);
-
+        //
         //    ping = new Ping();
         //    PingReply repl = ping.Send(testingIPaddr, 3, new byte[] { 1 }, new PingOptions(1, true));
-
+        //
         //    if ((repl.Status == IPStatus.TtlExpired) || (repl.Status == IPStatus.TimedOut) || (repl.Status == IPStatus.TimeExceeded))
         //    {
         //        returnData = "ping timeout or not reachable";
@@ -573,7 +589,7 @@ namespace ArduinoUDPconversation
         //        Byte[] receiveBytes = new byte[128];
         //        IPEndPoint sender_ = new IPEndPoint(IPAddress.Any, 0);
         //        EndPoint senderRemote = (EndPoint)sender_;
-
+        //
         //        try
         //        {
         //            Skt.ReceiveFrom(receiveBytes, ref senderRemote);
@@ -585,11 +601,11 @@ namespace ArduinoUDPconversation
         //            //throw;
         //        }
         //    }
-
+        //
         //    SetTextTB(textBox1, "tested ip " + testingIPaddr.ToString() + ": " + returnData.ToString() + Environment.NewLine, true);
         //    Skt.Close();
         //    if (returnData.ToString() == "YES") retVal = true; else retVal = false;
-
+        //
         //    return retVal;
         //}
 
@@ -607,9 +623,9 @@ namespace ArduinoUDPconversation
         {
             ip2Listen = Settings.Default.ArduinoBoardDefaultIP;
             port2converse = Settings.Default.ArduinoBoardDefaultUDPport;
-            portBcstRecvng = Settings.Default.UDPBroadcastDefaultListeningPort;
-            SetTextTB(textBox2, ip2Listen, false);
-            SetTextTB(tbBcstListeningPort, portBcstRecvng.ToString(), false);
+            //portBcstRecvng = Settings.Default.UDPBroadcastDefaultListeningPort;
+            ThreadSafeOperations.SetTextTB(tbDev1IPstr, ip2Listen, false);
+            //SetTextTB(tbBcstListeningPort, portBcstRecvng.ToString(), false);
         }
 
 
@@ -629,19 +645,19 @@ namespace ArduinoUDPconversation
             }
 
 
-            if (portBcstRecvng != Settings.Default.UDPBroadcastDefaultListeningPort)
-            {
-                Settings.Default.UDPBroadcastDefaultListeningPort = portBcstRecvng;
-                Settings.Default.Save();
-            }
+            //if (portBcstRecvng != Settings.Default.UDPBroadcastDefaultListeningPort)
+            //{
+            //    Settings.Default.UDPBroadcastDefaultListeningPort = portBcstRecvng;
+            //    Settings.Default.Save();
+            //}
         }
 
 
 
-        private void tbBcstListeningPort_TextChanged(object sender, EventArgs e)
-        {
-            portBcstRecvng = Convert.ToInt32(tbBcstListeningPort.Text);
-        }
+        //private void tbBcstListeningPort_TextChanged(object sender, EventArgs e)
+        //{
+        //    portBcstRecvng = Convert.ToInt32(tbBcstListeningPort.Text);
+        //}
 
 
 
@@ -655,7 +671,7 @@ namespace ArduinoUDPconversation
             {
                 udpCatchingJob.RunWorkerAsync();
                 StartUDPmessagesParser();
-                ToggleButtonState(btnStartStopBdcstListening, true, "Stop listening", true);
+                ThreadSafeOperations.ToggleButtonState(btnStartStopBdcstListening, true, "Stop listening", true);
             }
         }
 
@@ -673,7 +689,7 @@ namespace ArduinoUDPconversation
 
         private void udpCatchingJob_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
         {
-            ToggleButtonState(btnStartStopBdcstListening, true, "Start listening", false);
+            ThreadSafeOperations.ToggleButtonState(btnStartStopBdcstListening, true, "Start listening", false);
             bgwUDPmessagesParser.CancelAsync();
         }
 
@@ -700,7 +716,7 @@ namespace ArduinoUDPconversation
 
                     if (bcstMessage != "")
                     {
-                        quArduinoUDPCatchedMessages.Enqueue(bcstMessage);
+                        quArduinoUDPCatchedMessages.Enqueue(new IncomingUDPmessageBoundle(remoteSktAddr, bcstMessage));
 
                         bcstMessageReceived = true;
                     }
@@ -793,8 +809,8 @@ namespace ArduinoUDPconversation
             {
                 return;
             }
-            SetTextTB(textBoxCommand1, "", false);
-            SetTextTB(tbResponseLog1, ">>> " + currCommand + Environment.NewLine, true);
+            ThreadSafeOperations.SetTextTB(textBoxCommand1, "", false);
+            ThreadSafeOperations.SetTextTB(tbResponseLog1, ">>> " + currCommand + Environment.NewLine, true);
             PerformSendCommand();
         }
 
@@ -823,41 +839,51 @@ namespace ArduinoUDPconversation
             info2write = new UTF8Encoding(true).GetBytes(strtowrite);
             dataFile.Write(info2write, 0, info2write.Length);
             dataFile.Close();
-            SetTextTB(tbBcstListeningLog, "", false);
+            ThreadSafeOperations.SetTextTB(tbBcstListeningLog, "", false);
         }
 
 
-        private void swapResponseLog()
+        private void swapResponseLog(object sender)
         {
             string filename1;
             string strtowrite;
             byte[] info2write;
+            int curDevID = 1;
 
-            filename1 = Directory.GetCurrentDirectory() + "\\ResponseLog-" + DateTime.Now.Year + "-" + DateTime.Now.Month + "-" + DateTime.Now.Day + "-" + DateTime.Now.Hour + "-" + DateTime.Now.Minute + "-" + DateTime.Now.Second + ".log";
-            FileStream dataFile = new FileStream(filename1, FileMode.Append, FileAccess.Write);
-            strtowrite = tbResponseLog1.Text;
-            info2write = new UTF8Encoding(true).GetBytes(strtowrite);
-            dataFile.Write(info2write, 0, info2write.Length);
-            dataFile.Close();
-            SetTextTB(tbResponseLog1, "", false);
+            if (sender == btnSwapResponseLog1)
+            {
+                curDevID = 1;
+            }
+            else if (sender == btnSwapResponseLog2)
+            {
+                curDevID = 2;
+            }
+
+            filename1 = Directory.GetCurrentDirectory() + "\\ResponseLog-" + "devID" + curDevID + "-" +
+                        DateTime.Now.Year + "-" + DateTime.Now.Month + "-" + DateTime.Now.Day + "-" + DateTime.Now.Hour +
+                        "-" + DateTime.Now.Minute + "-" + DateTime.Now.Second + ".log";
+            ServiceTools.logToTextFile(filename1, tbResponseLog1.Text, true);
+            ThreadSafeOperations.SetTextTB(tbResponseLog1, "", false);
         }
 
 
         private void arduinoBoardSearchingWorker_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
         {
-            ToggleButtonState(btnFindArduino, true, "Search for Arduino board", false);
+            ThreadSafeOperations.ToggleButtonState(btnFindArduino1, true, "search for board (ID=1)", false);
+            ThreadSafeOperations.ToggleButtonState(btnFindArduino2, true, "search for board (ID=2)", false);
         }
+
 
         private void button1_Click_1(object sender, EventArgs e)
         {
-            swapResponseLog();
+            swapResponseLog(sender);
         }
 
         private void button2_Click(object sender, EventArgs e)
         {
             tbResponseLog1.Text = "";
         }
-        
+
 
 
 
@@ -886,33 +912,36 @@ namespace ArduinoUDPconversation
 
                 if (quArduinoUDPCatchedMessages.Count > 0)
                 {
-                    string bcstMessage = quArduinoUDPCatchedMessages.Dequeue();
+                    IncomingUDPmessageBoundle curMessageBoundle = quArduinoUDPCatchedMessages.Dequeue();
 
-                    if (bcstMessage == null) continue;
-                    
-                    if ((bcstMessage.Length >= 5) && (bcstMessage.Substring(0, 3) == "<id"))
-                    {
-                        int idx = bcstMessage.IndexOf('>');
-                        string strDevIDTag = bcstMessage.Substring(0, idx + 1); // "<id23>"
+                    if (curMessageBoundle == null) continue;
 
-                        try
-                        {
-                            strDevIDTag = strDevIDTag.Substring(3); // "23>"
-                            int idx2 = strDevIDTag.IndexOf('>'); // 2
-                            strDevIDTag = strDevIDTag.Substring(0, idx2); // "23"
-                            currMessageDevID = Convert.ToInt32(strDevIDTag);
-                        }
-                        catch (Exception)
-                        {
-                            currMessageDevID = 0;
-                        }
+                    string bcstMessage = curMessageBoundle.udpMessage;
+                    currMessageDevID = curMessageBoundle.devID;
 
-                        bcstMessage = bcstMessage.Substring(idx + 1);
-                    }
-                    else
-                    {
-                        currMessageDevID = 0;
-                    }
+                    //if ((bcstMessage.Length >= 5) && (bcstMessage.Substring(0, 3) == "<id"))
+                    //{
+                    //    int idx = bcstMessage.IndexOf('>');
+                    //    string strDevIDTag = bcstMessage.Substring(0, idx + 1); // "<id23>"
+                    //
+                    //    try
+                    //    {
+                    //        strDevIDTag = strDevIDTag.Substring(3); // "23>"
+                    //        int idx2 = strDevIDTag.IndexOf('>'); // 2
+                    //        strDevIDTag = strDevIDTag.Substring(0, idx2); // "23"
+                    //        currMessageDevID = Convert.ToInt32(strDevIDTag);
+                    //    }
+                    //    catch (Exception)
+                    //    {
+                    //        currMessageDevID = 0;
+                    //    }
+                    //
+                    //    bcstMessage = bcstMessage.Substring(idx + 1);
+                    //}
+                    //else
+                    //{
+                    //    currMessageDevID = 0;
+                    //}
 
                     if ((bcstMessage.Length >= 6) && (bcstMessage.Substring(0, 6) == "<repl>"))
                     {
@@ -925,8 +954,8 @@ namespace ArduinoUDPconversation
                         {
                             Note(bcstMessage);
                         }
-                        
-                        udpMessage = bcstMessage;
+
+                        //udpMessage = bcstMessage;
                     }
                     else if ((bcstMessage.Length >= 5) && (bcstMessage.Substring(0, 5) == "<err>"))
                     {
@@ -939,8 +968,8 @@ namespace ArduinoUDPconversation
                         {
                             Note("ERROR: " + bcstMessage);
                         }
-                        
-                        udpMessage = bcstMessage;
+
+                        //udpMessage = bcstMessage;
                     }
                     else if (((bcstMessage.Length >= 6) && (bcstMessage.Substring(0, 5) == "timer:")))
                     {
@@ -952,26 +981,41 @@ namespace ArduinoUDPconversation
                         {
                             Note(bcstMessage, tbBcstListeningLog);
                         }
-                        udpMessage = bcstMessage;
+                        //udpMessage = bcstMessage;
                     }
                     else if (bcstMessage == "imarduino")
                     {
-                        if (needsToDiscoverArduinoBoard)
+                        if ((needsToDiscoverArduinoBoardID1) && (currMessageDevID == 1))
                         {
-                            SocketAddress tmpSktAddress = remoteSktAddr;
-                            string addrStr = tmpSktAddress.ToString(); //InterNetwork:16:{21,179,192,168,192,221,0,0,0,0,0,0,0,0}
-                            addrStr = addrStr.Substring(addrStr.IndexOf("{") + 1);
-                            addrStr = addrStr.Substring(0, addrStr.Length - 1);
-                            char[] splitChar = { ',' };
-                            string[] sktAddrStrArray = addrStr.Split(splitChar);
-                            addrStr = sktAddrStrArray[2] + "." + sktAddrStrArray[3] + "." + sktAddrStrArray[4] + "." + sktAddrStrArray[5];
-                            SetTextTB(textBox2, addrStr, false);
-                            needsToDiscoverArduinoBoard = false;
+                            //SocketAddress tmpSktAddress = remoteSktAddr;
+                            //string addrStr = tmpSktAddress.ToString(); //InterNetwork:16:{21,179,192,168,192,221,0,0,0,0,0,0,0,0}
+                            //addrStr = addrStr.Substring(addrStr.IndexOf("{") + 1);
+                            //addrStr = addrStr.Substring(0, addrStr.Length - 1);
+                            //char[] splitChar = { ',' };
+                            //string[] sktAddrStrArray = addrStr.Split(splitChar);
+                            //addrStr = sktAddrStrArray[2] + "." + sktAddrStrArray[3] + "." + sktAddrStrArray[4] + "." + sktAddrStrArray[5];
+                            string addrStr = curMessageBoundle.ipAddrString;
+                            ThreadSafeOperations.SetTextTB(tbDev1IPstr, addrStr, false);
+                            needsToDiscoverArduinoBoardID1 = false;
+                        }
+
+                        if ((needsToDiscoverArduinoBoardID2) && (currMessageDevID == 2))
+                        {
+                            //SocketAddress tmpSktAddress = remoteSktAddr;
+                            //string addrStr = tmpSktAddress.ToString(); //InterNetwork:16:{21,179,192,168,192,221,0,0,0,0,0,0,0,0}
+                            //addrStr = addrStr.Substring(addrStr.IndexOf("{") + 1);
+                            //addrStr = addrStr.Substring(0, addrStr.Length - 1);
+                            //char[] splitChar = { ',' };
+                            //string[] sktAddrStrArray = addrStr.Split(splitChar);
+                            //addrStr = sktAddrStrArray[2] + "." + sktAddrStrArray[3] + "." + sktAddrStrArray[4] + "." + sktAddrStrArray[5];
+                            string addrStr = curMessageBoundle.ipAddrString;
+                            ThreadSafeOperations.SetTextTB(tbDev2IPstr, addrStr, false);
+                            needsToDiscoverArduinoBoardID2 = false;
                         }
                     }
                     else
                     {
-                        if (!needsToDiscoverArduinoBoard)
+                        if ((!needsToDiscoverArduinoBoardID1) && (!needsToDiscoverArduinoBoardID2))
                         {
                             if (currMessageDevID > 0)
                             {
@@ -981,10 +1025,10 @@ namespace ArduinoUDPconversation
                             {
                                 Note(bcstMessage, tbBcstListeningLog);
                             }
-                            
+
                         }
                         //recievedData = true;
-                        udpMessage = bcstMessage;
+                        //udpMessage = bcstMessage;
                     }
 
                 }
@@ -996,6 +1040,16 @@ namespace ArduinoUDPconversation
             }
         }
 
+        private void btnClearRsponceLog2_Click(object sender, EventArgs e)
+        {
+            tbResponseLog2.Text = "";
+        }
+
+        private void btnSwapResponseLog2_Click(object sender, EventArgs e)
+        {
+            swapResponseLog(sender);
+        }
+
     }
 
 
@@ -1003,99 +1057,52 @@ namespace ArduinoUDPconversation
 
 
 
-    public static class PropertyHelper
+    class IncomingUDPmessageBoundle
     {
-        /// <summary>
-        /// Returns a _private_ Property Value from a given Object. Uses Reflection.
-        /// Throws a ArgumentOutOfRangeException if the Property is not found.
-        /// </summary>
-        /// <typeparam name="T">Type of the Property</typeparam>
-        /// <param name="obj">Object from where the Property Value is returned</param>
-        /// <param name="propName">Propertyname as string.</param>
-        /// <returns>PropertyValue</returns>
-        public static T GetPrivatePropertyValue<T>(this object obj, string propName)
-        {
-            if (obj == null) throw new ArgumentNullException("obj");
-            PropertyInfo pi = obj.GetType().GetProperty(propName,
-                                                        BindingFlags.Public | BindingFlags.NonPublic |
-                                                        BindingFlags.Instance);
-            if (pi == null)
-                throw new ArgumentOutOfRangeException("propName",
-                                                      string.Format("Property {0} was not found in Type {1}", propName,
-                                                                    obj.GetType().FullName));
-            return (T)pi.GetValue(obj, null);
-        }
+        public string udpMessage = "";
+        public int devID = 1;
+        public string ipAddrString = "";
+        private SocketAddress remoteSocketAddress = new SocketAddress(AddressFamily.InterNetwork);
 
-        /// <summary>
-        /// Returns a private Field Value from a given Object. Uses Reflection.
-        /// Throws a ArgumentOutOfRangeException if the Property is not found.
-        /// </summary>
-        /// <typeparam name="T">Type of the Field</typeparam>
-        /// <param name="obj">Object from where the Field Value is returned</param>
-        /// <param name="propName">Field Name as string.</param>
-        /// <returns>FieldValue</returns>
-        public static T GetPrivateFieldValue<T>(this object obj, string propName)
+
+        public IncomingUDPmessageBoundle()
+        {}
+
+        public IncomingUDPmessageBoundle(SocketAddress remSktAddr, string message)
         {
-            if (obj == null) throw new ArgumentNullException("obj");
-            Type t = obj.GetType();
-            FieldInfo fi = null;
-            while (fi == null && t != null)
+            remoteSocketAddress = remSktAddr;
+            string addrStr = remoteSocketAddress.ToString(); //InterNetwork:16:{21,179,192,168,192,221,0,0,0,0,0,0,0,0}
+            addrStr = addrStr.Substring(addrStr.IndexOf("{") + 1);
+            addrStr = addrStr.Substring(0, addrStr.Length - 1);
+            char[] splitChar = { ',' };
+            string[] sktAddrStrArray = addrStr.Split(splitChar);
+            ipAddrString = sktAddrStrArray[2] + "." + sktAddrStrArray[3] + "." + sktAddrStrArray[4] + "." + sktAddrStrArray[5];
+
+
+            if ((message.Length >= 5) && (message.IndexOf("<id") >= 0))
             {
-                fi = t.GetField(propName, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
-                t = t.BaseType;
+                int idxStartDevIDtag = message.IndexOf("<id");
+                int idx = message.IndexOf('>');
+                string strDevIDTag = message.Substring(0, idx + 1); // "<id23>"
+
+                try
+                {
+                    strDevIDTag = strDevIDTag.Substring(3); // "23>"
+                    int idx2 = strDevIDTag.IndexOf('>'); // 2
+                    strDevIDTag = strDevIDTag.Substring(0, idx2); // "23"
+                    devID = Convert.ToInt32(strDevIDTag);
+                }
+                catch (Exception)
+                {
+                    devID = 0;
+                }
+
+                udpMessage = message.Substring(0, idxStartDevIDtag) + message.Substring(idx + 1);
             }
-            if (fi == null)
-                throw new ArgumentOutOfRangeException("propName",
-                                                      string.Format("Field {0} was not found in Type {1}", propName,
-                                                                    obj.GetType().FullName));
-            return (T)fi.GetValue(obj);
-        }
-
-        /// <summary>
-        /// Sets a _private_ Property Value from a given Object. Uses Reflection.
-        /// Throws a ArgumentOutOfRangeException if the Property is not found.
-        /// </summary>
-        /// <typeparam name="T">Type of the Property</typeparam>
-        /// <param name="obj">Object from where the Property Value is set</param>
-        /// <param name="propName">Propertyname as string.</param>
-        /// <param name="val">Value to set.</param>
-        /// <returns>PropertyValue</returns>
-        public static void SetPrivatePropertyValue<T>(this object obj, string propName, T val)
-        {
-            Type t = obj.GetType();
-            if (t.GetProperty(propName, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance) == null)
-                throw new ArgumentOutOfRangeException("propName",
-                                                      string.Format("Property {0} was not found in Type {1}", propName,
-                                                                    obj.GetType().FullName));
-            t.InvokeMember(propName,
-                           BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.SetProperty |
-                           BindingFlags.Instance, null, obj, new object[] { val });
-        }
-
-
-        /// <summary>
-        /// Set a private Field Value on a given Object. Uses Reflection.
-        /// </summary>
-        /// <typeparam name="T">Type of the Field</typeparam>
-        /// <param name="obj">Object from where the Property Value is returned</param>
-        /// <param name="propName">Field name as string.</param>
-        /// <param name="val">the value to set</param>
-        /// <exception cref="ArgumentOutOfRangeException">if the Property is not found</exception>
-        public static void SetPrivateFieldValue<T>(this object obj, string propName, T val)
-        {
-            if (obj == null) throw new ArgumentNullException("obj");
-            Type t = obj.GetType();
-            FieldInfo fi = null;
-            while (fi == null && t != null)
+            else
             {
-                fi = t.GetField(propName, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
-                t = t.BaseType;
+                devID = 0;
             }
-            if (fi == null)
-                throw new ArgumentOutOfRangeException("propName",
-                                                      string.Format("Field {0} was not found in Type {1}", propName,
-                                                                    obj.GetType().FullName));
-            fi.SetValue(obj, val);
         }
     }
 }

@@ -59,7 +59,6 @@ void reportAccelPeriod();
 void reportStatus();
 void reportDevID();
 void reportOverallStatus();
-bool reportCurrentGPSdata();
 void reportCurrentIP();
 bool UdpBroadcastSend(String messageIn, bool replyMessage);
 bool report6DOFData();
@@ -69,7 +68,9 @@ bool reportPressureData();
 int calcFreeRAM();
 void reportFreeRam();
 void reportFreeRamToSerial();
-bool probeGPSdata();
+void serialEvent();
+void ProcessGPSstring();
+bool reportCurrentGPSdata();
 void bmp085Calibration();
 short bmp085GetTemperature(unsigned int ut);
 long bmp085GetPressure(unsigned long up);
@@ -80,6 +81,6 @@ unsigned long bmp085ReadUP();
 
 #include "C:\Program Files (x86)\Arduino\hardware\arduino\cores\arduino\arduino.h"
 #include "C:\Program Files (x86)\Arduino\hardware\arduino\variants\standard\pins_arduino.h" 
-#include "G:\_gulevlab\SkyIndexAnalyzerSolo\SensorsCollecting\SensorsCollecting.ino"
-#include "G:\_gulevlab\SkyIndexAnalyzerSolo\SensorsCollecting\BMP085.ino"
+#include "D:\_gulevlab\SkyIndexAnalyzerSolo\SensorsCollecting\SensorsCollecting.ino"
+#include "D:\_gulevlab\SkyIndexAnalyzerSolo\SensorsCollecting\BMP085.ino"
 #endif

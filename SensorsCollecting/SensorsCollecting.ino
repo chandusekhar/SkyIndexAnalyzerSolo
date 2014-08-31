@@ -40,9 +40,13 @@ byte ipAddrComp[4] = {0, 0, 0, 0};
 FreeSixIMU sixDOF = FreeSixIMU();
 
 
-char currentGPSstrBuf[128];
-#define GPSRXPIN 0
-#define GPSTXPIN 1
+//char currentGPSstrBuf[128];
+//#define GPSRXPIN 0
+//#define GPSTXPIN 1
+
+String currentGPSstrBuf = "";
+String GPSstoredString = "";
+
 
 void(* resetFunc) (void) = 0;
 
@@ -143,8 +147,8 @@ void loop()
 	//uint8_t S1btnInputValue = LOW;// = digitalRead(S1btn);
 
 	int GPSPeriod = 1000; long GPSTimer = 0;//ms
-	int GPSprobingPeriod = 10000;
-	long GPSprobingTimer = 0;
+	/*int GPSprobingPeriod = 10000;
+	long GPSprobingTimer = 0;*/
 
 
 	String incomingString = "";
@@ -243,6 +247,11 @@ void loop()
 		}*/
 
 
+		if (Serial.available() > 0)
+		{
+			serialEvent();
+		}
+
 
 		if ((timecntr - GPSTimer >= GPSPeriod) && (broadcastSensorsData))
 		{
@@ -252,12 +261,12 @@ void loop()
 		}
 		
 		
-		if ((broadcastSensorsData) && (timecntr - GPSprobingTimer >= GPSprobingPeriod))
-		{
-			//probe GPS data
-			probeGPSdata();
-			GPSprobingTimer = timecntr;
-		}
+		//if ((broadcastSensorsData) && (timecntr - GPSprobingTimer >= GPSprobingPeriod))
+		//{
+		//	//probe GPS data
+		//	probeGPSdata();
+		//	GPSprobingTimer = timecntr;
+		//}
 	}
 }
 
@@ -336,7 +345,7 @@ bool performCommand(int command)
 	}
 
 
-	if (command == 7)
+	/*if (command == 7)
 	{
 		probeGPSdata();
 		return true;
@@ -347,7 +356,7 @@ bool performCommand(int command)
 		probeGPSdata();
 		reportCurrentGPSdata();
 		return true;
-	}
+	}*/
 
 
 	if (command == 9)
@@ -584,17 +593,17 @@ void reportOverallStatus()
 }
 
 
-bool reportCurrentGPSdata()
-{
-	if (currentGPSstrBuf[0])
-	{
-		String str1 = String(currentGPSstrBuf);
-		//UdpBroadcastSendCharArray(currentGPSstrBuf);
-		UdpBroadcastSend(str1, false);
-	}
-
-	return true;
-}
+//bool reportCurrentGPSdata()
+//{
+//	if (currentGPSstrBuf[0])
+//	{
+//		String str1 = String(currentGPSstrBuf);
+//		//UdpBroadcastSendCharArray(currentGPSstrBuf);
+//		UdpBroadcastSend(str1, false);
+//	}
+//
+//	return true;
+//}
 
 
 void reportCurrentIP()
@@ -790,7 +799,7 @@ int int2Char(int num, char str[])
 
 bool reportPressureData()
 {
-	short temperature = bmp085GetTemperature(bmp085ReadUT());
+	//short temperature = bmp085GetTemperature(bmp085ReadUT());
 	long pressure = bmp085GetPressure(bmp085ReadUP());
 
 	char pressStr[20];
@@ -889,81 +898,146 @@ void reportFreeRamToSerial()
 
 
 
+//
+//bool probeGPSdata()
+//{
+//	String GPSstrBuf = "";
+//	char c = 0;
+//	SoftwareSerial nss(GPSRXPIN, GPSTXPIN);
+//	long begin = millis();
+//	long dt = 0;
+//	nss.begin(9600);
+//	bool foundDollarSign = false;
+//	bool gpggaMarker = false;
+//
+//	while (true)
+//	{
+//		dt = millis()-begin;
+//		if (dt > 10000)
+//		{
+//			UdpBroadcastSend(String("=== GPS timeout ==="), true);
+//			return false;
+//		}
+//
+//		c = nss.read();
+//		if (c<1) continue;
+//		if (c == '$')
+//		{
+//			GPSstrBuf = String(c);
+//			if (!foundDollarSign) foundDollarSign = true;
+//			continue;
+//		}
+//
+//
+//		if ((foundDollarSign) && (!gpggaMarker))
+//		{
+//			GPSstrBuf += c;
+//			if (GPSstrBuf.length() == 7)
+//			{
+//				if (GPSstrBuf.startsWith(String("$GPGGA,")))
+//				{
+//					gpggaMarker = true;
+//				}
+//				else
+//				{
+//					gpggaMarker = false;
+//					foundDollarSign = false;
+//					GPSstrBuf = "";
+//					continue;
+//				}				
+//			}
+//			continue;
+//		}
+//
+//
+//		if (c == '\n')
+//		{
+//			if (gpggaMarker)
+//			{
+//				//the end of right sentence
+//				break;
+//			}
+//			foundDollarSign = false;
+//			gpggaMarker = false;
+//		}
+//
+//		if (gpggaMarker)
+//		{
+//			GPSstrBuf += String(c);
+//			if (GPSstrBuf.length() == 128)
+//			{
+//				break;
+//			}
+//		}
+//	}
+//
+//	nss.end();
+//	memset(&currentGPSstrBuf[0], 0, sizeof(currentGPSstrBuf));
+//	GPSstrBuf.toCharArray(currentGPSstrBuf, 128);
+//	return true;
+//}
+//
 
-bool probeGPSdata()
+
+
+
+void serialEvent()
 {
-	String GPSstrBuf = "";
-	char c = 0;
-	SoftwareSerial nss(GPSRXPIN, GPSTXPIN);
-	long begin = millis();
-	long dt = 0;
-	nss.begin(9600);
-	bool foundDollarSign = false;
-	bool gpggaMarker = false;
-
-	while (true)
+	String gotSerialStr = "";
+	while (Serial.available() > 0)
 	{
-		dt = millis()-begin;
-		if (dt > 10000)
-		{
-			UdpBroadcastSend(String("=== GPS timeout ==="), true);
-			return false;
-		}
+		// get the new byte:
+		char inChar = (char)Serial.read();
 
-		c = nss.read();
-		if (c<1) continue;
-		if (c == '$')
+		if (inChar == '\n')
 		{
-			GPSstrBuf = String(c);
-			if (!foundDollarSign) foundDollarSign = true;
+			currentGPSstrBuf += gotSerialStr;
+			ProcessGPSstring();
+			gotSerialStr = "";
 			continue;
 		}
-
-
-		if ((foundDollarSign) && (!gpggaMarker))
+		else
 		{
-			GPSstrBuf += c;
-			if (GPSstrBuf.length() == 7)
-			{
-				if (GPSstrBuf.startsWith(String("$GPGGA,")))
-				{
-					gpggaMarker = true;
-				}
-				else
-				{
-					gpggaMarker = false;
-					foundDollarSign = false;
-					GPSstrBuf = "";
-					continue;
-				}				
-			}
-			continue;
-		}
-
-
-		if (c == '\n')
-		{
-			if (gpggaMarker)
-			{
-				//the end of right sentence
-				break;
-			}
-			foundDollarSign = false;
-			gpggaMarker = false;
-		}
-
-		if (gpggaMarker)
-		{
-			GPSstrBuf += String(c);
-			if (GPSstrBuf.length() == 128)
+			gotSerialStr += String(inChar);
+			if (gotSerialStr.length() >= 32)
 			{
 				break;
 			}
 		}
 	}
 
-	nss.end();
-	memset(&currentGPSstrBuf[0], 0, sizeof(currentGPSstrBuf));
-	GPSstrBuf.toCharArray(currentGPSstrBuf, 128);
-	return true;
+	currentGPSstrBuf += gotSerialStr;
+	if (currentGPSstrBuf.length() >= 128)
+	{
+		ProcessGPSstring();
+	}
+}
+
+
+
+void ProcessGPSstring()
+{
+	if (currentGPSstrBuf.substring(0, 7) == String("$GPGGA,"))
+	{
+		int strLen = currentGPSstrBuf.length();
+
+		if (currentGPSstrBuf.substring(strLen-3, strLen-2) != "*")
+		{
+			GPSstoredString = currentGPSstrBuf;
+			//UdpBroadcastSend(currentGPSstrBuf, false);
+		}
+	}
+
+	currentGPSstrBuf = "";
+}
+
+
+bool reportCurrentGPSdata()
+{
+	if (GPSstoredString[0])
+	{
+		UdpBroadcastSend(GPSstoredString, false);
+	}
+
+	return 1;
 }
