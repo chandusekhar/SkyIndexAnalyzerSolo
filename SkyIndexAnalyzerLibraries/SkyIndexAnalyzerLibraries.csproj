@@ -111,6 +111,7 @@
       <DependentUpon>HistogramCalcAndShowForm.cs</DependentUpon>
     </Compile>
     <Compile Include="HistogramDataAndProperties.cs" />
+    <Compile Include="IncomingUDPmessageBoundle.cs" />
     <Compile Include="MultipleProgressIndicatingForm.cs">
       <SubType>Form</SubType>
     </Compile>

@@ -55,7 +55,8 @@ namespace ArduinoUDPconversation
         //private DataSocketReader reader;
         //private UdpClient UDPreader;
         //public VisualizingForm VForm;
-        private string ip2Listen = "";
+        private string ip2ListenDevID1 = "";
+        private string ip2ListenDevID2 = "";
         private int port2converse = 5555;
         private int portBcstRecvng = 4444;
         private string currCommand;
@@ -494,7 +495,7 @@ namespace ArduinoUDPconversation
 
         private void textBox2_TextChanged(object sender, EventArgs e)
         {
-            ip2Listen = tbDev1IPstr.Text;
+            ip2ListenDevID1 = tbDev1IPstr.Text;
         }
 
 
@@ -621,10 +622,10 @@ namespace ArduinoUDPconversation
 
         private void Form1_Load(object sender, EventArgs e)
         {
-            ip2Listen = Settings.Default.ArduinoBoardDefaultIP;
+            ip2ListenDevID1 = Settings.Default.ArduinoBoardDefaultIP;
             port2converse = Settings.Default.ArduinoBoardDefaultUDPport;
             //portBcstRecvng = Settings.Default.UDPBroadcastDefaultListeningPort;
-            ThreadSafeOperations.SetTextTB(tbDev1IPstr, ip2Listen, false);
+            ThreadSafeOperations.SetTextTB(tbDev1IPstr, ip2ListenDevID1, false);
             //SetTextTB(tbBcstListeningPort, portBcstRecvng.ToString(), false);
         }
 
@@ -632,9 +633,9 @@ namespace ArduinoUDPconversation
 
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)
         {
-            if (ip2Listen != Settings.Default.ArduinoBoardDefaultIP)
+            if (ip2ListenDevID1 != Settings.Default.ArduinoBoardDefaultIP)
             {
-                Settings.Default.ArduinoBoardDefaultIP = ip2Listen;
+                Settings.Default.ArduinoBoardDefaultIP = ip2ListenDevID1;
                 Settings.Default.Save();
             }
 
@@ -751,13 +752,22 @@ namespace ArduinoUDPconversation
 
 
 
-        private void PerformSendCommand()
+        private void PerformSendCommand(int devID = 1)
         {
             string retStr = currCommand;
             byte[] ret = Encoding.ASCII.GetBytes(retStr);
             Socket Skt = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
             Skt.EnableBroadcast = false;
-            IPEndPoint ipEP = new IPEndPoint(IPAddress.Parse(ip2Listen), port2converse);
+            IPEndPoint ipEP = new IPEndPoint(IPAddress.Parse(ip2ListenDevID1), port2converse);
+
+            if (devID == 1)
+            {
+                ipEP = new IPEndPoint(IPAddress.Parse(ip2ListenDevID1), port2converse);
+            }
+            else if (devID == 2)
+            {
+                ipEP = new IPEndPoint(IPAddress.Parse(ip2ListenDevID2), port2converse);
+            }
 
             int sent = Skt.SendTo(ret, ipEP);
             Skt.Close();
@@ -1050,59 +1060,41 @@ namespace ArduinoUDPconversation
             swapResponseLog(sender);
         }
 
-    }
 
 
-
-
-
-
-    class IncomingUDPmessageBoundle
-    {
-        public string udpMessage = "";
-        public int devID = 1;
-        public string ipAddrString = "";
-        private SocketAddress remoteSocketAddress = new SocketAddress(AddressFamily.InterNetwork);
-
-
-        public IncomingUDPmessageBoundle()
-        {}
-
-        public IncomingUDPmessageBoundle(SocketAddress remSktAddr, string message)
+        private void SendCommandDev2()
         {
-            remoteSocketAddress = remSktAddr;
-            string addrStr = remoteSocketAddress.ToString(); //InterNetwork:16:{21,179,192,168,192,221,0,0,0,0,0,0,0,0}
-            addrStr = addrStr.Substring(addrStr.IndexOf("{") + 1);
-            addrStr = addrStr.Substring(0, addrStr.Length - 1);
-            char[] splitChar = { ',' };
-            string[] sktAddrStrArray = addrStr.Split(splitChar);
-            ipAddrString = sktAddrStrArray[2] + "." + sktAddrStrArray[3] + "." + sktAddrStrArray[4] + "." + sktAddrStrArray[5];
-
-
-            if ((message.Length >= 5) && (message.IndexOf("<id") >= 0))
+            currCommand = textBoxCommand2.Text.Trim().Replace("\0", string.Empty);
+            if (currCommand.Length == 0)
             {
-                int idxStartDevIDtag = message.IndexOf("<id");
-                int idx = message.IndexOf('>');
-                string strDevIDTag = message.Substring(0, idx + 1); // "<id23>"
-
-                try
-                {
-                    strDevIDTag = strDevIDTag.Substring(3); // "23>"
-                    int idx2 = strDevIDTag.IndexOf('>'); // 2
-                    strDevIDTag = strDevIDTag.Substring(0, idx2); // "23"
-                    devID = Convert.ToInt32(strDevIDTag);
-                }
-                catch (Exception)
-                {
-                    devID = 0;
-                }
-
-                udpMessage = message.Substring(0, idxStartDevIDtag) + message.Substring(idx + 1);
+                return;
             }
-            else
+            ThreadSafeOperations.SetTextTB(textBoxCommand1, "", false);
+            ThreadSafeOperations.SetTextTB(tbResponseLog1, ">>> " + currCommand + Environment.NewLine, true);
+            PerformSendCommand(2);
+        }
+
+
+
+        private void textBoxCommand2_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            if (e.KeyChar == Convert.ToChar(Keys.Return))
             {
-                devID = 0;
+                SendCommandDev2();
             }
         }
+
+        private void tbDev2IPstr_TextChanged(object sender, EventArgs e)
+        {
+            ip2ListenDevID2 = (sender as TextBox).Text;
+        }
+
     }
+
+
+
+
+
+
+    
 }

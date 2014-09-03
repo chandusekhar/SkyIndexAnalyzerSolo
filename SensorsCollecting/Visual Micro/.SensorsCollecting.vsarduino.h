@@ -41,7 +41,6 @@ extern "C" void __cxa_pure_virtual() {;}
 
 //
 void init_sensors();
-String CurrentDevIDString();
 //
 bool getUDPmessage(char UDPstr[UDP_TX_PACKET_MAX_SIZE]);
 bool performCommand(int command);
@@ -57,10 +56,11 @@ bool SetCurrIPAddrData(char str[UDP_TX_PACKET_MAX_SIZE]);
 void switchBcstStatus();
 void reportAccelPeriod();
 void reportStatus();
-void reportDevID();
 void reportOverallStatus();
+bool reportCurrentGPSdata();
 void reportCurrentIP();
-bool UdpBroadcastSend(String messageIn, bool replyMessage);
+bool UdpBroadcastSend(String messageIn, bool reply);
+bool UdpBroadcastSendCharArray(char messageIn[]);
 bool report6DOFData();
 int int2Char(long num, char str[]);
 int int2Char(int num, char str[]);
@@ -68,9 +68,7 @@ bool reportPressureData();
 int calcFreeRAM();
 void reportFreeRam();
 void reportFreeRamToSerial();
-void serialEvent();
-void ProcessGPSstring();
-bool reportCurrentGPSdata();
+bool probeGPSdata();
 void bmp085Calibration();
 short bmp085GetTemperature(unsigned int ut);
 long bmp085GetPressure(unsigned long up);

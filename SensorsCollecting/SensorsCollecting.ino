@@ -2,8 +2,6 @@
 //#include <Fat16.h>
 //#include <Fat16util.h>
 
-#include <DebugUtils.h>
-#include <CommunicationUtils.h>
 #include <EEPROM.h>
 #include <Ethernet.h>
 #include <stdlib.h>
@@ -14,10 +12,10 @@
 #include <FreeSixIMU.h>
 #include <FIMU_ADXL345.h> //for accel
 #include <FIMU_ITG3200.h> //for gyroscope
-//#include <HMC5883L.h>
+#include <HMC5883L.h>
 #include <SoftwareSerial.h>
 
-#define CurrDevID 1
+//#define CurrDevID 1
 
 //EthernetClient client;
 const int led = 9;
@@ -30,7 +28,7 @@ bool broadcastSensorsData = false;
 long timecntr = 0;
 int accelPeriod = 500; 
 
-//HMC5883L compass = HMC5883L();
+HMC5883L compass = HMC5883L();
 int savedCommand = 0;
 bool savedCommandExists = false;
 bool IP2sendIsSet = false;
@@ -40,13 +38,9 @@ byte ipAddrComp[4] = {0, 0, 0, 0};
 FreeSixIMU sixDOF = FreeSixIMU();
 
 
-//char currentGPSstrBuf[128];
-//#define GPSRXPIN 0
-//#define GPSTXPIN 1
-
-String currentGPSstrBuf = "";
-String GPSstoredString = "";
-
+char currentGPSstrBuf[128];
+#define GPSRXPIN 0
+#define GPSTXPIN 1
 
 void(* resetFunc) (void) = 0;
 
@@ -56,8 +50,14 @@ void setup()
 	String error1 = "";
 	Serial.begin(9600);
 
-	//Serial.println(F("START"));
+	Serial.println(F("START"));
 
+	//reportFreeRamToSerial();
+
+
+
+	/*IPAddress myIPaddr(192,168,192,228);
+	IPAddress DNSarrd(192,168,192,1);*/
 	byte savedIP[4] = {0,0,0,0};
 	if (readSelfIPdata(savedIP))
 	{
@@ -65,8 +65,23 @@ void setup()
 	}
 	else
 	{
-		Ethernet.begin(mac, IPAddress(192,168,192,228));
+		Ethernet.begin(mac, IPAddress(192,0,0,101));
 	}
+
+	//reportFreeRamToSerial();
+
+	//if (Ethernet.begin(mac) == 0)
+	//{
+	//	Serial.println(F("Failed to configure Ethernet using DHCP"));
+	//	IPAddress myIPaddr(192,168,192,228);
+	//	IPAddress DNSarrd(192,168,192,1);
+	//	Ethernet.begin(mac, myIPaddr, DNSarrd);
+	//	//ErrorOn = true;
+	//}
+	//IPAddress myIPaddr = Ethernet.localIP();
+	//Ethernet.begin(mac, myIPaddr);
+
+	//reportFreeRamToSerial();
 
 	Udp.begin(localPort);
 
@@ -75,6 +90,9 @@ void setup()
 
 	init_sensors();
 
+	/*pinMode(led, OUTPUT);
+	digitalWrite(led, HIGH);
+	pinMode(S1btn, INPUT);*/
 
 	String myIPstr = "my IP: ";
 	for (byte thisByte = 0; thisByte < 4; thisByte++)
@@ -82,7 +100,7 @@ void setup()
 		myIPstr += String(Ethernet.localIP()[thisByte]);
 		if (thisByte < 3) myIPstr += ".";
 	}
-	//Serial.println(myIPstr);
+	Serial.println(myIPstr);
 	UdpBroadcastSend(myIPstr, true);
 
 	timecntr = millis();
@@ -122,14 +140,27 @@ void init_sensors()
 
 
 
-
-String CurrentDevIDString()
-{
-	String retStr = String("<id");
-	retStr += String(CurrDevID);
-	retStr += ">";
-	return retStr;
-}
+//void initConfigFile()
+//{
+//	SdCard card;
+//	Fat16 file;
+//
+//	if (!card.init()) Serial.println(F("error card.init"));
+//	if (!Fat16::init(&card)) Serial.println(F("error Fat16::init"));
+//
+//	if (file.open("config.txt", O_READ))
+//	{
+//		Serial.println(F("config file opened"));
+//	}
+//
+//	int16_t n;
+//	char buf[32];
+//	while ((n = file.read(buf, sizeof(buf))) > 0)
+//	{
+//		Serial.println(buf);
+//	}
+//
+//}
 
 
 
@@ -140,15 +171,14 @@ void loop()
 	int TimePeriod = 1000; long timeTimer = 0;//ms
 	int PTperiod = 10000; long PTtimer = 0;//ms
 	long accelTimer = 0;//ms
-	//int gyroPeriod = 100; long gyroTimer = 0;//ms
+	int gyroPeriod = 100; long gyroTimer = 0;//ms
 	//int magnPeriod = 1000; long magnTimer = 0;//ms
 	//int LEDPeriod = 500; long LEDTimer = 0; uint8_t LEDval = LOW;
 	int arduinoIdentityBcstPeriod = 5000; long arduinoIdentityBcstTimer = 0;//ms
 	//uint8_t S1btnInputValue = LOW;// = digitalRead(S1btn);
-
 	int GPSPeriod = 1000; long GPSTimer = 0;//ms
-	/*int GPSprobingPeriod = 10000;
-	long GPSprobingTimer = 0;*/
+	int GPSprobingPeriod = 10000;
+	long GPSprobingTimer = 0;
 
 
 	String incomingString = "";
@@ -161,10 +191,6 @@ void loop()
 		if (getUDPmessage(UDPmessage))
 		{
 			incomingString = String(UDPmessage);
-
-			UdpBroadcastSend(String("got incoming message:"), true);
-			UdpBroadcastSend(incomingString, true);
-
 			if (!savedCommandExists)
 			{
 				command = incomingString.toInt();
@@ -184,18 +210,25 @@ void loop()
 		timecntr = millis();
 		if (timecntr - timeTimer >= TimePeriod)
 		{
-			String str1 = "timer:";
-			/*char tcc[32];
+			/*char str2send[32];
+			memset(&str2send[0], 0, sizeof(str2send));
+			char marker[5] = {'<','d','t','p','>'};
+			strncpy(str2send, marker, sizeof(marker));
+			char pressStr[20];
+			memset(&pressStr[0], 0, sizeof(pressStr));
+			int2Char(pressure, pressStr);
+			strncpy(&str2send[0]+sizeof(marker), pressStr, sizeof(pressStr));
+			UdpBroadcastSendCharArray(str2send);*/
+
+
+			char tcc[32];
 			char marker[6] = {'t','i','m','e','r',':' };
-			strncpy(tcc, marker, sizeof(marker));*/
+			strncpy(tcc, marker, sizeof(marker));
 			char longDigStr[20];
 			memset(&longDigStr[0], 0, sizeof(longDigStr));
 			int2Char(timecntr, longDigStr);
-			str1 += String(longDigStr);
-			//strncpy(&tcc[0]+sizeof(marker), longDigStr, sizeof(longDigStr));
-			//UdpBroadcastSendCharArray(tcc);
-
-			UdpBroadcastSend(str1, false);
+			strncpy(&tcc[0]+sizeof(marker), longDigStr, sizeof(longDigStr));
+			UdpBroadcastSendCharArray(tcc);
 
 			timeTimer = timecntr;
 		}
@@ -235,22 +268,17 @@ void loop()
 
 		/*if (timecntr - LEDTimer >= LEDPeriod)
 		{
-		LEDval = ledSwitch(LEDval);
+			LEDval = ledSwitch(LEDval);
 		}*/
 
 		/*uint8_t newS1btnInputValue = digitalRead(S1btn);
 		if (newS1btnInputValue != S1btnInputValue)
 		{
-		S1btnInputValue = newS1btnInputValue;
-		UdpBroadcastSend(String("======btn S1 switched====="), true);
-		UdpBroadcastSend(String("S1 val = ") + String(S1btnInputValue), true);
+			S1btnInputValue = newS1btnInputValue;
+			UdpBroadcastSend(String("======btn S1 switched====="), true);
+			UdpBroadcastSend(String("S1 val = ") + String(S1btnInputValue), true);
 		}*/
 
-
-		if (Serial.available() > 0)
-		{
-			serialEvent();
-		}
 
 
 		if ((timecntr - GPSTimer >= GPSPeriod) && (broadcastSensorsData))
@@ -259,14 +287,14 @@ void loop()
 			reportCurrentGPSdata();
 			GPSTimer = millis();
 		}
-		
-		
-		//if ((broadcastSensorsData) && (timecntr - GPSprobingTimer >= GPSprobingPeriod))
-		//{
-		//	//probe GPS data
-		//	probeGPSdata();
-		//	GPSprobingTimer = timecntr;
-		//}
+
+
+		if ((broadcastSensorsData) && (timecntr - GPSprobingTimer >= GPSprobingPeriod))
+		{
+			//probe GPS data
+			probeGPSdata();
+			GPSprobingTimer = timecntr;
+		}
 	}
 }
 
@@ -290,7 +318,7 @@ bool getUDPmessage(char UDPstr[UDP_TX_PACKET_MAX_SIZE])
 	//tmpString = String(packetBuffer);
 	s.trim();
 	s.toCharArray(UDPstr, UDP_TX_PACKET_MAX_SIZE);
-	//Serial.println(UDPstr);
+	Serial.println(UDPstr);
 
 	memset(&packetBuffer[0], 0, sizeof(packetBuffer));
 
@@ -345,18 +373,18 @@ bool performCommand(int command)
 	}
 
 
-	/*if (command == 7)
+	if (command == 7)
 	{
-		probeGPSdata();
-		return true;
+	probeGPSdata();
+	return true;
 	}
 
 	if (command == 8)
 	{
-		probeGPSdata();
-		reportCurrentGPSdata();
-		return true;
-	}*/
+	probeGPSdata();
+	reportCurrentGPSdata();
+	return true;
+	}
 
 
 	if (command == 9)
@@ -570,18 +598,6 @@ void reportStatus()
 }
 
 
-
-
-void reportDevID()
-{
-	String s = "current dev.ID: ";
-	s += String(CurrDevID);
-	UdpBroadcastSend(s, true);
-}
-
-
-
-
 void reportOverallStatus()
 {
 	reportStatus();
@@ -589,21 +605,18 @@ void reportOverallStatus()
 	reportCurrentIP();
 	reportFreeRam();
 	reportSelfIP();
-	reportDevID();
 }
 
 
-//bool reportCurrentGPSdata()
-//{
-//	if (currentGPSstrBuf[0])
-//	{
-//		String str1 = String(currentGPSstrBuf);
-//		//UdpBroadcastSendCharArray(currentGPSstrBuf);
-//		UdpBroadcastSend(str1, false);
-//	}
-//
-//	return true;
-//}
+bool reportCurrentGPSdata()
+{
+	if (currentGPSstrBuf[0])
+	{
+		UdpBroadcastSendCharArray(currentGPSstrBuf);
+	}
+
+	return true;
+}
 
 
 void reportCurrentIP()
@@ -642,24 +655,39 @@ void reportCurrentIP()
 //}
 
 
+//
+//String CurrentDevIDString()
+//{
+//	String retStr = String("<id");
+//	retStr += String(CurrDevID);
+//	retStr += ">";
+//	return retStr;
+//}
 
-bool UdpBroadcastSend(String messageIn, bool replyMessage)
+
+
+bool UdpBroadcastSend(String messageIn, bool reply)
 {
 	//short RemoteBroadcastPort = 4444;
+
 	char bcstCharArray[128];
 	memset(&bcstCharArray[0], 0, sizeof(bcstCharArray));
 	Udp.stop();
 	EthernetUDP bcstUDP;
 	bcstUDP.begin(localPort);
 
-	messageIn = CurrentDevIDString() + messageIn;
-
-	if (replyMessage)
+	String msgMarks = String("<id1>");
+	if (reply)
 	{
-		messageIn = String("<repl>") + messageIn;
+		msgMarks = "<repl>" + msgMarks;
 	}
-	String message = messageIn.substring(0, 127);
-	messageIn.toCharArray(bcstCharArray, 128);
+
+	String message = msgMarks + messageIn;
+	
+	message = message.substring(0, 127);
+	message.toCharArray(bcstCharArray, 128);
+
+	//Serial.println(bcstCharArray);
 
 	if (IP2sendIsSet)
 	{
@@ -676,40 +704,50 @@ bool UdpBroadcastSend(String messageIn, bool replyMessage)
 	bcstUDP.stop();
 	Udp.begin(localPort);
 
-	/*if (packetSended == 0)
+	if (packetSended == 0)
 	{
-	write error log entry
-	Serial.print(F("error sending broadcast packet\n"));
-	}*/
+		Serial.print(F("error sending broadcast packet\n"));
+	}
 }
 
 
-//bool UdpBroadcastSendCharArray(char messageIn[])
-//{
-//	Udp.stop();
-//	EthernetUDP bcstUDP;
-//	bcstUDP.begin(localPort);
-//
-//	if (IP2sendIsSet)
-//	{
-//		IPAddress theIP(ipAddrComp[0], ipAddrComp[1], ipAddrComp[2], ipAddrComp[3]);
-//		bcstUDP.beginPacket(theIP, RemoteBroadcastPort);
-//	}
-//	else
-//	{
-//		IPAddress bcstIP(255, 255, 255, 255);
-//		bcstUDP.beginPacket(bcstIP, RemoteBroadcastPort);
-//	}
-//	bcstUDP.write(messageIn);
-//	int packetSended = bcstUDP.endPacket();
-//	bcstUDP.stop();
-//	Udp.begin(localPort);
-//
-//	if (packetSended == 0)
-//	{
-//		Serial.print(F("error sending broadcast packet\n"));
-//	}
-//}
+bool UdpBroadcastSendCharArray(char messageIn[])
+{
+	//Serial.println(messageIn);
+
+	Udp.stop();
+	EthernetUDP bcstUDP;
+	bcstUDP.begin(localPort);
+
+	String str1 = "<id1>" + String(messageIn);
+
+	char mgs2Send[128];
+	memset(&mgs2Send[0], 0, sizeof(mgs2Send));
+	str1.toCharArray(mgs2Send, sizeof(mgs2Send));
+	//char marker[5] = {'<','i','d','1','>' };
+	//strncpy(mgs2Send, marker, sizeof(marker));
+	//strncpy(&mgs2Send[5], messageIn, sizeof(messageIn));
+	
+	if (IP2sendIsSet)
+	{
+		IPAddress theIP(ipAddrComp[0], ipAddrComp[1], ipAddrComp[2], ipAddrComp[3]);
+		bcstUDP.beginPacket(theIP, RemoteBroadcastPort);
+	}
+	else
+	{
+		IPAddress bcstIP(255, 255, 255, 255);
+		bcstUDP.beginPacket(bcstIP, RemoteBroadcastPort);
+	}
+	bcstUDP.write(mgs2Send);
+	int packetSended = bcstUDP.endPacket();
+	bcstUDP.stop();
+	Udp.begin(localPort);
+
+	if (packetSended == 0)
+	{
+		Serial.print(F("error sending broadcast packet\n"));
+	}
+}
 
 
 
@@ -754,28 +792,26 @@ bool report6DOFData()
 {
 	int raw6DOF[6];
 	sixDOF.getRawValues(raw6DOF);
-	//char str2send[64];
+	char str2send[64];
 
 	String s = String("<dta>");
 	s += String(raw6DOF[0]) + ";";
 	s += String(raw6DOF[1]) + ";";
 	s += String(raw6DOF[2]) + ";";
 
-	//s.toCharArray(str2send, 64);
-	//UdpBroadcastSendCharArray(str2send);
-	UdpBroadcastSend(s, false);
+	s.toCharArray(str2send, 64);
+	UdpBroadcastSendCharArray(str2send);
 
 
 
-	//memset(&str2send[0], 0, sizeof(str2send));
+	memset(&str2send[0], 0, sizeof(str2send));
 	s = String("<dtg>");
 	s += String(raw6DOF[3]) + ";";
 	s += String(raw6DOF[4]) + ";";
 	s += String(raw6DOF[5]) + ";";
 
-	//s.toCharArray(str2send, 64);
-	//UdpBroadcastSendCharArray(str2send);
-	UdpBroadcastSend(s, false);
+	s.toCharArray(str2send, 64);
+	UdpBroadcastSendCharArray(str2send);
 
 	return true;
 }
@@ -815,12 +851,11 @@ bool reportPressureData()
 	s.toCharArray(str2send, 32);
 
 
-	//UdpBroadcastSendCharArray(str2send);
-	UdpBroadcastSend(s, false);
+	UdpBroadcastSendCharArray(str2send);
 	return true;
 }
 
-
+//
 //bool reportMagnetometerData()
 //{
 //	MagnetometerRaw mgnetRaw = compass.ReadRawAxis();
@@ -858,7 +893,7 @@ bool reportPressureData()
 //	UdpBroadcastSendCharArray(str2send);
 //	return true;
 //}
-
+//
 
 
 
@@ -898,146 +933,97 @@ void reportFreeRamToSerial()
 
 
 
-//
-//bool probeGPSdata()
-//{
-//	String GPSstrBuf = "";
-//	char c = 0;
-//	SoftwareSerial nss(GPSRXPIN, GPSTXPIN);
-//	long begin = millis();
-//	long dt = 0;
-//	nss.begin(9600);
-//	bool foundDollarSign = false;
-//	bool gpggaMarker = false;
-//
-//	while (true)
-//	{
-//		dt = millis()-begin;
-//		if (dt > 10000)
-//		{
-//			UdpBroadcastSend(String("=== GPS timeout ==="), true);
-//			return false;
-//		}
-//
-//		c = nss.read();
-//		if (c<1) continue;
-//		if (c == '$')
-//		{
-//			GPSstrBuf = String(c);
-//			if (!foundDollarSign) foundDollarSign = true;
-//			continue;
-//		}
-//
-//
-//		if ((foundDollarSign) && (!gpggaMarker))
-//		{
-//			GPSstrBuf += c;
-//			if (GPSstrBuf.length() == 7)
-//			{
-//				if (GPSstrBuf.startsWith(String("$GPGGA,")))
-//				{
-//					gpggaMarker = true;
-//				}
-//				else
-//				{
-//					gpggaMarker = false;
-//					foundDollarSign = false;
-//					GPSstrBuf = "";
-//					continue;
-//				}				
-//			}
-//			continue;
-//		}
-//
-//
-//		if (c == '\n')
-//		{
-//			if (gpggaMarker)
-//			{
-//				//the end of right sentence
-//				break;
-//			}
-//			foundDollarSign = false;
-//			gpggaMarker = false;
-//		}
-//
-//		if (gpggaMarker)
-//		{
-//			GPSstrBuf += String(c);
-//			if (GPSstrBuf.length() == 128)
-//			{
-//				break;
-//			}
-//		}
-//	}
-//
-//	nss.end();
-//	memset(&currentGPSstrBuf[0], 0, sizeof(currentGPSstrBuf));
-//	GPSstrBuf.toCharArray(currentGPSstrBuf, 128);
-//	return true;
-//}
-//
 
-
-
-
-void serialEvent()
+bool probeGPSdata()
 {
-	String gotSerialStr = "";
-	while (Serial.available() > 0)
-	{
-		// get the new byte:
-		char inChar = (char)Serial.read();
+	String GPSstrBuf = "";
+	char c = 0;
+	SoftwareSerial nss(GPSRXPIN, GPSTXPIN);
+	long begin = millis();
+	long dt = 0;
+	nss.begin(9600);
+	bool foundDollarSign = false;
+	bool gpggaMarker = false;
 
-		if (inChar == '\n')
+	while (true)
+	{
+		dt = millis()-begin;
+		if (dt > 10000)
 		{
-			currentGPSstrBuf += gotSerialStr;
-			ProcessGPSstring();
-			gotSerialStr = "";
+			UdpBroadcastSend(String("=== GPS timeout ==="), true);
+			return false;
+		}
+
+		c = nss.read();
+		if (c<1) continue;
+		if (c == '$')
+		{
+			GPSstrBuf = String(c);
+			if (!foundDollarSign) foundDollarSign = true;
 			continue;
 		}
-		else
+
+
+		if ((foundDollarSign) && (!gpggaMarker))
 		{
-			gotSerialStr += String(inChar);
-			if (gotSerialStr.length() >= 32)
+			GPSstrBuf += c;
+			if (GPSstrBuf.length() == 7)
+			{
+				if (GPSstrBuf.startsWith(String("$GPGGA,")))
+				{
+					gpggaMarker = true;
+				}
+				else
+				{
+					gpggaMarker = false;
+					foundDollarSign = false;
+					GPSstrBuf = "";
+					continue;
+				}				
+			}
+			continue;
+		}
+
+
+		if (c == '\n')
+		{
+			if (gpggaMarker)
+			{
+				//the end of right sentence
+				break;
+			}
+			foundDollarSign = false;
+			gpggaMarker = false;
+		}
+
+		if (gpggaMarker)
+		{
+			GPSstrBuf += String(c);
+			if (GPSstrBuf.length() == 128)
 			{
 				break;
 			}
 		}
 	}
 
-	currentGPSstrBuf += gotSerialStr;
-	if (currentGPSstrBuf.length() >= 128)
-	{
-		ProcessGPSstring();
-	}
+	nss.end();
+	memset(&currentGPSstrBuf[0], 0, sizeof(currentGPSstrBuf));
+	GPSstrBuf.toCharArray(currentGPSstrBuf, 128);
+	return true;
 }
 
 
-
-void ProcessGPSstring()
-{
-	if (currentGPSstrBuf.substring(0, 7) == String("$GPGGA,"))
-	{
-		int strLen = currentGPSstrBuf.length();
-
-		if (currentGPSstrBuf.substring(strLen-3, strLen-2) != "*")
-		{
-			GPSstoredString = currentGPSstrBuf;
-			//UdpBroadcastSend(currentGPSstrBuf, false);
-		}
-	}
-
-	currentGPSstrBuf = "";
-}
-
-
-bool reportCurrentGPSdata()
-{
-	if (GPSstoredString[0])
-	{
-		UdpBroadcastSend(GPSstoredString, false);
-	}
-
-	return 1;
-}
+//int GPSchecksum(char s[])
+//{
+//	int c = 0;
+//	char i = 0;
+//
+//	while(s[i])
+//	{
+//		if (s[i] == '$') continue;
+//		c ^= s[i];
+//		i++;
+//	}
+//
+//	return c;
+//}

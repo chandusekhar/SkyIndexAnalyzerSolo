@@ -3,26 +3,26 @@
     <IncludeExtensions>
     </IncludeExtensions>
     <IgnoreExtensions>
-      <IgnoreExtension>.cs</IgnoreExtension>
     </IgnoreExtensions>
     <IgnoreFiles>
     </IgnoreFiles>
   </SpellChecker>
 <HelpConfigurations selected="HelpFile">
   <HelpConfiguration name="HelpFile">
-    <OutputPath>C:\_gulevlab\SkyIndexAnalyzerSolo\Help</OutputPath>
+    <OutputPath>.\Help</OutputPath>
+    <HelpFileName>SensorsCollecting</HelpFileName>
     <ImageFolderPath />
     <HtmlFormats>
       <HtmlHelp>true</HtmlHelp>
       <MSHelpViewer>false</MSHelpViewer>
       <MSHelp2>false</MSHelp2>
-      <Website>true</Website>
+      <Website>false</Website>
     </HtmlFormats>
     <IncludeScopes>
       <Public>true</Public>
       <Internal>false</Internal>
       <Protected>false</Protected>
-      <Private>true</Private>
+      <Private>false</Private>
       <Inherited>true</Inherited>
       <EnableTags>false</EnableTags>
       <TagList />
@@ -30,13 +30,7 @@
     <ResolveCrefLinks>true</ResolveCrefLinks>
     <HeaderText />
     <FooterText />
-    <SelectedProjects>
-      <SelectedProject>MRG.Controls.UI</SelectedProject>
-      <SelectedProject>SkyIndexAnalyzerLibraries</SelectedProject>
-      <SelectedProject>SkyIndexAnalyzerSolo</SelectedProject>
-      <SelectedProject>DataCollectorAutomator</SelectedProject>
-      <SelectedProject>ArduinoUDPconversation</SelectedProject>
-    </SelectedProjects>
+    <SelectedProjects />
   </HelpConfiguration>
 </HelpConfigurations>
 </GhostDoc>
