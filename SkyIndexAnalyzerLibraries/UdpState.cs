@@ -3,9 +3,9 @@ using System.Net.Sockets;
 //using System.Linq;
 
 
-namespace DataCollectorAutomator
+namespace SkyIndexAnalyzerLibraries
 {
-    class UdpState
+    public class UdpState
     {
         public IPEndPoint ipEndPoint;
         public UdpClient UDPclient;

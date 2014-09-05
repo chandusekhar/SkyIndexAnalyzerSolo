@@ -1642,8 +1642,8 @@ namespace SkyIndexAnalyzerSolo
         
         private void настройкиСбораДанныхToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            SkyIndexAnalyzerDataCollector CollectorForm = new SkyIndexAnalyzerDataCollector();
-            CollectorForm.Show();
+            //SkyIndexAnalyzerDataCollector CollectorForm = new SkyIndexAnalyzerDataCollector();
+            //CollectorForm.Show();
             //ShowImageForm ImgShow = new ShowImageForm(localPreviewBitmap, ParentForm, this);
             //ImgShow.Show();
         }

@@ -148,6 +148,7 @@
     <ProjectReference Include="..\..\SkyIndexAnalyzerLibraries\SkyIndexAnalyzerLibraries.csproj">
       <Project>{7beac8e4-e53f-466a-b824-1fe69e60d114}</Project>
       <Name>SkyIndexAnalyzerLibraries</Name>
+      <Private>False</Private>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

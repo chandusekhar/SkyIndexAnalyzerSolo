@@ -32,7 +32,8 @@
             this.tabPageMain = new System.Windows.Forms.TabPage();
             this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
             this.textBox2 = new System.Windows.Forms.TextBox();
-            this.btnFindArduino = new System.Windows.Forms.Button();
+            this.btnFindArduino1 = new System.Windows.Forms.Button();
+            this.btnStartStopBdcstListening = new System.Windows.Forms.Button();
             this.btnStartStopCollecting = new System.Windows.Forms.Button();
             this.SearchingArduinoProcessCircle = new MRG.Controls.UI.LoadingCircle();
             this.StartStopDataCollectingWaitingCircle = new MRG.Controls.UI.LoadingCircle();
@@ -100,37 +101,6 @@
             this.accelCalibrator = new System.ComponentModel.BackgroundWorker();
             this.magnCalibrator = new System.ComponentModel.BackgroundWorker();
             this.bgwUDPmessagesParser = new System.ComponentModel.BackgroundWorker();
-            this.btnStartStopBdcstListening = new System.Windows.Forms.Button();
-            this.tbBcstListeningPort = new System.Windows.Forms.TextBox();
-            this.label2 = new System.Windows.Forms.Label();
-            this.lblMagnDataHeading = new System.Windows.Forms.Label();
-            this.label20 = new System.Windows.Forms.Label();
-            this.lblMagnDataX = new System.Windows.Forms.Label();
-            this.lblMagnDataY = new System.Windows.Forms.Label();
-            this.lblMagnDataZ = new System.Windows.Forms.Label();
-            this.label16 = new System.Windows.Forms.Label();
-            this.label15 = new System.Windows.Forms.Label();
-            this.label14 = new System.Windows.Forms.Label();
-            this.lblCompass = new System.Windows.Forms.Label();
-            this.btnMagnSaveCalibration = new System.Windows.Forms.Button();
-            this.label13 = new System.Windows.Forms.Label();
-            this.lblCaughtMagnCalibrationValue = new System.Windows.Forms.Label();
-            this.label12 = new System.Windows.Forms.Label();
-            this.tbCurrentCompassHeadingValue = new System.Windows.Forms.TextBox();
-            this.lblMagnCalculationStatistics = new System.Windows.Forms.Label();
-            this.lblMagnStDevX = new System.Windows.Forms.Label();
-            this.lblMagnStDevY = new System.Windows.Forms.Label();
-            this.lblMagnStDevZ = new System.Windows.Forms.Label();
-            this.lblMagnCalibrationZ = new System.Windows.Forms.Label();
-            this.lblMagnCalibrationY = new System.Windows.Forms.Label();
-            this.lblMagnCalibrationX = new System.Windows.Forms.Label();
-            this.lblMagnCalibrationCurrentX = new System.Windows.Forms.Label();
-            this.lblMagnCalibrationCurrentY = new System.Windows.Forms.Label();
-            this.lblMagnCalibrationCurrentZ = new System.Windows.Forms.Label();
-            this.label9 = new System.Windows.Forms.Label();
-            this.label8 = new System.Windows.Forms.Label();
-            this.label1 = new System.Windows.Forms.Label();
-            this.btnCalibrateMagnetometer = new System.Windows.Forms.Button();
             this.tabControl1.SuspendLayout();
             this.tabPageMain.SuspendLayout();
             this.tableLayoutPanel1.SuspendLayout();
@@ -151,7 +121,7 @@
             this.tabControl1.Controls.Add(this.Preferencies);
             this.tabControl1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tabControl1.Location = new System.Drawing.Point(0, 0);
-            this.tabControl1.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.tabControl1.Margin = new System.Windows.Forms.Padding(4);
             this.tabControl1.Name = "tabControl1";
             this.tabControl1.SelectedIndex = 0;
             this.tabControl1.Size = new System.Drawing.Size(1289, 694);
@@ -162,9 +132,9 @@
             this.tabPageMain.Controls.Add(this.tableLayoutPanel1);
             this.tabPageMain.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this.tabPageMain.Location = new System.Drawing.Point(4, 25);
-            this.tabPageMain.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.tabPageMain.Margin = new System.Windows.Forms.Padding(4);
             this.tabPageMain.Name = "tabPageMain";
-            this.tabPageMain.Padding = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.tabPageMain.Padding = new System.Windows.Forms.Padding(4);
             this.tabPageMain.Size = new System.Drawing.Size(1281, 665);
             this.tabPageMain.TabIndex = 1;
             this.tabPageMain.Text = "Main";
@@ -193,11 +163,9 @@
             this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 5.263159F));
             this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 5.263159F));
             this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 27F));
-            this.tableLayoutPanel1.Controls.Add(this.tbBcstListeningPort, 17, 0);
             this.tableLayoutPanel1.Controls.Add(this.textBox2, 0, 0);
-            this.tableLayoutPanel1.Controls.Add(this.btnFindArduino, 4, 0);
-            this.tableLayoutPanel1.Controls.Add(this.label2, 9, 0);
-            this.tableLayoutPanel1.Controls.Add(this.btnStartStopBdcstListening, 13, 0);
+            this.tableLayoutPanel1.Controls.Add(this.btnFindArduino1, 4, 0);
+            this.tableLayoutPanel1.Controls.Add(this.btnStartStopBdcstListening, 15, 0);
             this.tableLayoutPanel1.Controls.Add(this.btnStartStopCollecting, 0, 2);
             this.tableLayoutPanel1.Controls.Add(this.SearchingArduinoProcessCircle, 7, 0);
             this.tableLayoutPanel1.Controls.Add(this.StartStopDataCollectingWaitingCircle, 18, 2);
@@ -212,15 +180,6 @@
             this.tableLayoutPanel1.Controls.Add(this.lblAccDevMeanAngleTitle, 15, 3);
             this.tableLayoutPanel1.Controls.Add(this.lblAccDevMeanMagnValue, 13, 4);
             this.tableLayoutPanel1.Controls.Add(this.lblAccDevMeanAngleValue, 15, 4);
-            this.tableLayoutPanel1.Controls.Add(this.lblCompass, 10, 6);
-            this.tableLayoutPanel1.Controls.Add(this.label14, 13, 6);
-            this.tableLayoutPanel1.Controls.Add(this.lblMagnDataX, 13, 7);
-            this.tableLayoutPanel1.Controls.Add(this.label15, 15, 6);
-            this.tableLayoutPanel1.Controls.Add(this.label16, 17, 6);
-            this.tableLayoutPanel1.Controls.Add(this.lblMagnDataY, 15, 7);
-            this.tableLayoutPanel1.Controls.Add(this.lblMagnDataZ, 17, 7);
-            this.tableLayoutPanel1.Controls.Add(this.label20, 13, 8);
-            this.tableLayoutPanel1.Controls.Add(this.lblMagnDataHeading, 13, 9);
             this.tableLayoutPanel1.Controls.Add(this.pbThumbPreview, 0, 6);
             this.tableLayoutPanel1.Controls.Add(this.lblLonTitle, 16, 11);
             this.tableLayoutPanel1.Controls.Add(this.lblLonValue, 16, 12);
@@ -234,7 +193,7 @@
             this.tableLayoutPanel1.Controls.Add(this.processCircle, 17, 3);
             this.tableLayoutPanel1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tableLayoutPanel1.Location = new System.Drawing.Point(4, 4);
-            this.tableLayoutPanel1.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.tableLayoutPanel1.Margin = new System.Windows.Forms.Padding(4);
             this.tableLayoutPanel1.Name = "tableLayoutPanel1";
             this.tableLayoutPanel1.RowCount = 19;
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 37F));
@@ -264,27 +223,41 @@
             this.tableLayoutPanel1.SetColumnSpan(this.textBox2, 4);
             this.textBox2.Dock = System.Windows.Forms.DockStyle.Fill;
             this.textBox2.Location = new System.Drawing.Point(4, 4);
-            this.textBox2.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.textBox2.Margin = new System.Windows.Forms.Padding(4);
             this.textBox2.Multiline = true;
             this.textBox2.Name = "textBox2";
             this.textBox2.Size = new System.Drawing.Size(256, 29);
             this.textBox2.TabIndex = 40;
             this.textBox2.TextChanged += new System.EventHandler(this.textBox2_TextChanged);
             // 
-            // btnFindArduino
+            // btnFindArduino1
             // 
-            this.tableLayoutPanel1.SetColumnSpan(this.btnFindArduino, 3);
-            this.btnFindArduino.Cursor = System.Windows.Forms.Cursors.Default;
-            this.btnFindArduino.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.btnFindArduino.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnFindArduino.Location = new System.Drawing.Point(268, 4);
-            this.btnFindArduino.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
-            this.btnFindArduino.Name = "btnFindArduino";
-            this.btnFindArduino.Size = new System.Drawing.Size(190, 29);
-            this.btnFindArduino.TabIndex = 41;
-            this.btnFindArduino.Text = "search for board";
-            this.btnFindArduino.UseVisualStyleBackColor = true;
-            this.btnFindArduino.Click += new System.EventHandler(this.btnFindArduino_Click);
+            this.tableLayoutPanel1.SetColumnSpan(this.btnFindArduino1, 3);
+            this.btnFindArduino1.Cursor = System.Windows.Forms.Cursors.Default;
+            this.btnFindArduino1.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.btnFindArduino1.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnFindArduino1.Location = new System.Drawing.Point(268, 4);
+            this.btnFindArduino1.Margin = new System.Windows.Forms.Padding(4);
+            this.btnFindArduino1.Name = "btnFindArduino1";
+            this.btnFindArduino1.Size = new System.Drawing.Size(190, 29);
+            this.btnFindArduino1.TabIndex = 41;
+            this.btnFindArduino1.Text = "search for board ID1";
+            this.btnFindArduino1.UseVisualStyleBackColor = true;
+            this.btnFindArduino1.Click += new System.EventHandler(this.btnFindArduino_Click);
+            // 
+            // btnStartStopBdcstListening
+            // 
+            this.tableLayoutPanel1.SetColumnSpan(this.btnStartStopBdcstListening, 4);
+            this.btnStartStopBdcstListening.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.btnStartStopBdcstListening.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnStartStopBdcstListening.Location = new System.Drawing.Point(994, 4);
+            this.btnStartStopBdcstListening.Margin = new System.Windows.Forms.Padding(4);
+            this.btnStartStopBdcstListening.Name = "btnStartStopBdcstListening";
+            this.btnStartStopBdcstListening.Size = new System.Drawing.Size(275, 29);
+            this.btnStartStopBdcstListening.TabIndex = 43;
+            this.btnStartStopBdcstListening.Text = "Start listening on port:";
+            this.btnStartStopBdcstListening.UseVisualStyleBackColor = true;
+            this.btnStartStopBdcstListening.Click += new System.EventHandler(this.btnStartStopBdcstListening_Click);
             // 
             // btnStartStopCollecting
             // 
@@ -294,7 +267,7 @@
             this.btnStartStopCollecting.Font = new System.Drawing.Font("Microsoft Sans Serif", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this.btnStartStopCollecting.ForeColor = System.Drawing.Color.Red;
             this.btnStartStopCollecting.Location = new System.Drawing.Point(4, 53);
-            this.btnStartStopCollecting.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.btnStartStopCollecting.Margin = new System.Windows.Forms.Padding(4);
             this.btnStartStopCollecting.Name = "btnStartStopCollecting";
             this.btnStartStopCollecting.Size = new System.Drawing.Size(1180, 54);
             this.btnStartStopCollecting.TabIndex = 47;
@@ -308,7 +281,7 @@
             this.SearchingArduinoProcessCircle.Color = System.Drawing.Color.DarkGray;
             this.SearchingArduinoProcessCircle.InnerCircleRadius = 8;
             this.SearchingArduinoProcessCircle.Location = new System.Drawing.Point(466, 4);
-            this.SearchingArduinoProcessCircle.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.SearchingArduinoProcessCircle.Margin = new System.Windows.Forms.Padding(4);
             this.SearchingArduinoProcessCircle.Name = "SearchingArduinoProcessCircle";
             this.SearchingArduinoProcessCircle.NumberSpoke = 24;
             this.SearchingArduinoProcessCircle.OuterCircleRadius = 9;
@@ -328,7 +301,7 @@
             this.StartStopDataCollectingWaitingCircle.ForeColor = System.Drawing.Color.Red;
             this.StartStopDataCollectingWaitingCircle.InnerCircleRadius = 8;
             this.StartStopDataCollectingWaitingCircle.Location = new System.Drawing.Point(1192, 53);
-            this.StartStopDataCollectingWaitingCircle.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.StartStopDataCollectingWaitingCircle.Margin = new System.Windows.Forms.Padding(4);
             this.StartStopDataCollectingWaitingCircle.Name = "StartStopDataCollectingWaitingCircle";
             this.StartStopDataCollectingWaitingCircle.NumberSpoke = 24;
             this.StartStopDataCollectingWaitingCircle.OuterCircleRadius = 9;
@@ -347,7 +320,7 @@
             this.btnCollectMostClose.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnCollectMostClose.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this.btnCollectMostClose.Location = new System.Drawing.Point(4, 115);
-            this.btnCollectMostClose.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.btnCollectMostClose.Margin = new System.Windows.Forms.Padding(4);
             this.btnCollectMostClose.Name = "btnCollectMostClose";
             this.btnCollectMostClose.Size = new System.Drawing.Size(190, 32);
             this.btnCollectMostClose.TabIndex = 59;
@@ -362,7 +335,7 @@
             this.btnCollectImmediately.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnCollectImmediately.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this.btnCollectImmediately.Location = new System.Drawing.Point(4, 155);
-            this.btnCollectImmediately.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.btnCollectImmediately.Margin = new System.Windows.Forms.Padding(4);
             this.btnCollectImmediately.Name = "btnCollectImmediately";
             this.btnCollectImmediately.Size = new System.Drawing.Size(190, 32);
             this.btnCollectImmediately.TabIndex = 48;
@@ -512,7 +485,7 @@
             this.tableLayoutPanel1.SetColumnSpan(this.pbThumbPreview, 9);
             this.pbThumbPreview.Dock = System.Windows.Forms.DockStyle.Fill;
             this.pbThumbPreview.Location = new System.Drawing.Point(4, 207);
-            this.pbThumbPreview.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.pbThumbPreview.Margin = new System.Windows.Forms.Padding(4);
             this.pbThumbPreview.Name = "pbThumbPreview";
             this.tableLayoutPanel1.SetRowSpan(this.pbThumbPreview, 13);
             this.pbThumbPreview.Size = new System.Drawing.Size(586, 446);
@@ -668,7 +641,7 @@
             this.processCircle.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(192)))), ((int)(((byte)(0)))));
             this.processCircle.InnerCircleRadius = 5;
             this.processCircle.Location = new System.Drawing.Point(1126, 115);
-            this.processCircle.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.processCircle.Margin = new System.Windows.Forms.Padding(4);
             this.processCircle.Name = "processCircle";
             this.processCircle.NumberSpoke = 12;
             this.processCircle.OuterCircleRadius = 11;
@@ -685,9 +658,9 @@
             this.tabPageBcstLog.Controls.Add(this.tableLayoutPanel2);
             this.tabPageBcstLog.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this.tabPageBcstLog.Location = new System.Drawing.Point(4, 25);
-            this.tabPageBcstLog.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.tabPageBcstLog.Margin = new System.Windows.Forms.Padding(4);
             this.tabPageBcstLog.Name = "tabPageBcstLog";
-            this.tabPageBcstLog.Padding = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.tabPageBcstLog.Padding = new System.Windows.Forms.Padding(4);
             this.tabPageBcstLog.Size = new System.Drawing.Size(1281, 665);
             this.tabPageBcstLog.TabIndex = 0;
             this.tabPageBcstLog.Text = "Logs";
@@ -709,7 +682,7 @@
             this.tableLayoutPanel2.Controls.Add(this.btnSwitchShowingTotalLog, 0, 0);
             this.tableLayoutPanel2.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tableLayoutPanel2.Location = new System.Drawing.Point(4, 4);
-            this.tableLayoutPanel2.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.tableLayoutPanel2.Margin = new System.Windows.Forms.Padding(4);
             this.tableLayoutPanel2.Name = "tableLayoutPanel2";
             this.tableLayoutPanel2.RowCount = 3;
             this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 49F));
@@ -725,7 +698,7 @@
             this.tableLayoutPanel2.SetColumnSpan(this.tbMainLog, 6);
             this.tbMainLog.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tbMainLog.Location = new System.Drawing.Point(4, 90);
-            this.tbMainLog.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.tbMainLog.Margin = new System.Windows.Forms.Padding(4);
             this.tbMainLog.Multiline = true;
             this.tbMainLog.Name = "tbMainLog";
             this.tbMainLog.ScrollBars = System.Windows.Forms.ScrollBars.Both;
@@ -739,7 +712,7 @@
             this.btnSwapBcstLog.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnSwapBcstLog.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this.btnSwapBcstLog.Location = new System.Drawing.Point(640, 4);
-            this.btnSwapBcstLog.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.btnSwapBcstLog.Margin = new System.Windows.Forms.Padding(4);
             this.btnSwapBcstLog.Name = "btnSwapBcstLog";
             this.btnSwapBcstLog.Size = new System.Drawing.Size(629, 41);
             this.btnSwapBcstLog.TabIndex = 7;
@@ -769,7 +742,7 @@
             this.btnSwitchShowingTotalLog.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this.btnSwitchShowingTotalLog.ForeColor = System.Drawing.Color.Red;
             this.btnSwitchShowingTotalLog.Location = new System.Drawing.Point(4, 4);
-            this.btnSwitchShowingTotalLog.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.btnSwitchShowingTotalLog.Margin = new System.Windows.Forms.Padding(4);
             this.btnSwitchShowingTotalLog.Name = "btnSwitchShowingTotalLog";
             this.btnSwitchShowingTotalLog.Size = new System.Drawing.Size(628, 41);
             this.btnSwitchShowingTotalLog.TabIndex = 12;
@@ -782,9 +755,9 @@
             this.SensorsCalibration.Controls.Add(this.tableLayoutPanel3);
             this.SensorsCalibration.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this.SensorsCalibration.Location = new System.Drawing.Point(4, 25);
-            this.SensorsCalibration.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.SensorsCalibration.Margin = new System.Windows.Forms.Padding(4);
             this.SensorsCalibration.Name = "SensorsCalibration";
-            this.SensorsCalibration.Padding = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.SensorsCalibration.Padding = new System.Windows.Forms.Padding(4);
             this.SensorsCalibration.Size = new System.Drawing.Size(1281, 665);
             this.SensorsCalibration.TabIndex = 2;
             this.SensorsCalibration.Text = "Sensors calibration";
@@ -803,9 +776,6 @@
             this.tableLayoutPanel3.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 10F));
             this.tableLayoutPanel3.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 10F));
             this.tableLayoutPanel3.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 10F));
-            this.tableLayoutPanel3.Controls.Add(this.lblCaughtMagnCalibrationValue, 5, 6);
-            this.tableLayoutPanel3.Controls.Add(this.label13, 5, 5);
-            this.tableLayoutPanel3.Controls.Add(this.btnCalibrateMagnetometer, 0, 5);
             this.tableLayoutPanel3.Controls.Add(this.label4, 2, 0);
             this.tableLayoutPanel3.Controls.Add(this.label6, 3, 0);
             this.tableLayoutPanel3.Controls.Add(this.label7, 4, 0);
@@ -821,25 +791,9 @@
             this.tableLayoutPanel3.Controls.Add(this.lblStDevY, 3, 3);
             this.tableLayoutPanel3.Controls.Add(this.lblStDevZ, 4, 3);
             this.tableLayoutPanel3.Controls.Add(this.btnSaveAccel, 5, 0);
-            this.tableLayoutPanel3.Controls.Add(this.label1, 2, 5);
-            this.tableLayoutPanel3.Controls.Add(this.label8, 3, 5);
-            this.tableLayoutPanel3.Controls.Add(this.label9, 4, 5);
-            this.tableLayoutPanel3.Controls.Add(this.lblMagnCalibrationCurrentX, 2, 6);
-            this.tableLayoutPanel3.Controls.Add(this.lblMagnCalibrationCurrentY, 3, 6);
-            this.tableLayoutPanel3.Controls.Add(this.lblMagnCalibrationCurrentZ, 4, 6);
-            this.tableLayoutPanel3.Controls.Add(this.lblMagnCalibrationX, 2, 7);
-            this.tableLayoutPanel3.Controls.Add(this.lblMagnCalibrationY, 3, 7);
-            this.tableLayoutPanel3.Controls.Add(this.lblMagnCalibrationZ, 4, 7);
-            this.tableLayoutPanel3.Controls.Add(this.lblMagnStDevX, 2, 8);
-            this.tableLayoutPanel3.Controls.Add(this.lblMagnStDevY, 3, 8);
-            this.tableLayoutPanel3.Controls.Add(this.lblMagnStDevZ, 4, 8);
-            this.tableLayoutPanel3.Controls.Add(this.lblMagnCalculationStatistics, 2, 9);
-            this.tableLayoutPanel3.Controls.Add(this.btnMagnSaveCalibration, 7, 5);
-            this.tableLayoutPanel3.Controls.Add(this.label12, 5, 7);
-            this.tableLayoutPanel3.Controls.Add(this.tbCurrentCompassHeadingValue, 5, 8);
             this.tableLayoutPanel3.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tableLayoutPanel3.Location = new System.Drawing.Point(4, 4);
-            this.tableLayoutPanel3.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.tableLayoutPanel3.Margin = new System.Windows.Forms.Padding(4);
             this.tableLayoutPanel3.Name = "tableLayoutPanel3";
             this.tableLayoutPanel3.RowCount = 11;
             this.tableLayoutPanel3.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 6.666667F));
@@ -945,7 +899,7 @@
             this.btnCalibrateAccelerometer.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnCalibrateAccelerometer.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this.btnCalibrateAccelerometer.Location = new System.Drawing.Point(4, 4);
-            this.btnCalibrateAccelerometer.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.btnCalibrateAccelerometer.Margin = new System.Windows.Forms.Padding(4);
             this.btnCalibrateAccelerometer.Name = "btnCalibrateAccelerometer";
             this.tableLayoutPanel3.SetRowSpan(this.btnCalibrateAccelerometer, 5);
             this.btnCalibrateAccelerometer.Size = new System.Drawing.Size(246, 207);
@@ -1051,7 +1005,7 @@
             this.btnSaveAccel.Dock = System.Windows.Forms.DockStyle.Fill;
             this.btnSaveAccel.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnSaveAccel.Location = new System.Drawing.Point(639, 4);
-            this.btnSaveAccel.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.btnSaveAccel.Margin = new System.Windows.Forms.Padding(4);
             this.btnSaveAccel.Name = "btnSaveAccel";
             this.tableLayoutPanel3.SetRowSpan(this.btnSaveAccel, 5);
             this.btnSaveAccel.Size = new System.Drawing.Size(373, 207);
@@ -1066,9 +1020,9 @@
             this.Preferencies.Controls.Add(this.tableLayoutPanel4);
             this.Preferencies.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this.Preferencies.Location = new System.Drawing.Point(4, 25);
-            this.Preferencies.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.Preferencies.Margin = new System.Windows.Forms.Padding(4);
             this.Preferencies.Name = "Preferencies";
-            this.Preferencies.Padding = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.Preferencies.Padding = new System.Windows.Forms.Padding(4);
             this.Preferencies.Size = new System.Drawing.Size(1281, 665);
             this.Preferencies.TabIndex = 3;
             this.Preferencies.Text = "Preferencies";
@@ -1080,7 +1034,7 @@
             this.tableLayoutPanel4.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 25F));
             this.tableLayoutPanel4.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 25F));
             this.tableLayoutPanel4.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 25F));
-            this.tableLayoutPanel4.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 60F));
+            this.tableLayoutPanel4.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 61F));
             this.tableLayoutPanel4.Controls.Add(this.camshotPeriodLabel, 0, 0);
             this.tableLayoutPanel4.Controls.Add(this.tbCamShotPeriod, 1, 0);
             this.tableLayoutPanel4.Controls.Add(this.camshotPeriodDataSavingCircle, 4, 0);
@@ -1093,7 +1047,7 @@
             this.tableLayoutPanel4.Controls.Add(this.tbCamPWD, 1, 3);
             this.tableLayoutPanel4.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tableLayoutPanel4.Location = new System.Drawing.Point(4, 4);
-            this.tableLayoutPanel4.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.tableLayoutPanel4.Margin = new System.Windows.Forms.Padding(4);
             this.tableLayoutPanel4.Name = "tableLayoutPanel4";
             this.tableLayoutPanel4.RowCount = 10;
             this.tableLayoutPanel4.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 49F));
@@ -1127,7 +1081,7 @@
             // 
             this.tbCamShotPeriod.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tbCamShotPeriod.Location = new System.Drawing.Point(307, 4);
-            this.tbCamShotPeriod.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.tbCamShotPeriod.Margin = new System.Windows.Forms.Padding(4);
             this.tbCamShotPeriod.Mask = "00:00:00";
             this.tbCamShotPeriod.Name = "tbCamShotPeriod";
             this.tbCamShotPeriod.Size = new System.Drawing.Size(295, 23);
@@ -1142,7 +1096,7 @@
             this.camshotPeriodDataSavingCircle.Dock = System.Windows.Forms.DockStyle.Fill;
             this.camshotPeriodDataSavingCircle.InnerCircleRadius = 8;
             this.camshotPeriodDataSavingCircle.Location = new System.Drawing.Point(1216, 4);
-            this.camshotPeriodDataSavingCircle.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.camshotPeriodDataSavingCircle.Margin = new System.Windows.Forms.Padding(4);
             this.camshotPeriodDataSavingCircle.Name = "camshotPeriodDataSavingCircle";
             this.camshotPeriodDataSavingCircle.NumberSpoke = 24;
             this.camshotPeriodDataSavingCircle.OuterCircleRadius = 9;
@@ -1172,7 +1126,7 @@
             // 
             this.tbCamIP.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tbCamIP.Location = new System.Drawing.Point(307, 53);
-            this.tbCamIP.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.tbCamIP.Margin = new System.Windows.Forms.Padding(4);
             this.tbCamIP.Mask = "000.000.000.000";
             this.tbCamIP.Name = "tbCamIP";
             this.tbCamIP.Size = new System.Drawing.Size(295, 23);
@@ -1186,7 +1140,7 @@
             this.ipAddrValidatingCircle.Dock = System.Windows.Forms.DockStyle.Fill;
             this.ipAddrValidatingCircle.InnerCircleRadius = 8;
             this.ipAddrValidatingCircle.Location = new System.Drawing.Point(1216, 53);
-            this.ipAddrValidatingCircle.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.ipAddrValidatingCircle.Margin = new System.Windows.Forms.Padding(4);
             this.ipAddrValidatingCircle.Name = "ipAddrValidatingCircle";
             this.ipAddrValidatingCircle.NumberSpoke = 24;
             this.ipAddrValidatingCircle.OuterCircleRadius = 9;
@@ -1216,7 +1170,7 @@
             // 
             this.tbCamUName.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tbCamUName.Location = new System.Drawing.Point(307, 102);
-            this.tbCamUName.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.tbCamUName.Margin = new System.Windows.Forms.Padding(4);
             this.tbCamUName.Name = "tbCamUName";
             this.tbCamUName.Size = new System.Drawing.Size(295, 23);
             this.tbCamUName.TabIndex = 83;
@@ -1240,7 +1194,7 @@
             // 
             this.tbCamPWD.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tbCamPWD.Location = new System.Drawing.Point(307, 151);
-            this.tbCamPWD.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.tbCamPWD.Margin = new System.Windows.Forms.Padding(4);
             this.tbCamPWD.Name = "tbCamPWD";
             this.tbCamPWD.Size = new System.Drawing.Size(295, 23);
             this.tbCamPWD.TabIndex = 85;
@@ -1286,442 +1240,13 @@
             this.bgwUDPmessagesParser.WorkerSupportsCancellation = true;
             this.bgwUDPmessagesParser.DoWork += new System.ComponentModel.DoWorkEventHandler(this.bgwUDPmessagesParser_DoWork);
             // 
-            // btnStartStopBdcstListening
-            // 
-            this.tableLayoutPanel1.SetColumnSpan(this.btnStartStopBdcstListening, 4);
-            this.btnStartStopBdcstListening.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.btnStartStopBdcstListening.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnStartStopBdcstListening.Location = new System.Drawing.Point(862, 4);
-            this.btnStartStopBdcstListening.Margin = new System.Windows.Forms.Padding(4);
-            this.btnStartStopBdcstListening.Name = "btnStartStopBdcstListening";
-            this.btnStartStopBdcstListening.Size = new System.Drawing.Size(256, 29);
-            this.btnStartStopBdcstListening.TabIndex = 43;
-            this.btnStartStopBdcstListening.Text = "Start listening on port:";
-            this.btnStartStopBdcstListening.UseVisualStyleBackColor = true;
-            this.btnStartStopBdcstListening.Click += new System.EventHandler(this.btnStartStopBdcstListening_Click);
-            // 
-            // tbBcstListeningPort
-            // 
-            this.tableLayoutPanel1.SetColumnSpan(this.tbBcstListeningPort, 2);
-            this.tbBcstListeningPort.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.tbBcstListeningPort.Location = new System.Drawing.Point(1126, 4);
-            this.tbBcstListeningPort.Margin = new System.Windows.Forms.Padding(4);
-            this.tbBcstListeningPort.Multiline = true;
-            this.tbBcstListeningPort.Name = "tbBcstListeningPort";
-            this.tbBcstListeningPort.Size = new System.Drawing.Size(143, 29);
-            this.tbBcstListeningPort.TabIndex = 45;
-            this.tbBcstListeningPort.TextChanged += new System.EventHandler(this.tbBcstListeningPort_TextChanged);
-            // 
-            // label2
-            // 
-            this.label2.AutoSize = true;
-            this.tableLayoutPanel1.SetColumnSpan(this.label2, 4);
-            this.label2.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.label2.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.label2.Location = new System.Drawing.Point(598, 0);
-            this.label2.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(256, 37);
-            this.label2.TabIndex = 42;
-            this.label2.Text = "Broadcast listening";
-            this.label2.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            // 
-            // lblMagnDataHeading
-            // 
-            this.lblMagnDataHeading.AutoSize = true;
-            this.lblMagnDataHeading.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.tableLayoutPanel1.SetColumnSpan(this.lblMagnDataHeading, 6);
-            this.lblMagnDataHeading.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.lblMagnDataHeading.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.lblMagnDataHeading.Location = new System.Drawing.Point(862, 317);
-            this.lblMagnDataHeading.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.lblMagnDataHeading.Name = "lblMagnDataHeading";
-            this.lblMagnDataHeading.Size = new System.Drawing.Size(407, 40);
-            this.lblMagnDataHeading.TabIndex = 85;
-            this.lblMagnDataHeading.Text = "---";
-            this.lblMagnDataHeading.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-            // 
-            // label20
-            // 
-            this.label20.AutoSize = true;
-            this.label20.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.tableLayoutPanel1.SetColumnSpan(this.label20, 6);
-            this.label20.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.label20.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.label20.Location = new System.Drawing.Point(862, 280);
-            this.label20.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.label20.Name = "label20";
-            this.label20.Size = new System.Drawing.Size(407, 37);
-            this.label20.TabIndex = 84;
-            this.label20.Text = "head";
-            this.label20.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-            // 
-            // lblMagnDataX
-            // 
-            this.lblMagnDataX.AutoSize = true;
-            this.lblMagnDataX.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.tableLayoutPanel1.SetColumnSpan(this.lblMagnDataX, 2);
-            this.lblMagnDataX.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.lblMagnDataX.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.lblMagnDataX.Location = new System.Drawing.Point(862, 240);
-            this.lblMagnDataX.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.lblMagnDataX.Name = "lblMagnDataX";
-            this.lblMagnDataX.Size = new System.Drawing.Size(124, 40);
-            this.lblMagnDataX.TabIndex = 81;
-            this.lblMagnDataX.Text = "---";
-            this.lblMagnDataX.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-            // 
-            // lblMagnDataY
-            // 
-            this.lblMagnDataY.AutoSize = true;
-            this.lblMagnDataY.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.tableLayoutPanel1.SetColumnSpan(this.lblMagnDataY, 2);
-            this.lblMagnDataY.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.lblMagnDataY.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.lblMagnDataY.Location = new System.Drawing.Point(994, 240);
-            this.lblMagnDataY.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.lblMagnDataY.Name = "lblMagnDataY";
-            this.lblMagnDataY.Size = new System.Drawing.Size(124, 40);
-            this.lblMagnDataY.TabIndex = 82;
-            this.lblMagnDataY.Text = "---";
-            this.lblMagnDataY.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-            // 
-            // lblMagnDataZ
-            // 
-            this.lblMagnDataZ.AutoSize = true;
-            this.lblMagnDataZ.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.tableLayoutPanel1.SetColumnSpan(this.lblMagnDataZ, 2);
-            this.lblMagnDataZ.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.lblMagnDataZ.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.lblMagnDataZ.Location = new System.Drawing.Point(1126, 240);
-            this.lblMagnDataZ.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.lblMagnDataZ.Name = "lblMagnDataZ";
-            this.lblMagnDataZ.Size = new System.Drawing.Size(143, 40);
-            this.lblMagnDataZ.TabIndex = 83;
-            this.lblMagnDataZ.Text = "---";
-            this.lblMagnDataZ.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-            // 
-            // label16
-            // 
-            this.label16.AutoSize = true;
-            this.label16.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.tableLayoutPanel1.SetColumnSpan(this.label16, 2);
-            this.label16.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.label16.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.label16.Location = new System.Drawing.Point(1126, 203);
-            this.label16.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.label16.Name = "label16";
-            this.label16.Size = new System.Drawing.Size(143, 37);
-            this.label16.TabIndex = 80;
-            this.label16.Text = "Z";
-            this.label16.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-            // 
-            // label15
-            // 
-            this.label15.AutoSize = true;
-            this.label15.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.tableLayoutPanel1.SetColumnSpan(this.label15, 2);
-            this.label15.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.label15.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.label15.Location = new System.Drawing.Point(994, 203);
-            this.label15.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.label15.Name = "label15";
-            this.label15.Size = new System.Drawing.Size(124, 37);
-            this.label15.TabIndex = 79;
-            this.label15.Text = "Y";
-            this.label15.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-            // 
-            // label14
-            // 
-            this.label14.AutoSize = true;
-            this.label14.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.tableLayoutPanel1.SetColumnSpan(this.label14, 2);
-            this.label14.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.label14.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.label14.Location = new System.Drawing.Point(862, 203);
-            this.label14.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.label14.Name = "label14";
-            this.label14.Size = new System.Drawing.Size(124, 37);
-            this.label14.TabIndex = 78;
-            this.label14.Text = "X";
-            this.label14.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-            // 
-            // lblCompass
-            // 
-            this.lblCompass.AutoSize = true;
-            this.lblCompass.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.tableLayoutPanel1.SetColumnSpan(this.lblCompass, 3);
-            this.lblCompass.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.lblCompass.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.lblCompass.Location = new System.Drawing.Point(664, 203);
-            this.lblCompass.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.lblCompass.Name = "lblCompass";
-            this.tableLayoutPanel1.SetRowSpan(this.lblCompass, 4);
-            this.lblCompass.Size = new System.Drawing.Size(190, 154);
-            this.lblCompass.TabIndex = 77;
-            this.lblCompass.Text = "Compass";
-            this.lblCompass.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-            // 
-            // btnMagnSaveCalibration
-            // 
-            this.btnMagnSaveCalibration.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.btnMagnSaveCalibration.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnMagnSaveCalibration.Location = new System.Drawing.Point(893, 219);
-            this.btnMagnSaveCalibration.Margin = new System.Windows.Forms.Padding(4);
-            this.btnMagnSaveCalibration.Name = "btnMagnSaveCalibration";
-            this.tableLayoutPanel3.SetRowSpan(this.btnMagnSaveCalibration, 5);
-            this.btnMagnSaveCalibration.Size = new System.Drawing.Size(119, 207);
-            this.btnMagnSaveCalibration.TabIndex = 86;
-            this.btnMagnSaveCalibration.Text = "Save calibration data";
-            this.btnMagnSaveCalibration.UseVisualStyleBackColor = true;
-            this.btnMagnSaveCalibration.Click += new System.EventHandler(this.btnMagnSaveCalibration_Click);
-            // 
-            // label13
-            // 
-            this.label13.AutoSize = true;
-            this.tableLayoutPanel3.SetColumnSpan(this.label13, 2);
-            this.label13.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.label13.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.label13.Location = new System.Drawing.Point(639, 215);
-            this.label13.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.label13.Name = "label13";
-            this.label13.Size = new System.Drawing.Size(246, 43);
-            this.label13.TabIndex = 88;
-            this.label13.Text = "caught value";
-            this.label13.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-            // 
-            // lblCaughtMagnCalibrationValue
-            // 
-            this.lblCaughtMagnCalibrationValue.AutoSize = true;
-            this.tableLayoutPanel3.SetColumnSpan(this.lblCaughtMagnCalibrationValue, 2);
-            this.lblCaughtMagnCalibrationValue.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.lblCaughtMagnCalibrationValue.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.lblCaughtMagnCalibrationValue.Location = new System.Drawing.Point(639, 258);
-            this.lblCaughtMagnCalibrationValue.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.lblCaughtMagnCalibrationValue.Name = "lblCaughtMagnCalibrationValue";
-            this.lblCaughtMagnCalibrationValue.Size = new System.Drawing.Size(246, 43);
-            this.lblCaughtMagnCalibrationValue.TabIndex = 89;
-            this.lblCaughtMagnCalibrationValue.Text = "---";
-            this.lblCaughtMagnCalibrationValue.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-            // 
-            // label12
-            // 
-            this.label12.AutoSize = true;
-            this.tableLayoutPanel3.SetColumnSpan(this.label12, 2);
-            this.label12.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.label12.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.label12.Location = new System.Drawing.Point(639, 301);
-            this.label12.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.label12.Name = "label12";
-            this.label12.Size = new System.Drawing.Size(246, 43);
-            this.label12.TabIndex = 87;
-            this.label12.Text = "current value (grad)";
-            this.label12.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-            // 
-            // tbCurrentCompassHeadingValue
-            // 
-            this.tableLayoutPanel3.SetColumnSpan(this.tbCurrentCompassHeadingValue, 2);
-            this.tbCurrentCompassHeadingValue.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.tbCurrentCompassHeadingValue.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.tbCurrentCompassHeadingValue.Location = new System.Drawing.Point(639, 348);
-            this.tbCurrentCompassHeadingValue.Margin = new System.Windows.Forms.Padding(4);
-            this.tbCurrentCompassHeadingValue.Name = "tbCurrentCompassHeadingValue";
-            this.tbCurrentCompassHeadingValue.Size = new System.Drawing.Size(246, 30);
-            this.tbCurrentCompassHeadingValue.TabIndex = 90;
-            this.tbCurrentCompassHeadingValue.Text = "0";
-            // 
-            // lblMagnCalculationStatistics
-            // 
-            this.lblMagnCalculationStatistics.AutoSize = true;
-            this.lblMagnCalculationStatistics.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.tableLayoutPanel3.SetColumnSpan(this.lblMagnCalculationStatistics, 3);
-            this.lblMagnCalculationStatistics.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.lblMagnCalculationStatistics.Location = new System.Drawing.Point(258, 387);
-            this.lblMagnCalculationStatistics.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.lblMagnCalculationStatistics.Name = "lblMagnCalculationStatistics";
-            this.lblMagnCalculationStatistics.Size = new System.Drawing.Size(373, 43);
-            this.lblMagnCalculationStatistics.TabIndex = 85;
-            this.lblMagnCalculationStatistics.Text = "---";
-            // 
-            // lblMagnStDevX
-            // 
-            this.lblMagnStDevX.AutoSize = true;
-            this.lblMagnStDevX.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.lblMagnStDevX.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.lblMagnStDevX.Location = new System.Drawing.Point(258, 344);
-            this.lblMagnStDevX.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.lblMagnStDevX.Name = "lblMagnStDevX";
-            this.lblMagnStDevX.Size = new System.Drawing.Size(119, 43);
-            this.lblMagnStDevX.TabIndex = 82;
-            this.lblMagnStDevX.Text = "0%";
-            this.lblMagnStDevX.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-            // 
-            // lblMagnStDevY
-            // 
-            this.lblMagnStDevY.AutoSize = true;
-            this.lblMagnStDevY.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.lblMagnStDevY.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.lblMagnStDevY.Location = new System.Drawing.Point(385, 344);
-            this.lblMagnStDevY.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.lblMagnStDevY.Name = "lblMagnStDevY";
-            this.lblMagnStDevY.Size = new System.Drawing.Size(119, 43);
-            this.lblMagnStDevY.TabIndex = 83;
-            this.lblMagnStDevY.Text = "0%";
-            this.lblMagnStDevY.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-            // 
-            // lblMagnStDevZ
-            // 
-            this.lblMagnStDevZ.AutoSize = true;
-            this.lblMagnStDevZ.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.lblMagnStDevZ.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.lblMagnStDevZ.Location = new System.Drawing.Point(512, 344);
-            this.lblMagnStDevZ.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.lblMagnStDevZ.Name = "lblMagnStDevZ";
-            this.lblMagnStDevZ.Size = new System.Drawing.Size(119, 43);
-            this.lblMagnStDevZ.TabIndex = 84;
-            this.lblMagnStDevZ.Text = "0%";
-            this.lblMagnStDevZ.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-            // 
-            // lblMagnCalibrationZ
-            // 
-            this.lblMagnCalibrationZ.AutoSize = true;
-            this.lblMagnCalibrationZ.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.lblMagnCalibrationZ.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.lblMagnCalibrationZ.Location = new System.Drawing.Point(512, 301);
-            this.lblMagnCalibrationZ.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.lblMagnCalibrationZ.Name = "lblMagnCalibrationZ";
-            this.lblMagnCalibrationZ.Size = new System.Drawing.Size(119, 43);
-            this.lblMagnCalibrationZ.TabIndex = 81;
-            this.lblMagnCalibrationZ.Text = "<0>";
-            this.lblMagnCalibrationZ.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-            // 
-            // lblMagnCalibrationY
-            // 
-            this.lblMagnCalibrationY.AutoSize = true;
-            this.lblMagnCalibrationY.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.lblMagnCalibrationY.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.lblMagnCalibrationY.Location = new System.Drawing.Point(385, 301);
-            this.lblMagnCalibrationY.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.lblMagnCalibrationY.Name = "lblMagnCalibrationY";
-            this.lblMagnCalibrationY.Size = new System.Drawing.Size(119, 43);
-            this.lblMagnCalibrationY.TabIndex = 80;
-            this.lblMagnCalibrationY.Text = "<0>";
-            this.lblMagnCalibrationY.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-            // 
-            // lblMagnCalibrationX
-            // 
-            this.lblMagnCalibrationX.AutoSize = true;
-            this.lblMagnCalibrationX.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.lblMagnCalibrationX.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.lblMagnCalibrationX.Location = new System.Drawing.Point(258, 301);
-            this.lblMagnCalibrationX.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.lblMagnCalibrationX.Name = "lblMagnCalibrationX";
-            this.lblMagnCalibrationX.Size = new System.Drawing.Size(119, 43);
-            this.lblMagnCalibrationX.TabIndex = 79;
-            this.lblMagnCalibrationX.Text = "<0>";
-            this.lblMagnCalibrationX.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-            // 
-            // lblMagnCalibrationCurrentX
-            // 
-            this.lblMagnCalibrationCurrentX.AutoSize = true;
-            this.lblMagnCalibrationCurrentX.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.lblMagnCalibrationCurrentX.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.lblMagnCalibrationCurrentX.Location = new System.Drawing.Point(258, 258);
-            this.lblMagnCalibrationCurrentX.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.lblMagnCalibrationCurrentX.Name = "lblMagnCalibrationCurrentX";
-            this.lblMagnCalibrationCurrentX.Size = new System.Drawing.Size(119, 43);
-            this.lblMagnCalibrationCurrentX.TabIndex = 76;
-            this.lblMagnCalibrationCurrentX.Text = "0";
-            this.lblMagnCalibrationCurrentX.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-            // 
-            // lblMagnCalibrationCurrentY
-            // 
-            this.lblMagnCalibrationCurrentY.AutoSize = true;
-            this.lblMagnCalibrationCurrentY.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.lblMagnCalibrationCurrentY.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.lblMagnCalibrationCurrentY.Location = new System.Drawing.Point(385, 258);
-            this.lblMagnCalibrationCurrentY.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.lblMagnCalibrationCurrentY.Name = "lblMagnCalibrationCurrentY";
-            this.lblMagnCalibrationCurrentY.Size = new System.Drawing.Size(119, 43);
-            this.lblMagnCalibrationCurrentY.TabIndex = 77;
-            this.lblMagnCalibrationCurrentY.Text = "0";
-            this.lblMagnCalibrationCurrentY.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-            // 
-            // lblMagnCalibrationCurrentZ
-            // 
-            this.lblMagnCalibrationCurrentZ.AutoSize = true;
-            this.lblMagnCalibrationCurrentZ.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.lblMagnCalibrationCurrentZ.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.lblMagnCalibrationCurrentZ.Location = new System.Drawing.Point(512, 258);
-            this.lblMagnCalibrationCurrentZ.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.lblMagnCalibrationCurrentZ.Name = "lblMagnCalibrationCurrentZ";
-            this.lblMagnCalibrationCurrentZ.Size = new System.Drawing.Size(119, 43);
-            this.lblMagnCalibrationCurrentZ.TabIndex = 78;
-            this.lblMagnCalibrationCurrentZ.Text = "0";
-            this.lblMagnCalibrationCurrentZ.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-            // 
-            // label9
-            // 
-            this.label9.AutoSize = true;
-            this.label9.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.label9.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.label9.Location = new System.Drawing.Point(512, 215);
-            this.label9.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.label9.Name = "label9";
-            this.label9.Size = new System.Drawing.Size(119, 43);
-            this.label9.TabIndex = 75;
-            this.label9.Text = "mZ";
-            this.label9.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-            // 
-            // label8
-            // 
-            this.label8.AutoSize = true;
-            this.label8.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.label8.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.label8.Location = new System.Drawing.Point(385, 215);
-            this.label8.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.label8.Name = "label8";
-            this.label8.Size = new System.Drawing.Size(119, 43);
-            this.label8.TabIndex = 74;
-            this.label8.Text = "mY";
-            this.label8.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-            // 
-            // label1
-            // 
-            this.label1.AutoSize = true;
-            this.label1.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.label1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.label1.Location = new System.Drawing.Point(258, 215);
-            this.label1.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(119, 43);
-            this.label1.TabIndex = 73;
-            this.label1.Text = "mX";
-            this.label1.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-            // 
-            // btnCalibrateMagnetometer
-            // 
-            this.tableLayoutPanel3.SetColumnSpan(this.btnCalibrateMagnetometer, 2);
-            this.btnCalibrateMagnetometer.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.btnCalibrateMagnetometer.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnCalibrateMagnetometer.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.btnCalibrateMagnetometer.Location = new System.Drawing.Point(4, 219);
-            this.btnCalibrateMagnetometer.Margin = new System.Windows.Forms.Padding(4);
-            this.btnCalibrateMagnetometer.Name = "btnCalibrateMagnetometer";
-            this.tableLayoutPanel3.SetRowSpan(this.btnCalibrateMagnetometer, 5);
-            this.btnCalibrateMagnetometer.Size = new System.Drawing.Size(246, 207);
-            this.btnCalibrateMagnetometer.TabIndex = 72;
-            this.btnCalibrateMagnetometer.Text = "Calibrate magnetometer";
-            this.btnCalibrateMagnetometer.UseVisualStyleBackColor = true;
-            this.btnCalibrateMagnetometer.Click += new System.EventHandler(this.btnCalibrateMagnetometer_Click);
-            // 
             // DataCollectorMainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1289, 694);
             this.Controls.Add(this.tabControl1);
-            this.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.Margin = new System.Windows.Forms.Padding(4);
             this.Name = "DataCollectorMainForm";
             this.Text = "Data collector";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.DataCollectorMainForm_FormClosing);
@@ -1781,7 +1306,7 @@
         private System.ComponentModel.BackgroundWorker magnCalibrator;
         private System.Windows.Forms.TableLayoutPanel tableLayoutPanel1;
         private System.Windows.Forms.TextBox textBox2;
-        private System.Windows.Forms.Button btnFindArduino;
+        private System.Windows.Forms.Button btnFindArduino1;
         private System.Windows.Forms.Button btnStartStopCollecting;
         private System.Windows.Forms.Button btnCollectImmediately;
         private System.Windows.Forms.Label lblAccelerometerSign;
@@ -1823,36 +1348,6 @@
         private System.ComponentModel.BackgroundWorker bgwUDPmessagesParser;
         private MRG.Controls.UI.LoadingCircle processCircle;
         private System.Windows.Forms.Button btnStartStopBdcstListening;
-        private System.Windows.Forms.TextBox tbBcstListeningPort;
-        private System.Windows.Forms.Label label2;
-        private System.Windows.Forms.Label lblCompass;
-        private System.Windows.Forms.Label label14;
-        private System.Windows.Forms.Label lblMagnDataX;
-        private System.Windows.Forms.Label label15;
-        private System.Windows.Forms.Label label16;
-        private System.Windows.Forms.Label lblMagnDataY;
-        private System.Windows.Forms.Label lblMagnDataZ;
-        private System.Windows.Forms.Label label20;
-        private System.Windows.Forms.Label lblMagnDataHeading;
-        private System.Windows.Forms.Label lblCaughtMagnCalibrationValue;
-        private System.Windows.Forms.Label label13;
-        private System.Windows.Forms.Button btnCalibrateMagnetometer;
-        private System.Windows.Forms.Label label1;
-        private System.Windows.Forms.Label label8;
-        private System.Windows.Forms.Label label9;
-        private System.Windows.Forms.Label lblMagnCalibrationCurrentX;
-        private System.Windows.Forms.Label lblMagnCalibrationCurrentY;
-        private System.Windows.Forms.Label lblMagnCalibrationCurrentZ;
-        private System.Windows.Forms.Label lblMagnCalibrationX;
-        private System.Windows.Forms.Label lblMagnCalibrationY;
-        private System.Windows.Forms.Label lblMagnCalibrationZ;
-        private System.Windows.Forms.Label lblMagnStDevX;
-        private System.Windows.Forms.Label lblMagnStDevY;
-        private System.Windows.Forms.Label lblMagnStDevZ;
-        private System.Windows.Forms.Label lblMagnCalculationStatistics;
-        private System.Windows.Forms.Button btnMagnSaveCalibration;
-        private System.Windows.Forms.Label label12;
-        private System.Windows.Forms.TextBox tbCurrentCompassHeadingValue;
 
 
     }

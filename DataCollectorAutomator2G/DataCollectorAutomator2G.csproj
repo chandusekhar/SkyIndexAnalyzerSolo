@@ -1,0 +1,151 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">x86</Platform>
+    <ProjectGuid>{D22A3B35-28A1-4966-9922-B76E74DD710D}</ProjectGuid>
+    <OutputType>WinExe</OutputType>
+    <NoStandardLibraries>false</NoStandardLibraries>
+    <AssemblyName>DataCollectorAutomator2G</AssemblyName>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <TargetFrameworkProfile>
+    </TargetFrameworkProfile>
+    <FileAlignment>512</FileAlignment>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <PlatformTarget>x86</PlatformTarget>
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x86' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>..\_bin\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <PlatformTarget>x64</PlatformTarget>
+    <UseVSHostingProcess>false</UseVSHostingProcess>
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup>
+    <RootNamespace>DataCollectorAutomator2G</RootNamespace>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\x64\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DebugType>full</DebugType>
+    <PlatformTarget>x64</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">
+    <OutputPath>..\_bin\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <Optimize>true</Optimize>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>x64</PlatformTarget>
+    <UseVSHostingProcess>false</UseVSHostingProcess>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="MathNet.Numerics">
+      <HintPath>..\packages\MathNet.Numerics.2.6.1\lib\net40\MathNet.Numerics.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="MathNet.Numerics.IO">
+      <HintPath>..\packages\MathNet.Numerics.2.6.1\lib\net40\MathNet.Numerics.IO.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Xml" />
+    <Reference Include="System.Xml.Linq" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="AccelerometerDataRepresentingForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="AccelerometerDataRepresentingForm.Designer.cs">
+      <DependentUpon>AccelerometerDataRepresentingForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="DataCollectorMainForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="DataCollectorMainForm.Designer.cs">
+      <DependentUpon>DataCollectorMainForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Program.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Properties\Resources.Designer.cs" />
+    <Compile Include="Properties\Settings.Designer.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="AccelerometerDataRepresentingForm.resx">
+      <DependentUpon>AccelerometerDataRepresentingForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="DataCollectorMainForm.resx">
+      <DependentUpon>DataCollectorMainForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Properties\Resources.resx" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="App.config" />
+    <None Include="packages.config" />
+    <None Include="Properties\Settings.settings" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Resources\01-refresh.png" />
+    <Content Include="Resources\06-magnify.png" />
+    <Content Include="Resources\play.png" />
+    <Content Include="Resources\play1.png" />
+    <Content Include="settings\AccelerometerCalibrationData.xml" />
+    <Content Include="settings\DataCollectorAppGeneralSettings.xml" />
+    <Content Include="settings\MagnetometerCalibrationData.xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\emgucvcode\Emgu.CV.UI\Emgu.CV.UI.csproj">
+      <Project>{90e78bbf-c7fe-4d8e-ade1-75448e866fdb}</Project>
+      <Name>Emgu.CV.UI</Name>
+      <Private>False</Private>
+    </ProjectReference>
+    <ProjectReference Include="..\emgucvcode\Emgu.CV\Emgu.CV.csproj">
+      <Project>{9a1a77fe-f01b-495e-87b7-4b16e4f8c908}</Project>
+      <Name>Emgu.CV</Name>
+      <Private>False</Private>
+    </ProjectReference>
+    <ProjectReference Include="..\emgucvcode\Emgu.Util\Emgu.Util.csproj">
+      <Project>{7c2c5325-8235-4a24-9c67-6bd79a4679e2}</Project>
+      <Name>Emgu.Util</Name>
+      <Private>False</Private>
+    </ProjectReference>
+    <ProjectReference Include="..\MRG.Controls.UI\MRG.Controls.UI.csproj">
+      <Project>{48e18b56-4c37-4d69-aba7-429c42b45aac}</Project>
+      <Name>MRG.Controls.UI</Name>
+      <Private>False</Private>
+    </ProjectReference>
+    <ProjectReference Include="..\SkyIndexAnalyzerLibraries\SkyIndexAnalyzerLibraries.csproj">
+      <Project>{7beac8e4-e53f-466a-b824-1fe69e60d114}</Project>
+      <Name>SkyIndexAnalyzerLibraries</Name>
+      <Private>False</Private>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSHARP.Targets" />
+  <ProjectExtensions>
+    <VisualStudio AllowExistingFolder="true" />
+  </ProjectExtensions>
+</Project>

@@ -12,6 +12,8 @@ namespace SkyIndexAnalyzerLibraries
     {
         public string udpMessage = "";
         public int devID = 1;
+        public bool isReplyMessage = false;
+        public bool isErrorMessage = false;
         public string ipAddrString = "";
         private SocketAddress remoteSocketAddress = new SocketAddress(AddressFamily.InterNetwork);
 
@@ -33,14 +35,12 @@ namespace SkyIndexAnalyzerLibraries
             if ((message.Length >= 5) && (message.IndexOf("<id") >= 0))
             {
                 int idxStartDevIDtag = message.IndexOf("<id");
-                //int idx = message.IndexOf('>');
-                string strDevIDTag = message.Substring(idxStartDevIDtag, 5); // "<id23>"
+                string strDevIDTag = message.Substring(idxStartDevIDtag, 5); // "<id2>"
 
                 try
                 {
-                    strDevIDTag = strDevIDTag.Substring(3); // "23>"
-                    int idx2 = strDevIDTag.IndexOf('>'); // 2
-                    strDevIDTag = strDevIDTag.Substring(0, idx2); // "23"
+                    strDevIDTag = strDevIDTag.Replace("<id", "");
+                    strDevIDTag = strDevIDTag.Replace(">", "");
                     devID = Convert.ToInt32(strDevIDTag);
                 }
                 catch (Exception)
@@ -48,11 +48,23 @@ namespace SkyIndexAnalyzerLibraries
                     devID = 0;
                 }
 
-                udpMessage = message.Substring(0, idxStartDevIDtag) + message.Substring(idx + 1);
+                udpMessage = message.Replace("<id" + devID + ">", "");
             }
             else
             {
                 devID = 0;
+            }
+
+            if ((udpMessage.Length >= 6) && (udpMessage.IndexOf("<repl>") >= 0))
+            {
+                udpMessage = udpMessage.Replace("<repl>", "");
+                isReplyMessage = true;
+            }
+
+            if ((udpMessage.Length >= 5) && (udpMessage.IndexOf("<err>") >= 0))
+            {
+                udpMessage = udpMessage.Replace("<err>", "");
+                isErrorMessage = true;
             }
         }
     }

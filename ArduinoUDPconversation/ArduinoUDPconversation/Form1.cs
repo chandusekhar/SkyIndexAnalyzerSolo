@@ -622,11 +622,25 @@ namespace ArduinoUDPconversation
 
         private void Form1_Load(object sender, EventArgs e)
         {
-            ip2ListenDevID1 = Settings.Default.ArduinoBoardDefaultIP;
-            port2converse = Settings.Default.ArduinoBoardDefaultUDPport;
-            //portBcstRecvng = Settings.Default.UDPBroadcastDefaultListeningPort;
-            ThreadSafeOperations.SetTextTB(tbDev1IPstr, ip2ListenDevID1, false);
-            //SetTextTB(tbBcstListeningPort, portBcstRecvng.ToString(), false);
+            string generalSettingsFilename = Directory.GetCurrentDirectory() + "\\settings\\ArduinoUDPconversationAppGeneralSettings.xml";
+            if (!File.Exists(generalSettingsFilename))
+            {
+                ip2ListenDevID1 = Settings.Default.ArduinoBoardDefaultIP;
+                port2converse = Settings.Default.ArduinoBoardDefaultUDPport;
+                ThreadSafeOperations.SetTextTB(tbDev1IPstr, ip2ListenDevID1, false);
+            }
+            else
+            {
+                Dictionary<string, object> generalSettings = ServiceTools.ReadDictionaryFromXML(generalSettingsFilename);
+
+                ip2ListenDevID1 = generalSettings["ArduinoBoardID1DefaultIP"] as string;
+                ip2ListenDevID2 = generalSettings["ArduinoBoardID2DefaultIP"] as string;
+                port2converse = Convert.ToInt32(generalSettings["ArduinoBoardDefaultUDPport"]);
+                portBcstRecvng = Convert.ToInt32(generalSettings["UDPBroadcastDefaultListeningPort"]);
+
+                ThreadSafeOperations.SetTextTB(tbDev1IPstr, ip2ListenDevID1, false);
+                ThreadSafeOperations.SetTextTB(tbDev2IPstr, ip2ListenDevID2, false);
+            }
         }
 
 
@@ -725,6 +739,7 @@ namespace ArduinoUDPconversation
                 catch (Exception exc)
                 {
                     bcstMessageReceived = false;
+                    recievingUDPmessage = false;
                     bcstMessage = exc.Message;
                 }
                 udpSt.udpMessage = bcstMessage;
@@ -904,7 +919,6 @@ namespace ArduinoUDPconversation
         private void bgwUDPmessagesParser_DoWork(object sender, DoWorkEventArgs e)
         {
             BackgroundWorker selfWorker = sender as BackgroundWorker;
-            int currMessageDevID = 0;
 
             while (true)
             {
@@ -927,38 +941,19 @@ namespace ArduinoUDPconversation
                     if (curMessageBoundle == null) continue;
 
                     string bcstMessage = curMessageBoundle.udpMessage;
-                    currMessageDevID = curMessageBoundle.devID;
+                    int currMessageDevID = curMessageBoundle.devID;
 
-                    //if ((bcstMessage.Length >= 5) && (bcstMessage.Substring(0, 3) == "<id"))
-                    //{
-                    //    int idx = bcstMessage.IndexOf('>');
-                    //    string strDevIDTag = bcstMessage.Substring(0, idx + 1); // "<id23>"
-                    //
-                    //    try
-                    //    {
-                    //        strDevIDTag = strDevIDTag.Substring(3); // "23>"
-                    //        int idx2 = strDevIDTag.IndexOf('>'); // 2
-                    //        strDevIDTag = strDevIDTag.Substring(0, idx2); // "23"
-                    //        currMessageDevID = Convert.ToInt32(strDevIDTag);
-                    //    }
-                    //    catch (Exception)
-                    //    {
-                    //        currMessageDevID = 0;
-                    //    }
-                    //
-                    //    bcstMessage = bcstMessage.Substring(idx + 1);
-                    //}
-                    //else
-                    //{
-                    //    currMessageDevID = 0;
-                    //}
 
-                    if ((bcstMessage.Length >= 6) && (bcstMessage.Substring(0, 6) == "<repl>"))
+                    if (curMessageBoundle.isReplyMessage)
                     {
-                        bcstMessage = bcstMessage.Substring(6, bcstMessage.Length - 6);
-                        if (currMessageDevID > 0)
+                        //bcstMessage = bcstMessage.Substring(6, bcstMessage.Length - 6);
+                        if (currMessageDevID == 1)
                         {
-                            Note("devID:" + currMessageDevID + "   |   " + bcstMessage);
+                            Note("devID:" + currMessageDevID + "   |   " + bcstMessage, tbResponseLog1);
+                        }
+                        else if (currMessageDevID == 2)
+                        {
+                            Note("devID:" + currMessageDevID + "   |   " + bcstMessage, tbResponseLog2);
                         }
                         else
                         {
@@ -967,19 +962,20 @@ namespace ArduinoUDPconversation
 
                         //udpMessage = bcstMessage;
                     }
-                    else if ((bcstMessage.Length >= 5) && (bcstMessage.Substring(0, 5) == "<err>"))
+                    else if (curMessageBoundle.isErrorMessage)
                     {
-                        bcstMessage = bcstMessage.Substring(5, bcstMessage.Length - 5);
-                        if (currMessageDevID > 0)
+                        if (currMessageDevID == 1)
                         {
-                            Note("devID:" + currMessageDevID + "   |   " + "ERROR: " + bcstMessage);
+                            Note("devID:" + currMessageDevID + "   |   " + "ERROR: " + bcstMessage, tbResponseLog1);
+                        }
+                        else if (currMessageDevID == 2)
+                        {
+                            Note("devID:" + currMessageDevID + "   |   " + "ERROR: " + bcstMessage, tbResponseLog2);
                         }
                         else
                         {
                             Note("ERROR: " + bcstMessage);
                         }
-
-                        //udpMessage = bcstMessage;
                     }
                     else if (((bcstMessage.Length >= 6) && (bcstMessage.Substring(0, 5) == "timer:")))
                     {
@@ -991,19 +987,11 @@ namespace ArduinoUDPconversation
                         {
                             Note(bcstMessage, tbBcstListeningLog);
                         }
-                        //udpMessage = bcstMessage;
                     }
                     else if (bcstMessage == "imarduino")
                     {
                         if ((needsToDiscoverArduinoBoardID1) && (currMessageDevID == 1))
                         {
-                            //SocketAddress tmpSktAddress = remoteSktAddr;
-                            //string addrStr = tmpSktAddress.ToString(); //InterNetwork:16:{21,179,192,168,192,221,0,0,0,0,0,0,0,0}
-                            //addrStr = addrStr.Substring(addrStr.IndexOf("{") + 1);
-                            //addrStr = addrStr.Substring(0, addrStr.Length - 1);
-                            //char[] splitChar = { ',' };
-                            //string[] sktAddrStrArray = addrStr.Split(splitChar);
-                            //addrStr = sktAddrStrArray[2] + "." + sktAddrStrArray[3] + "." + sktAddrStrArray[4] + "." + sktAddrStrArray[5];
                             string addrStr = curMessageBoundle.ipAddrString;
                             ThreadSafeOperations.SetTextTB(tbDev1IPstr, addrStr, false);
                             needsToDiscoverArduinoBoardID1 = false;
@@ -1011,13 +999,6 @@ namespace ArduinoUDPconversation
 
                         if ((needsToDiscoverArduinoBoardID2) && (currMessageDevID == 2))
                         {
-                            //SocketAddress tmpSktAddress = remoteSktAddr;
-                            //string addrStr = tmpSktAddress.ToString(); //InterNetwork:16:{21,179,192,168,192,221,0,0,0,0,0,0,0,0}
-                            //addrStr = addrStr.Substring(addrStr.IndexOf("{") + 1);
-                            //addrStr = addrStr.Substring(0, addrStr.Length - 1);
-                            //char[] splitChar = { ',' };
-                            //string[] sktAddrStrArray = addrStr.Split(splitChar);
-                            //addrStr = sktAddrStrArray[2] + "." + sktAddrStrArray[3] + "." + sktAddrStrArray[4] + "." + sktAddrStrArray[5];
                             string addrStr = curMessageBoundle.ipAddrString;
                             ThreadSafeOperations.SetTextTB(tbDev2IPstr, addrStr, false);
                             needsToDiscoverArduinoBoardID2 = false;
@@ -1037,10 +1018,7 @@ namespace ArduinoUDPconversation
                             }
 
                         }
-                        //recievedData = true;
-                        //udpMessage = bcstMessage;
                     }
-
                 }
                 else
                 {
@@ -1069,8 +1047,8 @@ namespace ArduinoUDPconversation
             {
                 return;
             }
-            ThreadSafeOperations.SetTextTB(textBoxCommand1, "", false);
-            ThreadSafeOperations.SetTextTB(tbResponseLog1, ">>> " + currCommand + Environment.NewLine, true);
+            ThreadSafeOperations.SetTextTB(textBoxCommand2, "", false);
+            ThreadSafeOperations.SetTextTB(tbResponseLog2, ">>> " + currCommand + Environment.NewLine, true);
             PerformSendCommand(2);
         }
 
@@ -1096,5 +1074,5 @@ namespace ArduinoUDPconversation
 
 
 
-    
+
 }

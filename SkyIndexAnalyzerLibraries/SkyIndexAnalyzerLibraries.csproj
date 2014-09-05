@@ -183,6 +183,7 @@
     <Compile Include="SkyCloudClassification.cs" />
     <Compile Include="ThreadSafeOperations.cs" />
     <Compile Include="TimeSeries.cs" />
+    <Compile Include="UdpState.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="HistogramCalcAndShowForm.resx">
