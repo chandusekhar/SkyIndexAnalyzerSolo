@@ -35,8 +35,8 @@ namespace DataCollectorAutomator
     enum WorkersRequestingArduinoDataBroadcastState
     {
         dataCollector,
-        accelCalibrator,
-        magnCalibrator
+        accelCalibrator//,
+        //magnCalibrator
     }
 
 
@@ -44,7 +44,7 @@ namespace DataCollectorAutomator
     {
         None,
         Accelerometer,
-        Magnetometer,
+        //Magnetometer,
         Pressure,
         GPS
     }
@@ -56,7 +56,8 @@ namespace DataCollectorAutomator
 
     public partial class DataCollectorMainForm : Form
     {
-        private string ip2Listen = "";
+        private string ip2ListenID1 = "";
+        private string ip2ListenID2 = "";
         private int port2converse = 5555;
         private int portBcstRecvng = 4444;
         //private string currCommand;
@@ -100,15 +101,18 @@ namespace DataCollectorAutomator
         private string magnCalibrationDataFilename = "";
         private int BroadcastLogHistorySizeLines = 4096;
         private TimeSpan CamShotPeriod = new TimeSpan(0, 1, 0);
-        private IPAddress VivotekCameraIPaddress;
-        private string VivotekCameraUserName = "root";
-        private string VivotekCameraPassword = "vivotek";
+        private IPAddress VivotekCameraID1IPaddress;
+        private IPAddress VivotekCameraID2IPaddress;
+        private string VivotekCameraUserName1 = "root";
+        private string VivotekCameraPassword1 = "vivotek";
+        private string VivotekCameraUserName2 = "root";
+        private string VivotekCameraPassword2 = "vivotek";
 
         private LogWindow theLogWindow = null;
         private string strTotalBcstLog = "";
         private bool showTotalBcstLog = false;
 
-        private static Queue<string> quArduinoUDPCatchedMessages = new Queue<string>();
+        private static Queue<IncomingUDPmessageBoundle> quArduinoUDPCatchedMessages = new Queue<IncomingUDPmessageBoundle>();
 
         //private int sensorsHistoryRepresentingScale = 86400;
         //private SensorsHistoryShowing currRepresentingHistory = SensorsHistoryShowing.None;
@@ -215,11 +219,10 @@ namespace DataCollectorAutomator
         private void DataCollectorMainForm_Load(object sender, EventArgs e)
         {
             generalSettingsFilename = Directory.GetCurrentDirectory() +
-                                      "\\settings\\DataCollectorAppGeneralSettings.xml";
+                                      "\\settings\\DataCollectorAppGeneralSettings2G.xml";
             accCalibrationDataFilename = Directory.GetCurrentDirectory() +
-                                         "\\settings\\AccelerometerCalibrationData.xml";
-            magnCalibrationDataFilename = Directory.GetCurrentDirectory() +
-                                          "\\settings\\MagnetometerCalibrationData.xml";
+                                         "\\settings\\AccelerometerCalibrationData2G.xml";
+            
 
 
             Dictionary<string, object> accCalibrationDataDict = ServiceTools.ReadDictionaryFromXML(accCalibrationDataFilename);
@@ -231,23 +234,35 @@ namespace DataCollectorAutomator
                 Convert.ToDouble(accCalibrationDataDict["accCalibratedZzero"]));
 
 
-            ip2Listen = generalSettings["ArduinoBoardDefaultIP"] as string;
+            ip2ListenID1 = generalSettings["ArduinoBoardDefaultIP1"] as string;
+            ip2ListenID2 = generalSettings["ArduinoBoardDefaultIP2"] as string;
+
             port2converse = Convert.ToInt32(generalSettings["ArduinoBoardDefaultUDPport"]);
             portBcstRecvng = Convert.ToInt32(generalSettings["UDPBroadcastDefaultListeningPort"]);
             string strCamShotPeriod = (generalSettings["VivotekCameraShootingPeriod"]) as string;
             CamShotPeriod = new TimeSpan(Convert.ToInt32(strCamShotPeriod.Substring(0, 2)),
                 Convert.ToInt32(strCamShotPeriod.Substring(3, 2)), Convert.ToInt32(strCamShotPeriod.Substring(6, 2)));
-            IPAddress.TryParse(generalSettings["VivotekCameraIPaddr"] as string, out VivotekCameraIPaddress);
-            VivotekCameraUserName = generalSettings["VivotekCameraUserName"] as string;
-            VivotekCameraPassword = generalSettings["VivotekCameraPassword"] as string;
+
+            IPAddress.TryParse(generalSettings["VivotekCameraID1IPaddr"] as string, out VivotekCameraID1IPaddress);
+            IPAddress.TryParse(generalSettings["VivotekCameraID2IPaddr"] as string, out VivotekCameraID2IPaddress);
+            VivotekCameraUserName1 = generalSettings["VivotekCameraID1UserName"] as string;
+            VivotekCameraPassword1 = generalSettings["VivotekCameraID1Password"] as string;
+            VivotekCameraUserName2 = generalSettings["VivotekCameraID2UserName"] as string;
+            VivotekCameraPassword2 = generalSettings["VivotekCameraID2Password"] as string;
             BroadcastLogHistorySizeLines = Convert.ToInt32(generalSettings["BroadcastLogHistorySizeLines"]);
 
 
-            ThreadSafeOperations.SetTextTB(tbCamPWD, VivotekCameraPassword, false);
-            tbCamIP.Text = generalSettings["VivotekCameraIPaddr"] as string;
+            ThreadSafeOperations.SetTextTB(tbCamPWD1, VivotekCameraPassword1, false);
+            ThreadSafeOperations.SetTextTB(tbCamPWD2, VivotekCameraPassword2, false);
+            tbCamIP1.Text = generalSettings["VivotekCameraID1IPaddr"] as string;
+            tbCamIP2.Text = generalSettings["VivotekCameraID2IPaddr"] as string;
+            ThreadSafeOperations.SetTextTB(tbCamUName1, VivotekCameraUserName1, false);
+            ThreadSafeOperations.SetTextTB(tbCamUName2, VivotekCameraUserName2, false);
+            ThreadSafeOperations.SetTextTB(tbIP2ListenDevID1, ip2ListenID1, false);
+            ThreadSafeOperations.SetTextTB(tbIP2ListenDevID2, ip2ListenID2, false);
+
             tbCamShotPeriod.Text = CamShotPeriod.ToString("c");
-            ThreadSafeOperations.SetTextTB(tbCamUName, VivotekCameraUserName, false);
-            ThreadSafeOperations.SetTextTB(textBox2, ip2Listen, false);
+            
             //ThreadSafeOperations.SetTextTB(tbBcstListeningPort, portBcstRecvng.ToString(), false);
 
 
@@ -261,26 +276,15 @@ namespace DataCollectorAutomator
             ThreadSafeOperations.SetText(lblAccelCalibrationY, Math.Round(accCalibrationData.AccDoubleY, 2).ToString(), false);
             ThreadSafeOperations.SetText(lblAccelCalibrationZ, Math.Round(accCalibrationData.AccDoubleZ, 2).ToString(), false);
 
+            processCircleID1.OuterCircleRadius = 20;
+            processCircleID1.InnerCircleRadius = 15;
+            processCircleID1.NumberSpoke = 12;
+            processCircleID1.SpokeThickness = 4;
 
-            magnCalibrationData = new MagnetometerData(
-                Convert.ToDouble(magnCalibrationDataDict["magnCalibratedZeroX"]),
-                Convert.ToDouble(magnCalibrationDataDict["magnCalibratedZeroY"]),
-                Convert.ToDouble(magnCalibrationDataDict["magnCalibratedZeroZ"]));
-            magnCalibratedAngleShift = Convert.ToDouble(magnCalibrationDataDict["magnCalibratedAngleShift"]);
-            if (magnCalibrationData.MagnMagnitude == 0.0d)
-            {
-                magnCalibrationData = new MagnetometerData(256.0d, 0.0d, 0.0d);
-                magnCalibratedAngleShift = 0.0d;
-            }
-            //ThreadSafeOperations.SetText(lblMagnCalibrationCurrentX, Math.Round(magnCalibrationData.MagnDoubleX, 2).ToString(), false);
-            //ThreadSafeOperations.SetText(lblMagnCalibrationCurrentY, Math.Round(magnCalibrationData.MagnDoubleY, 2).ToString(), false);
-            //ThreadSafeOperations.SetText(lblMagnCalibrationCurrentZ, Math.Round(magnCalibrationData.MagnDoubleZ, 2).ToString(), false);
-
-
-            processCircle.OuterCircleRadius = 20;
-            processCircle.InnerCircleRadius = 15;
-            processCircle.NumberSpoke = 12;
-            processCircle.SpokeThickness = 4;
+            processCircleID2.OuterCircleRadius = 20;
+            processCircleID2.InnerCircleRadius = 15;
+            processCircleID2.NumberSpoke = 12;
+            processCircleID2.SpokeThickness = 4;
 
 
             //reportingTextBox = tbMainLog;
@@ -316,7 +320,7 @@ namespace DataCollectorAutomator
 
         private void textBox2_TextChanged(object sender, EventArgs e)
         {
-            ip2Listen = textBox2.Text;
+            ip2ListenID1 = tbIP2ListenDevID1.Text;
         }
 
         private void btnFindArduino_Click(object sender, EventArgs e)
@@ -324,14 +328,14 @@ namespace DataCollectorAutomator
             if (arduinoBoardSearchingWorker.IsBusy)
             {
                 arduinoBoardSearchingWorker.CancelAsync();
-                SearchingArduinoProcessCircle.Active = false;
-                SearchingArduinoProcessCircle.Visible = false;
+                SearchingArduinoID1ProcessCircle.Active = false;
+                SearchingArduinoID1ProcessCircle.Visible = false;
                 //UpdateProgressBar(progressBar1, 0);
             }
             else
             {
-                SearchingArduinoProcessCircle.Visible = true;
-                SearchingArduinoProcessCircle.Active = true;
+                SearchingArduinoID1ProcessCircle.Visible = true;
+                SearchingArduinoID1ProcessCircle.Active = true;
                 arduinoBoardSearchingWorker.RunWorkerAsync();
             }
         }
@@ -371,13 +375,17 @@ namespace DataCollectorAutomator
         private void SaveSettings()
         {
             Dictionary<string, object> dictDataToSave = new Dictionary<string, object>();
-            dictDataToSave.Add("ArduinoBoardDefaultIP", ip2Listen);
+            dictDataToSave.Add("ArduinoBoardID1DefaultIP", ip2ListenID1);
+            dictDataToSave.Add("ArduinoBoardID2DefaultIP", ip2ListenID2);
             dictDataToSave.Add("ArduinoBoardDefaultUDPport", port2converse);
             dictDataToSave.Add("UDPBroadcastDefaultListeningPort", portBcstRecvng);
             dictDataToSave.Add("VivotekCameraShootingPeriod", CamShotPeriod.ToString("c"));
-            dictDataToSave.Add("VivotekCameraIPaddr", VivotekCameraIPaddress.ToString());
-            dictDataToSave.Add("VivotekCameraUserName", VivotekCameraUserName);
-            dictDataToSave.Add("VivotekCameraPassword", VivotekCameraPassword);
+            dictDataToSave.Add("VivotekCameraID1IPaddr", VivotekCameraID1IPaddress.ToString());
+            dictDataToSave.Add("VivotekCameraID2IPaddr", VivotekCameraID2IPaddress.ToString());
+            dictDataToSave.Add("VivotekCameraID1UserName", VivotekCameraUserName1);
+            dictDataToSave.Add("VivotekCameraID2UserName", VivotekCameraUserName2);
+            dictDataToSave.Add("VivotekCameraID1Password", VivotekCameraPassword1);
+            dictDataToSave.Add("VivotekCameraID2Password", VivotekCameraPassword2);
             dictDataToSave.Add("BroadcastLogHistorySizeLines", BroadcastLogHistorySizeLines);
 
             ServiceTools.WriteDictionaryToXml(dictDataToSave, generalSettingsFilename, false);
@@ -446,7 +454,7 @@ namespace DataCollectorAutomator
 
                     if (bcstMessage != "")
                     {
-                        quArduinoUDPCatchedMessages.Enqueue(bcstMessage);
+                        quArduinoUDPCatchedMessages.Enqueue(new IncomingUDPmessageBoundle(remoteSktAddr, bcstMessage));
 
                         recievedUDPPacketsCounter++;
 
@@ -472,13 +480,21 @@ namespace DataCollectorAutomator
 
 
 
-        private void PerformSendCommand(string currCommand)
+        private void PerformSendCommand(string currCommand, int devID)
         {
             string retStr = currCommand;
             byte[] ret = System.Text.Encoding.ASCII.GetBytes(retStr);
             Socket Skt = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
             Skt.EnableBroadcast = false;
-            IPEndPoint ipEP = new IPEndPoint(IPAddress.Parse(ip2Listen), port2converse);
+            IPEndPoint ipEP = new IPEndPoint(IPAddress.Parse(ip2ListenID1), port2converse);
+            if (devID == 1)
+            {
+                ipEP = new IPEndPoint(IPAddress.Parse(ip2ListenID1), port2converse);
+            }
+            else if (devID == 2)
+            {
+                ipEP = new IPEndPoint(IPAddress.Parse(ip2ListenID2), port2converse);
+            }
 
             int sent = Skt.SendTo(ret, ipEP);
             Skt.Close();
@@ -548,8 +564,8 @@ namespace DataCollectorAutomator
         private void arduinoBoardSearchingWorker_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
         {
             ThreadSafeOperations.ToggleButtonState(btnFindArduino1, true, "Search for outdoor board", false);
-            SearchingArduinoProcessCircle.Active = false;
-            SearchingArduinoProcessCircle.Visible = false;
+            SearchingArduinoID1ProcessCircle.Active = false;
+            SearchingArduinoID1ProcessCircle.Visible = false;
         }
 
         private void pictureBox1_Click(object sender, EventArgs e)
@@ -564,11 +580,11 @@ namespace DataCollectorAutomator
         }
 
 
-        private void PerformRequestArduinoBoard(string requestText)
+        private void PerformRequestArduinoBoard(string requestText, int devID)
         {
             ArduinoRequestString = requestText;
             needsReplyOnRequest = true;
-            PerformSendCommand(requestText);
+            PerformSendCommand(requestText, devID);
             ArduinoRequestExpectant.RunWorkerAsync();
         }
 
@@ -589,7 +605,7 @@ namespace DataCollectorAutomator
                 StartStopDataCollectingWaitingCircle.Active = true;
                 dataCollectingState = DataCollectingStates.checkingState;
                 theWorkerRequestedArduinoDataBroadcastState = WorkersRequestingArduinoDataBroadcastState.dataCollector;
-                PerformRequestArduinoBoard("1");
+                PerformRequestArduinoBoard("1", 1);
             }
             else
             {
@@ -630,10 +646,10 @@ namespace DataCollectorAutomator
                     {
                         accelCalibrator.RunWorkerAsync();
                     }
-                    else if (theWorkerRequestedArduinoDataBroadcastState == WorkersRequestingArduinoDataBroadcastState.magnCalibrator)
-                    {
-                        magnCalibrator.RunWorkerAsync();
-                    }
+                    //else if (theWorkerRequestedArduinoDataBroadcastState == WorkersRequestingArduinoDataBroadcastState.magnCalibrator)
+                    //{
+                    //    magnCalibrator.RunWorkerAsync();
+                    //}
                 }
 
             }
@@ -650,10 +666,10 @@ namespace DataCollectorAutomator
                     {
                         accelCalibrator.RunWorkerAsync();
                     }
-                    else if (theWorkerRequestedArduinoDataBroadcastState == WorkersRequestingArduinoDataBroadcastState.magnCalibrator)
-                    {
-                        magnCalibrator.RunWorkerAsync();
-                    }
+                    //else if (theWorkerRequestedArduinoDataBroadcastState == WorkersRequestingArduinoDataBroadcastState.magnCalibrator)
+                    //{
+                    //    magnCalibrator.RunWorkerAsync();
+                    //}
                 }
             }
         }
@@ -781,7 +797,8 @@ namespace DataCollectorAutomator
                         pressureDateTimeValuesList.Clear();
                     }
 
-                    ThreadSafeOperations.SetLoadingCircleState(processCircle, false, false, processCircle.Color, 100);
+                    ThreadSafeOperations.SetLoadingCircleState(processCircleID1, false, false, processCircleID1.Color, 100);
+                    ThreadSafeOperations.SetLoadingCircleState(processCircleID2, false, false, processCircleID2.Color, 100);
 
                     break;
                 }
@@ -798,12 +815,12 @@ namespace DataCollectorAutomator
 
                     if (speed > 0.0d)
                     {
-                        ThreadSafeOperations.SetLoadingCircleState(processCircle, true, true, processCircle.Color, Convert.ToInt32(100.0d * speed / 50.0));
+                        ThreadSafeOperations.SetLoadingCircleState(processCircleID1, true, true, processCircleID1.Color, Convert.ToInt32(100.0d * speed / 50.0));
                         //Note("UDP messages speed: " + speed + Environment.NewLine);
                     }
                     else
                     {
-                        ThreadSafeOperations.SetLoadingCircleState(processCircle, false, false, processCircle.Color, 100);
+                        ThreadSafeOperations.SetLoadingCircleState(processCircleID1, false, false, processCircleID1.Color, 100);
                     }
                 }
 
@@ -911,12 +928,12 @@ namespace DataCollectorAutomator
                             return (accCurrentData.AccMagnitude - accCalibrationData.AccMagnitude) *
                                    (accCurrentData.AccMagnitude - accCalibrationData.AccMagnitude);
                         });
-                        ThreadSafeOperations.SetText(lblAccDevMeanMagnValue,
+                        ThreadSafeOperations.SetText(lblAccDevMeanMagnValueID1,
                             Math.Sqrt(dvMagnDev.Sum() / dvMagnDev.Count).ToString("0.###e-00"), false);
 
 
                         DescriptiveStatistics stats1 = new DescriptiveStatistics(dmAccDataMatrix.Column(6));
-                        ThreadSafeOperations.SetText(lblAccDevMeanAngleValue, stats1.Mean.ToString("0.###e-00"), false);
+                        ThreadSafeOperations.SetText(lblAccDevMeanAngleValueID1, stats1.Mean.ToString("0.###e-00"), false);
                     }
 
                     if (accDateTimeValuesList.Count >= 1000)
@@ -1407,23 +1424,17 @@ namespace DataCollectorAutomator
 
         private void tbCamIP_TextChanged(object sender, EventArgs e)
         {
-            //tbCamIP
-            String IPAddrString = tbCamIP.Text;
+            String IPAddrString = tbCamIP1.Text;
 
 
             IPAddrString = IPAddrString.Replace(",", ".");
 
-            if (!ipAddrValidatingCircle.Visible)
-            {
-                ipAddrValidatingCircle.Active = true;
-                ipAddrValidatingCircle.Visible = true;
-            }
-
-            if (IPAddress.TryParse(IPAddrString, out VivotekCameraIPaddress))
+            ThreadSafeOperations.SetLoadingCircleState(ipAddrValidatingCircle1, true, true, ipAddrValidatingCircle1.Color);
+            
+            if (IPAddress.TryParse(IPAddrString, out VivotekCameraID1IPaddress))
             {
                 SaveSettings();
-                ipAddrValidatingCircle.Active = false;
-                ipAddrValidatingCircle.Visible = false;
+                ThreadSafeOperations.SetLoadingCircleState(ipAddrValidatingCircle1, false, false, ipAddrValidatingCircle1.Color);
             }
         }
 
@@ -1431,7 +1442,7 @@ namespace DataCollectorAutomator
 
         private void tbCamUName_TextChanged(object sender, EventArgs e)
         {
-            VivotekCameraUserName = tbCamUName.Text;
+            VivotekCameraUserName1 = tbCamUName1.Text;
             SaveSettings();
         }
 
@@ -1439,7 +1450,7 @@ namespace DataCollectorAutomator
 
         private void tbCamPWD_TextChanged(object sender, EventArgs e)
         {
-            VivotekCameraPassword = tbCamPWD.Text;
+            VivotekCameraPassword1 = tbCamPWD1.Text;
             SaveSettings();
         }
 
@@ -1590,148 +1601,148 @@ namespace DataCollectorAutomator
 
         #region magnetometer calibration
 
-        private void magnCalibrator_DoWork(object sender, DoWorkEventArgs e)
-        {
-            DateTime datetimeCalibrationBegin = DateTime.Now;
-            DateTime datetimeCalibrationTimerNow = DateTime.Now;
-            TimeSpan calibrationTimer = datetimeCalibrationTimerNow - datetimeCalibrationBegin;
-            TimeSpan calibrationRecalcPeriod = new TimeSpan(0, 0, 1);
-            TimeSpan labelsUpdatingPeriod = new TimeSpan(0, 0, 1);
-            DateTime datetimePreviousLabelsUpdate = DateTime.MinValue;
+        //private void magnCalibrator_DoWork(object sender, DoWorkEventArgs e)
+        //{
+        //    DateTime datetimeCalibrationBegin = DateTime.Now;
+        //    DateTime datetimeCalibrationTimerNow = DateTime.Now;
+        //    TimeSpan calibrationTimer = datetimeCalibrationTimerNow - datetimeCalibrationBegin;
+        //    TimeSpan calibrationRecalcPeriod = new TimeSpan(0, 0, 1);
+        //    TimeSpan labelsUpdatingPeriod = new TimeSpan(0, 0, 1);
+        //    DateTime datetimePreviousLabelsUpdate = DateTime.MinValue;
 
-            double meanX, meanY, meanZ, stDevX, stDevY, stDevZ;
-            double[] dataSetX = new double[1000];
-            double[] dataSetY = new double[1000];
-            double[] dataSetZ = new double[1000];
-            int i = 0;
-            bool isTheFirstPass = true;
+        //    double meanX, meanY, meanZ, stDevX, stDevY, stDevZ;
+        //    double[] dataSetX = new double[1000];
+        //    double[] dataSetY = new double[1000];
+        //    double[] dataSetZ = new double[1000];
+        //    int i = 0;
+        //    bool isTheFirstPass = true;
 
-            System.ComponentModel.BackgroundWorker SelfWorker = sender as System.ComponentModel.BackgroundWorker;
-            ThreadSafeOperations.ToggleButtonState(btnCalibrateMagnetometer, true, "Stop calibrating", true);
-            dataCollectingState = DataCollectingStates.working;
+        //    System.ComponentModel.BackgroundWorker SelfWorker = sender as System.ComponentModel.BackgroundWorker;
+        //    ThreadSafeOperations.ToggleButtonState(btnCalibrateMagnetometer, true, "Stop calibrating", true);
+        //    dataCollectingState = DataCollectingStates.working;
 
 
-            while (true)
-            {
-                if (SelfWorker.CancellationPending)
-                {
-                    break;
-                }
+        //    while (true)
+        //    {
+        //        if (SelfWorker.CancellationPending)
+        //        {
+        //            break;
+        //        }
 
-                if (magnDatahasBeenChanged)
-                {
-                    ThreadSafeOperations.SetText(lblMagnCalibrationCurrentX, magnData.MagnX.ToString(), false);
-                    ThreadSafeOperations.SetText(lblMagnCalibrationCurrentY, magnData.MagnY.ToString(), false);
-                    ThreadSafeOperations.SetText(lblMagnCalibrationCurrentZ, magnData.MagnZ.ToString(), false);
+        //        if (magnDatahasBeenChanged)
+        //        {
+        //            ThreadSafeOperations.SetText(lblMagnCalibrationCurrentX, magnData.MagnX.ToString(), false);
+        //            ThreadSafeOperations.SetText(lblMagnCalibrationCurrentY, magnData.MagnY.ToString(), false);
+        //            ThreadSafeOperations.SetText(lblMagnCalibrationCurrentZ, magnData.MagnZ.ToString(), false);
 
-                    dataSetX[i] = magnData.MagnDoubleX;
-                    dataSetY[i] = magnData.MagnDoubleY;
-                    dataSetZ[i] = magnData.MagnDoubleZ;
-                    if (isTheFirstPass)
-                    {
-                        for (int j = i + 1; j < 1000; j++)
-                        {
-                            dataSetX[j] = magnData.MagnDoubleX;
-                            dataSetY[j] = magnData.MagnDoubleY;
-                            dataSetZ[j] = magnData.MagnDoubleZ;
-                        }
-                    }
-                    i++; if (i > 999)
-                    {
-                        i = 0;
-                        isTheFirstPass = false;
-                    }
-                    DateTime calcBegin = DateTime.Now;
-                    DescriptiveStatistics statisticsX = new DescriptiveStatistics((System.Collections.Generic.IEnumerable<double>)dataSetX);
-                    DescriptiveStatistics statisticsY = new DescriptiveStatistics((System.Collections.Generic.IEnumerable<double>)dataSetY);
-                    DescriptiveStatistics statisticsZ = new DescriptiveStatistics((System.Collections.Generic.IEnumerable<double>)dataSetZ);
-                    meanX = statisticsX.Mean;
-                    stDevX = Math.Round(100 * statisticsX.StandardDeviation / meanX, 2);
-                    meanY = statisticsY.Mean;
-                    stDevY = Math.Round(100 * statisticsY.StandardDeviation / meanY, 2);
-                    meanZ = statisticsZ.Mean;
-                    stDevZ = Math.Round(100 * statisticsZ.StandardDeviation / meanZ, 2);
-                    TimeSpan calcSpan = DateTime.Now - calcBegin;
+        //            dataSetX[i] = magnData.MagnDoubleX;
+        //            dataSetY[i] = magnData.MagnDoubleY;
+        //            dataSetZ[i] = magnData.MagnDoubleZ;
+        //            if (isTheFirstPass)
+        //            {
+        //                for (int j = i + 1; j < 1000; j++)
+        //                {
+        //                    dataSetX[j] = magnData.MagnDoubleX;
+        //                    dataSetY[j] = magnData.MagnDoubleY;
+        //                    dataSetZ[j] = magnData.MagnDoubleZ;
+        //                }
+        //            }
+        //            i++; if (i > 999)
+        //            {
+        //                i = 0;
+        //                isTheFirstPass = false;
+        //            }
+        //            DateTime calcBegin = DateTime.Now;
+        //            DescriptiveStatistics statisticsX = new DescriptiveStatistics((System.Collections.Generic.IEnumerable<double>)dataSetX);
+        //            DescriptiveStatistics statisticsY = new DescriptiveStatistics((System.Collections.Generic.IEnumerable<double>)dataSetY);
+        //            DescriptiveStatistics statisticsZ = new DescriptiveStatistics((System.Collections.Generic.IEnumerable<double>)dataSetZ);
+        //            meanX = statisticsX.Mean;
+        //            stDevX = Math.Round(100 * statisticsX.StandardDeviation / meanX, 2);
+        //            meanY = statisticsY.Mean;
+        //            stDevY = Math.Round(100 * statisticsY.StandardDeviation / meanY, 2);
+        //            meanZ = statisticsZ.Mean;
+        //            stDevZ = Math.Round(100 * statisticsZ.StandardDeviation / meanZ, 2);
+        //            TimeSpan calcSpan = DateTime.Now - calcBegin;
 
-                    magnCalibrationData.MagnDoubleX = meanX;
-                    magnCalibrationData.MagnDoubleY = meanY;
-                    magnCalibrationData.MagnDoubleZ = meanZ;
+        //            magnCalibrationData.MagnDoubleX = meanX;
+        //            magnCalibrationData.MagnDoubleY = meanY;
+        //            magnCalibrationData.MagnDoubleZ = meanZ;
 
-                    ThreadSafeOperations.SetText(lblMagnCalibrationX, "<" + Math.Round(meanX, 2).ToString() + ">", false);
-                    ThreadSafeOperations.SetText(lblMagnCalibrationY, "<" + Math.Round(meanY, 2).ToString() + ">", false);
-                    ThreadSafeOperations.SetText(lblMagnCalibrationZ, "<" + Math.Round(meanZ, 2).ToString() + ">", false);
-                    ThreadSafeOperations.SetText(lblMagnStDevX, stDevX.ToString() + "%", false);
-                    ThreadSafeOperations.SetText(lblMagnStDevY, stDevY.ToString() + "%", false);
-                    ThreadSafeOperations.SetText(lblMagnStDevZ, stDevZ.ToString() + "%", false);
+        //            ThreadSafeOperations.SetText(lblMagnCalibrationX, "<" + Math.Round(meanX, 2).ToString() + ">", false);
+        //            ThreadSafeOperations.SetText(lblMagnCalibrationY, "<" + Math.Round(meanY, 2).ToString() + ">", false);
+        //            ThreadSafeOperations.SetText(lblMagnCalibrationZ, "<" + Math.Round(meanZ, 2).ToString() + ">", false);
+        //            ThreadSafeOperations.SetText(lblMagnStDevX, stDevX.ToString() + "%", false);
+        //            ThreadSafeOperations.SetText(lblMagnStDevY, stDevY.ToString() + "%", false);
+        //            ThreadSafeOperations.SetText(lblMagnStDevZ, stDevZ.ToString() + "%", false);
 
-                    if (latestAccData != null)
-                    {
-                        ThreadSafeOperations.SetText(lblCaughtMagnCalibrationValue,
-                            magnCalibrationData.compassAngle(latestAccData).ToString(), false);
-                    }
-                    else
-                    {
-                        ThreadSafeOperations.SetText(lblCaughtMagnCalibrationValue,
-                            magnCalibrationData.compassAngle().ToString(), false);
-                    }
+        //            if (latestAccData != null)
+        //            {
+        //                ThreadSafeOperations.SetText(lblCaughtMagnCalibrationValue,
+        //                    magnCalibrationData.compassAngle(latestAccData).ToString(), false);
+        //            }
+        //            else
+        //            {
+        //                ThreadSafeOperations.SetText(lblCaughtMagnCalibrationValue,
+        //                    magnCalibrationData.compassAngle().ToString(), false);
+        //            }
 
-                    string txt2Show = "i = " + i.ToString();
-                    txt2Show += Environment.NewLine + "calc time = " + calcSpan.Ticks.ToString();
-                    ThreadSafeOperations.SetText(lblMagnCalculationStatistics, txt2Show, false);
-                    magnDatahasBeenChanged = false;
-                }
+        //            string txt2Show = "i = " + i.ToString();
+        //            txt2Show += Environment.NewLine + "calc time = " + calcSpan.Ticks.ToString();
+        //            ThreadSafeOperations.SetText(lblMagnCalculationStatistics, txt2Show, false);
+        //            magnDatahasBeenChanged = false;
+        //        }
 
-                datetimeCalibrationTimerNow = DateTime.Now;
-                calibrationTimer = datetimeCalibrationTimerNow - datetimeCalibrationBegin;
-            }
-        }
+        //        datetimeCalibrationTimerNow = DateTime.Now;
+        //        calibrationTimer = datetimeCalibrationTimerNow - datetimeCalibrationBegin;
+        //    }
+        //}
 
-        private void btnCalibrateMagnetometer_Click(object sender, EventArgs e)
-        {
-            if (!magnCalibrator.IsBusy)
-            {
-                if (!udpCatchingJob.IsBusy)
-                {
-                    //включим прослушку Arduino
-                    needsToSwitchListeningArduinoOFF = true;
-                    btnStartStopBdcstListening_Click(null, null);
-                }
-                Note("Detecting outdoor board broadcasting state");
-                ThreadSafeOperations.ToggleButtonState(btnCalibrateMagnetometer, false, "wait for state checking", true);
-                StartStopDataCollectingWaitingCircle.Visible = true;
-                StartStopDataCollectingWaitingCircle.Active = true;
-                dataCollectingState = DataCollectingStates.checkingState;
-                theWorkerRequestedArduinoDataBroadcastState = WorkersRequestingArduinoDataBroadcastState.magnCalibrator;
-                PerformRequestArduinoBoard("1");
-            }
-            else
-            {
-                magnCalibrator.CancelAsync();
-            }
-        }
+        //private void btnCalibrateMagnetometer_Click(object sender, EventArgs e)
+        //{
+        //    if (!magnCalibrator.IsBusy)
+        //    {
+        //        if (!udpCatchingJob.IsBusy)
+        //        {
+        //            //включим прослушку Arduino
+        //            needsToSwitchListeningArduinoOFF = true;
+        //            btnStartStopBdcstListening_Click(null, null);
+        //        }
+        //        Note("Detecting outdoor board broadcasting state");
+        //        ThreadSafeOperations.ToggleButtonState(btnCalibrateMagnetometer, false, "wait for state checking", true);
+        //        StartStopDataCollectingWaitingCircle.Visible = true;
+        //        StartStopDataCollectingWaitingCircle.Active = true;
+        //        dataCollectingState = DataCollectingStates.checkingState;
+        //        theWorkerRequestedArduinoDataBroadcastState = WorkersRequestingArduinoDataBroadcastState.magnCalibrator;
+        //        PerformRequestArduinoBoard("1");
+        //    }
+        //    else
+        //    {
+        //        magnCalibrator.CancelAsync();
+        //    }
+        //}
 
-        private void magnCalibrator_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
-        {
-            if (needsToSwitchListeningArduinoOFF)
-            {
-                needsToSwitchListeningArduinoOFF = false;
-                udpCatchingJob.CancelAsync();
-            }
-            ThreadSafeOperations.ToggleButtonState(btnCalibrateMagnetometer, true, "Calibrate magnetometer", false);
-            dataCollectingState = DataCollectingStates.idle;
-        }
+        //private void magnCalibrator_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
+        //{
+        //    if (needsToSwitchListeningArduinoOFF)
+        //    {
+        //        needsToSwitchListeningArduinoOFF = false;
+        //        udpCatchingJob.CancelAsync();
+        //    }
+        //    ThreadSafeOperations.ToggleButtonState(btnCalibrateMagnetometer, true, "Calibrate magnetometer", false);
+        //    dataCollectingState = DataCollectingStates.idle;
+        //}
 
-        private void btnMagnSaveCalibration_Click(object sender, EventArgs e)
-        {
-            magnCalibratedAngleShift = Convert.ToDouble(tbCurrentCompassHeadingValue.Text) -
-                                       Convert.ToDouble(lblCaughtMagnCalibrationValue.Text);
-            Dictionary<string, object> propertiesDictToSave = new Dictionary<string, object>();
-            propertiesDictToSave.Add("magnCalibratedZeroX", magnCalibrationData.MagnDoubleX);
-            propertiesDictToSave.Add("magnCalibratedZeroY", magnCalibrationData.MagnDoubleY);
-            propertiesDictToSave.Add("magnCalibratedZeroZ", magnCalibrationData.MagnDoubleZ);
-            propertiesDictToSave.Add("magnCalibratedAngleShift", magnCalibratedAngleShift);
-            ServiceTools.WriteDictionaryToXml(propertiesDictToSave, magnCalibrationDataFilename, false);
-        }
+        //private void btnMagnSaveCalibration_Click(object sender, EventArgs e)
+        //{
+        //    magnCalibratedAngleShift = Convert.ToDouble(tbCurrentCompassHeadingValue.Text) -
+        //                               Convert.ToDouble(lblCaughtMagnCalibrationValue.Text);
+        //    Dictionary<string, object> propertiesDictToSave = new Dictionary<string, object>();
+        //    propertiesDictToSave.Add("magnCalibratedZeroX", magnCalibrationData.MagnDoubleX);
+        //    propertiesDictToSave.Add("magnCalibratedZeroY", magnCalibrationData.MagnDoubleY);
+        //    propertiesDictToSave.Add("magnCalibratedZeroZ", magnCalibrationData.MagnDoubleZ);
+        //    propertiesDictToSave.Add("magnCalibratedAngleShift", magnCalibratedAngleShift);
+        //    ServiceTools.WriteDictionaryToXml(propertiesDictToSave, magnCalibrationDataFilename, false);
+        //}
 
         #endregion magnetometer calibration
 
@@ -1862,7 +1873,7 @@ namespace DataCollectorAutomator
         private void bgwUDPmessagesParser_DoWork(object sender, DoWorkEventArgs e)
         {
             BackgroundWorker selfWorker = sender as BackgroundWorker;
-            int currMessageDevID = 0;
+            //int currMessageDevID = 0;
 
             while (true)
             {
@@ -1880,38 +1891,21 @@ namespace DataCollectorAutomator
 
                 if (quArduinoUDPCatchedMessages.Count > 0)
                 {
-                    string bcstMessage = quArduinoUDPCatchedMessages.Dequeue();
+                    IncomingUDPmessageBoundle curMessageBoundle = quArduinoUDPCatchedMessages.Dequeue();
 
-                    if (bcstMessage == null) continue;
+                    if (curMessageBoundle == null) continue;
 
-                    if ((bcstMessage.Length >= 5) && (bcstMessage.Substring(0, 3) == "<id"))
+                    string bcstMessage = curMessageBoundle.udpMessage;
+                    int currMessageDevID = curMessageBoundle.devID;
+
+                    if (curMessageBoundle.isReplyMessage)
                     {
-                        int idx = bcstMessage.IndexOf('>');
-                        string strDevIDTag = bcstMessage.Substring(0, idx + 1); // "<id23>"
-
-                        try
+                        //bcstMessage = bcstMessage.Substring(6, bcstMessage.Length - 6);
+                        if (currMessageDevID == 1)
                         {
-                            strDevIDTag = strDevIDTag.Substring(3); // "23>"
-                            int idx2 = strDevIDTag.IndexOf('>'); // 2
-                            strDevIDTag = strDevIDTag.Substring(0, idx2); // "23"
-                            currMessageDevID = Convert.ToInt32(strDevIDTag);
+                            Note("devID:" + currMessageDevID + "   |   " + bcstMessage);
                         }
-                        catch (Exception)
-                        {
-                            currMessageDevID = 0;
-                        }
-
-                        bcstMessage = bcstMessage.Substring(idx + 1);
-                    }
-                    else
-                    {
-                        currMessageDevID = 0;
-                    }
-
-                    if ((bcstMessage.Length >= 6) && (bcstMessage.Substring(0, 6) == "<repl>"))
-                    {
-                        bcstMessage = bcstMessage.Substring(6, bcstMessage.Length - 6);
-                        if (currMessageDevID > 0)
+                        else if (currMessageDevID == 2)
                         {
                             Note("devID:" + currMessageDevID + "   |   " + bcstMessage);
                         }
@@ -1951,7 +1945,7 @@ namespace DataCollectorAutomator
                             addrStr = sktAddrStrArray[2] + "." + sktAddrStrArray[3] + "." + sktAddrStrArray[4] + "." +
                                       sktAddrStrArray[5];
                             //Note(addrStr);
-                            ThreadSafeOperations.SetTextTB(textBox2, addrStr, false);
+                            ThreadSafeOperations.SetTextTB(tbIP2ListenDevID1, addrStr, false);
                             needsToDiscoverArduinoBoard = false;
                         }
                     }
@@ -1984,6 +1978,39 @@ namespace DataCollectorAutomator
                 }
 
             }
+        }
+
+        private void maskedTextBox2_TextChanged(object sender, EventArgs e)
+        {
+            String IPAddrString2 = tbCamIP2.Text;
+
+
+            IPAddrString2 = IPAddrString2.Replace(",", ".");
+
+            ThreadSafeOperations.SetLoadingCircleState(ipAddrValidatingCircle2, true, true, ipAddrValidatingCircle2.Color);
+
+            if (IPAddress.TryParse(IPAddrString2, out VivotekCameraID2IPaddress))
+            {
+                SaveSettings();
+                ThreadSafeOperations.SetLoadingCircleState(ipAddrValidatingCircle2, false, false, ipAddrValidatingCircle2.Color);
+            }
+        }
+
+        private void tbCamUName2_TextChanged(object sender, EventArgs e)
+        {
+            VivotekCameraUserName2 = tbCamUName2.Text;
+            SaveSettings();
+        }
+
+        private void tbIP2ListenDevID2_TextChanged(object sender, EventArgs e)
+        {
+            ip2ListenID2 = tbIP2ListenDevID2.Text;
+        }
+
+        private void tbCamPWD2_TextChanged(object sender, EventArgs e)
+        {
+            VivotekCameraPassword2 = tbCamPWD2.Text;
+            SaveSettings();
         }
 
 

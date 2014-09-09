@@ -110,7 +110,7 @@ namespace SkyIndexAnalyzerLibraries
                 res = (double[,])theVar.GetData();
             }
 
-            return new DenseMatrix(res);
+            return DenseMatrix.OfArray(res);
         }
 
 

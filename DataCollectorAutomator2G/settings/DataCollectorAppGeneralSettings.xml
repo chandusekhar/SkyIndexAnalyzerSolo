@@ -1,8 +1,12 @@
 <?xml version="1.0" standalone="yes"?>
 <DataSet xmlns="NetFrameWork">
   <table>
-    <key>ArduinoBoardDefaultIP</key>
-    <value>10.0.0.101</value>
+    <key>ArduinoBoardID1DefaultIP</key>
+    <value>192.0.0.101</value>
+  </table>
+  <table>
+    <key>ArduinoBoardID2DefaultIP</key>
+    <value>192.0.0.102</value>
   </table>
   <table>
     <key>ArduinoBoardDefaultUDPport</key>
@@ -17,15 +21,27 @@
     <value>00:01:00</value>
   </table>
   <table>
-    <key>VivotekCameraIPaddr</key>
-    <value>192.168.192.156</value>
+    <key>VivotekCameraID1IPaddr</key>
+    <value>192.168.192.217</value>
   </table>
   <table>
-    <key>VivotekCameraUserName</key>
+    <key>VivotekCameraID2IPaddr</key>
+    <value>192.168.192.216</value>
+  </table>
+  <table>
+    <key>VivotekCameraID1UserName</key>
     <value>root</value>
   </table>
   <table>
-    <key>VivotekCameraPassword</key>
+    <key>VivotekCameraID2UserName</key>
+    <value>root</value>
+  </table>
+  <table>
+    <key>VivotekCameraID1Password</key>
+    <value>vivotek</value>
+  </table>
+  <table>
+    <key>VivotekCameraID2Password</key>
     <value>vivotek</value>
   </table>
   <table>

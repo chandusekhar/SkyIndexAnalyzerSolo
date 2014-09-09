@@ -733,7 +733,7 @@ namespace ArduinoUDPconversation
                     {
                         quArduinoUDPCatchedMessages.Enqueue(new IncomingUDPmessageBoundle(remoteSktAddr, bcstMessage));
 
-                        bcstMessageReceived = true;
+                        //bcstMessageReceived = true;
                     }
                 }
                 catch (Exception exc)
