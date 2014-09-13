@@ -51,12 +51,13 @@
     <OutputPath>..\_bin\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <Optimize>true</Optimize>
-    <DebugType>none</DebugType>
+    <DebugType>full</DebugType>
     <PlatformTarget>x64</PlatformTarget>
     <UseVSHostingProcess>false</UseVSHostingProcess>
     <ErrorReport>prompt</ErrorReport>
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
     <Prefer32Bit>false</Prefer32Bit>
+    <DebugSymbols>true</DebugSymbols>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="MathNet.Numerics">
@@ -113,9 +114,12 @@
     <Content Include="Resources\06-magnify.png" />
     <Content Include="Resources\play.png" />
     <Content Include="Resources\play1.png" />
-    <Content Include="settings\AccelerometerCalibrationData.xml" />
-    <Content Include="settings\DataCollectorAppGeneralSettings.xml" />
-    <Content Include="settings\MagnetometerCalibrationData.xml" />
+    <Content Include="settings\AccelerometerCalibrationData2G.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="settings\DataCollectorAppGeneralSettings2G.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\emgucvcode\Emgu.CV.UI\Emgu.CV.UI.csproj">

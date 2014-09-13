@@ -64,7 +64,9 @@ namespace DataCollectorAutomator
 
         //private static String udpMessage = "";
         private static String replyMessage = "";
-        private static bool needsToDiscoverArduinoBoard = false;
+        private static int currOperatingDevID = 1;
+        private static bool needsToDiscoverArduinoBoardID1 = false;
+        private static bool needsToDiscoverArduinoBoardID2 = false;
         private static SocketAddress remoteSktAddr;
         private static bool needsReplyOnRequest = false;
         private static String ArduinoRequestString = "";
@@ -76,29 +78,31 @@ namespace DataCollectorAutomator
         private static accelerometerData latestAccData = new accelerometerData();
         private static Queue<GyroData> gyroDataQueue = new Queue<GyroData>();
         private static GyroData latestGyroData = new GyroData();
-        private static MagnetometerData magnData = new MagnetometerData();
+        //private static MagnetometerData magnData = new MagnetometerData();
         private static GPSdata gpsData = new GPSdata();
         private static int pressure = 0;
 
         private static bool needsToSwitchListeningArduinoOFF = false;
         //private static bool accDatahasBeenChanged = false;
         private static bool gyroDatahasBeenChanged = false;
-        private static bool magnDatahasBeenChanged = false;
+        //private static bool magnDatahasBeenChanged = false;
         private static bool gpsDataHasBeenChanged = false;
         private static bool pressureHasBeenChanged = false;
 
         private static bool itsTimeToGetCamShot = false, getCamShotImmediately = false;
         private static WorkersRequestingArduinoDataBroadcastState theWorkerRequestedArduinoDataBroadcastState = WorkersRequestingArduinoDataBroadcastState.dataCollector;
-        private static accelerometerData accCalibrationData;
-        private static MagnetometerData magnCalibrationData;
-        private static double magnCalibratedAngleShift;
-        public static Image currentShowingImage;
+        private static accelerometerData accCalibrationDataID1;
+        private static accelerometerData accCalibrationDataID2;
+        //private static MagnetometerData magnCalibrationData;
+        //private static double magnCalibratedAngleShift;
+        public static Image currentShowingImageID1;
+        public static Image currentShowingImageID2;
 
         //public static TextBox reportingTextBox;
 
         private string generalSettingsFilename = "";
         private string accCalibrationDataFilename = "";
-        private string magnCalibrationDataFilename = "";
+        //private string magnCalibrationDataFilename = "";
         private int BroadcastLogHistorySizeLines = 4096;
         private TimeSpan CamShotPeriod = new TimeSpan(0, 1, 0);
         private IPAddress VivotekCameraID1IPaddress;
@@ -144,6 +148,7 @@ namespace DataCollectorAutomator
                     case "gps":
                         {
                             gpsData = new GPSdata(dataValuesString, GPSdatasources.CloudCamArduinoGPS);
+                            gpsData.devID = devID;
                             gpsDataHasBeenChanged = gpsData.validGPSdata;
                             break;
                         }
@@ -153,6 +158,7 @@ namespace DataCollectorAutomator
                             string[] splitters = { ";" };
                             string[] stringAccValues = dataValuesString.Split(splitters, System.StringSplitOptions.RemoveEmptyEntries);
                             latestAccData = new accelerometerData(stringAccValues);
+                            latestAccData.devID = devID;
 
                             if (latestAccData.validAccData)
                             {
@@ -167,6 +173,7 @@ namespace DataCollectorAutomator
                             string[] splitters = { ";" };
                             string[] stringGyroValues = dataValuesString.Split(splitters, System.StringSplitOptions.RemoveEmptyEntries);
                             latestGyroData = new GyroData(stringGyroValues);
+                            latestGyroData.devID = devID;
                             gyroDataQueue.Enqueue(latestGyroData);
                             //gyroDatahasBeenChanged = true;
                             break;
@@ -197,10 +204,11 @@ namespace DataCollectorAutomator
                         }
                     case "dtm":
                         {
-                            string[] splitters = { ";" };
-                            string[] stringMagnValues = dataValuesString.Split(splitters, System.StringSplitOptions.RemoveEmptyEntries);
-                            magnData = new MagnetometerData(stringMagnValues);
-                            magnDatahasBeenChanged = true;
+                            //string[] splitters = { ";" };
+                            //string[] stringMagnValues = dataValuesString.Split(splitters, System.StringSplitOptions.RemoveEmptyEntries);
+                            //magnData = new MagnetometerData(stringMagnValues);
+                            //magnData.devID = devID;
+                            //magnDatahasBeenChanged = true;
                             break;
                         }
                     default:
@@ -222,20 +230,23 @@ namespace DataCollectorAutomator
                                       "\\settings\\DataCollectorAppGeneralSettings2G.xml";
             accCalibrationDataFilename = Directory.GetCurrentDirectory() +
                                          "\\settings\\AccelerometerCalibrationData2G.xml";
-            
+
 
 
             Dictionary<string, object> accCalibrationDataDict = ServiceTools.ReadDictionaryFromXML(accCalibrationDataFilename);
-            Dictionary<string, object> magnCalibrationDataDict = ServiceTools.ReadDictionaryFromXML(magnCalibrationDataFilename);
+            //Dictionary<string, object> magnCalibrationDataDict = ServiceTools.ReadDictionaryFromXML(magnCalibrationDataFilename);
             Dictionary<string, object> generalSettings = ServiceTools.ReadDictionaryFromXML(generalSettingsFilename);
 
-            accCalibrationData = new accelerometerData(Convert.ToDouble(accCalibrationDataDict["accCalibratedXzero"]),
-                Convert.ToDouble(accCalibrationDataDict["accCalibratedYzero"]),
-                Convert.ToDouble(accCalibrationDataDict["accCalibratedZzero"]));
+            accCalibrationDataID1 = new accelerometerData(Convert.ToDouble(accCalibrationDataDict["accID1CalibratedXzero"]),
+                Convert.ToDouble(accCalibrationDataDict["accID1CalibratedYzero"]),
+                Convert.ToDouble(accCalibrationDataDict["accID1CalibratedZzero"]));
+            accCalibrationDataID2 = new accelerometerData(Convert.ToDouble(accCalibrationDataDict["accID2CalibratedXzero"]),
+                Convert.ToDouble(accCalibrationDataDict["accID2CalibratedYzero"]),
+                Convert.ToDouble(accCalibrationDataDict["accID2CalibratedZzero"]));
 
 
-            ip2ListenID1 = generalSettings["ArduinoBoardDefaultIP1"] as string;
-            ip2ListenID2 = generalSettings["ArduinoBoardDefaultIP2"] as string;
+            ip2ListenID1 = generalSettings["ArduinoBoardID1DefaultIP"] as string;
+            ip2ListenID2 = generalSettings["ArduinoBoardID2DefaultIP"] as string;
 
             port2converse = Convert.ToInt32(generalSettings["ArduinoBoardDefaultUDPport"]);
             portBcstRecvng = Convert.ToInt32(generalSettings["UDPBroadcastDefaultListeningPort"]);
@@ -262,19 +273,27 @@ namespace DataCollectorAutomator
             ThreadSafeOperations.SetTextTB(tbIP2ListenDevID2, ip2ListenID2, false);
 
             tbCamShotPeriod.Text = CamShotPeriod.ToString("c");
-            
+
             //ThreadSafeOperations.SetTextTB(tbBcstListeningPort, portBcstRecvng.ToString(), false);
 
 
 
 
-            if (accCalibrationData.AccMagnitude == 0.0d)
+            if (accCalibrationDataID1.AccMagnitude == 0.0d)
             {
-                accCalibrationData = new accelerometerData(0.0, 0.0, -256.0);
+                accCalibrationDataID1 = new accelerometerData(0.0, 0.0, -256.0);
             }
-            ThreadSafeOperations.SetText(lblAccelCalibrationX, Math.Round(accCalibrationData.AccDoubleX, 2).ToString(), false);
-            ThreadSafeOperations.SetText(lblAccelCalibrationY, Math.Round(accCalibrationData.AccDoubleY, 2).ToString(), false);
-            ThreadSafeOperations.SetText(lblAccelCalibrationZ, Math.Round(accCalibrationData.AccDoubleZ, 2).ToString(), false);
+            if (accCalibrationDataID2.AccMagnitude == 0.0d)
+            {
+                accCalibrationDataID2 = new accelerometerData(0.0, 0.0, -256.0);
+            }
+
+            ThreadSafeOperations.SetText(lblAccelCalibrationXID1, Math.Round(accCalibrationDataID1.AccDoubleX, 2).ToString(), false);
+            ThreadSafeOperations.SetText(lblAccelCalibrationYID1, Math.Round(accCalibrationDataID1.AccDoubleY, 2).ToString(), false);
+            ThreadSafeOperations.SetText(lblAccelCalibrationZID1, Math.Round(accCalibrationDataID1.AccDoubleZ, 2).ToString(), false);
+            ThreadSafeOperations.SetText(lblAccelCalibrationXID2, Math.Round(accCalibrationDataID2.AccDoubleX, 2).ToString(), false);
+            ThreadSafeOperations.SetText(lblAccelCalibrationYID2, Math.Round(accCalibrationDataID2.AccDoubleY, 2).ToString(), false);
+            ThreadSafeOperations.SetText(lblAccelCalibrationZID2, Math.Round(accCalibrationDataID2.AccDoubleZ, 2).ToString(), false);
 
             processCircleID1.OuterCircleRadius = 20;
             processCircleID1.InnerCircleRadius = 15;
@@ -328,22 +347,29 @@ namespace DataCollectorAutomator
             if (arduinoBoardSearchingWorker.IsBusy)
             {
                 arduinoBoardSearchingWorker.CancelAsync();
-                SearchingArduinoID1ProcessCircle.Active = false;
-                SearchingArduinoID1ProcessCircle.Visible = false;
-                //UpdateProgressBar(progressBar1, 0);
             }
             else
             {
-                SearchingArduinoID1ProcessCircle.Visible = true;
-                SearchingArduinoID1ProcessCircle.Active = true;
+                if (sender == btnFindArduino1)
+                {
+                    needsToDiscoverArduinoBoardID1 = true;
+                    ThreadSafeOperations.SetLoadingCircleState(SearchingArduinoID1ProcessCircle, true, true, SearchingArduinoID1ProcessCircle.Color);
+                }
+                else if (sender == btnFindArduino2)
+                {
+                    needsToDiscoverArduinoBoardID2 = true;
+                    ThreadSafeOperations.SetLoadingCircleState(SearchingArduinoID2ProcessCircle, true, true, SearchingArduinoID2ProcessCircle.Color);
+                }
+                ThreadSafeOperations.ToggleButtonState(btnFindArduino1, true, "CANCEL", true);
+                ThreadSafeOperations.ToggleButtonState(btnFindArduino2, true, "CANCEL", true);
                 arduinoBoardSearchingWorker.RunWorkerAsync();
             }
         }
 
         private void arduinoBoardSearchingWorker_DoWork(object sender, DoWorkEventArgs e)
         {
-            System.ComponentModel.BackgroundWorker SelfWorker = sender as System.ComponentModel.BackgroundWorker;
-            needsToDiscoverArduinoBoard = true;
+            BackgroundWorker SelfWorker = sender as System.ComponentModel.BackgroundWorker;
+            //needsToDiscoverArduinoBoard = true;
             bool needsToSwitchCatchingOff = false;
             if (!udpCatchingJob.IsBusy)
             {
@@ -353,13 +379,16 @@ namespace DataCollectorAutomator
             }
 
 
-            while (needsToDiscoverArduinoBoard)
+            while (needsToDiscoverArduinoBoardID1 || needsToDiscoverArduinoBoardID2)
             {
                 if (SelfWorker.CancellationPending)
                 {
                     e.Cancel = true;
                     break;
                 }
+
+                Application.DoEvents();
+                Thread.Sleep(0);
             }
 
 
@@ -438,7 +467,7 @@ namespace DataCollectorAutomator
             UdpState udpSt = (UdpState)(ar.AsyncState);
             UdpClient udpClt = (UdpClient)(udpSt.UDPclient);
             IPEndPoint ipEP = (IPEndPoint)(udpSt.ipEndPoint);
-            
+
             remoteSktAddr = PropertyHelper.GetPrivatePropertyValue<SocketAddress>((object)ar, "SocketAddress");
             //udpSt.sktAddress = remoteSktAddr;
 
@@ -563,18 +592,19 @@ namespace DataCollectorAutomator
 
         private void arduinoBoardSearchingWorker_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
         {
-            ThreadSafeOperations.ToggleButtonState(btnFindArduino1, true, "Search for outdoor board", false);
-            SearchingArduinoID1ProcessCircle.Active = false;
-            SearchingArduinoID1ProcessCircle.Visible = false;
+            ThreadSafeOperations.ToggleButtonState(btnFindArduino1, true, "search for board ID1", true);
+            ThreadSafeOperations.ToggleButtonState(btnFindArduino2, true, "search for board ID2", true);
+            ThreadSafeOperations.SetLoadingCircleState(SearchingArduinoID1ProcessCircle, false, false, SearchingArduinoID1ProcessCircle.Color);
+            ThreadSafeOperations.SetLoadingCircleState(SearchingArduinoID2ProcessCircle, false, false, SearchingArduinoID2ProcessCircle.Color);
         }
 
         private void pictureBox1_Click(object sender, EventArgs e)
         {
-            if (currentShowingImage == null)
+            if (currentShowingImageID1 == null)
             {
                 return;
             }
-            Bitmap bm2show = new Bitmap(currentShowingImage);
+            Bitmap bm2show = new Bitmap(currentShowingImageID1);
             SimpleShowImageForm imageForm = new SimpleShowImageForm(bm2show);
             imageForm.Show(this);
         }
@@ -601,11 +631,19 @@ namespace DataCollectorAutomator
                 }
                 Note("Detecting outdoor board broadcasting state");
                 ThreadSafeOperations.ToggleButtonState(btnStartStopCollecting, false, "wait for state checking", true);
-                StartStopDataCollectingWaitingCircle.Visible = true;
-                StartStopDataCollectingWaitingCircle.Active = true;
+                ThreadSafeOperations.SetLoadingCircleState(StartStopDataCollectingWaitingCircle, true, true,
+                    StartStopDataCollectingWaitingCircle.Color);
                 dataCollectingState = DataCollectingStates.checkingState;
                 theWorkerRequestedArduinoDataBroadcastState = WorkersRequestingArduinoDataBroadcastState.dataCollector;
-                PerformRequestArduinoBoard("1", 1);
+                currOperatingDevID = 1;
+                PerformRequestArduinoBoard("1", currOperatingDevID);
+                while (ArduinoRequestExpectant.IsBusy)
+                {
+                    Application.DoEvents();
+                    Thread.Sleep(0);
+                }
+                currOperatingDevID = 2;
+                PerformRequestArduinoBoard("1", currOperatingDevID);
             }
             else
             {
@@ -634,7 +672,7 @@ namespace DataCollectorAutomator
                     Note("Outdoor facility data broadcasting is OFF. Turning it ON.");
                     StartStopDataCollectingWaitingCircle.Visible = true;
                     StartStopDataCollectingWaitingCircle.Active = true;
-                    PerformRequestArduinoBoard("2");
+                    PerformRequestArduinoBoard("2", currOperatingDevID);
                 }
                 else if ((replyMessage == "data broadcasting is ON") && (dataCollectingState == DataCollectingStates.checkingState))
                 {
@@ -711,8 +749,8 @@ namespace DataCollectorAutomator
             List<long> gyroDateTimeValuesList = new List<long>();
 
             //accelerometerData accData = null;
-            DenseMatrix dmMagnDataMatrix = null;
-            List<long> magnDateTimeValuesList = new List<long>();
+            //DenseMatrix dmMagnDataMatrix = null;
+            //List<long> magnDateTimeValuesList = new List<long>();
             DenseMatrix dmGPSDataMatrix = null;
             List<long> gpsDateTimeValuesList = new List<long>();
             List<int> pressureValuesList = new List<int>();
@@ -720,6 +758,11 @@ namespace DataCollectorAutomator
 
             Stopwatch stwToEstimateUDPpacketsRecieving = new Stopwatch();
             stwToEstimateUDPpacketsRecieving.Start();
+
+            accelerometerData latestAccDataID1 = new accelerometerData();
+            latestAccDataID1.devID = 1;
+            accelerometerData latestAccDataID2 = new accelerometerData();
+            latestAccDataID2.devID = 2;
 
 
             while (true)
@@ -752,19 +795,19 @@ namespace DataCollectorAutomator
                         dmGyroDataMatrix = null;
                         gyroDateTimeValuesList.Clear();
                     }
-                    if (dmMagnDataMatrix != null)
-                    {
-                        Dictionary<string, object> dataToSave = new Dictionary<string, object>();
-                        dataToSave.Add("DateTime", magnDateTimeValuesList.ToArray());
-                        dataToSave.Add("MagnetometerData", dmMagnDataMatrix);
+                    //if (dmMagnDataMatrix != null)
+                    //{
+                    //    Dictionary<string, object> dataToSave = new Dictionary<string, object>();
+                    //    dataToSave.Add("DateTime", magnDateTimeValuesList.ToArray());
+                    //    dataToSave.Add("MagnetometerData", dmMagnDataMatrix);
 
-                        NetCDFoperations.AddVariousDataToFile(dataToSave,
-                            Directory.GetCurrentDirectory() + "\\logs\\MagnetometerDataLog-" +
-                            DateTime.UtcNow.Date.ToString("yyyy-MM-dd") + ".nc");
+                    //    NetCDFoperations.AddVariousDataToFile(dataToSave,
+                    //        Directory.GetCurrentDirectory() + "\\logs\\MagnetometerDataLog-" +
+                    //        DateTime.UtcNow.Date.ToString("yyyy-MM-dd") + ".nc");
 
-                        dmMagnDataMatrix = null;
-                        magnDateTimeValuesList.Clear();
-                    }
+                    //    dmMagnDataMatrix = null;
+                    //    magnDateTimeValuesList.Clear();
+                    //}
                     if (dmGPSDataMatrix != null)
                     {
                         Dictionary<string, object> dataToSave = new Dictionary<string, object>();
@@ -780,7 +823,7 @@ namespace DataCollectorAutomator
                     }
                     if (pressureValuesList.Count > 0)
                     {
-                        ThreadSafeOperations.SetText(lblPressureValue, pressureValuesList[pressureValuesList.Count-1].ToString(), false);
+                        ThreadSafeOperations.SetText(lblPressureValue, pressureValuesList[pressureValuesList.Count - 1].ToString(), false);
 
                         Dictionary<string, object> dataToSave = new Dictionary<string, object>();
 
@@ -808,7 +851,7 @@ namespace DataCollectorAutomator
                 if (stwToEstimateUDPpacketsRecieving.ElapsedMilliseconds >= 1000)
                 {
                     //оценим скорость поступления пакетов
-                    double speed = (double) recievedUDPPacketsCounter * 1000.0d/
+                    double speed = (double)recievedUDPPacketsCounter * 1000.0d /
                                       (double)stwToEstimateUDPpacketsRecieving.ElapsedMilliseconds;
                     recievedUDPPacketsCounter = 0;
                     stwToEstimateUDPpacketsRecieving.Restart();
@@ -831,9 +874,21 @@ namespace DataCollectorAutomator
                     //accDatahasBeenChanged = false;
 
                     accelerometerData accData = accDataQueue.Dequeue();
+                    accelerometerData accCalibrationData = ((accData.devID == 1) || (accData.devID == 0))
+                        ? (accCalibrationDataID1)
+                        : (accCalibrationDataID2);
+
+                    // сформировано наиболее актуальное значение accData для соответствующего устройства
+                    if ((accData.devID == 1) || (accData.devID == 0))
+                    {
+                        latestAccDataID1 = accData.Copy();
+                    }
+                    else if (accData.devID == 2)
+                    {
+                        latestAccDataID2 = accData.Copy();
+                    }
 
                     if (accData == null) continue;
-
                     accDevAngle = (accData * accCalibrationData) / (accData.AccMagnitude * accCalibrationData.AccMagnitude);
                     accDevAngle = Math.Acos(accDevAngle);
 
@@ -869,6 +924,12 @@ namespace DataCollectorAutomator
                                         //угол отклонения от калибровочного вектора
                                         // В РАДИАНАХ
                                         return accDevAngle;
+                                        break;
+                                    }
+                                case 7:
+                                    {
+                                        // devID
+                                        return accData.devID;
                                         break;
                                     }
                                 default:
@@ -908,6 +969,12 @@ namespace DataCollectorAutomator
                                         return accDevAngle;
                                         break;
                                     }
+                                case 7:
+                                    {
+                                        // devID
+                                        return accData.devID;
+                                        break;
+                                    }
                                 default:
                                     break;
                             }
@@ -921,21 +988,38 @@ namespace DataCollectorAutomator
 
                     if (accDateTimeValuesList.Count % 100 == 0)
                     {
-                        DenseVector dvMagnDev = DenseVector.Create(dmAccDataMatrix.RowCount, i =>
-                        {
-                            accelerometerData accCurrentData = new accelerometerData(dmAccDataMatrix[0, 0],
-                                dmAccDataMatrix[0, 1], dmAccDataMatrix[0, 2]);
-                            return (accCurrentData.AccMagnitude - accCalibrationData.AccMagnitude) *
-                                   (accCurrentData.AccMagnitude - accCalibrationData.AccMagnitude);
-                        });
-                        ThreadSafeOperations.SetText(lblAccDevMeanMagnValueID1,
-                            Math.Sqrt(dvMagnDev.Sum() / dvMagnDev.Count).ToString("0.###e-00"), false);
+                        #region
+                        //DenseVector dvMagnDev = DenseVector.Create(dmAccDataMatrix.RowCount, i =>
+                        //{
+                        //    accelerometerData accCurrentData = new accelerometerData(dmAccDataMatrix[0, 0],
+                        //        dmAccDataMatrix[0, 1], dmAccDataMatrix[0, 2]);
+                        //    return (accCurrentData.AccMagnitude - accCalibrationData.AccMagnitude) *
+                        //           (accCurrentData.AccMagnitude - accCalibrationData.AccMagnitude);
+                        //});
+                        //ThreadSafeOperations.SetText(lblAccDevMeanMagnValueID1,
+                        //    Math.Sqrt(dvMagnDev.Sum() / dvMagnDev.Count).ToString("0.###e-00"), false);
 
 
-                        DescriptiveStatistics stats1 = new DescriptiveStatistics(dmAccDataMatrix.Column(6));
-                        ThreadSafeOperations.SetText(lblAccDevMeanAngleValueID1, stats1.Mean.ToString("0.###e-00"), false);
+                        //DescriptiveStatistics stats1 = new DescriptiveStatistics(dmAccDataMatrix.Column(6));
+                        //ThreadSafeOperations.SetText(lblAccDevMeanAngleValueID1, stats1.Mean.ToString("0.###e-00"), false);
+                        #endregion
+
+                        // =======================
+                        //вывести мгновенные значения, но раздельно по устройствам
+                        // =======================
+                        double accDevAngleID1 = (latestAccDataID1 * accCalibrationDataID1) / (latestAccDataID1.AccMagnitude * accCalibrationDataID1.AccMagnitude);
+                        accDevAngleID1 = Math.Acos(accDevAngle);
+                        double accDevAngleID2 = (latestAccDataID2 * accCalibrationDataID2) / (latestAccDataID2.AccMagnitude * accCalibrationDataID2.AccMagnitude);
+                        accDevAngleID2 = Math.Acos(accDevAngle);
+                        ThreadSafeOperations.SetText(lblAccMagnValueID1, (latestAccDataID1.AccMagnitude / accCalibrationDataID1.AccMagnitude).ToString("0.###e-00"), false);
+                        ThreadSafeOperations.SetText(lblAccDevAngleValueID1, accDevAngle.ToString("0.###e-00"), false);
+                        ThreadSafeOperations.SetText(lblAccMagnValueID2, (latestAccDataID2.AccMagnitude / accCalibrationDataID2.AccMagnitude).ToString("0.###e-00"), false);
+                        ThreadSafeOperations.SetText(lblAccDevAngleValueID2, accDevAngle.ToString("0.###e-00"), false);
+
                     }
 
+
+                    #region swap acc data to hdd
                     if (accDateTimeValuesList.Count >= 1000)
                     {
                         Dictionary<string, object> dataToSave = new Dictionary<string, object>();
@@ -952,6 +1036,7 @@ namespace DataCollectorAutomator
                         dmAccDataMatrix = null;
                         accDateTimeValuesList.Clear();
                     }
+                    #endregion swap acc data to hdd
                 }
 
 
@@ -998,130 +1083,130 @@ namespace DataCollectorAutomator
 
 
 
-
-                if (magnDatahasBeenChanged)
-                {
-
-                    double currCompassAngle = 0.0d;
-                    if (latestAccData == null)
-                    {
-                        currCompassAngle = magnData.compassAngle(accCalibrationData) + magnCalibratedAngleShift;
-                    }
-                    else
-                    {
-                        currCompassAngle = magnData.compassAngle(latestAccData) + magnCalibratedAngleShift;
-                    }
-
-                    currCompassAngle = PointPolar.CropAngleDegrees(currCompassAngle);
-
-
-
-                    magnDatahasBeenChanged = false;
-
-
-
-                    magnDateTimeValuesList.Add(DateTime.UtcNow.Ticks);
-
-                    if (dmMagnDataMatrix == null)
-                    {
-                        dmMagnDataMatrix = DenseMatrix.Create(1, 8, (r, c) =>
-                        {
-                            switch (c)
-                            {
-                                case 0:
-                                    return magnData.MagnDoubleX;
-                                    break;
-                                case 1:
-                                    return magnData.MagnDoubleY;
-                                    break;
-                                case 2:
-                                    return magnData.MagnDoubleZ;
-                                    break;
-                                case 3:
-                                    return magnCalibrationData.MagnDoubleX;
-                                    break;
-                                case 4:
-                                    return magnCalibrationData.MagnDoubleY;
-                                    break;
-                                case 5:
-                                    return magnCalibrationData.MagnDoubleZ;
-                                    break;
-                                case 6:
-                                    return magnCalibratedAngleShift;
-                                    break;
-                                case 7:
-                                    {
-                                        return currCompassAngle;
-                                        break;
-                                    }
-                                default:
-                                    break;
-                            }
-                            return 0;
-                        });
-                    }
-                    else
-                    {
-                        DenseVector dvMagnDataVectorToAdd = DenseVector.Create(8, c =>
-                        {
-                            switch (c)
-                            {
-                                case 0:
-                                    return magnData.MagnDoubleX;
-                                    break;
-                                case 1:
-                                    return magnData.MagnDoubleY;
-                                    break;
-                                case 2:
-                                    return magnData.MagnDoubleZ;
-                                    break;
-                                case 3:
-                                    return magnCalibrationData.MagnDoubleX;
-                                    break;
-                                case 4:
-                                    return magnCalibrationData.MagnDoubleY;
-                                    break;
-                                case 5:
-                                    return magnCalibrationData.MagnDoubleZ;
-                                    break;
-                                case 6:
-                                    return magnCalibratedAngleShift;
-                                    break;
-                                case 7:
-                                    {
-                                        return currCompassAngle;
-                                        break;
-                                    }
-                                default:
-                                    break;
-                            }
-                            return 0;
-                        });
-                        dmMagnDataMatrix =
-                            (DenseMatrix)dmMagnDataMatrix.InsertRow(dmMagnDataMatrix.RowCount, dvMagnDataVectorToAdd);
-                    }
-
-
-                    if (magnDateTimeValuesList.Count >= 10)
-                    {
-                        //ThreadSafeOperations.SetText(lblMagnDataX, magnData.MagnX.ToString(), false);
-                        //ThreadSafeOperations.SetText(lblMagnDataY, magnData.MagnY.ToString(), false);
-                        //ThreadSafeOperations.SetText(lblMagnDataZ, magnData.MagnZ.ToString(), false);
-                        //ThreadSafeOperations.SetText(lblMagnDataHeading, currCompassAngle.ToString("F2"), false);
-
-                        Dictionary<string, object> dataToSave = new Dictionary<string, object>();
-                        dataToSave.Add("DateTime", magnDateTimeValuesList.ToArray());
-                        dataToSave.Add("MagnetometerData", dmMagnDataMatrix);
-
-                        NetCDFoperations.AddVariousDataToFile(dataToSave,
-                            Directory.GetCurrentDirectory() + "\\logs\\MagnetometerDataLog-" +
-                            DateTime.UtcNow.Date.ToString("yyyy-MM-dd") + ".nc");
-
-                        dmMagnDataMatrix = null;
-                        magnDateTimeValuesList.Clear();
-                    }
-                }
-
+                #region // magnetometer data - unused now
+                //if (magnDatahasBeenChanged)
+                //{
+                //
+                //    double currCompassAngle = 0.0d;
+                //    if (latestAccData == null)
+                //    {
+                //        currCompassAngle = magnData.compassAngle(accCalibrationData) + magnCalibratedAngleShift;
+                //    }
+                //    else
+                //    {
+                //        currCompassAngle = magnData.compassAngle(latestAccData) + magnCalibratedAngleShift;
+                //    }
+                //
+                //    currCompassAngle = PointPolar.CropAngleDegrees(currCompassAngle);
+                //
+                //
+                //
+                //    magnDatahasBeenChanged = false;
+                //
+                //
+                //
+                //    magnDateTimeValuesList.Add(DateTime.UtcNow.Ticks);
+                //
+                //    if (dmMagnDataMatrix == null)
+                //    {
+                //        dmMagnDataMatrix = DenseMatrix.Create(1, 8, (r, c) =>
+                //        {
+                //            switch (c)
+                //            {
+                //                case 0:
+                //                    return magnData.MagnDoubleX;
+                //                    break;
+                //                case 1:
+                //                    return magnData.MagnDoubleY;
+                //                    break;
+                //                case 2:
+                //                    return magnData.MagnDoubleZ;
+                //                    break;
+                //                case 3:
+                //                    return magnCalibrationData.MagnDoubleX;
+                //                    break;
+                //                case 4:
+                //                    return magnCalibrationData.MagnDoubleY;
+                //                    break;
+                //                case 5:
+                //                    return magnCalibrationData.MagnDoubleZ;
+                //                    break;
+                //                case 6:
+                //                    return magnCalibratedAngleShift;
+                //                    break;
+                //                case 7:
+                //                    {
+                //                        return currCompassAngle;
+                //                        break;
+                //                    }
+                //                default:
+                //                    break;
+                //            }
+                //            return 0;
+                //        });
+                //    }
+                //    else
+                //    {
+                //        DenseVector dvMagnDataVectorToAdd = DenseVector.Create(8, c =>
+                //        {
+                //            switch (c)
+                //            {
+                //                case 0:
+                //                    return magnData.MagnDoubleX;
+                //                    break;
+                //                case 1:
+                //                    return magnData.MagnDoubleY;
+                //                    break;
+                //                case 2:
+                //                    return magnData.MagnDoubleZ;
+                //                    break;
+                //                case 3:
+                //                    return magnCalibrationData.MagnDoubleX;
+                //                    break;
+                //                case 4:
+                //                    return magnCalibrationData.MagnDoubleY;
+                //                    break;
+                //                case 5:
+                //                    return magnCalibrationData.MagnDoubleZ;
+                //                    break;
+                //                case 6:
+                //                    return magnCalibratedAngleShift;
+                //                    break;
+                //                case 7:
+                //                    {
+                //                        return currCompassAngle;
+                //                        break;
+                //                    }
+                //                default:
+                //                    break;
+                //            }
+                //            return 0;
+                //        });
+                //        dmMagnDataMatrix =
+                //            (DenseMatrix)dmMagnDataMatrix.InsertRow(dmMagnDataMatrix.RowCount, dvMagnDataVectorToAdd);
+                //    }
+                //
+                //
+                //    if (magnDateTimeValuesList.Count >= 10)
+                //    {
+                //        //ThreadSafeOperations.SetText(lblMagnDataX, magnData.MagnX.ToString(), false);
+                //        //ThreadSafeOperations.SetText(lblMagnDataY, magnData.MagnY.ToString(), false);
+                //        //ThreadSafeOperations.SetText(lblMagnDataZ, magnData.MagnZ.ToString(), false);
+                //        //ThreadSafeOperations.SetText(lblMagnDataHeading, currCompassAngle.ToString("F2"), false);
+                //
+                //        Dictionary<string, object> dataToSave = new Dictionary<string, object>();
+                //        dataToSave.Add("DateTime", magnDateTimeValuesList.ToArray());
+                //        dataToSave.Add("MagnetometerData", dmMagnDataMatrix);
+                //
+                //        NetCDFoperations.AddVariousDataToFile(dataToSave,
+                //            Directory.GetCurrentDirectory() + "\\logs\\MagnetometerDataLog-" +
+                //            DateTime.UtcNow.Date.ToString("yyyy-MM-dd") + ".nc");
+                //
+                //        dmMagnDataMatrix = null;
+                //        magnDateTimeValuesList.Clear();
+                //    }
+                //}
+                #endregion magnetometer data - unused now
 
 
 
@@ -1227,6 +1312,8 @@ namespace DataCollectorAutomator
                     itsTimeToGetCamShot = false;
                     getCamShotImmediately = false;
 
+
+                    // ПОМЕНЯТЬ ТУТ
                     logCurrentSensorsData();
                 }
 
@@ -1255,12 +1342,15 @@ namespace DataCollectorAutomator
 
         private string swapImageToFile(Image image2write, String imageFNameAttrs = "")
         {
+
+            // исправить: сливать изображения в какую-нибудь более адекватную директорию, а не в папку с программой
+
             String filename1 = Directory.GetCurrentDirectory() + "\\img-" + DateTime.Now.Year + "-" + DateTime.Now.Month + "-" + DateTime.Now.Day + "-" + DateTime.Now.Hour + "-" + DateTime.Now.Minute + "-" + DateTime.Now.Second;
             filename1 += imageFNameAttrs;
             filename1 += ".jpg";
 
-            Bitmap bm2write = new Bitmap(image2write);
-            bm2write.Save(filename1, System.Drawing.Imaging.ImageFormat.Jpeg);
+            //Bitmap bm2write = new Bitmap(image2write);
+            image2write.Save(filename1, System.Drawing.Imaging.ImageFormat.Jpeg);
 
             return filename1;
         }
@@ -1281,7 +1371,9 @@ namespace DataCollectorAutomator
             //txtToLog += DateTime.UtcNow.ToString("o") + ";" + Environment.NewLine;
 
 
-
+            accelerometerData accCalibrationData = ((latestAccData.devID == 0) || (latestAccData.devID == 1))
+                ? (accCalibrationDataID1)
+                : (accCalibrationDataID2);
             accelerometerData accDataShift = latestAccData - accCalibrationData;
             accDataShift = accDataShift / accCalibrationData.AccMagnitude;
 
@@ -1299,17 +1391,17 @@ namespace DataCollectorAutomator
             dataToSave.Add("GyroValueY", latestGyroData.GyroDoubleY);
             dataToSave.Add("GyroValueZ", latestGyroData.GyroDoubleZ);
 
-            dataToSave.Add("MagnCalibrationValueX", magnData.MagnDoubleX);
-            dataToSave.Add("MagnCalibrationValueY", magnData.MagnDoubleY);
-            dataToSave.Add("MagnCalibrationValueZ", magnData.MagnDoubleZ);
-            dataToSave.Add("MagnCalibrationValueAngleShiftDegrees",
-                PointPolar.CropAngleDegrees(magnData.compassAngle(latestAccData) + magnCalibratedAngleShift));
+            //dataToSave.Add("MagnCalibrationValueX", magnData.MagnDoubleX);
+            //dataToSave.Add("MagnCalibrationValueY", magnData.MagnDoubleY);
+            //dataToSave.Add("MagnCalibrationValueZ", magnData.MagnDoubleZ);
+            //dataToSave.Add("MagnCalibrationValueAngleShiftDegrees",
+            //    PointPolar.CropAngleDegrees(magnData.compassAngle(latestAccData) + magnCalibratedAngleShift));
 
-            dataToSave.Add("MagnDoubleX", magnData.MagnDoubleX);
-            dataToSave.Add("MagnDoubleY", magnData.MagnDoubleY);
-            dataToSave.Add("MagnDoubleZ", magnData.MagnDoubleZ);
-            dataToSave.Add("MagnetometerHeadingDegrees",
-                PointPolar.CropAngleDegrees(magnData.compassAngle(latestAccData) + magnCalibratedAngleShift));
+            //dataToSave.Add("MagnDoubleX", magnData.MagnDoubleX);
+            //dataToSave.Add("MagnDoubleY", magnData.MagnDoubleY);
+            //dataToSave.Add("MagnDoubleZ", magnData.MagnDoubleZ);
+            //dataToSave.Add("MagnetometerHeadingDegrees",
+            //    PointPolar.CropAngleDegrees(magnData.compassAngle(latestAccData) + magnCalibratedAngleShift));
 
             dataToSave.Add("GPSdata", gpsData.GPSstring);
             dataToSave.Add("GPSLat", gpsData.Lat);
@@ -1359,37 +1451,92 @@ namespace DataCollectorAutomator
 
 
 
-        //private void catchCameraImage()
-        //{
-        //    String username = tbCamUName.Text;
-        //    String password = tbCamPWD.Text;
-        //    String ipAddrVivotekCam = tbCamIP.Text.Replace(",", ".");
-        //    String imageURL2Get = "http://" + ipAddrVivotekCam + "/cgi-bin/viewer/video.jpg?quality=5";
-        //
-        //    try
-        //    {
-        //        WebClient client = new WebClient();
-        //        client.Credentials = new NetworkCredential(username, password);
-        //        Stream stream = client.OpenRead(imageURL2Get);
-        //        currentShowingImage = Image.FromStream(stream);
-        //        stream.Flush();
-        //        stream.Close();
-        //
-        //        ThreadSafeOperations.UpdatePictureBox(pbThumbPreview, currentShowingImage, true);
-        //        Note(swapImageToFile(currentShowingImage, ""));
-        //    }
-        //    catch (Exception e)
-        //    {
-        //        Note(e.Message);
-        //    }
-        //}
         private void catchCameraImage()
         {
-            string timeStampStr = DateTime.UtcNow.ToString("o") + Environment.NewLine;
-            Note(timeStampStr + "The picture could be taken here");
+            String usernameID1 = tbCamUName1.Text;
+            String usernameID2 = tbCamUName2.Text;
+            String passwordID1 = tbCamPWD1.Text;
+            String passwordID2 = tbCamPWD2.Text;
+            String ipAddrVivotekCamID1 = tbCamIP1.Text.Replace(",", ".");
+            String ipAddrVivotekCamID2 = tbCamIP2.Text.Replace(",", ".");
+            
 
+            // Надо взять сразу оба снимка - берем в backgroundworker-ах
+
+            DoWorkEventHandler currDoWorkHandler = delegate(object currBGWsender, DoWorkEventArgs args)
+            {
+                BackgroundWorker selfworker = currBGWsender as BackgroundWorker;
+                object[] currBGWarguments = (object[])args.Argument;
+                string ipAddr = (string)currBGWarguments[0];
+                string uname = (string)currBGWarguments[1];
+                string pwd = (string)currBGWarguments[2];
+                int devID = (int)currBGWarguments[3];
+                Image gotImage = null;
+                string gotimageFileName = "";
+
+                String imageURL2Get = "http://" + ipAddr + "/cgi-bin/viewer/video.jpg?quality=5";
+
+                try
+                {
+                    WebClient client = new WebClient();
+                    client.Credentials = new NetworkCredential(uname, pwd);
+                    Stream stream = client.OpenRead(imageURL2Get);
+                    gotImage = Image.FromStream(stream);
+                    stream.Flush();
+                    stream.Close();
+
+                    gotimageFileName = swapImageToFile(gotImage, "devID" + devID);
+                    if ((devID == 0) || (devID == 1))
+                    {
+                        ThreadSafeOperations.UpdatePictureBox(pbThumbPreviewCam1, gotImage, true);
+                    }
+                    else if (devID == 2)
+                    {
+                        ThreadSafeOperations.UpdatePictureBox(pbThumbPreviewCam2, gotImage, true);
+                    }
+                }
+                catch (Exception e)
+                {
+                    Note(e.Message);
+                }
+
+                args.Result = new object[] { gotImage, devID, gotimageFileName };
+            };
+
+            RunWorkerCompletedEventHandler currWorkCompletedHandler = delegate(object currBGWCompletedSender, RunWorkerCompletedEventArgs args)
+            {
+                object[] currentBGWResults = (object[])args.Result;
+                Image gotimage = currentBGWResults[0] as Image;
+                int gotDevID = (int) currentBGWResults[1];
+                string gotimageFileName = (string)currentBGWResults[2];
+                Note("got image: " + gotimageFileName);
+            };
+
+
+
+            BackgroundWorker bgwGetImgID1 = new BackgroundWorker();
+            bgwGetImgID1.WorkerSupportsCancellation = true;
+            bgwGetImgID1.DoWork += currDoWorkHandler;
+            bgwGetImgID1.RunWorkerCompleted += currWorkCompletedHandler;
+            object[] BGWargsID1 = new object[] { ipAddrVivotekCamID1, usernameID1, passwordID1, 1 };
+            bgwGetImgID1.RunWorkerAsync(BGWargsID1);
+
+            BackgroundWorker bgwGetImgID2 = new BackgroundWorker();
+            bgwGetImgID2.WorkerSupportsCancellation = true;
+            bgwGetImgID2.DoWork += currDoWorkHandler;
+            bgwGetImgID2.RunWorkerCompleted += currWorkCompletedHandler;
+            object[] BGWargsID2 = new object[] { ipAddrVivotekCamID2, usernameID2, passwordID2, 2 };
+            bgwGetImgID2.RunWorkerAsync(BGWargsID2);
         }
 
+        #region // заглушка когда нет камеры
+        //private void catchCameraImage()
+        //{
+        //    string timeStampStr = DateTime.UtcNow.ToString("o") + Environment.NewLine;
+        //    Note(timeStampStr + "The picture could be taken here");
+        //
+        //}
+        #endregion // заглушка когда нет камеры
 
 
 
@@ -1430,7 +1577,7 @@ namespace DataCollectorAutomator
             IPAddrString = IPAddrString.Replace(",", ".");
 
             ThreadSafeOperations.SetLoadingCircleState(ipAddrValidatingCircle1, true, true, ipAddrValidatingCircle1.Color);
-            
+
             if (IPAddress.TryParse(IPAddrString, out VivotekCameraID1IPaddress))
             {
                 SaveSettings();
@@ -1468,12 +1615,13 @@ namespace DataCollectorAutomator
                     btnStartStopBdcstListening_Click(null, null);
                 }
                 Note("Detecting outdoor board broadcasting state");
-                ThreadSafeOperations.ToggleButtonState(btnCalibrateAccelerometer, false, "wait for state checking", true);
+                ThreadSafeOperations.ToggleButtonState(btnCalibrateAccelerometerID1, false, "wait for state checking", true);
                 StartStopDataCollectingWaitingCircle.Visible = true;
                 StartStopDataCollectingWaitingCircle.Active = true;
                 dataCollectingState = DataCollectingStates.checkingState;
                 theWorkerRequestedArduinoDataBroadcastState = WorkersRequestingArduinoDataBroadcastState.accelCalibrator;
-                PerformRequestArduinoBoard("1");
+                currOperatingDevID = 1;
+                PerformRequestArduinoBoard("1", currOperatingDevID);
             }
             else
             {
@@ -1500,7 +1648,7 @@ namespace DataCollectorAutomator
             bool isTheFirstPass = true;
 
             System.ComponentModel.BackgroundWorker SelfWorker = sender as System.ComponentModel.BackgroundWorker;
-            ThreadSafeOperations.ToggleButtonState(btnCalibrateAccelerometer, true, "Stop calibrating", true);
+            ThreadSafeOperations.ToggleButtonState(btnCalibrateAccelerometerID1, true, "Stop calibrating", true);
             dataCollectingState = DataCollectingStates.working;
 
 
@@ -1519,9 +1667,9 @@ namespace DataCollectorAutomator
                         continue;
                     }
 
-                    ThreadSafeOperations.SetText(lblAccelCalibrationCurrentX, accData.AccX.ToString(), false);
-                    ThreadSafeOperations.SetText(lblAccelCalibrationCurrentY, accData.AccY.ToString(), false);
-                    ThreadSafeOperations.SetText(lblAccelCalibrationCurrentZ, accData.AccZ.ToString(), false);
+                    ThreadSafeOperations.SetText(lblAccelCalibrationCurrentXID1, accData.AccX.ToString(), false);
+                    ThreadSafeOperations.SetText(lblAccelCalibrationCurrentYID1, accData.AccY.ToString(), false);
+                    ThreadSafeOperations.SetText(lblAccelCalibrationCurrentZID1, accData.AccZ.ToString(), false);
 
                     dataSetX[i] = accData.AccDoubleX;
                     dataSetY[i] = accData.AccDoubleY;
@@ -1552,19 +1700,19 @@ namespace DataCollectorAutomator
                     stDevZ = Math.Round(100 * statisticsZ.StandardDeviation / meanZ, 2);
                     TimeSpan calcSpan = DateTime.Now - calcBegin;
 
-                    accCalibrationData.AccDoubleX = meanX;
-                    accCalibrationData.AccDoubleY = meanY;
-                    accCalibrationData.AccDoubleZ = meanZ;
+                    accCalibrationDataID1.AccDoubleX = meanX;
+                    accCalibrationDataID1.AccDoubleY = meanY;
+                    accCalibrationDataID1.AccDoubleZ = meanZ;
 
-                    ThreadSafeOperations.SetText(lblAccelCalibrationX, "<" + Math.Round(meanX, 2).ToString() + ">", false);
-                    ThreadSafeOperations.SetText(lblAccelCalibrationY, "<" + Math.Round(meanY, 2).ToString() + ">", false);
-                    ThreadSafeOperations.SetText(lblAccelCalibrationZ, "<" + Math.Round(meanZ, 2).ToString() + ">", false);
-                    ThreadSafeOperations.SetText(lblStDevX, stDevX.ToString() + "%", false);
-                    ThreadSafeOperations.SetText(lblStDevY, stDevY.ToString() + "%", false);
-                    ThreadSafeOperations.SetText(lblStDevZ, stDevZ.ToString() + "%", false);
+                    ThreadSafeOperations.SetText(lblAccelCalibrationXID1, "<" + Math.Round(meanX, 2).ToString() + ">", false);
+                    ThreadSafeOperations.SetText(lblAccelCalibrationYID1, "<" + Math.Round(meanY, 2).ToString() + ">", false);
+                    ThreadSafeOperations.SetText(lblAccelCalibrationZID1, "<" + Math.Round(meanZ, 2).ToString() + ">", false);
+                    ThreadSafeOperations.SetText(lblStDevXID1, stDevX.ToString() + "%", false);
+                    ThreadSafeOperations.SetText(lblStDevYID1, stDevY.ToString() + "%", false);
+                    ThreadSafeOperations.SetText(lblStDevZID1, stDevZ.ToString() + "%", false);
                     string txt2Show = "i = " + i.ToString();
                     txt2Show += Environment.NewLine + "calc time = " + calcSpan.Ticks.ToString();
-                    ThreadSafeOperations.SetText(lblCalculationStatistics, txt2Show, false);
+                    ThreadSafeOperations.SetText(lblCalculationStatisticsID1, txt2Show, false);
                     //accDatahasBeenChanged = false;
                 }
 
@@ -1582,16 +1730,16 @@ namespace DataCollectorAutomator
                 needsToSwitchListeningArduinoOFF = false;
                 udpCatchingJob.CancelAsync();
             }
-            ThreadSafeOperations.ToggleButtonState(btnCalibrateAccelerometer, true, "Calibrate accelerometer", false);
+            ThreadSafeOperations.ToggleButtonState(btnCalibrateAccelerometerID1, true, "Calibrate accelerometer", false);
             dataCollectingState = DataCollectingStates.idle;
         }
 
         private void btnSaveAccel_Click(object sender, EventArgs e)
         {
             Dictionary<string, object> propertiesDictToSave = new Dictionary<string, object>();
-            propertiesDictToSave.Add("accCalibratedXzero", accCalibrationData.AccDoubleX);
-            propertiesDictToSave.Add("accCalibratedYzero", accCalibrationData.AccDoubleY);
-            propertiesDictToSave.Add("accCalibratedZzero", accCalibrationData.AccDoubleZ);
+            propertiesDictToSave.Add("accID1CalibratedXzero", accCalibrationDataID1.AccDoubleX);
+            propertiesDictToSave.Add("accID1CalibratedYzero", accCalibrationDataID1.AccDoubleY);
+            propertiesDictToSave.Add("accID1CalibratedZzero", accCalibrationDataID1.AccDoubleZ);
             ServiceTools.WriteDictionaryToXml(propertiesDictToSave, accCalibrationDataFilename, false);
         }
 
@@ -1917,10 +2065,13 @@ namespace DataCollectorAutomator
                         replyMessage = bcstMessage;
                         if (needsReplyOnRequest) needsReplyOnRequest = false;
                     }
-                    else if ((bcstMessage.Length >= 5) && (bcstMessage.Substring(0, 5) == "<err>"))
+                    else if (curMessageBoundle.isErrorMessage)
                     {
-                        bcstMessage = bcstMessage.Substring(5, bcstMessage.Length - 5);
-                        if (currMessageDevID > 0)
+                        if (currMessageDevID == 1)
+                        {
+                            Note("devID:" + currMessageDevID + "   |   " + "ERROR: " + bcstMessage);
+                        }
+                        else if (currMessageDevID == 2)
                         {
                             Note("devID:" + currMessageDevID + "   |   " + "ERROR: " + bcstMessage);
                         }
@@ -1928,32 +2079,29 @@ namespace DataCollectorAutomator
                         {
                             Note("ERROR: " + bcstMessage);
                         }
+
                         //udpMessage = bcstMessage;
                     }
                     else if (bcstMessage == "imarduino")
                     {
-                        if (needsToDiscoverArduinoBoard)
+                        if ((needsToDiscoverArduinoBoardID1) && (currMessageDevID == 1))
                         {
-                            SocketAddress tmpSktAddress = remoteSktAddr;
-                            string addrStr = tmpSktAddress.ToString();
-                            //InterNetwork:16:{21,179,192,168,192,221,0,0,0,0,0,0,0,0}
-                            addrStr = addrStr.Substring(addrStr.IndexOf("{") + 1);
-                            addrStr = addrStr.Substring(0, addrStr.Length - 1);
-                            char[] splitChar = { ',' };
-                            string[] sktAddrStrArray = addrStr.Split(splitChar);
-                            //Note(addrStr);
-                            addrStr = sktAddrStrArray[2] + "." + sktAddrStrArray[3] + "." + sktAddrStrArray[4] + "." +
-                                      sktAddrStrArray[5];
-                            //Note(addrStr);
+                            string addrStr = curMessageBoundle.ipAddrString;
                             ThreadSafeOperations.SetTextTB(tbIP2ListenDevID1, addrStr, false);
-                            needsToDiscoverArduinoBoard = false;
+                            needsToDiscoverArduinoBoardID1 = false;
+                        }
+                        if (needsToDiscoverArduinoBoardID2 && (currMessageDevID == 2))
+                        {
+                            string addrStr = curMessageBoundle.ipAddrString;
+                            ThreadSafeOperations.SetTextTB(tbIP2ListenDevID2, addrStr, false);
+                            needsToDiscoverArduinoBoardID2 = false;
                         }
                     }
                     else
                     {
-                        if (!needsToDiscoverArduinoBoard)
+                        if ((!needsToDiscoverArduinoBoardID2) && (!needsToDiscoverArduinoBoardID1))
                         {
-                            DateTimeFormatInfo dtFormat = new DateTimeFormatInfo();
+                            //DateTimeFormatInfo dtFormat = new DateTimeFormatInfo();
 
                             string timeStampStr = DateTime.UtcNow.ToString("o") + ": ";
 
@@ -1979,6 +2127,8 @@ namespace DataCollectorAutomator
 
             }
         }
+
+
 
         private void maskedTextBox2_TextChanged(object sender, EventArgs e)
         {

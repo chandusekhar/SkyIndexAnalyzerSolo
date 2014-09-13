@@ -23,6 +23,7 @@ namespace SkyIndexAnalyzerLibraries
         private double accDoubleY;
         private double accDoubleZ;
         private double accMagnitude;
+        public int devID = 0;
 
         public bool validAccData = true;
 
@@ -329,6 +330,14 @@ namespace SkyIndexAnalyzerLibraries
 
             return listRetAccData;
         }
+
+
+        public accelerometerData Copy()
+        {
+            accelerometerData newInstance = new accelerometerData(accDoubleX, accDoubleY, accDoubleZ);
+            newInstance.devID = devID;
+            return newInstance;
+        }
     }
 
 
@@ -346,7 +355,7 @@ namespace SkyIndexAnalyzerLibraries
         private double gyroDoubleY;
         private double gyroDoubleZ;
         private double gyroMagnitude;
-
+        public int devID = 0;
 
         public int GyroX
         {
@@ -640,6 +649,15 @@ namespace SkyIndexAnalyzerLibraries
             DenseMatrix dmRetMatr = DenseMatrix.OfRows(1, dvRow.Count, listOfRows);
             return dmRetMatr;
         }
+
+
+
+        public GyroData Copy()
+        {
+            GyroData newInstance = new GyroData(gyroDoubleX, gyroDoubleY, gyroDoubleZ);
+            newInstance.devID = devID;
+            return newInstance;
+        }
     }
 
 
@@ -652,6 +670,7 @@ namespace SkyIndexAnalyzerLibraries
         private double magnDoubleY;
         private double magnDoubleZ;
         private double magnMagnitude;
+        public int devID = 0;
 
         public int MagnX
         {
@@ -960,6 +979,16 @@ namespace SkyIndexAnalyzerLibraries
             });
             return dvRetVect;
         }
+
+
+
+
+        public MagnetometerData Copy()
+        {
+            MagnetometerData newInstance = new MagnetometerData(magnDoubleX, magnDoubleY, magnDoubleZ);
+            newInstance.devID = devID;
+            return newInstance;
+        }
     }
 
 
@@ -979,7 +1008,7 @@ namespace SkyIndexAnalyzerLibraries
         public double IOFFEdataSpeedKnots = 0.0d;
         public double IOFFEdataDepth = 0.0d;
 
-
+        public int devID = 0;
 
         public GPSdatasources dataSource = GPSdatasources.CloudCamArduinoGPS;
 
@@ -1044,6 +1073,7 @@ namespace SkyIndexAnalyzerLibraries
         public GPSdata Clone()
         {
             GPSdata newInstance = new GPSdata(this);
+            newInstance.devID = devID;
             return newInstance;
         }
 
