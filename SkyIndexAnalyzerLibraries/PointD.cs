@@ -376,7 +376,10 @@ namespace SkyIndexAnalyzerLibraries
         }
 
 
-
+        public Point Point()
+        {
+            return new Point((int)this.X, (int)this.Y);
+        }
 
 
         public static PointD Sum(IEnumerable<PointD> source)

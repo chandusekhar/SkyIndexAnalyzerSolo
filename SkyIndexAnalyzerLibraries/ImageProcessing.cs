@@ -97,9 +97,30 @@ namespace SkyIndexAnalyzerLibraries
 
         public RoundData(double centerX, double centerY, double radius)
         {
-            DCenterX = centerX;
-            DCenterY = centerY;
-            DRadius = radius;
+            if (double.IsNaN(centerX) || double.IsNaN(centerY) || double.IsNaN(radius))
+            {
+                nullCircle = true;
+            }
+            else
+            {
+                DCenterX = centerX;
+                DCenterY = centerY;
+                DRadius = radius;
+            }
+        }
+
+
+
+        public RoundData Copy()
+        {
+            if (nullCircle)
+            {
+                return RoundData.nullRoundData();
+            }
+            else
+            {
+                return new RoundData(DCenterX, DCenterY, DRadius);
+            }
         }
 
 
@@ -141,6 +162,13 @@ namespace SkyIndexAnalyzerLibraries
         public static bool isNull(RoundData rd)
         {
             return rd.IsNull;
+        }
+
+
+        public CircleF CircleF()
+        {
+            CircleF c = new CircleF(pointfCircleCenter(), (float) DRadius);
+            return c;
         }
     }
 
@@ -379,6 +407,9 @@ namespace SkyIndexAnalyzerLibraries
             circleImage.Draw(Circle2Draw, new Bgr(Color.Green), lineWidth);
             
             significantMaskContourImageCircled = circleImage.Copy();
+
+            significantMaskImageCircled = img2process.CopyBlank().Convert<Gray, byte>();
+            significantMaskImageCircled.Draw(Circle2Draw, new Gray(1), 0);
         }
 
 

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.ComponentModel;
+using System.Drawing.Imaging;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -92,6 +93,9 @@ namespace SkyIndexAnalyzerLibraries
         public double theStdDevMarginValueDefiningTrueSkyArea = 0.65d;
         public double theStdDevMarginValueDefiningSkyCloudSeparation = 0.25d;
         public double theStdDevMarginValueDefiningSkyCloudSeparation_SunSuppressed = 0.1d;
+        public double minSunburnYValue = 254.0d;
+        public double minSunburnGrIxValue = 1.0d;
+        public double dSunDetectorArcedCropFactor = 0.85d;
         #endregion переменные для нашего тестового анализатора
 
         public bool isCalculatingUsingBgWorker = true;
@@ -103,6 +107,8 @@ namespace SkyIndexAnalyzerLibraries
         public Dictionary<string, object> defaultProperties = null;
         private int verbosityLevel = 0;
         public string randomFileName = "";
+
+        public string sourceImageFileName = "";
 
         public SunDiskConditions currentSunDiskCondition;
 
@@ -188,7 +194,7 @@ namespace SkyIndexAnalyzerLibraries
 
             set
             {
-                LocalProcessingImage = new Image<Bgr,byte>(value);
+                LocalProcessingImage = new Image<Bgr, byte>(value);
             }
         }
 
@@ -230,154 +236,11 @@ namespace SkyIndexAnalyzerLibraries
             theStdDevMarginValueDefiningSkyCloudSeparation = Convert.ToDouble(defaultProperties["GrIxDefaultSkyCloudMarginWithoutSun"]);
             theStdDevMarginValueDefiningSkyCloudSeparation_SunSuppressed = Convert.ToDouble(defaultProperties["GrIxDefaultSkyCloudMarginWithSun"]);
             theImageCircleCropFactor = Convert.ToDouble(defaultProperties["GrIxAnalysisImageCircledCropFactor"]);
+            minSunburnYValue = Convert.ToDouble(defaultProperties["GrIxMinimalSunburnYvalue"]);
+            minSunburnGrIxValue = Convert.ToDouble(defaultProperties["GrIxMinimalSunburnGrIxvalue"]);
+            dSunDetectorArcedCropFactor = Convert.ToDouble(defaultProperties["GrIxSunDetectorArcedCropFactor"]);
         }
 
-
-
-        #region УСТАРЕЛО классификация старым методом вычислений
-        //public void Classify_old(ProgressBar Control)
-        //{
-        //    //int prevPercCountInt = 0;
-        //    double halfwidthorig, halfheightorig, radius_analyzing;
-        //    int y = 0, x = 0;
-
-
-        //    if (LocalProcessingBitmap == null)
-        //    {
-        //        return;
-        //    }
-        //    //if (localCloudSkySeparationValue == 0.0)
-        //    if (cloudSkySeparationValue == 0.0)
-        //    {
-        //        //ThreadSafeOperations.SetTextTB(tbLog, "Не установлена граница SI между небом и облаком для проведения классификации." + Environment.NewLine, true);
-        //        throw new Exception("Не установлено значение границы небо-облако по значению SkyIndex.");
-        //    }
-
-        //    double min_si = 0.0;
-        //    double max_si = 0.0;
-
-        //    int overallpixelcount = DimX * DimY;
-        //    int totalpixelcount = DimX * DimY;
-        //    halfwidthorig = Math.Round((double)DimX / 2.0, 0);
-        //    halfheightorig = Math.Round((double)DimY / 2.0, 0);
-        //    radius_analyzing = halfwidthorig;
-        //    ClassifiedBM = new ClassificationData[DimX, DimY];
-
-        //    #region old-style classification cycle
-        //    //prevPercCountInt = 0;
-        //    for (x = 0; x < DimX; x++)
-        //    {
-        //        //ClassifiedBM[x] = new ClassificationData[DimY];
-        //        for (y = 0; y < DimY; y++)
-        //        {
-        //            currentstep++;
-
-        //            ClassificationData tempClassificationData = new ClassificationData();
-        //            Classification tempClassification = new Classification();
-        //            //tempClassification.SkyCloudMargin = localCloudSkySeparationValue;
-        //            tempClassification.SkyCloudMargin = cloudSkySeparationValue;
-        //            tempClassificationData.x = x;
-        //            tempClassificationData.y = y;
-
-
-        //            double rad = Math.Sqrt(Math.Pow(((double)x - halfwidthorig), 2.0) + Math.Pow(((double)y - halfheightorig), 2.0));
-        //            Color curr_color = LocalProcessingBitmap.GetPixel(x, y);
-        //            tempClassificationData.ColorRed = curr_color.R;
-        //            tempClassificationData.ColorGreen = curr_color.G;
-        //            tempClassificationData.ColorRed = curr_color.B;
-
-
-        //            int grayScaleColor = (int)((curr_color.R * 0.3) + (curr_color.G * 0.59) + (curr_color.B * 0.11));
-
-        //            if (grayScaleColor < 30)
-        //            {
-        //                tempClassification.IsCloud = CloudOrSky.Nothing;
-        //            }
-        //            else if ((double)curr_color.B + (double)curr_color.R == 0)
-        //            {
-        //                tempClassification.IsCloud = CloudOrSky.Nothing;
-        //            }
-        //            else if ((double)curr_color.B == 0)
-        //            {
-        //                tempClassification.IsCloud = CloudOrSky.Nothing;
-        //            }
-        //            else if (curr_color.R + curr_color.G + curr_color.B == 0)
-        //            {
-        //                tempClassification.IsCloud = CloudOrSky.Nothing;
-        //            }
-        //            else
-        //            {
-        //                double SI = ((double)curr_color.B - (double)curr_color.R) / ((double)curr_color.B + (double)curr_color.R);
-        //                tempClassificationData.SI = SI;
-
-        //                min_si = Math.Min(min_si, SI);
-        //                max_si = Math.Max(max_si, SI);
-
-        //                //if (SI <= localCloudSkySeparationValue)
-        //                //{
-        //                //    tempClassification.IsCloud = CloudOrSky.Cloud;
-        //                //}
-        //                //else if (SI > localCloudSkySeparationValue)
-        //                //{
-        //                //    tempClassification.IsCloud = CloudOrSky.Sky;
-        //                //}
-        //                if (SI <= cloudSkySeparationValue)
-        //                {
-        //                    tempClassification.IsCloud = CloudOrSky.Cloud;
-        //                }
-        //                else if (SI > cloudSkySeparationValue)
-        //                {
-        //                    tempClassification.IsCloud = CloudOrSky.Sky;
-        //                }
-        //            }
-        //            tempClassificationData.IsCloudByMargin = new Classification[1];
-        //            tempClassificationData.IsCloudByMargin[0] = tempClassification;
-        //            ClassifiedBM[x, y] = tempClassificationData;
-        //            if (tempClassification.IsCloud == CloudOrSky.Nothing)
-        //            {
-        //                localPreviewBitmap.SetPixel(x, y, Color.Black);
-        //            }
-        //            else if (tempClassification.IsCloud == CloudOrSky.Sky)
-        //            {
-        //                localPreviewBitmap.SetPixel(x, y, Color.Blue);
-        //            }
-        //            else
-        //            {
-        //                localPreviewBitmap.SetPixel(x, y, Color.WhiteSmoke);
-        //            }
-
-
-        //            //prevPercCountInt = ConnectedObjectsDetection.ReportProgress((x * DimY + y), totalpixelcount, prevPercCountInt, defaultProgressBarControl);
-
-        //        }
-        //    }
-        //    #endregion
-
-        //    #region creating preview bitmap
-        //    //prevPercCountInt = 0;
-        //    for (x = 0; x < DimX; x++)
-        //    {
-        //        for (y = 0; y < DimY; y++)
-        //        {
-        //            currentstep++;
-        //            //prevPercCountInt = ConnectedObjectsDetection.ReportProgress((x * DimY + y), totalpixelcount, prevPercCountInt, defaultProgressBarControl);
-
-        //            double cur_SI = ClassifiedBM[x, y].SI;
-        //            int cur_gray = (int)Math.Round(255 * (max_si - cur_SI) / (max_si - min_si));
-        //            if (ClassifiedBM[x, y].IsCloudByMargin[0].IsCloud == CloudOrSky.Nothing)
-        //            {
-        //                cur_gray = 0;
-        //            }
-        //            Color cur_gray_color = Color.FromArgb(cur_gray, cur_gray, cur_gray);
-        //            localPreviewBitmap.SetPixel(x, y, cur_gray_color);
-        //        }
-        //    }
-        //    #endregion
-
-        //    ThreadSafeOperations.UpdateProgressBar(Control, 0);
-        //    //ThreadSafeOperations.UpdatePictureBox(pbPreviewDisplayControl, localPreviewBitmap, true);
-        //}
-        #endregion УСТАРЕЛО классификация старым методом вычислений
 
 
         #region классификация методом из японских публикаций
@@ -601,7 +464,8 @@ namespace SkyIndexAnalyzerLibraries
 
 
             #region определим CloudCover без подавления солнца - для сравнения
-            ColorScheme skyCloudColorSchemeWithoutSunSuppression = ColorScheme.InversedBinaryCloudSkyColorScheme(theStdDevMarginValueDefiningSkyCloudSeparation, 0.0d, 1.0d);
+            //ColorScheme skyCloudColorSchemeWithoutSunSuppression = ColorScheme.InversedBinaryCloudSkyColorScheme(theStdDevMarginValueDefiningSkyCloudSeparation, 0.0d, 1.0d);
+            ColorScheme skyCloudColorSchemeWithoutSunSuppression = ColorScheme.InversedBinaryCloudSkyColorScheme(theStdDevMarginValueDefiningSkyCloudSeparation, 0.0d, minSunburnGrIxValue);
             Image<Bgr, Byte> previewImageWithoutSunSuppression = ImageProcessing.evalResultColoredWithFixedDataBounds(dmProcessingData, maskImage, skyCloudColorSchemeWithoutSunSuppression, 0.0d, 1.0d);
             int cloudCounterWithoutSunSuppression = previewImageWithoutSunSuppression.CountNonzero()[1];
             int skyCounterWithoutSunSuppression = maskImage.CountNonzero()[0] - cloudCounterWithoutSunSuppression;
@@ -615,8 +479,19 @@ namespace SkyIndexAnalyzerLibraries
 
             //RoundData sunRoundData = detectSun(dmProcessingData, maskImageCircled, maskImage, imgP, currentDirectory, randomFileName);
 
+            if (sourceImageFileName != "")
+            {
+                if (File.Exists(sourceImageFileName))
+                {
+                    FileInfo fInfoSourceFile = new FileInfo(sourceImageFileName);
+
+                }
+            }
+
+
+
             RoundData sunRoundData = DetectSunWithSerieOfArcs(imgP, dmProcessingData, currentDirectory, randomFileName);
-            
+
             theSunSuppressionSchemeApplicable = (!sunRoundData.IsNull);
 
             BGWorkerReport("закончен поиск солнечного диска. применимость подавления засветки: " + theSunSuppressionSchemeApplicable.ToString());
@@ -652,7 +527,7 @@ namespace SkyIndexAnalyzerLibraries
                 {
                     ServiceTools.ShowPicture(imageSunDemonstration, "");
                 }
-                
+
                 BGWorkerReport("анализ и компенсация засветки");
 
                 #region анализ засветки и компенсация
@@ -1757,7 +1632,8 @@ namespace SkyIndexAnalyzerLibraries
         {
             verbosityLevel = Convert.ToInt32(defaultProperties["GrIxProcessingVerbosityLevel"]);
             //maskImage = imgP.significantMaskImageBinary;
-            Image<Gray, Byte> maskImageCircled = imgP.imageSignificantMaskCircled(85.0d);
+            //Image<Gray, Byte> maskImageCircled = imgP.imageSignificantMaskCircled(85.0d);
+            Image<Gray, Byte> maskImageCircled = imgP.imageSignificantMaskCircled(dSunDetectorArcedCropFactor * 100.0d);
 
             DenseMatrix dmSourceProcessingData = (DenseMatrix)dmGrIx.Clone();
             DenseMatrix dmProcessingData = (DenseMatrix)dmSourceProcessingData.Clone();
@@ -1789,13 +1665,13 @@ namespace SkyIndexAnalyzerLibraries
 
             double gradMean = stats.Mean;
             double gradMedian = stats.Median;
-            
+
             dmFilteredData.MapIndexedInplace(new Func<int, int, double, double>((row, col, x) =>
             {
                 if (dmGradData[row, col] > gradMedian) return 0.0d;
                 return x;
             }));
-            
+
 
 
             List<PointD> arcPointsList = new List<PointD>();
@@ -1842,7 +1718,8 @@ namespace SkyIndexAnalyzerLibraries
                 inputApproxFunc);
 
             DenseMatrix dmSunburnMassSenterSearching = (DenseMatrix)dmSourceProcessingData.Clone();
-            dmSunburnMassSenterSearching.MapInplace(x => (x >= 0.99d) ? (1.0d) : (0.0d));
+            //dmSunburnMassSenterSearching.MapInplace(x => (x >= 0.99d) ? (1.0d) : (0.0d));
+            dmSunburnMassSenterSearching.MapInplace(x => (x >= minSunburnGrIxValue) ? (1.0d) : (0.0d));
             double massCenterX = 0.0d;
             double massCenterY = 0.0d;
             foreach (Tuple<int, int, double> theElement in dmSunburnMassSenterSearching.IndexedEnumerator())
@@ -1977,17 +1854,21 @@ namespace SkyIndexAnalyzerLibraries
 
             DenseMatrix dmSourceProcessingDataFilteredAlongBisectrix = (DenseMatrix)dmSourceProcessingData.Clone();
 
+            double dHalfWidthY = imgP.imageRD.DRadius / 70.0d;
             dmSourceProcessingDataFilteredAlongBisectrix.MapIndexedInplace((row, col, dVal) =>
             {
-                if ((dmProcessingDataYrotated[row, col] <= -10.0d) ||
-                        (dmProcessingDataYrotated[row, col] >= 10.0d)) return 0.0d;
+                //if ((dmProcessingDataYrotated[row, col] <= -10.0d) ||
+                //        (dmProcessingDataYrotated[row, col] >= 10.0d)) return 0.0d;
+                if ((dmProcessingDataYrotated[row, col] <= -dHalfWidthY) ||
+                        (dmProcessingDataYrotated[row, col] >= dHalfWidthY)) return 0.0d;
                 return dVal;
             });
             dmSourceProcessingDataFilteredAlongBisectrix =
                 (DenseMatrix)dmSourceProcessingDataFilteredAlongBisectrix.PointwiseMultiply(dmMaskCircled);
 
             DenseMatrix dmSunburnDataAlongBisectrix = (DenseMatrix)dmSourceProcessingDataFilteredAlongBisectrix.Clone();
-            dmSunburnDataAlongBisectrix.MapInplace(d => (d == 1.0d) ? (d) : (0.0d));
+            //dmSunburnDataAlongBisectrix.MapInplace(d => (d == 1.0d) ? (d) : (0.0d));
+            dmSunburnDataAlongBisectrix.MapInplace(d => (d >= minSunburnGrIxValue) ? (d) : (0.0d));
             dmProcessingDataXsrc = (DenseMatrix)dmProcessingDataXsrc.PointwiseMultiply(dmSunburnDataAlongBisectrix);
             dmProcessingDataYsrc = (DenseMatrix)dmProcessingDataYsrc.PointwiseMultiply(dmSunburnDataAlongBisectrix);
 
@@ -1997,7 +1878,8 @@ namespace SkyIndexAnalyzerLibraries
             double testSunCenterX = dmProcessingDataXsrc.Values.Sum() / dmSunburnDataAlongBisectrix.Values.Sum();
             double testSunCenterY = dmProcessingDataYsrc.Values.Sum() / dmSunburnDataAlongBisectrix.Values.Sum();
             PointD testSunCenter = new PointD(testSunCenterX, testSunCenterY);
-            double testSunRadius = (dmSunburnDataAlongBisectrix.Values.Sum() / 20.0d) / 2.0d;
+            //double testSunRadius = (dmSunburnDataAlongBisectrix.Values.Sum() / 20.0d) / 2.0d;
+            double testSunRadius = (dmSunburnDataAlongBisectrix.Values.Sum() / (2.0d * dHalfWidthY)) / 2.0d;
 
             RoundData rd = new RoundData(testSunCenterX, testSunCenterY, testSunRadius);
 
@@ -2016,19 +1898,23 @@ namespace SkyIndexAnalyzerLibraries
         {
             DenseMatrix dmSunburnData = imgP.eval("Y+0", null);
 
-            DenseVector dvGrIxDataEqualsOne = DataAnalysis.DataVectorizedWithCondition(dmSunburnData, dval => dval >= 254.0d);
+            //DenseVector dvGrIxDataEqualsOne = DataAnalysis.DataVectorizedWithCondition(dmSunburnData, dval => dval >= 254.0d);
+            DenseVector dvGrIxDataEqualsOne = DataAnalysis.DataVectorizedWithCondition(dmSunburnData, dval => dval >= minSunburnYValue);
             if (dvGrIxDataEqualsOne == null) return RoundData.nullRoundData();
             if (dvGrIxDataEqualsOne.Values.Sum() < imgP.significantMaskImageBinary.CountNonzero()[0]*minSunAreaPart) return RoundData.nullRoundData();
 
-            Image<Gray, Byte> maskImageCircled85 = imgP.imageSignificantMaskCircled(85.0d);
+            Image<Gray, Byte> maskImageCircled85 = imgP.imageSignificantMaskCircled(dSunDetectorArcedCropFactor*100.0d);
             DenseMatrix dmGrIxData =
                 (DenseMatrix)dmGrIx.PointwiseMultiply(ImageProcessing.DenseMatrixFromImage(maskImageCircled85));
             DenseVector dvGrIxDataToStat = DataAnalysis.DataVectorizedExcludingValues(dmGrIxData, 0.0d);
-            dvGrIxDataToStat = DataAnalysis.DataVectorizedWithCondition(dvGrIxDataToStat, dval => (dval != 1.0d));
+            //dvGrIxDataToStat = DataAnalysis.DataVectorizedWithCondition(dvGrIxDataToStat, dval => (dval != 1.0d));
+            dvGrIxDataToStat = DataAnalysis.DataVectorizedWithCondition(dvGrIxDataToStat, dval => (dval <= minSunburnGrIxValue));
+            
 
             DenseMatrix dmSunDetectionDataByAnsamble = DenseMatrix.Create(dmGrIx.RowCount, dmGrIx.ColumnCount,
                 (r, c) => 0.0d);
             List<RoundData> CenterPoints = new List<RoundData>();
+            int startedBGworkers = 0;
             List<bool> finishedBGworkers = new List<bool>();
             List<double> quantilesBy10 = new List<double>();
             
@@ -2037,6 +1923,7 @@ namespace SkyIndexAnalyzerLibraries
             for (int i = 10; i <= 70; i += 3)
             {
                 quantilesBy10.Add(Statistics.Percentile(dvGrIxDataToStat, i));
+                //startedBGworkers.Add(false);
                 finishedBGworkers.Add(false);
             }
 
@@ -2059,12 +1946,21 @@ namespace SkyIndexAnalyzerLibraries
                     RoundData retRD = (RoundData)currentBGWResults[1];
                     int returningBGWthreadID = (int)currentBGWResults[2];
 
+                    if (verbosityLevel > 1)
+                    {
+                        NetCDFoperations.SaveDataToFile(dmResSunDetectionPartial,
+                            currentDirectory + randomFileName + "_SunDetectionPartialData-" + returningBGWthreadID + ".nc", null, true);
+                    }
 
                     dmSunDetectionDataByAnsamble = dmSunDetectionDataByAnsamble + dmResSunDetectionPartial;
                     if (!retRD.IsNull) CenterPoints.Add(retRD);
                     finishedBGworkers[returningBGWthreadID] = true;
+                    //startedBGworkers[returningBGWthreadID] = false;
+                    startedBGworkers--;
                     theLogWindow = ServiceTools.LogAText(theLogWindow, "finished sun detection thread " + (returningBGWthreadID+1) + " of " + quantilesBy10.Count);
                 };
+
+
 
             DoWorkEventHandler currDoWorkHandler = delegate(object currBGWsender, DoWorkEventArgs args)
             {
@@ -2085,7 +1981,10 @@ namespace SkyIndexAnalyzerLibraries
 
                 
                 Image<Gray, byte> tmpImg = new Image<Gray, byte>(dmGrIx.ColumnCount, dmGrIx.RowCount, new Gray(0));
-                tmpImg.Draw(new CircleF(rd.pointDCircleCenter().PointF(), (float)rd.DRadius), new Gray(255), 0);
+                if (!rd.IsNull)
+                {
+                    tmpImg.Draw(new CircleF(rd.pointDCircleCenter().PointF(), (float)rd.DRadius), new Gray(255), 0);
+                }
                 DenseMatrix tmpDM = ImageProcessing.DenseMatrixFromImage(tmpImg);
                 tmpDM = (DenseMatrix)tmpDM.Multiply(quantileWeights[currBGWthreadID]);
 
@@ -2096,6 +1995,14 @@ namespace SkyIndexAnalyzerLibraries
 
             for (int i = 0; i < quantilesBy10.Count; i++)
             {
+                //while (startedBGworkers.Sum(boolVal => (boolVal) ? ((int)1) : ((int)0)) >= 2)
+                while (startedBGworkers >= 2)
+                {
+                    Application.DoEvents();
+                    Thread.Sleep(0);
+                }
+
+
                 double qtle = quantilesBy10[i];
                 BackgroundWorker currBgw = new BackgroundWorker();
                 currBgw.DoWork += currDoWorkHandler;
@@ -2103,6 +2010,8 @@ namespace SkyIndexAnalyzerLibraries
                 object[] BGWargs = new object[] { "", qtle, defaultProperties, ParentForm, i, imgP, dmGrIxData };
                 currBgw.RunWorkerAsync(BGWargs);
                 theLogWindow = ServiceTools.LogAText(theLogWindow, "started sun detection thread " + (i+1) + " of " + quantilesBy10.Count);
+                //startedBGworkers[i] = true;
+                startedBGworkers++;
             }
 
 
@@ -2121,6 +2030,17 @@ namespace SkyIndexAnalyzerLibraries
             }
             if (verbosityLevel > 1)
             {
+                ImageConditionAndDataRepresentingForm f1 =
+                    ServiceTools.RepresentDataFromDenseMatrix(dmSunDetectionDataByAnsamble,
+                        "dmSunDetectionDataByAnsamble", true, false, 0.0d, dmSunDetectionDataByAnsamble.Values.Max(), false);
+                Image<Bgr, byte> sunDetectionImage = new Image<Bgr, byte>(f1.imgData.dataRepresentingImageColored());
+                //f1.imgData.dataRepresentingImageColored().Save(currentDirectory + randomFileName + "_SunDetectionDataByAnsamble.jpg", ImageFormat.Jpeg);
+                sunDetectionImage.Save(currentDirectory + randomFileName + "_SunDetectionDataByAnsamble.jpg");
+                sunDetectionImage = sunDetectionImage.AddWeighted(new Image<Bgr, byte>(imgP.processingBitmap()), 0.6d,
+                    0.4d, 0.0d);
+                sunDetectionImage.Save(currentDirectory + randomFileName + "_SunDetectionByAnsamble.jpg");
+                sunDetectionImage.Dispose();
+                f1.Dispose();
                 NetCDFoperations.SaveDataToFile(dmSunDetectionDataByAnsamble,
                     currentDirectory + randomFileName + "_SunDetectionDataByAnsamble.nc", null, true);
             }
@@ -2157,6 +2077,16 @@ namespace SkyIndexAnalyzerLibraries
                 sunRD.DRadius = Math.Sqrt((maxSunAreaPart * imgP.imageRD.RoundArea) / Math.PI);
             }
 
+            if (verbosityLevel > 1)
+            {
+                Image<Bgr, byte> sunDetectionImage = new Image<Bgr,byte>(imgP.processingBitmap());
+                Image<Bgr, byte> sunLocationImage = sunDetectionImage.CopyBlank();
+                sunLocationImage.Draw(new CircleF(sunRD.pointfCircleCenter(), (float)sunRD.DRadius), new Bgr(255, 255, 255), 0);
+                sunDetectionImage = sunDetectionImage.AddWeighted(sunLocationImage, 0.6d, 0.4d, 0.0d);
+                sunDetectionImage.Save(currentDirectory + randomFileName + "_SunDetectionByAnsambleResult.jpg");
+                sunDetectionImage.Dispose();
+                sunLocationImage.Dispose();
+            }
 
             return sunRD;
         }
@@ -2165,494 +2095,494 @@ namespace SkyIndexAnalyzerLibraries
 
 
 
+        #region //public RoundData detectSun(DenseMatrix dmGrIxData, Image<Gray, Byte> maskImageCutMargins, Image<Gray, Byte> maskImageFull, ImageProcessing imgP, string currentDirectory = "", string randomFileName = "")
+        //public RoundData detectSun(DenseMatrix dmGrIxData, Image<Gray, Byte> maskImageCutMargins, Image<Gray, Byte> maskImageFull, ImageProcessing imgP, string currentDirectory = "", string randomFileName = "")
+        //{
+        //    if (!isCalculatingUsingBgWorker)
+        //        theLogWindow = ServiceTools.LogAText(theLogWindow,
+        //            "Начинаю определение местонахождения солнца по форме поля засветки");
 
-        public RoundData detectSun(DenseMatrix dmGrIxData, Image<Gray, Byte> maskImageCutMargins, Image<Gray, Byte> maskImageFull, ImageProcessing imgP, string currentDirectory = "", string randomFileName = "")
-        {
-            if (!isCalculatingUsingBgWorker)
-                theLogWindow = ServiceTools.LogAText(theLogWindow,
-                    "Начинаю определение местонахождения солнца по форме поля засветки");
 
+        //    RoundData retRoundData = new RoundData();
 
-            RoundData retRoundData = new RoundData();
+        //    double pixelMaxDistanceToDtermineAverageGrad = 5.0d;
 
-            double pixelMaxDistanceToDtermineAverageGrad = 5.0d;
+        //    Image<Gray, Byte> maskImage100 = maskImageFull.Copy();
+        //    Image<Gray, Byte> maskImage = maskImageCutMargins.Copy();
+        //    double overallMaskArea = (double)maskImage.CountNonzero()[0];
 
-            Image<Gray, Byte> maskImage100 = maskImageFull.Copy();
-            Image<Gray, Byte> maskImage = maskImageCutMargins.Copy();
-            double overallMaskArea = (double)maskImage.CountNonzero()[0];
+        //    DenseMatrix dmProcessingData = (DenseMatrix)dmGrIxData.Clone();
 
-            DenseMatrix dmProcessingData = (DenseMatrix)dmGrIxData.Clone();
+        //    if (verbosityLevel > 1)
+        //        ServiceTools.RepresentDataFromDenseMatrix(dmProcessingData, "original GrIx data", false, false, 0.0d, 1.0d, !isCalculatingUsingBgWorker);
+        //    DenseMatrix dmMask100 = ImageProcessing.DenseMatrixFromImage(maskImage100);
+        //    DenseMatrix dmMask = ImageProcessing.DenseMatrixFromImage(maskImage);
 
-            if (verbosityLevel > 1)
-                ServiceTools.RepresentDataFromDenseMatrix(dmProcessingData, "original GrIx data", false, false, 0.0d, 1.0d, !isCalculatingUsingBgWorker);
-            DenseMatrix dmMask100 = ImageProcessing.DenseMatrixFromImage(maskImage100);
-            DenseMatrix dmMask = ImageProcessing.DenseMatrixFromImage(maskImage);
+        //    DenseMatrix dmImageMarginsMask = DenseMatrix.Create(dmMask100.RowCount, dmMask100.ColumnCount, (r, c) =>
+        //    {
+        //        if ((r < 8) || (c < 8) || (dmMask100.RowCount - r < 8) || (dmMask100.ColumnCount - c < 8)) return 0.0d;
+        //        else return 1.0d;
+        //    });
+
+        //    dmMask100 = (DenseMatrix)dmMask100.PointwiseMultiply(dmImageMarginsMask);
+        //    dmMask = (DenseMatrix)dmMask.PointwiseMultiply(dmImageMarginsMask);
+
+
+        //    dmProcessingData = (DenseMatrix)dmProcessingData.PointwiseMultiply(dmMask100);
+
+
+        //    ServiceTools.FlushMemory();
+
+
+
+        //    #region посчитаем для объектов засветки разные солнечные метрики
+        //    // lets play with grad field near the sunburn edges
+
+        //    ArithmeticsOnImages aoi = new ArithmeticsOnImages();
+        //    aoi.dmY = dmProcessingData;
+        //    aoi.ExprString = "grad(Y)";
+        //    aoi.RPNeval(true);
+        //    DenseMatrix dmGradField = (DenseMatrix)aoi.dmRes.Clone();
+        //    dmGradField = (DenseMatrix)dmGradField.PointwiseMultiply(dmMask);
+
+
+        //    if (verbosityLevel > 1)
+        //        ServiceTools.RepresentDataFromDenseMatrix(dmGradField, "Grad field", false, false, 0.0d, 1.0d, !isCalculatingUsingBgWorker);
+
+        //    // посмотрим, что с градиентами на границах разных отдельных объектов
+
+        //    Image<Gray, Byte> imgSunMask = ImageProcessing.grayscaleImageFromDenseMatrixWithFixedValuesBounds(
+        //        dmProcessingData, 0.0d, 1.0d, false);
+        //    imgSunMask = imgSunMask.ThresholdBinary(new Gray(254), new Gray(255));
+        //    if (imgSunMask.CountNonzero()[0] == 0)
+        //    {
+        //        return null;
+        //    }
+
+        //    if (!isCalculatingUsingBgWorker)
+        //        ServiceTools.ShowPicture(imgSunMask, "");
+
+        //    Contour<Point> contoursDetected = imgSunMask.FindContours(Emgu.CV.CvEnum.CHAIN_APPROX_METHOD.CV_CHAIN_APPROX_NONE, Emgu.CV.CvEnum.RETR_TYPE.CV_RETR_LIST);
+        //    List<Contour<Point>> contoursList = new List<Contour<Point>>();
+        //    List<Contour<Point>> overallContoursList = new List<Contour<Point>>();
+
+        //    while (true)
+        //    {
+        //        Contour<Point> currContour = contoursDetected;
+        //        double currcontourArePart = currContour.Area / overallMaskArea;
+        //        //if ((currcontourArePart <= maxSunAreaPart) && (currcontourArePart >= minSunAreaPart))
+        //        overallContoursList.Add(currContour);
+        //        if (currcontourArePart >= minSunAreaPart)
+        //        {
+        //            contoursList.Add(currContour);
+        //        }
+
+        //        contoursDetected = contoursDetected.HNext;
+        //        if (contoursDetected == null)
+        //            break;
+        //    }
 
-            DenseMatrix dmImageMarginsMask = DenseMatrix.Create(dmMask100.RowCount, dmMask100.ColumnCount, (r, c) =>
-            {
-                if ((r < 8) || (c < 8) || (dmMask100.RowCount - r < 8) || (dmMask100.ColumnCount - c < 8)) return 0.0d;
-                else return 1.0d;
-            });
+        //    if (contoursList.Count == 0) return null;
 
-            dmMask100 = (DenseMatrix)dmMask100.PointwiseMultiply(dmImageMarginsMask);
-            dmMask = (DenseMatrix)dmMask.PointwiseMultiply(dmImageMarginsMask);
-
-
-            dmProcessingData = (DenseMatrix)dmProcessingData.PointwiseMultiply(dmMask100);
-
-
-            ServiceTools.FlushMemory();
-
-
-
-            #region посчитаем для объектов засветки разные солнечные метрики
-            // lets play with grad field near the sunburn edges
-
-            ArithmeticsOnImages aoi = new ArithmeticsOnImages();
-            aoi.dmY = dmProcessingData;
-            aoi.ExprString = "grad(Y)";
-            aoi.RPNeval(true);
-            DenseMatrix dmGradField = (DenseMatrix)aoi.dmRes.Clone();
-            dmGradField = (DenseMatrix)dmGradField.PointwiseMultiply(dmMask);
-
 
-            if (verbosityLevel > 1)
-                ServiceTools.RepresentDataFromDenseMatrix(dmGradField, "Grad field", false, false, 0.0d, 1.0d, !isCalculatingUsingBgWorker);
 
-            // посмотрим, что с градиентами на границах разных отдельных объектов
 
-            Image<Gray, Byte> imgSunMask = ImageProcessing.grayscaleImageFromDenseMatrixWithFixedValuesBounds(
-                dmProcessingData, 0.0d, 1.0d, false);
-            imgSunMask = imgSunMask.ThresholdBinary(new Gray(254), new Gray(255));
-            if (imgSunMask.CountNonzero()[0] == 0)
-            {
-                return null;
-            }
-
-            if (!isCalculatingUsingBgWorker)
-                ServiceTools.ShowPicture(imgSunMask, "");
-
-            Contour<Point> contoursDetected = imgSunMask.FindContours(Emgu.CV.CvEnum.CHAIN_APPROX_METHOD.CV_CHAIN_APPROX_NONE, Emgu.CV.CvEnum.RETR_TYPE.CV_RETR_LIST);
-            List<Contour<Point>> contoursList = new List<Contour<Point>>();
-            List<Contour<Point>> overallContoursList = new List<Contour<Point>>();
-
-            while (true)
-            {
-                Contour<Point> currContour = contoursDetected;
-                double currcontourArePart = currContour.Area / overallMaskArea;
-                //if ((currcontourArePart <= maxSunAreaPart) && (currcontourArePart >= minSunAreaPart))
-                overallContoursList.Add(currContour);
-                if (currcontourArePart >= minSunAreaPart)
-                {
-                    contoursList.Add(currContour);
-                }
+        //    DenseMatrix dmBinaryProcessingData = (DenseMatrix)dmProcessingData.Clone();
+        //    dmBinaryProcessingData = (DenseMatrix)dmBinaryProcessingData.PointwiseMultiply(dmMask100);
+        //    dmBinaryProcessingData.MapInplace(x => (x == 1.0d) ? (1.0d) : (0.0d));
+        //    DenseMatrix dmBinaryProcessingDataInversed = (DenseMatrix)dmBinaryProcessingData.Clone();
+        //    dmBinaryProcessingDataInversed.MapInplace(x => (x > 0.0d) ? (0.0d) : (1.0d));
+        //    DenseMatrix dmpoints5PxToCountours = DenseMatrix.Create(dmProcessingData.RowCount,
+        //        dmProcessingData.ColumnCount,
+        //        (row, col) =>
+        //        {
+        //            int startRow = row - 5;
+        //            startRow = (startRow < 0) ? (0) : (startRow);
+        //            int rowCnt = 11;
+        //            int lastRow = startRow + rowCnt;
+        //            if (lastRow >= dmProcessingData.RowCount)
+        //            {
+        //                lastRow = dmProcessingData.RowCount - 1;
+        //                rowCnt = lastRow - startRow;
+        //            }
+
+        //            int startCol = col - 5;
+        //            startCol = (startCol < 0) ? (0) : (startCol);
+        //            int colCnt = 11;
+        //            int lastCol = startCol + colCnt;
+        //            if (lastCol >= dmProcessingData.ColumnCount)
+        //            {
+        //                lastCol = dmProcessingData.ColumnCount - 1;
+        //                colCnt = lastCol - startCol;
+        //            }
+
+        //            DenseMatrix tmpmatrix =
+        //                (DenseMatrix)dmBinaryProcessingData.SubMatrix(startRow, rowCnt, startCol, colCnt);
+        //            if (tmpmatrix.Values.Sum() > 0.0d)
+        //            {
+        //                //в этой области есть хотя бы одна точка контура
+        //                return 1.0d;
+        //            }
+        //            return 0.0d;
+        //        });
+        //    dmpoints5PxToCountours = (DenseMatrix)dmpoints5PxToCountours.PointwiseMultiply(dmBinaryProcessingDataInversed);
+        //    // получили границы всех областей засветки. проанализируем данные по градиенту на этих границах
+        //    DenseMatrix dmGradFieldOverMargins = (DenseMatrix)dmGradField.PointwiseMultiply(dmpoints5PxToCountours);
+        //    dmGradFieldOverMargins = (DenseMatrix)dmGradFieldOverMargins.PointwiseMultiply(dmMask100);
+        //    //ServiceTools.RepresentDataFromDenseMatrix(dmGradFieldOverMargins, "grad data along all contours");
+        //    DescriptiveStatistics statsGradFieldOverMargins =
+        //        DataAnalysis.StatsOfDataExcludingValues(dmGradFieldOverMargins, 0.0d);
+        //    theLogWindow = ServiceTools.LogAText(theLogWindow,
+        //        Environment.NewLine +
+        //        "over all contours margins:" + Environment.NewLine + "grad MEAN = " +
+        //        statsGradFieldOverMargins.Mean.ToString("e") + Environment.NewLine + "grad StdDev = " +
+        //        statsGradFieldOverMargins.StandardDeviation.ToString("e") + Environment.NewLine);
+
+
+
+        //    //string baseDir = "G:\\_gulevlab\\SkyIndexAnalyzerSolo_appData\\_dataDirectory\\";
+        //    //ServiceTools.logToTextFile(currentDirectory + randomFileName + "_ShowHistScript.m", "clear; " + Environment.NewLine, true);
+
+
+
+        //    Contour<Point> foundSunContour = null;
+
+        //    theLogWindow = ServiceTools.LogAText(theLogWindow, Environment.NewLine + "STARTING sun locating with isolines arcs");
+        //    RoundData refSunDisk = DetectSunWithSerieOfArcs(imgP, dmGrIxData, currentDirectory, randomFileName);
+        //    theLogWindow = ServiceTools.LogAText(theLogWindow, Environment.NewLine + "FINISHED sun locating with isolines arcs");
+
+        //    if (refSunDisk.IsNull)
+        //    {
+        //        return null;
+        //    }
+        //    foreach (Contour<Point> currContour in contoursList)
+        //    {
+        //        if (currContour.InContour(refSunDisk.pointDCircleCenter().PointF()) >= 0.0d)
+        //        {
+        //            foundSunContour = currContour;
+        //        }
+        //    }
 
-                contoursDetected = contoursDetected.HNext;
-                if (contoursDetected == null)
-                    break;
-            }
+        //    #endregion посчитаем для объектов засветки разные солнечные метрики
+
+
+
 
-            if (contoursList.Count == 0) return null;
-
-
-
-
-            DenseMatrix dmBinaryProcessingData = (DenseMatrix)dmProcessingData.Clone();
-            dmBinaryProcessingData = (DenseMatrix)dmBinaryProcessingData.PointwiseMultiply(dmMask100);
-            dmBinaryProcessingData.MapInplace(x => (x == 1.0d) ? (1.0d) : (0.0d));
-            DenseMatrix dmBinaryProcessingDataInversed = (DenseMatrix)dmBinaryProcessingData.Clone();
-            dmBinaryProcessingDataInversed.MapInplace(x => (x > 0.0d) ? (0.0d) : (1.0d));
-            DenseMatrix dmpoints5PxToCountours = DenseMatrix.Create(dmProcessingData.RowCount,
-                dmProcessingData.ColumnCount,
-                (row, col) =>
-                {
-                    int startRow = row - 5;
-                    startRow = (startRow < 0) ? (0) : (startRow);
-                    int rowCnt = 11;
-                    int lastRow = startRow + rowCnt;
-                    if (lastRow >= dmProcessingData.RowCount)
-                    {
-                        lastRow = dmProcessingData.RowCount - 1;
-                        rowCnt = lastRow - startRow;
-                    }
-
-                    int startCol = col - 5;
-                    startCol = (startCol < 0) ? (0) : (startCol);
-                    int colCnt = 11;
-                    int lastCol = startCol + colCnt;
-                    if (lastCol >= dmProcessingData.ColumnCount)
-                    {
-                        lastCol = dmProcessingData.ColumnCount - 1;
-                        colCnt = lastCol - startCol;
-                    }
-
-                    DenseMatrix tmpmatrix =
-                        (DenseMatrix)dmBinaryProcessingData.SubMatrix(startRow, rowCnt, startCol, colCnt);
-                    if (tmpmatrix.Values.Sum() > 0.0d)
-                    {
-                        //в этой области есть хотя бы одна точка контура
-                        return 1.0d;
-                    }
-                    return 0.0d;
-                });
-            dmpoints5PxToCountours = (DenseMatrix)dmpoints5PxToCountours.PointwiseMultiply(dmBinaryProcessingDataInversed);
-            // получили границы всех областей засветки. проанализируем данные по градиенту на этих границах
-            DenseMatrix dmGradFieldOverMargins = (DenseMatrix)dmGradField.PointwiseMultiply(dmpoints5PxToCountours);
-            dmGradFieldOverMargins = (DenseMatrix)dmGradFieldOverMargins.PointwiseMultiply(dmMask100);
-            //ServiceTools.RepresentDataFromDenseMatrix(dmGradFieldOverMargins, "grad data along all contours");
-            DescriptiveStatistics statsGradFieldOverMargins =
-                DataAnalysis.StatsOfDataExcludingValues(dmGradFieldOverMargins, 0.0d);
-            theLogWindow = ServiceTools.LogAText(theLogWindow,
-                Environment.NewLine +
-                "over all contours margins:" + Environment.NewLine + "grad MEAN = " +
-                statsGradFieldOverMargins.Mean.ToString("e") + Environment.NewLine + "grad StdDev = " +
-                statsGradFieldOverMargins.StandardDeviation.ToString("e") + Environment.NewLine);
-
-
-
-            //string baseDir = "G:\\_gulevlab\\SkyIndexAnalyzerSolo_appData\\_dataDirectory\\";
-            //ServiceTools.logToTextFile(currentDirectory + randomFileName + "_ShowHistScript.m", "clear; " + Environment.NewLine, true);
-
-
-
-            Contour<Point> foundSunContour = null;
-
-            theLogWindow = ServiceTools.LogAText(theLogWindow, Environment.NewLine + "STARTING sun locating with isolines arcs");
-            RoundData refSunDisk = DetectSunWithSerieOfArcs(imgP, dmGrIxData, currentDirectory, randomFileName);
-            theLogWindow = ServiceTools.LogAText(theLogWindow, Environment.NewLine + "FINISHED sun locating with isolines arcs");
-
-            if (refSunDisk.IsNull)
-            {
-                return null;
-            }
-            foreach (Contour<Point> currContour in contoursList)
-            {
-                if (currContour.InContour(refSunDisk.pointDCircleCenter().PointF()) >= 0.0d)
-                {
-                    foundSunContour = currContour;
-                }
-            }
-
-            #endregion посчитаем для объектов засветки разные солнечные метрики
-
-
-
-
-            #region оценка применимости алгоритма подавления солнечной засветки
-            // оценить общую площадь засветки 255 - должно быть прилично ---СКОЛЬКО?
-            // найдем все куски площадью больше - ЧЕГО?
-            // оценить разброс кластеров засветки - должно быть единое круглое солнце, возможно, с лучами
-            // если засветки слишком мало - неприменимо, использовать без подавления
-            // если засветки слишком много - неприменимо, использовать без подавления
-
-            bool theSunSuppressionSchemeApplicable = true;
-
-
-
-
-
-            if (foundSunContour != null)
-            {
-                #region поиск солнца по найденному контуру
-                #region обработаем найденный контур еще раз
-
-                Image<Gray, byte> imgCurrentContour = imgSunMask.CopyBlank();
-                imgCurrentContour.Draw(foundSunContour, new Gray(255), -1);
-
-                tmpSunDetectionimage = tmpSunDetectionimage.AddWeighted(imgCurrentContour.Convert<Bgr, byte>(), 1.0d, 0.4d, 0.0d);
-
-
-                DenseMatrix dmBinaryProcessingDataCurrContour = ImageProcessing.DenseMatrixFromImage(imgCurrentContour);
-                dmBinaryProcessingDataCurrContour.MapInplace(x => (x > 0.0d) ? (1.0d) : (0.0d));
-                DenseMatrix dmBinaryProcessingDataCurrContourInversed =
-                    (DenseMatrix)dmBinaryProcessingDataCurrContour.Clone();
-                dmBinaryProcessingDataCurrContourInversed.MapInplace(x => (x > 0.0d) ? (0.0d) : (1.0d));
-
-                DenseMatrix dmpoints5PxToCurrentCountour = DenseMatrix.Create(dmProcessingData.RowCount,
-                dmProcessingData.ColumnCount,
-                (row, col) =>
-                {
-                    int startRow = row - 5;
-                    startRow = (startRow < 0) ? (0) : (startRow);
-                    int rowCnt = 11;
-                    int lastRow = startRow + rowCnt;
-                    if (lastRow >= dmProcessingData.RowCount)
-                    {
-                        lastRow = dmProcessingData.RowCount - 1;
-                        rowCnt = lastRow - startRow;
-                    }
-
-                    int startCol = col - 5;
-                    startCol = (startCol < 0) ? (0) : (startCol);
-                    int colCnt = 11;
-                    int lastCol = startCol + colCnt;
-                    if (lastCol >= dmProcessingData.ColumnCount)
-                    {
-                        lastCol = dmProcessingData.ColumnCount - 1;
-                        colCnt = lastCol - startCol;
-                    }
-
-                    DenseMatrix tmpmatrix =
-                        (DenseMatrix)dmBinaryProcessingDataCurrContour.SubMatrix(startRow, rowCnt, startCol, colCnt);
-                    if (tmpmatrix.Values.Sum() > 0.0d)
-                    {
-                        //в этой области есть хотя бы одна точка контура
-                        return 1.0d;
-                    }
-                    return 0.0d;
-                });
-
-                dmpoints5PxToCurrentCountour = (DenseMatrix)dmpoints5PxToCurrentCountour.PointwiseMultiply(dmBinaryProcessingDataCurrContourInversed);
-                //ServiceTools.RepresentDataFromDenseMatrix(dmpoints5PxToCurrentCountour, "points along contours", true, false, 0.0d, 2.0d, true);
-
-
-
-
-
-
-                DenseMatrix dmCurrContourGradData = (DenseMatrix)dmGradField.Clone();
-                dmCurrContourGradData = (DenseMatrix)dmCurrContourGradData.PointwiseMultiply(dmpoints5PxToCurrentCountour);
-                //ServiceTools.RepresentDataFromDenseMatrix(dmCurrContourGradData, "grad data aling found contour");
-
-                DescriptiveStatistics currContourGradDataStats =
-                    DataAnalysis.StatsOfDataExcludingValues(dmCurrContourGradData, 0.0d);
-
-
-                List<PointD> acceptablePointsList = new List<PointD>();
-                List<double> lPointsWeights = new List<double>();
-
-
-                foreach (Point foundContourPoint in foundSunContour)
-                {
-                    // найдем данные по этой точке
-
-
-                    int startRow = foundContourPoint.Y - 5;
-                    startRow = (startRow < 0) ? (0) : (startRow);
-                    int rowCnt = 11;
-                    int lastRow = startRow + rowCnt;
-                    if (lastRow >= dmProcessingData.RowCount)
-                    {
-                        lastRow = dmProcessingData.RowCount - 1;
-                        rowCnt = lastRow - startRow;
-                    }
-
-                    int startCol = foundContourPoint.X - 5;
-                    startCol = (startCol < 0) ? (0) : (startCol);
-                    int colCnt = 11;
-                    int lastCol = startCol + colCnt;
-                    if (lastCol >= dmProcessingData.ColumnCount)
-                    {
-                        lastCol = dmProcessingData.ColumnCount - 1;
-                        colCnt = lastCol - startCol;
-                    }
-
-                    DenseMatrix currPointLocalSubmatrix =
-                        (DenseMatrix)dmCurrContourGradData.SubMatrix(startRow, rowCnt, startCol, colCnt);
-                    DescriptiveStatistics currPointLocalStats =
-                        DataAnalysis.StatsOfDataExcludingValues(currPointLocalSubmatrix, 0.0d);
-                    if (currPointLocalStats == null) continue;
-                    if (currPointLocalStats.Mean < statsGradFieldOverMargins.Mean)
-                    {
-                        lPointsWeights.Add(currPointLocalStats.Mean);
-                        acceptablePointsList.Add(new PointD(foundContourPoint));
-                    }
-                }
-
-
-                #region Отображение результата фильтрации
-                DenseMatrix dmAcceptablePoints5pxMask = DenseMatrix.Create(dmProcessingData.RowCount,
-                    dmProcessingData.ColumnCount, (r, c) => 0.0d);
-                foreach (PointD pt in acceptablePointsList)
-                {
-                    Point ptInt = new Point(Convert.ToInt32(pt.X), Convert.ToInt32(pt.Y));
-
-                    int startRow = ptInt.Y - 5;
-                    startRow = (startRow < 0) ? (0) : (startRow);
-                    int rowCnt = 11;
-                    int lastRow = startRow + rowCnt;
-                    if (lastRow >= dmProcessingData.RowCount)
-                    {
-                        lastRow = dmProcessingData.RowCount - 1;
-                        rowCnt = lastRow - startRow;
-                    }
-
-                    int startCol = ptInt.X - 5;
-                    startCol = (startCol < 0) ? (0) : (startCol);
-                    int colCnt = 11;
-                    int lastCol = startCol + colCnt;
-                    if (lastCol >= dmProcessingData.ColumnCount)
-                    {
-                        lastCol = dmProcessingData.ColumnCount - 1;
-                        colCnt = lastCol - startCol;
-                    }
-
-                    for (int row = startRow; row < lastRow; row++)
-                        for (int col = startCol; col < lastCol; col++)
-                        {
-                            dmAcceptablePoints5pxMask[row, col] = 1.0d;
-                        }
-                }
-                dmAcceptablePoints5pxMask = (DenseMatrix)dmAcceptablePoints5pxMask.PointwiseMultiply(dmBinaryProcessingDataCurrContourInversed);
-                DenseMatrix dmAcceptablePoints5pxGradData = (DenseMatrix)dmGradField.Clone();
-                dmAcceptablePoints5pxGradData = (DenseMatrix)dmAcceptablePoints5pxGradData.PointwiseMultiply(dmAcceptablePoints5pxMask);
-                //ServiceTools.RepresentDataFromDenseMatrix(dmAcceptablePoints5pxGradData, "filtered grad data");
-                #endregion Отображение результата фильтрации
-
-
-
-                DenseVector dvPointsWeight = DenseVector.OfEnumerable(lPointsWeights);
-                double gradMaxVal = dvPointsWeight.Max();
-                double gradMinVal = dvPointsWeight.Min();
-                dvPointsWeight.MapInplace(x =>
-                {
-                    return (1.0d - (x - gradMinVal) / (gradMaxVal - gradMinVal));
-                }, true);
-
-                Func<DenseVector, PointD, double> minimizingFunc = (dvParameters, pt) =>
-                {
-                    double sunCenterX = dvParameters[0];
-                    double sunCenterY = dvParameters[1];
-                    double r = dvParameters[2];
-                    double diffX = pt.X - sunCenterX;
-                    double diffY = pt.Y - sunCenterY;
-                    double diff = r - Math.Sqrt(diffX * diffX + diffY * diffY);
-                    //diff = Math.Abs(diff);
-                    return diff;
-                };
-
-                double initSunCenterX = acceptablePointsList.Sum((pt => pt.X)) / (double)acceptablePointsList.Count;
-                double initSunCenterY = acceptablePointsList.Sum((pt => pt.Y)) / (double)acceptablePointsList.Count;
-                double initSunRadius = Math.Sqrt(foundSunContour.Area / Math.PI);
-                List<double> parametersList = new List<double>();
-                parametersList.Add(initSunCenterX);
-                parametersList.Add(initSunCenterY);
-                parametersList.Add(initSunRadius);
-                DenseVector dvInitialParameters = DenseVector.OfEnumerable(parametersList);
-                DenseVector initialParametersIncremnt = DenseVector.Create(dvInitialParameters.Count, (i => 1.0d));
-
-                GradientDescentApproximator approximator = new GradientDescentApproximator(acceptablePointsList, minimizingFunc);
-                approximator.DvWeights = dvPointsWeight;
-                //approximator.DvWeights = "";
-                DenseVector approximatedParameters = approximator.ApproximationGradientDescent2DPt(dvInitialParameters, initialParametersIncremnt, 0.000001d);
-
-                #endregion обработаем найденный контур еще раз
-
-
-
-                Image<Gray, Byte> imgSunMaskFiltered = imgSunMask.CopyBlank();
-                imgSunMaskFiltered.Draw(foundSunContour, new Gray(255), -1);
-                DenseMatrix dmSunMask = ImageProcessing.DenseMatrixFromImage(imgSunMaskFiltered);
-                dmSunMask.MapInplace(val => val / 255.0d);
-
-                PointD sunCenterPoint = new PointD(approximatedParameters[0], approximatedParameters[1]);
-                double sunRadius = approximatedParameters[2];
-
-                retRoundData.DCenterX = sunCenterPoint.X;
-                retRoundData.DCenterY = sunCenterPoint.Y;
-                retRoundData.DRadius = sunRadius;
-
-
-                #region сделаем вывод о состоянии диска солнца по его площади
-
-                double foundSunDiskArea = retRoundData.RoundArea;
-                double sunburnContourArea = foundSunContour.Area;
-                double overallSunburnArea = imgSunMask.CountNonzero()[0];
-                double sunDiskToItsSunburn_ratio = foundSunDiskArea / sunburnContourArea;
-                double sunDiskToOverallSunburn_ratio = foundSunDiskArea / overallSunburnArea;
-                if ((sunDiskToItsSunburn_ratio > 0.9d) && (sunDiskToItsSunburn_ratio < 1.1d))
-                {
-                    //солнце составляет почти всю площадь своей засветки - отдельно стоящее солнце
-                    if (sunDiskToOverallSunburn_ratio < 0.4d)
-                    {
-                        //очень много других объектов засветки - солнце в первой
-                        currentSunDiskCondition = SunDiskConditions.first;
-                    }
-                    else
-                    {
-                        currentSunDiskCondition = SunDiskConditions.second;
-                    }
-                }
-                else if (sunDiskToItsSunburn_ratio <= 0.9d)
-                {
-                    // солце выглядывает из-за курска облака. Но все еще определяется
-                    currentSunDiskCondition = SunDiskConditions.first;
-                }
-                else if (sunDiskToItsSunburn_ratio >= 1.1d)
-                {
-                    currentSunDiskCondition = SunDiskConditions.second;
-                }
-
-                #endregion сделаем вывод о состоянии диска солнца по его площади
-
-
-
-
-
-
-                double sunAreaPartial = (double)retRoundData.RoundArea / (double)maskImageFull.CountNonzero()[0];
-                if ((sunAreaPartial > maxSunAreaPart) || (sunAreaPartial < minSunAreaPart))
-                {
-                    //theSunSuppressionSchemeApplicable = false;
-                    //retRoundData = null;
-                    //return retRoundData;
-
-                    double sunAreaAbs = (double)maskImageFull.CountNonzero()[0] * aveSunAreaPart;
-                    retRoundData.DRadius = Math.Sqrt(sunAreaAbs / Math.PI);
-                }
-
-
-                Image<Bgr, Byte> imageSunDemonstration = ImageProcessing.evalResultColored(dmProcessingData, maskImage,
-                    new ColorScheme(""));
-                Image<Bgr, Byte> calculatedSunMaskImage = imageSunDemonstration.CopyBlank();
-                calculatedSunMaskImage.Draw(new CircleF(retRoundData.pointfCircleCenter(), (float)retRoundData.DRadius), new Bgr(255, 255, 255), 0);
-                //imageSunDemonstration = imageSunDemonstration.AddWeighted(calculatedSunMaskImage, 0.7, 0.3, 0.0);
-                //if (!isCalculatingUsingBgWorker)
-                //    ServiceTools.ShowPicture(imageSunDemonstration, "Sun position and radius demonstration");
-
-
-                //tmpSunDetectionimage = tmpSunDetectionimage.AddWeighted(calculatedSunMaskImage, 0.7d, 0.4d, 0.0d);
-                //if (!isCalculatingUsingBgWorker)
-                //    ServiceTools.ShowPicture(tmpSunDetectionimage, "Sun position and radius demonstration");
-                //if (verbosityLevel > 1)
-                //    tmpSunDetectionimage.Save(currentDirectory + randomFileName +
-                //                              "-Sun-position-and-radius-demonstration.jpg");
-
-                //SunMarginGradToShowImage = SunMarginGradToShowImage.AddWeighted(calculatedSunMaskImage, 0.7, 0.3, 0.0);
-
-                //if (!isCalculatingUsingBgWorker)
-                //    ServiceTools.ShowPicture(SunMarginGradToShowImage, "SUN margin image");
-
-                //theLogWindow = ServiceTools.LogAText(theLogWindow, "положение центра солнца: " + sunCenterPoint + Environment.NewLine);
-                //theLogWindow = ServiceTools.LogAText(theLogWindow, "радиус солнечной засветки: " + sunRadius + Environment.NewLine);
-
-                #endregion поиск солнца по найденному контуру
-
-            }
-            else
-            {
-                theSunSuppressionSchemeApplicable = false;
-                retRoundData = null;
-
-                double overallSunburnAreaPartial = imgSunMask.CountNonzero()[0] / maskImage100.CountNonzero()[0];
-                if (overallSunburnAreaPartial >= 0.01)
-                {
-                    currentSunDiskCondition = SunDiskConditions.zero;
-                }
-                else
-                {
-                    currentSunDiskCondition = SunDiskConditions.Cloudy;
-                }
-            }
-
-            if (!isCalculatingUsingBgWorker)
-                theLogWindow = ServiceTools.LogAText(theLogWindow, "sun suppression scheme applicable: " + theSunSuppressionSchemeApplicable.ToString());
-
-            #endregion оценка применимости алгоритма подавления солнечной засветки
-
-            return retRoundData;
-        }
-
+        //    #region оценка применимости алгоритма подавления солнечной засветки
+        //    // оценить общую площадь засветки 255 - должно быть прилично ---СКОЛЬКО?
+        //    // найдем все куски площадью больше - ЧЕГО?
+        //    // оценить разброс кластеров засветки - должно быть единое круглое солнце, возможно, с лучами
+        //    // если засветки слишком мало - неприменимо, использовать без подавления
+        //    // если засветки слишком много - неприменимо, использовать без подавления
+
+        //    bool theSunSuppressionSchemeApplicable = true;
+
+
+
+
+
+        //    if (foundSunContour != null)
+        //    {
+        //        #region поиск солнца по найденному контуру
+        //        #region обработаем найденный контур еще раз
+
+        //        Image<Gray, byte> imgCurrentContour = imgSunMask.CopyBlank();
+        //        imgCurrentContour.Draw(foundSunContour, new Gray(255), -1);
+
+        //        tmpSunDetectionimage = tmpSunDetectionimage.AddWeighted(imgCurrentContour.Convert<Bgr, byte>(), 1.0d, 0.4d, 0.0d);
+
+
+        //        DenseMatrix dmBinaryProcessingDataCurrContour = ImageProcessing.DenseMatrixFromImage(imgCurrentContour);
+        //        dmBinaryProcessingDataCurrContour.MapInplace(x => (x > 0.0d) ? (1.0d) : (0.0d));
+        //        DenseMatrix dmBinaryProcessingDataCurrContourInversed =
+        //            (DenseMatrix)dmBinaryProcessingDataCurrContour.Clone();
+        //        dmBinaryProcessingDataCurrContourInversed.MapInplace(x => (x > 0.0d) ? (0.0d) : (1.0d));
+
+        //        DenseMatrix dmpoints5PxToCurrentCountour = DenseMatrix.Create(dmProcessingData.RowCount,
+        //        dmProcessingData.ColumnCount,
+        //        (row, col) =>
+        //        {
+        //            int startRow = row - 5;
+        //            startRow = (startRow < 0) ? (0) : (startRow);
+        //            int rowCnt = 11;
+        //            int lastRow = startRow + rowCnt;
+        //            if (lastRow >= dmProcessingData.RowCount)
+        //            {
+        //                lastRow = dmProcessingData.RowCount - 1;
+        //                rowCnt = lastRow - startRow;
+        //            }
+
+        //            int startCol = col - 5;
+        //            startCol = (startCol < 0) ? (0) : (startCol);
+        //            int colCnt = 11;
+        //            int lastCol = startCol + colCnt;
+        //            if (lastCol >= dmProcessingData.ColumnCount)
+        //            {
+        //                lastCol = dmProcessingData.ColumnCount - 1;
+        //                colCnt = lastCol - startCol;
+        //            }
+
+        //            DenseMatrix tmpmatrix =
+        //                (DenseMatrix)dmBinaryProcessingDataCurrContour.SubMatrix(startRow, rowCnt, startCol, colCnt);
+        //            if (tmpmatrix.Values.Sum() > 0.0d)
+        //            {
+        //                //в этой области есть хотя бы одна точка контура
+        //                return 1.0d;
+        //            }
+        //            return 0.0d;
+        //        });
+
+        //        dmpoints5PxToCurrentCountour = (DenseMatrix)dmpoints5PxToCurrentCountour.PointwiseMultiply(dmBinaryProcessingDataCurrContourInversed);
+        //        //ServiceTools.RepresentDataFromDenseMatrix(dmpoints5PxToCurrentCountour, "points along contours", true, false, 0.0d, 2.0d, true);
+
+
+
+
+
+
+        //        DenseMatrix dmCurrContourGradData = (DenseMatrix)dmGradField.Clone();
+        //        dmCurrContourGradData = (DenseMatrix)dmCurrContourGradData.PointwiseMultiply(dmpoints5PxToCurrentCountour);
+        //        //ServiceTools.RepresentDataFromDenseMatrix(dmCurrContourGradData, "grad data aling found contour");
+
+        //        DescriptiveStatistics currContourGradDataStats =
+        //            DataAnalysis.StatsOfDataExcludingValues(dmCurrContourGradData, 0.0d);
+
+
+        //        List<PointD> acceptablePointsList = new List<PointD>();
+        //        List<double> lPointsWeights = new List<double>();
+
+
+        //        foreach (Point foundContourPoint in foundSunContour)
+        //        {
+        //            // найдем данные по этой точке
+
+
+        //            int startRow = foundContourPoint.Y - 5;
+        //            startRow = (startRow < 0) ? (0) : (startRow);
+        //            int rowCnt = 11;
+        //            int lastRow = startRow + rowCnt;
+        //            if (lastRow >= dmProcessingData.RowCount)
+        //            {
+        //                lastRow = dmProcessingData.RowCount - 1;
+        //                rowCnt = lastRow - startRow;
+        //            }
+
+        //            int startCol = foundContourPoint.X - 5;
+        //            startCol = (startCol < 0) ? (0) : (startCol);
+        //            int colCnt = 11;
+        //            int lastCol = startCol + colCnt;
+        //            if (lastCol >= dmProcessingData.ColumnCount)
+        //            {
+        //                lastCol = dmProcessingData.ColumnCount - 1;
+        //                colCnt = lastCol - startCol;
+        //            }
+
+        //            DenseMatrix currPointLocalSubmatrix =
+        //                (DenseMatrix)dmCurrContourGradData.SubMatrix(startRow, rowCnt, startCol, colCnt);
+        //            DescriptiveStatistics currPointLocalStats =
+        //                DataAnalysis.StatsOfDataExcludingValues(currPointLocalSubmatrix, 0.0d);
+        //            if (currPointLocalStats == null) continue;
+        //            if (currPointLocalStats.Mean < statsGradFieldOverMargins.Mean)
+        //            {
+        //                lPointsWeights.Add(currPointLocalStats.Mean);
+        //                acceptablePointsList.Add(new PointD(foundContourPoint));
+        //            }
+        //        }
+
+
+        //        #region Отображение результата фильтрации
+        //        DenseMatrix dmAcceptablePoints5pxMask = DenseMatrix.Create(dmProcessingData.RowCount,
+        //            dmProcessingData.ColumnCount, (r, c) => 0.0d);
+        //        foreach (PointD pt in acceptablePointsList)
+        //        {
+        //            Point ptInt = new Point(Convert.ToInt32(pt.X), Convert.ToInt32(pt.Y));
+
+        //            int startRow = ptInt.Y - 5;
+        //            startRow = (startRow < 0) ? (0) : (startRow);
+        //            int rowCnt = 11;
+        //            int lastRow = startRow + rowCnt;
+        //            if (lastRow >= dmProcessingData.RowCount)
+        //            {
+        //                lastRow = dmProcessingData.RowCount - 1;
+        //                rowCnt = lastRow - startRow;
+        //            }
+
+        //            int startCol = ptInt.X - 5;
+        //            startCol = (startCol < 0) ? (0) : (startCol);
+        //            int colCnt = 11;
+        //            int lastCol = startCol + colCnt;
+        //            if (lastCol >= dmProcessingData.ColumnCount)
+        //            {
+        //                lastCol = dmProcessingData.ColumnCount - 1;
+        //                colCnt = lastCol - startCol;
+        //            }
+
+        //            for (int row = startRow; row < lastRow; row++)
+        //                for (int col = startCol; col < lastCol; col++)
+        //                {
+        //                    dmAcceptablePoints5pxMask[row, col] = 1.0d;
+        //                }
+        //        }
+        //        dmAcceptablePoints5pxMask = (DenseMatrix)dmAcceptablePoints5pxMask.PointwiseMultiply(dmBinaryProcessingDataCurrContourInversed);
+        //        DenseMatrix dmAcceptablePoints5pxGradData = (DenseMatrix)dmGradField.Clone();
+        //        dmAcceptablePoints5pxGradData = (DenseMatrix)dmAcceptablePoints5pxGradData.PointwiseMultiply(dmAcceptablePoints5pxMask);
+        //        //ServiceTools.RepresentDataFromDenseMatrix(dmAcceptablePoints5pxGradData, "filtered grad data");
+        //        #endregion Отображение результата фильтрации
+
+
+
+        //        DenseVector dvPointsWeight = DenseVector.OfEnumerable(lPointsWeights);
+        //        double gradMaxVal = dvPointsWeight.Max();
+        //        double gradMinVal = dvPointsWeight.Min();
+        //        dvPointsWeight.MapInplace(x =>
+        //        {
+        //            return (1.0d - (x - gradMinVal) / (gradMaxVal - gradMinVal));
+        //        }, true);
+
+        //        Func<DenseVector, PointD, double> minimizingFunc = (dvParameters, pt) =>
+        //        {
+        //            double sunCenterX = dvParameters[0];
+        //            double sunCenterY = dvParameters[1];
+        //            double r = dvParameters[2];
+        //            double diffX = pt.X - sunCenterX;
+        //            double diffY = pt.Y - sunCenterY;
+        //            double diff = r - Math.Sqrt(diffX * diffX + diffY * diffY);
+        //            //diff = Math.Abs(diff);
+        //            return diff;
+        //        };
+
+        //        double initSunCenterX = acceptablePointsList.Sum((pt => pt.X)) / (double)acceptablePointsList.Count;
+        //        double initSunCenterY = acceptablePointsList.Sum((pt => pt.Y)) / (double)acceptablePointsList.Count;
+        //        double initSunRadius = Math.Sqrt(foundSunContour.Area / Math.PI);
+        //        List<double> parametersList = new List<double>();
+        //        parametersList.Add(initSunCenterX);
+        //        parametersList.Add(initSunCenterY);
+        //        parametersList.Add(initSunRadius);
+        //        DenseVector dvInitialParameters = DenseVector.OfEnumerable(parametersList);
+        //        DenseVector initialParametersIncremnt = DenseVector.Create(dvInitialParameters.Count, (i => 1.0d));
+
+        //        GradientDescentApproximator approximator = new GradientDescentApproximator(acceptablePointsList, minimizingFunc);
+        //        approximator.DvWeights = dvPointsWeight;
+        //        //approximator.DvWeights = "";
+        //        DenseVector approximatedParameters = approximator.ApproximationGradientDescent2DPt(dvInitialParameters, initialParametersIncremnt, 0.000001d);
+
+        //        #endregion обработаем найденный контур еще раз
+
+
+
+        //        Image<Gray, Byte> imgSunMaskFiltered = imgSunMask.CopyBlank();
+        //        imgSunMaskFiltered.Draw(foundSunContour, new Gray(255), -1);
+        //        DenseMatrix dmSunMask = ImageProcessing.DenseMatrixFromImage(imgSunMaskFiltered);
+        //        dmSunMask.MapInplace(val => val / 255.0d);
+
+        //        PointD sunCenterPoint = new PointD(approximatedParameters[0], approximatedParameters[1]);
+        //        double sunRadius = approximatedParameters[2];
+
+        //        retRoundData.DCenterX = sunCenterPoint.X;
+        //        retRoundData.DCenterY = sunCenterPoint.Y;
+        //        retRoundData.DRadius = sunRadius;
+
+
+        //        #region сделаем вывод о состоянии диска солнца по его площади
+
+        //        double foundSunDiskArea = retRoundData.RoundArea;
+        //        double sunburnContourArea = foundSunContour.Area;
+        //        double overallSunburnArea = imgSunMask.CountNonzero()[0];
+        //        double sunDiskToItsSunburn_ratio = foundSunDiskArea / sunburnContourArea;
+        //        double sunDiskToOverallSunburn_ratio = foundSunDiskArea / overallSunburnArea;
+        //        if ((sunDiskToItsSunburn_ratio > 0.9d) && (sunDiskToItsSunburn_ratio < 1.1d))
+        //        {
+        //            //солнце составляет почти всю площадь своей засветки - отдельно стоящее солнце
+        //            if (sunDiskToOverallSunburn_ratio < 0.4d)
+        //            {
+        //                //очень много других объектов засветки - солнце в первой
+        //                currentSunDiskCondition = SunDiskConditions.first;
+        //            }
+        //            else
+        //            {
+        //                currentSunDiskCondition = SunDiskConditions.second;
+        //            }
+        //        }
+        //        else if (sunDiskToItsSunburn_ratio <= 0.9d)
+        //        {
+        //            // солце выглядывает из-за курска облака. Но все еще определяется
+        //            currentSunDiskCondition = SunDiskConditions.first;
+        //        }
+        //        else if (sunDiskToItsSunburn_ratio >= 1.1d)
+        //        {
+        //            currentSunDiskCondition = SunDiskConditions.second;
+        //        }
+
+        //        #endregion сделаем вывод о состоянии диска солнца по его площади
+
+
+
+
+
+
+        //        double sunAreaPartial = (double)retRoundData.RoundArea / (double)maskImageFull.CountNonzero()[0];
+        //        if ((sunAreaPartial > maxSunAreaPart) || (sunAreaPartial < minSunAreaPart))
+        //        {
+        //            //theSunSuppressionSchemeApplicable = false;
+        //            //retRoundData = null;
+        //            //return retRoundData;
+
+        //            double sunAreaAbs = (double)maskImageFull.CountNonzero()[0] * aveSunAreaPart;
+        //            retRoundData.DRadius = Math.Sqrt(sunAreaAbs / Math.PI);
+        //        }
+
+
+        //        Image<Bgr, Byte> imageSunDemonstration = ImageProcessing.evalResultColored(dmProcessingData, maskImage,
+        //            new ColorScheme(""));
+        //        Image<Bgr, Byte> calculatedSunMaskImage = imageSunDemonstration.CopyBlank();
+        //        calculatedSunMaskImage.Draw(new CircleF(retRoundData.pointfCircleCenter(), (float)retRoundData.DRadius), new Bgr(255, 255, 255), 0);
+        //        //imageSunDemonstration = imageSunDemonstration.AddWeighted(calculatedSunMaskImage, 0.7, 0.3, 0.0);
+        //        //if (!isCalculatingUsingBgWorker)
+        //        //    ServiceTools.ShowPicture(imageSunDemonstration, "Sun position and radius demonstration");
+
+
+        //        //tmpSunDetectionimage = tmpSunDetectionimage.AddWeighted(calculatedSunMaskImage, 0.7d, 0.4d, 0.0d);
+        //        //if (!isCalculatingUsingBgWorker)
+        //        //    ServiceTools.ShowPicture(tmpSunDetectionimage, "Sun position and radius demonstration");
+        //        //if (verbosityLevel > 1)
+        //        //    tmpSunDetectionimage.Save(currentDirectory + randomFileName +
+        //        //                              "-Sun-position-and-radius-demonstration.jpg");
+
+        //        //SunMarginGradToShowImage = SunMarginGradToShowImage.AddWeighted(calculatedSunMaskImage, 0.7, 0.3, 0.0);
+
+        //        //if (!isCalculatingUsingBgWorker)
+        //        //    ServiceTools.ShowPicture(SunMarginGradToShowImage, "SUN margin image");
+
+        //        //theLogWindow = ServiceTools.LogAText(theLogWindow, "положение центра солнца: " + sunCenterPoint + Environment.NewLine);
+        //        //theLogWindow = ServiceTools.LogAText(theLogWindow, "радиус солнечной засветки: " + sunRadius + Environment.NewLine);
+
+        //        #endregion поиск солнца по найденному контуру
+
+        //    }
+        //    else
+        //    {
+        //        theSunSuppressionSchemeApplicable = false;
+        //        retRoundData = null;
+
+        //        double overallSunburnAreaPartial = imgSunMask.CountNonzero()[0] / maskImage100.CountNonzero()[0];
+        //        if (overallSunburnAreaPartial >= 0.01)
+        //        {
+        //            currentSunDiskCondition = SunDiskConditions.zero;
+        //        }
+        //        else
+        //        {
+        //            currentSunDiskCondition = SunDiskConditions.Cloudy;
+        //        }
+        //    }
+
+        //    if (!isCalculatingUsingBgWorker)
+        //        theLogWindow = ServiceTools.LogAText(theLogWindow, "sun suppression scheme applicable: " + theSunSuppressionSchemeApplicable.ToString());
+
+        //    #endregion оценка применимости алгоритма подавления солнечной засветки
+
+        //    return retRoundData;
+        //}
+        #endregion //public RoundData detectSun(DenseMatrix dmGrIxData, Image<Gray, Byte> maskImageCutMargins, Image<Gray, Byte> maskImageFull, ImageProcessing imgP, string currentDirectory = "", string randomFileName = "")
 
 
 

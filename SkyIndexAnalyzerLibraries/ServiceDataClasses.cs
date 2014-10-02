@@ -1099,7 +1099,7 @@ namespace SkyIndexAnalyzerLibraries
 
                 //5950.32
                 double latTrunc = Math.Truncate(latGrad); //5950.0d
-                string strLatTrunc = (Convert.ToInt32(latTrunc)).ToString();// "5950"
+                string strLatTrunc = (Convert.ToInt32(latTrunc)).ToString("D5");// "5950"
                 double latMinutes = Convert.ToDouble(strLatTrunc.Substring(strLatTrunc.Length - 2, 2)); //50.0d
 
                 double latGrad1 = (latTrunc - latMinutes) / 100.0d; // 59.0d
@@ -1135,7 +1135,7 @@ namespace SkyIndexAnalyzerLibraries
 
                 //4050.32
                 double lonTrunc = Math.Truncate(lonGrad); //4050.0d
-                string strlonTrunc = (Convert.ToInt32(lonTrunc)).ToString();// "4050"
+                string strlonTrunc = (Convert.ToInt32(lonTrunc)).ToString("D5");// "04050"
                 double lonMinutes = Convert.ToDouble(strlonTrunc.Substring(strlonTrunc.Length - 2, 2)); //50.0d
 
                 double lonGrad1 = (lonTrunc - lonMinutes) / 100.0d; // 40.0d
@@ -1224,6 +1224,8 @@ namespace SkyIndexAnalyzerLibraries
             }
             else if (dataSource == GPSdatasources.IOFFEvesselDataServer)
             {
+                //Coord,$240914,235707,5732.39755766,N,00000.21852030,W,146.774,144.8,11.531,-114.39,(E),147.034#
+
                 if (strValues.Count() != 13)
                 {
                     //некорректная строка. вернем без результатов

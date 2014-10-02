@@ -14,7 +14,7 @@ namespace SkyIndexAnalyzerLibraries
     /// <filterpriority>1</filterpriority>
     [ComVisible(true)]
     [Serializable]
-    public struct PointPolar
+    public struct   PointPolar
     {
         /// <summary>
         /// Представляет новый экземпляр класса <see cref="T:System.Drawing.PointPolar"/> с неинициализированными данными членов.

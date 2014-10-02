@@ -150,9 +150,6 @@
     <ClInclude Include="C:\Program Files (x86)\Arduino\libraries\HMC5883L\HMC5883L.h">
       <Filter>_libraries\HMC5883L</Filter>
     </ClInclude>
-    <ClInclude Include="Visual Micro\.SensorsCollecting.vsarduino.h">
-      <Filter>Заголовочные файлы</Filter>
-    </ClInclude>
     <ClInclude Include="C:\Program Files (x86)\Arduino\libraries\FreeSixIMU\CommunicationUtils.h">
       <Filter>_libraries\FreeSixIMU</Filter>
     </ClInclude>
@@ -167,6 +164,9 @@
     </ClInclude>
     <ClInclude Include="C:\Program Files (x86)\Arduino\libraries\FreeSixIMU\FreeSixIMU.h">
       <Filter>_libraries\FreeSixIMU</Filter>
+    </ClInclude>
+    <ClInclude Include="Visual Micro\.SensorsCollecting.vsarduino.h">
+      <Filter>Заголовочные файлы</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

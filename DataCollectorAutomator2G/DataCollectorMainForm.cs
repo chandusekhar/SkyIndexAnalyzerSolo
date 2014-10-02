@@ -14,6 +14,8 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using Emgu.CV;
+using Emgu.CV.Structure;
 using MathNet.Numerics.LinearAlgebra.Double;
 using MRG.Controls.UI;
 using MathNet.Numerics.Statistics;
@@ -123,6 +125,9 @@ namespace DataCollectorAutomator
 
         private static int recievedUDPPacketsCounter = 0;
         //private static double recievingUDPpacketsSpeed = 0.0d;
+
+        private static Image<Bgr, Byte> currCaughtImageID1 = null;
+        private static Image<Bgr, Byte> currCaughtImageID2 = null;
 
 
         private void ParseBroadcastMessage(string bcstMessage, int devID = 1)
@@ -295,15 +300,15 @@ namespace DataCollectorAutomator
             ThreadSafeOperations.SetText(lblAccelCalibrationYID2, Math.Round(accCalibrationDataID2.AccDoubleY, 2).ToString(), false);
             ThreadSafeOperations.SetText(lblAccelCalibrationZID2, Math.Round(accCalibrationDataID2.AccDoubleZ, 2).ToString(), false);
 
-            processCircleID1.OuterCircleRadius = 20;
-            processCircleID1.InnerCircleRadius = 15;
-            processCircleID1.NumberSpoke = 12;
-            processCircleID1.SpokeThickness = 4;
+            //processCircleID1.OuterCircleRadius = 20;
+            //processCircleID1.InnerCircleRadius = 15;
+            //processCircleID1.NumberSpoke = 12;
+            //processCircleID1.SpokeThickness = 4;
 
-            processCircleID2.OuterCircleRadius = 20;
-            processCircleID2.InnerCircleRadius = 15;
-            processCircleID2.NumberSpoke = 12;
-            processCircleID2.SpokeThickness = 4;
+            //processCircleID2.OuterCircleRadius = 20;
+            //processCircleID2.InnerCircleRadius = 15;
+            //processCircleID2.NumberSpoke = 12;
+            //processCircleID2.SpokeThickness = 4;
 
 
             //reportingTextBox = tbMainLog;
@@ -629,27 +634,32 @@ namespace DataCollectorAutomator
                     needsToSwitchListeningArduinoOFF = true;
                     btnStartStopBdcstListening_Click(null, null);
                 }
-                Note("Detecting outdoor board broadcasting state");
-                ThreadSafeOperations.ToggleButtonState(btnStartStopCollecting, false, "wait for state checking", true);
-                ThreadSafeOperations.SetLoadingCircleState(StartStopDataCollectingWaitingCircle, true, true,
-                    StartStopDataCollectingWaitingCircle.Color);
-                dataCollectingState = DataCollectingStates.checkingState;
-                theWorkerRequestedArduinoDataBroadcastState = WorkersRequestingArduinoDataBroadcastState.dataCollector;
-                currOperatingDevID = 1;
-                PerformRequestArduinoBoard("1", currOperatingDevID);
-                while (ArduinoRequestExpectant.IsBusy)
-                {
-                    Application.DoEvents();
-                    Thread.Sleep(0);
-                }
-                currOperatingDevID = 2;
-                PerformRequestArduinoBoard("1", currOperatingDevID);
+                //Note("Detecting outdoor board broadcasting state");
+                //ThreadSafeOperations.ToggleButtonState(btnStartStopCollecting, false, "wait for state checking", true);
+                //ThreadSafeOperations.SetLoadingCircleState(StartStopDataCollectingWaitingCircle, true, true,
+                //    StartStopDataCollectingWaitingCircle.Color);
+                //dataCollectingState = DataCollectingStates.checkingState;
+                //theWorkerRequestedArduinoDataBroadcastState = WorkersRequestingArduinoDataBroadcastState.dataCollector;
+                //currOperatingDevID = 1;
+                //PerformRequestArduinoBoard("1", currOperatingDevID);
+                //while (ArduinoRequestExpectant.IsBusy)
+                //{
+                //    Application.DoEvents();
+                //    Thread.Sleep(0);
+                //}
+                //currOperatingDevID = 2;
+                //PerformRequestArduinoBoard("1", currOperatingDevID);
+
+                dataCollector.RunWorkerAsync();
+
             }
             else
             {
                 dataCollector.CancelAsync();
             }
         }
+
+
 
 
         private void ArduinoRequestExpectant_DoWork(object sender, DoWorkEventArgs e)
@@ -659,6 +669,9 @@ namespace DataCollectorAutomator
                 System.Threading.Thread.Sleep(50);
             }
         }
+
+
+
 
         private void ArduinoRequestExpectant_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
         {
@@ -840,8 +853,8 @@ namespace DataCollectorAutomator
                         pressureDateTimeValuesList.Clear();
                     }
 
-                    ThreadSafeOperations.SetLoadingCircleState(processCircleID1, false, false, processCircleID1.Color, 100);
-                    ThreadSafeOperations.SetLoadingCircleState(processCircleID2, false, false, processCircleID2.Color, 100);
+                    //ThreadSafeOperations.SetLoadingCircleState(processCircleID1, false, false, processCircleID1.Color, 100);
+                    //ThreadSafeOperations.SetLoadingCircleState(processCircleID2, false, false, processCircleID2.Color, 100);
 
                     break;
                 }
@@ -858,12 +871,12 @@ namespace DataCollectorAutomator
 
                     if (speed > 0.0d)
                     {
-                        ThreadSafeOperations.SetLoadingCircleState(processCircleID1, true, true, processCircleID1.Color, Convert.ToInt32(100.0d * speed / 50.0));
+                        //ThreadSafeOperations.SetLoadingCircleState(processCircleID1, true, true, processCircleID1.Color, Convert.ToInt32(100.0d * speed / 50.0));
                         //Note("UDP messages speed: " + speed + Environment.NewLine);
                     }
                     else
                     {
-                        ThreadSafeOperations.SetLoadingCircleState(processCircleID1, false, false, processCircleID1.Color, 100);
+                        //ThreadSafeOperations.SetLoadingCircleState(processCircleID1, false, false, processCircleID1.Color, 100);
                     }
                 }
 
@@ -1008,13 +1021,13 @@ namespace DataCollectorAutomator
                         //вывести мгновенные значения, но раздельно по устройствам
                         // =======================
                         double accDevAngleID1 = (latestAccDataID1 * accCalibrationDataID1) / (latestAccDataID1.AccMagnitude * accCalibrationDataID1.AccMagnitude);
-                        accDevAngleID1 = Math.Acos(accDevAngle);
+                        accDevAngleID1 = Math.Acos(accDevAngleID1);
                         double accDevAngleID2 = (latestAccDataID2 * accCalibrationDataID2) / (latestAccDataID2.AccMagnitude * accCalibrationDataID2.AccMagnitude);
-                        accDevAngleID2 = Math.Acos(accDevAngle);
+                        accDevAngleID2 = Math.Acos(accDevAngleID2);
                         ThreadSafeOperations.SetText(lblAccMagnValueID1, (latestAccDataID1.AccMagnitude / accCalibrationDataID1.AccMagnitude).ToString("0.###e-00"), false);
-                        ThreadSafeOperations.SetText(lblAccDevAngleValueID1, accDevAngle.ToString("0.###e-00"), false);
+                        ThreadSafeOperations.SetText(lblAccDevAngleValueID1, accDevAngleID1.ToString("0.###e-00"), false);
                         ThreadSafeOperations.SetText(lblAccMagnValueID2, (latestAccDataID2.AccMagnitude / accCalibrationDataID2.AccMagnitude).ToString("0.###e-00"), false);
-                        ThreadSafeOperations.SetText(lblAccDevAngleValueID2, accDevAngle.ToString("0.###e-00"), false);
+                        ThreadSafeOperations.SetText(lblAccDevAngleValueID2, accDevAngleID2.ToString("0.###e-00"), false);
 
                     }
 
@@ -1297,7 +1310,7 @@ namespace DataCollectorAutomator
 
                 if ((camshotInclinedProperly && camshotTimeToGetIt) || getCamShotImmediately)
                 {
-                    catchCameraImage();
+                    catchCameraImages();
                     camshotHasBeenTaken = true;
                     datetimeCamshotHasBeenTaken = DateTime.Now;
                 }
@@ -1345,7 +1358,9 @@ namespace DataCollectorAutomator
 
             // исправить: сливать изображения в какую-нибудь более адекватную директорию, а не в папку с программой
 
-            String filename1 = Directory.GetCurrentDirectory() + "\\img-" + DateTime.Now.Year + "-" + DateTime.Now.Month + "-" + DateTime.Now.Day + "-" + DateTime.Now.Hour + "-" + DateTime.Now.Minute + "-" + DateTime.Now.Second;
+            //String filename1 = Directory.GetCurrentDirectory() + "\\img-" + DateTime.Now.Year + "-" + DateTime.Now.Month + "-" + DateTime.Now.Day + "-" + DateTime.Now.Hour + "-" + DateTime.Now.Minute + "-" + DateTime.Now.Second;
+            String filename1 = Directory.GetCurrentDirectory() + "\\snapshots\\img-" +
+                               DateTime.UtcNow.ToString("s").Replace(":", "-");
             filename1 += imageFNameAttrs;
             filename1 += ".jpg";
 
@@ -1441,7 +1456,15 @@ namespace DataCollectorAutomator
 
         private void btnCollectImmediately_Click(object sender, EventArgs e)
         {
-            getCamShotImmediately = true;
+            if (dataCollector.IsBusy)
+            {
+                getCamShotImmediately = true;
+            }
+            else
+            {
+                catchCameraImages();
+            }
+            
         }
 
         private void btnCollectMostClose_Click(object sender, EventArgs e)
@@ -1451,7 +1474,7 @@ namespace DataCollectorAutomator
 
 
 
-        private void catchCameraImage()
+        private void catchCameraImages()
         {
             String usernameID1 = tbCamUName1.Text;
             String usernameID2 = tbCamUName2.Text;
@@ -1459,7 +1482,7 @@ namespace DataCollectorAutomator
             String passwordID2 = tbCamPWD2.Text;
             String ipAddrVivotekCamID1 = tbCamIP1.Text.Replace(",", ".");
             String ipAddrVivotekCamID2 = tbCamIP2.Text.Replace(",", ".");
-            
+
 
             // Надо взять сразу оба снимка - берем в backgroundworker-ах
 
@@ -1486,13 +1509,27 @@ namespace DataCollectorAutomator
                     stream.Close();
 
                     gotimageFileName = swapImageToFile(gotImage, "devID" + devID);
+                    FileInfo finfo = new FileInfo(gotimageFileName);
+
                     if ((devID == 0) || (devID == 1))
                     {
-                        ThreadSafeOperations.UpdatePictureBox(pbThumbPreviewCam1, gotImage, true);
+                        //ThreadSafeOperations.UpdatePictureBox(pbThumbPreviewCam1, gotImage, true);
+                        currCaughtImageID1 = new Image<Bgr, byte>((Bitmap)gotImage);
+                        ThreadSafeOperations.SetText(lblSnapshotFilenameID1, finfo.Name, false);
+                        ThreadSafeOperations.SetText(lblGotSnapshotDateTimeID1,
+                            "snapshot got at: " + Environment.NewLine +
+                            DateTime.UtcNow.ToString("o"), false);
+                        RaisePaintEvent(null, null);
                     }
                     else if (devID == 2)
                     {
-                        ThreadSafeOperations.UpdatePictureBox(pbThumbPreviewCam2, gotImage, true);
+                        //ThreadSafeOperations.UpdatePictureBox(pbThumbPreviewCam2, gotImage, true);
+                        currCaughtImageID2 = new Image<Bgr, byte>((Bitmap)gotImage);
+                        ThreadSafeOperations.SetText(lblSnapshotFilenameID2, finfo.Name, false);
+                        ThreadSafeOperations.SetText(lblGotSnapshotDateTimeID2,
+                            "snapshot got at: " + Environment.NewLine +
+                            DateTime.UtcNow.ToString("o"), false);
+                        RaisePaintEvent(null, null);
                     }
                 }
                 catch (Exception e)
@@ -1507,7 +1544,7 @@ namespace DataCollectorAutomator
             {
                 object[] currentBGWResults = (object[])args.Result;
                 Image gotimage = currentBGWResults[0] as Image;
-                int gotDevID = (int) currentBGWResults[1];
+                int gotDevID = (int)currentBGWResults[1];
                 string gotimageFileName = (string)currentBGWResults[2];
                 Note("got image: " + gotimageFileName);
             };
@@ -2161,6 +2198,21 @@ namespace DataCollectorAutomator
         {
             VivotekCameraPassword2 = tbCamPWD2.Text;
             SaveSettings();
+        }
+
+
+
+        private void DataCollectorMainForm_Paint(object sender, PaintEventArgs e)
+        {
+            if (currCaughtImageID1 != null)
+            {
+                ThreadSafeOperations.UpdatePictureBox(pbThumbPreviewCam1, currCaughtImageID1.Bitmap, true);
+            }
+
+            if (currCaughtImageID2 != null)
+            {
+                ThreadSafeOperations.UpdatePictureBox(pbThumbPreviewCam2, currCaughtImageID2.Bitmap, true);
+            }
         }
 
 

@@ -187,7 +187,10 @@ namespace IofffeVesselInfoStream
                             string strToWrite = "";
                             foreach (string logString in listStreamLogStrings) strToWrite += logString + Environment.NewLine;
 
-                            ServiceTools.logToTextFile(filename, strToWrite, true);
+                            if (cbLogNCdata.Checked)
+                            {
+                                ServiceTools.logToTextFile(filename, strToWrite, true);
+                            }
                             listStreamLogStrings.Clear();
                         }
 
@@ -288,9 +291,13 @@ namespace IofffeVesselInfoStream
                         dataToSave.Add("DateTime", gpsDateTimeValuesList.ToArray());
                         dataToSave.Add("GPSdata", dmGPSDataMatrix);
 
-                        NetCDFoperations.AddVariousDataToFile(dataToSave,
-                            Directory.GetCurrentDirectory() + "\\logs\\IoffeVesselInfoStream-GPSDataLog-" +
-                            DateTime.UtcNow.Date.ToString("yyyy-MM-dd") + ".nc");
+                        if (cbLogNCdata.Checked)
+                        {
+                            NetCDFoperations.AddVariousDataToFile(dataToSave,
+                                Directory.GetCurrentDirectory() + "\\logs\\IoffeVesselInfoStream-GPSDataLog-" +
+                                DateTime.UtcNow.Date.ToString("yyyy-MM-dd") + ".nc");
+                        }
+
 
                         //List<DateTime> listDateTimeValuesToUpdateTrack =
                         //    gpsDateTimeValuesList.ConvertAll(longVal => new DateTime(longVal));
@@ -308,9 +315,13 @@ namespace IofffeVesselInfoStream
                         dataToSave.Add("DateTime", meteoDateTimeValuesList.ToArray());
                         dataToSave.Add("MeteoData", dmMeteoDataMatrix);
 
-                        NetCDFoperations.AddVariousDataToFile(dataToSave,
-                            Directory.GetCurrentDirectory() + "\\logs\\IoffeVesselInfoStream-MeteoDataLog-" +
-                            DateTime.UtcNow.Date.ToString("yyyy-MM-dd") + ".nc");
+                        if (cbLogNCdata.Checked)
+                        {
+                            NetCDFoperations.AddVariousDataToFile(dataToSave,
+                                Directory.GetCurrentDirectory() + "\\logs\\IoffeVesselInfoStream-MeteoDataLog-" +
+                                DateTime.UtcNow.Date.ToString("yyyy-MM-dd") + ".nc");
+                        }
+                        
 
                         dmMeteoDataMatrix = null;
                         meteoDateTimeValuesList.Clear();
@@ -460,9 +471,12 @@ namespace IofffeVesselInfoStream
                         dataToSave.Add("DateTime", gpsDateTimeValuesList.ToArray());
                         dataToSave.Add("GPSdata", dmGPSDataMatrix);
 
-                        NetCDFoperations.AddVariousDataToFile(dataToSave,
-                            Directory.GetCurrentDirectory() + "\\logs\\IoffeVesselInfoStream-GPSDataLog-" +
-                            DateTime.UtcNow.Date.ToString("yyyy-MM-dd") + ".nc");
+                        if (cbLogNCdata.Checked)
+                        {
+                            NetCDFoperations.AddVariousDataToFile(dataToSave,
+                                Directory.GetCurrentDirectory() + "\\logs\\IoffeVesselInfoStream-GPSDataLog-" +
+                                DateTime.UtcNow.Date.ToString("yyyy-MM-dd") + ".nc");
+                        }
 
                         dmGPSDataMatrix = null;
                         gpsDateTimeValuesList.Clear();
@@ -525,9 +539,12 @@ namespace IofffeVesselInfoStream
                         dataToSave.Add("DateTime", meteoDateTimeValuesList.ToArray());
                         dataToSave.Add("MeteoData", dmMeteoDataMatrix);
 
-                        NetCDFoperations.AddVariousDataToFile(dataToSave,
-                            Directory.GetCurrentDirectory() + "\\logs\\IoffeVesselInfoStream-MeteoDataLog-" +
-                            DateTime.UtcNow.Date.ToString("yyyy-MM-dd") + ".nc");
+                        if (cbLogNCdata.Checked)
+                        {
+                            NetCDFoperations.AddVariousDataToFile(dataToSave,
+                                Directory.GetCurrentDirectory() + "\\logs\\IoffeVesselInfoStream-MeteoDataLog-" +
+                                DateTime.UtcNow.Date.ToString("yyyy-MM-dd") + ".nc");
+                        }
 
                         dmMeteoDataMatrix = null;
                         meteoDateTimeValuesList.Clear();
@@ -571,7 +588,10 @@ namespace IofffeVesselInfoStream
                             strDataToObservationsLog += actualMeteoData.Rhumidity.ToString().Replace(".", ",") + "; ";
                         }
 
-                        ServiceTools.logToTextFile(filename, strDataToObservationsLog, true);
+                        if (cbLogMeasurementsData.Checked)
+                        {
+                            ServiceTools.logToTextFile(filename, strDataToObservationsLog, true);
+                        }
                     }
                 }
 
@@ -791,6 +811,15 @@ namespace IofffeVesselInfoStream
 
         private void pbGeoTrack_Click(object sender, EventArgs e)
         {
+            if (geoRenderer == null)
+            {
+                return;
+            }
+            else if (geoRenderer.lTracksData.Count == 0)
+            {
+                return;
+            }
+            
             while (!Monitor.TryEnter(geoRenderer, 100))
             {
                 Application.DoEvents();
@@ -904,61 +933,61 @@ namespace IofffeVesselInfoStream
                 }
 
                 scrbGeoTrackScrollLonValues.Value = 0;
-                
+
                 //if (bgwGraphsRenderer.IsBusy)
                 //{
                 //    needToUpdateGeoTrackNow = true;
                 //}
                 //else
                 //{
-                    BackgroundWorker bgwGraphUpdater = new BackgroundWorker();
+                BackgroundWorker bgwGraphUpdater = new BackgroundWorker();
 
-                    DoWorkEventHandler bgwGraphUpdaterDoWorkHandler = delegate(object currBGWsender, DoWorkEventArgs args)
+                DoWorkEventHandler bgwGraphUpdaterDoWorkHandler = delegate(object currBGWsender, DoWorkEventArgs args)
+                {
+
+                    BackgroundWorker selfWorker = currBGWsender as BackgroundWorker;
+                    object[] currBGWarguments = (object[])args.Argument;
+
+                    Stopwatch sw1 = Stopwatch.StartNew();
+
+                    bool retResult = false;
+
+                    while (true)
                     {
-
-                        BackgroundWorker selfWorker = currBGWsender as BackgroundWorker;
-                        object[] currBGWarguments = (object[])args.Argument;
-
-                        Stopwatch sw1 = Stopwatch.StartNew();
-
-                        bool retResult = false;
-
-                        while (true)
+                        ThreadSafeOperations.SetLoadingCircleState(wcUpdatimgGraphs, true, true, wcUpdatimgGraphs.Color);
+                        if (UpdateGeoTrack())
                         {
-                            ThreadSafeOperations.SetLoadingCircleState(wcUpdatimgGraphs, true, true, wcUpdatimgGraphs.Color);
-                            if (UpdateGeoTrack())
-                            {
-                                retResult = true;
-                                break;
-                            }
-                            else if (sw1.ElapsedMilliseconds > 10000)
-                            {
-                                retResult = false;
-                                break;
-                            }
-                            ThreadSafeOperations.SetLoadingCircleState(wcUpdatimgGraphs, false, false, wcUpdatimgGraphs.Color);
-                            Application.DoEvents();
-                            Thread.Sleep(0);
+                            retResult = true;
+                            break;
                         }
-                        args.Result = new object[] { retResult };
-                    };
-
-
-                    RunWorkerCompletedEventHandler bgwGraphUpdaterCompletedHandler = delegate(object currBGWCompletedSender, RunWorkerCompletedEventArgs args)
-                    {
-                        object[] currentBGWResults = (object[])args.Result;
-                        bool UpdatingResult = (bool)(currentBGWResults[0]);
-
-                        if (!UpdatingResult)
+                        else if (sw1.ElapsedMilliseconds > 10000)
                         {
-                            ThreadSafeOperations.SetText(lblStatusString, DateTime.Now.ToString("s").Replace("T", " ") + ": Geogtrack failed to be updated.", false);
+                            retResult = false;
+                            break;
                         }
                         ThreadSafeOperations.SetLoadingCircleState(wcUpdatimgGraphs, false, false, wcUpdatimgGraphs.Color);
-                    };
+                        Application.DoEvents();
+                        Thread.Sleep(0);
+                    }
+                    args.Result = new object[] { retResult };
+                };
 
-                    bgwGraphUpdater.DoWork += bgwGraphUpdaterDoWorkHandler;
-                    bgwGraphUpdater.RunWorkerCompleted += bgwGraphUpdaterCompletedHandler;
-                    bgwGraphUpdater.RunWorkerAsync();
+
+                RunWorkerCompletedEventHandler bgwGraphUpdaterCompletedHandler = delegate(object currBGWCompletedSender, RunWorkerCompletedEventArgs args)
+                {
+                    object[] currentBGWResults = (object[])args.Result;
+                    bool UpdatingResult = (bool)(currentBGWResults[0]);
+
+                    if (!UpdatingResult)
+                    {
+                        ThreadSafeOperations.SetText(lblStatusString, DateTime.Now.ToString("s").Replace("T", " ") + ": Geogtrack failed to be updated.", false);
+                    }
+                    ThreadSafeOperations.SetLoadingCircleState(wcUpdatimgGraphs, false, false, wcUpdatimgGraphs.Color);
+                };
+
+                bgwGraphUpdater.DoWork += bgwGraphUpdaterDoWorkHandler;
+                bgwGraphUpdater.RunWorkerCompleted += bgwGraphUpdaterCompletedHandler;
+                bgwGraphUpdater.RunWorkerAsync();
                 //}
             }
         }
@@ -997,54 +1026,54 @@ namespace IofffeVesselInfoStream
                 //}
                 //else
                 //{
-                    BackgroundWorker bgwGraphUpdater = new BackgroundWorker();
+                BackgroundWorker bgwGraphUpdater = new BackgroundWorker();
 
-                    DoWorkEventHandler bgwGraphUpdaterDoWorkHandler = delegate(object currBGWsender, DoWorkEventArgs args)
+                DoWorkEventHandler bgwGraphUpdaterDoWorkHandler = delegate(object currBGWsender, DoWorkEventArgs args)
+                {
+
+                    BackgroundWorker selfWorker = currBGWsender as BackgroundWorker;
+                    object[] currBGWarguments = (object[])args.Argument;
+
+                    Stopwatch sw1 = Stopwatch.StartNew();
+
+                    bool retResult = false;
+
+                    while (true)
                     {
-
-                        BackgroundWorker selfWorker = currBGWsender as BackgroundWorker;
-                        object[] currBGWarguments = (object[])args.Argument;
-
-                        Stopwatch sw1 = Stopwatch.StartNew();
-
-                        bool retResult = false;
-
-                        while (true)
+                        ThreadSafeOperations.SetLoadingCircleState(wcUpdatimgGraphs, true, true, wcUpdatimgGraphs.Color);
+                        if (UpdateGeoTrack())
                         {
-                            ThreadSafeOperations.SetLoadingCircleState(wcUpdatimgGraphs, true, true, wcUpdatimgGraphs.Color);
-                            if (UpdateGeoTrack())
-                            {
-                                retResult = true;
-                                break;
-                            }
-                            else if (sw1.ElapsedMilliseconds > 10000)
-                            {
-                                retResult = false;
-                                break;
-                            }
-                            ThreadSafeOperations.SetLoadingCircleState(wcUpdatimgGraphs, false, false, wcUpdatimgGraphs.Color);
-                            Application.DoEvents();
-                            Thread.Sleep(0);
+                            retResult = true;
+                            break;
                         }
-                        args.Result = new object[] { retResult };
-                    };
-
-
-                    RunWorkerCompletedEventHandler bgwGraphUpdaterCompletedHandler = delegate(object currBGWCompletedSender, RunWorkerCompletedEventArgs args)
-                    {
-                        object[] currentBGWResults = (object[])args.Result;
-                        bool UpdatingResult = (bool)(currentBGWResults[0]);
-
-                        if (!UpdatingResult)
+                        else if (sw1.ElapsedMilliseconds > 10000)
                         {
-                            ThreadSafeOperations.SetText(lblStatusString, DateTime.Now.ToString("s").Replace("T", " ") + ": Geogtrack failed to be updated.", false);
+                            retResult = false;
+                            break;
                         }
                         ThreadSafeOperations.SetLoadingCircleState(wcUpdatimgGraphs, false, false, wcUpdatimgGraphs.Color);
-                    };
+                        Application.DoEvents();
+                        Thread.Sleep(0);
+                    }
+                    args.Result = new object[] { retResult };
+                };
 
-                    bgwGraphUpdater.DoWork += bgwGraphUpdaterDoWorkHandler;
-                    bgwGraphUpdater.RunWorkerCompleted += bgwGraphUpdaterCompletedHandler;
-                    bgwGraphUpdater.RunWorkerAsync();
+
+                RunWorkerCompletedEventHandler bgwGraphUpdaterCompletedHandler = delegate(object currBGWCompletedSender, RunWorkerCompletedEventArgs args)
+                {
+                    object[] currentBGWResults = (object[])args.Result;
+                    bool UpdatingResult = (bool)(currentBGWResults[0]);
+
+                    if (!UpdatingResult)
+                    {
+                        ThreadSafeOperations.SetText(lblStatusString, DateTime.Now.ToString("s").Replace("T", " ") + ": Geogtrack failed to be updated.", false);
+                    }
+                    ThreadSafeOperations.SetLoadingCircleState(wcUpdatimgGraphs, false, false, wcUpdatimgGraphs.Color);
+                };
+
+                bgwGraphUpdater.DoWork += bgwGraphUpdaterDoWorkHandler;
+                bgwGraphUpdater.RunWorkerCompleted += bgwGraphUpdaterCompletedHandler;
+                bgwGraphUpdater.RunWorkerAsync();
                 //}
             }
         }
@@ -1077,54 +1106,54 @@ namespace IofffeVesselInfoStream
                 //}
                 //else
                 //{
-                    BackgroundWorker bgwGraphUpdater = new BackgroundWorker();
+                BackgroundWorker bgwGraphUpdater = new BackgroundWorker();
 
-                    DoWorkEventHandler bgwGraphUpdaterDoWorkHandler = delegate(object currBGWsender, DoWorkEventArgs args)
+                DoWorkEventHandler bgwGraphUpdaterDoWorkHandler = delegate(object currBGWsender, DoWorkEventArgs args)
+                {
+
+                    BackgroundWorker selfWorker = currBGWsender as BackgroundWorker;
+                    object[] currBGWarguments = (object[])args.Argument;
+
+                    Stopwatch sw1 = Stopwatch.StartNew();
+
+                    bool retResult = false;
+
+                    while (true)
                     {
-
-                        BackgroundWorker selfWorker = currBGWsender as BackgroundWorker;
-                        object[] currBGWarguments = (object[])args.Argument;
-
-                        Stopwatch sw1 = Stopwatch.StartNew();
-
-                        bool retResult = false;
-
-                        while (true)
+                        ThreadSafeOperations.SetLoadingCircleState(wcUpdatimgGraphs, true, true, wcUpdatimgGraphs.Color);
+                        if (UpdateGeoTrack())
                         {
-                            ThreadSafeOperations.SetLoadingCircleState(wcUpdatimgGraphs, true, true, wcUpdatimgGraphs.Color);
-                            if (UpdateGeoTrack())
-                            {
-                                retResult = true;
-                                break;
-                            }
-                            else if (sw1.ElapsedMilliseconds > 10000)
-                            {
-                                retResult = false;
-                                break;
-                            }
-                            ThreadSafeOperations.SetLoadingCircleState(wcUpdatimgGraphs, false, false, wcUpdatimgGraphs.Color);
-                            Application.DoEvents();
-                            Thread.Sleep(0);
+                            retResult = true;
+                            break;
                         }
-                        args.Result = new object[] { retResult };
-                    };
-
-
-                    RunWorkerCompletedEventHandler bgwGraphUpdaterCompletedHandler = delegate(object currBGWCompletedSender, RunWorkerCompletedEventArgs args)
-                    {
-                        object[] currentBGWResults = (object[])args.Result;
-                        bool UpdatingResult = (bool)(currentBGWResults[0]);
-
-                        if (!UpdatingResult)
+                        else if (sw1.ElapsedMilliseconds > 10000)
                         {
-                            ThreadSafeOperations.SetText(lblStatusString, DateTime.Now.ToString("s").Replace("T", " ") + ": Geogtrack failed to be updated.", false);
+                            retResult = false;
+                            break;
                         }
                         ThreadSafeOperations.SetLoadingCircleState(wcUpdatimgGraphs, false, false, wcUpdatimgGraphs.Color);
-                    };
+                        Application.DoEvents();
+                        Thread.Sleep(0);
+                    }
+                    args.Result = new object[] { retResult };
+                };
 
-                    bgwGraphUpdater.DoWork += bgwGraphUpdaterDoWorkHandler;
-                    bgwGraphUpdater.RunWorkerCompleted += bgwGraphUpdaterCompletedHandler;
-                    bgwGraphUpdater.RunWorkerAsync();
+
+                RunWorkerCompletedEventHandler bgwGraphUpdaterCompletedHandler = delegate(object currBGWCompletedSender, RunWorkerCompletedEventArgs args)
+                {
+                    object[] currentBGWResults = (object[])args.Result;
+                    bool UpdatingResult = (bool)(currentBGWResults[0]);
+
+                    if (!UpdatingResult)
+                    {
+                        ThreadSafeOperations.SetText(lblStatusString, DateTime.Now.ToString("s").Replace("T", " ") + ": Geogtrack failed to be updated.", false);
+                    }
+                    ThreadSafeOperations.SetLoadingCircleState(wcUpdatimgGraphs, false, false, wcUpdatimgGraphs.Color);
+                };
+
+                bgwGraphUpdater.DoWork += bgwGraphUpdaterDoWorkHandler;
+                bgwGraphUpdater.RunWorkerCompleted += bgwGraphUpdaterCompletedHandler;
+                bgwGraphUpdater.RunWorkerAsync();
                 //}
             }
         }
@@ -1200,9 +1229,9 @@ namespace IofffeVesselInfoStream
 
         #endregion
 
-        
 
-        
+
+
 
 
 

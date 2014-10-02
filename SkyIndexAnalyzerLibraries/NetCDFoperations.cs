@@ -405,5 +405,30 @@ namespace SkyIndexAnalyzerLibraries
 
             ds.Dispose();
         }
+
+
+
+        public static string DumpMatrixToNCFile(DenseMatrix dmData)
+        {
+            string baseDir = Directory.GetCurrentDirectory() + "\\";
+            string fileName = DateTime.UtcNow.ToString("o").Replace(":", "-") + ".nc";
+            string connectionString = "msds:nc?file=";
+            connectionString += baseDir + fileName;
+            
+            NetCDFDataSet ds = new NetCDFDataSet(connectionString, ResourceOpenMode.Create);
+            Variable<double> thDataVar = ds.AddVariable<double>("DataMatrix", dmData.ToArray(), "y", "x");
+
+            try
+            {
+                ds.TryCommit();
+            }
+            catch (Exception exc)
+            {
+                return "failed-to-dump";
+            }
+
+            ds.Dispose();
+            return fileName;
+        }
     }
 }

@@ -72,7 +72,7 @@ namespace SkyIndexAnalyzerLibraries
         {
             if (double.IsNaN(dValue)) return new Bgr(0, 0, 0);
 
-            //if (minVal == maxVal) return new Bgr(0, 0, 0);
+            if (minVal == maxVal) return new Bgr(0, 0, 0);
 
             if (!isSchemeGrayscaled)
             {

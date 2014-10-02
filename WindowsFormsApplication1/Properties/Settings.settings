@@ -44,5 +44,14 @@
     <Setting Name="GrIxSunDetectionDesiredSunAreaPartial" Type="System.String" Scope="User">
       <Value Profile="(Default)">0,01</Value>
     </Setting>
+    <Setting Name="GrIxMinimalSunburnYvalue" Type="System.String" Scope="User">
+      <Value Profile="(Default)">247,0</Value>
+    </Setting>
+    <Setting Name="GrIxMinimalSunburnGrIxvalue" Type="System.String" Scope="User">
+      <Value Profile="(Default)">0,98</Value>
+    </Setting>
+    <Setting Name="GrIxSunDetectorArcedCropFactor" Type="System.String" Scope="User">
+      <Value Profile="(Default)">0,95</Value>
+    </Setting>
   </Settings>
 </SettingsFile>

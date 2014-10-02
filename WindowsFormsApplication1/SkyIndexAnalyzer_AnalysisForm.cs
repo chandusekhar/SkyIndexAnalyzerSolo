@@ -1380,7 +1380,7 @@ namespace SkyIndexAnalyzerSolo
                     classificator.ParentForm = this;
                     classificator.ClassificationMethod = ClassificationMethods.Japan;
                     classificator.isCalculatingUsingBgWorker = true;
-                    classificator.SelfWorker = backgroundWorker2;
+                    classificator.SelfWorker = sender as BackgroundWorker;
                     classificator.defaultOutputDataDirectory = (string) defaultProperties["DefaultDataFilesLocation"];
                     classificator.cloudSkySeparationValue =
                         Convert.ToDouble(defaultProperties["JapanCloudSkySeparationValue"]);
@@ -1414,7 +1414,7 @@ namespace SkyIndexAnalyzerSolo
                     classificator.ParentForm = this;
                     classificator.ClassificationMethod = ClassificationMethods.German;
                     classificator.isCalculatingUsingBgWorker = true;
-                    classificator.SelfWorker = backgroundWorker2;
+                    classificator.SelfWorker = sender as BackgroundWorker;
                     classificator.defaultOutputDataDirectory = (string) defaultProperties["DefaultDataFilesLocation"];
                     classificator.cloudSkySeparationValue =
                         Convert.ToDouble(defaultProperties["GermanCloudSkySeparationValue"]);
@@ -1446,7 +1446,7 @@ namespace SkyIndexAnalyzerSolo
                     classificator.ParentForm = this;
                     classificator.ClassificationMethod = ClassificationMethods.TestNew;
                     classificator.isCalculatingUsingBgWorker = true;
-                    classificator.SelfWorker = backgroundWorker2;
+                    classificator.SelfWorker = sender as BackgroundWorker;
                     classificator.defaultOutputDataDirectory = (string) defaultProperties["DefaultDataFilesLocation"];
                     classificator.cloudSkySeparationValue =
                         Convert.ToDouble(defaultProperties["GermanCloudSkySeparationValue"]);
@@ -1598,7 +1598,7 @@ namespace SkyIndexAnalyzerSolo
 
         private void backgroundWorker2_ProgressChanged(object sender, System.ComponentModel.ProgressChangedEventArgs e)
         {
-            ThreadSafeOperations.UpdateProgressBar(pbUniversalProgressBar, e.ProgressPercentage);
+            //ThreadSafeOperations.UpdateProgressBar(pbUniversalProgressBar, e.ProgressPercentage);
         }
 
 
@@ -1679,11 +1679,7 @@ namespace SkyIndexAnalyzerSolo
         private void AnalyzeImage(object sender = null)
         {
             begintotal = DateTime.Now;
-            //CloudCounterSI = 0;
-            //SkyCounterSI = 0;
-            //beginpartial = DateTime.Now;
-
-            //curr_bitmap = (Bitmap)(imagetoadd.Clone());
+            
 
             #region //XLS dumping
             //XLdumper.doubleArrayToDump = SIdataDouble;
@@ -1729,6 +1725,8 @@ namespace SkyIndexAnalyzerSolo
             {
                 classificator.isCalculatingUsingBgWorker = false;
             }
+
+            classificator.sourceImageFileName = ImageFileName;
 
             classificator.LogWindow = theLogWindow;
             classificator.defaultOutputDataDirectory = (string)defaultProperties["DefaultDataFilesLocation"];

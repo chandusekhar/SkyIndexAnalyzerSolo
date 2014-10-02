@@ -1,0 +1,15 @@
+<?xml version="1.0" standalone="yes"?>
+<DataSet xmlns="NetFrameWork">
+  <table>
+    <key>SunLocationProcessingDirectory</key>
+    <value>C:\_SkyIndexAnalyzer\snapshots\2014-09-18\</value>
+  </table>
+  <table>
+    <key>DefaultSnapshotsSourceDirectory</key>
+    <value>C:\_SkyIndexAnalyzer\snapshots\2014-09-18\</value>
+  </table>
+  <table>
+    <key>OutputDirectory</key>
+    <value>C:\_gulevlab\OutputData\</value>
+  </table>
+</DataSet>

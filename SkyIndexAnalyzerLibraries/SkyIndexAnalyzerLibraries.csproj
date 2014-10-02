@@ -53,10 +53,11 @@
     <OutputPath>..\_bin\libs\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <Optimize>true</Optimize>
-    <DebugType>none</DebugType>
+    <DebugType>pdbonly</DebugType>
     <PlatformTarget>x64</PlatformTarget>
     <ErrorReport>prompt</ErrorReport>
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <DebugSymbols>true</DebugSymbols>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="MathNet.Numerics">
@@ -112,6 +113,7 @@
     </Compile>
     <Compile Include="HistogramDataAndProperties.cs" />
     <Compile Include="IncomingUDPmessageBoundle.cs" />
+    <Compile Include="InteractiveImage.cs" />
     <Compile Include="MultipleProgressIndicatingForm.cs">
       <SubType>Form</SubType>
     </Compile>

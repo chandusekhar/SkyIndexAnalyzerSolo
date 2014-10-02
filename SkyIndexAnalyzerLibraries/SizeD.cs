@@ -102,6 +102,21 @@ namespace SkyIndexAnalyzerLibraries
       this.height = size.height;
     }
 
+    public SizeD(Size size)
+    {
+        this.width = (double)size.Width;
+        this.height = (double)size.Height;
+    }
+
+
+    public SizeD(SizeF size)
+    {
+        this.width = (double)size.Width;
+        this.height = (double)size.Height;
+    }
+
+
+
     /// <summary>
     /// Инициализирует новый экземпляр структуры <see cref="T:System.Drawing.SizeD"/> из указанной структуры <see cref="T:System.Drawing.PointF"/>.
     /// </summary>
@@ -160,6 +175,22 @@ namespace SkyIndexAnalyzerLibraries
       return SizeD.Subtract(sz1, sz2);
     }
 
+
+
+    public static SizeD operator *(SizeD sz1, double dVal)
+    {
+        return SizeD.Mul(sz1, dVal);
+    }
+
+
+
+    public static SizeD operator /(SizeD sz1, double dVal)
+    {
+        return SizeD.Div(sz1, dVal);
+    }
+
+
+
     /// <summary>
     /// Проверяет, действительно ли две структуры <see cref="T:System.Drawing.SizeD"/> эквивалентны.
     /// </summary>
@@ -215,6 +246,33 @@ namespace SkyIndexAnalyzerLibraries
       return new SizeD(sz1.Width - sz2.Width, sz1.Height - sz2.Height);
     }
 
+
+
+    public static SizeD Mul(SizeD sz1, double dVal)
+    {
+        return new SizeD(sz1.Width * dVal, sz1.Height * dVal);
+    }
+
+
+
+    public static SizeD Div(SizeD sz1, double dVal)
+    {
+        if (dVal == 0.0d)
+        {
+            return new SizeD(double.NaN, double.NaN);
+        }
+        else if (double.IsNaN(dVal))
+        {
+            return new SizeD(0.0d, 0.0d);
+        }
+        else
+        {
+            return new SizeD(sz1.Width / dVal, sz1.Height / dVal);
+        }
+    }
+
+
+
     public override bool Equals(object obj)
     {
       if (!(obj is SizeD))
@@ -265,6 +323,15 @@ namespace SkyIndexAnalyzerLibraries
         SizeF tmp = new SizeF((float) this.width, (float) this.height);
         return Size.Truncate(tmp);
     }
+
+
+
+    public SizeF ToSizeF()
+    {
+        SizeF tmp = new SizeF((float)this.width, (float)this.height);
+        return tmp;
+    }
+
 
     /// <summary>
     /// Создает удобную для восприятия строку, представляющую эту структуру <see cref="T:System.Drawing.SizeD"/>.

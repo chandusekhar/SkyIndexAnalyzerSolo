@@ -551,6 +551,102 @@ namespace SkyIndexAnalyzerLibraries
         }
 
 
+
+        public static List<object> ReadListFromXML(string filename)
+        {
+            List<object> retList = new List<object>();
+            DataSet readingDataSet = new DataSet("DataSet");
+            try
+            {
+                readingDataSet.ReadXml(filename);
+            }
+            catch (Exception)
+            {
+                return null;
+                throw;
+            }
+
+            foreach (DataTable table in readingDataSet.Tables)
+            {
+                foreach (DataRow row in table.Rows)
+                {
+                    retList.Add(row[0]);
+                }
+            }
+            readingDataSet.Dispose();
+            return retList;
+        }
+
+
+
+
+        public static string WriteListToXml(List<object> listToWrite, string filename, bool append = false)
+        {
+            FileInfo finfo = new FileInfo(filename);
+            if (!Directory.Exists(finfo.DirectoryName))
+            {
+                Directory.CreateDirectory(finfo.DirectoryName);
+            }
+
+            if (File.Exists(filename) && !append)
+            {
+                File.Delete(filename);
+            }
+
+            DataSet dsToWrite = new DataSet("DataSet");
+            dsToWrite.Namespace = "NetFrameWork";
+            DataTable table = new DataTable("table");
+
+            //DataColumn keyColumn = new DataColumn("key", Type.GetType("System.String"));
+
+            DataColumn valueColumn = new DataColumn("value");
+            //table.Columns.Add(keyColumn);
+            table.Columns.Add(valueColumn);
+            dsToWrite.Tables.Add(table);
+
+            DataRow newRow;
+
+            if (append && File.Exists(filename))
+            {
+                List<object> tmpList = new List<object>();
+                DataSet readingDataSet = new DataSet("DataSet");
+                readingDataSet.ReadXml(filename);
+                foreach (DataTable tmpTable in readingDataSet.Tables)
+                {
+                    foreach (DataRow row in tmpTable.Rows)
+                    {
+                        tmpList.Add(row[0]);
+                    }
+                }
+                readingDataSet.Dispose();
+
+                foreach (object obj in tmpList)
+                {
+                    newRow = table.NewRow();
+                    newRow["value"] = obj;
+                    table.Rows.Add(newRow);
+                }
+                File.Delete(filename);
+            }
+
+            foreach (object obj in listToWrite)
+            {
+                newRow = table.NewRow();
+                newRow["value"] = obj;
+                table.Rows.Add(newRow);
+            }
+            dsToWrite.AcceptChanges();
+
+            dsToWrite.WriteXml(filename);
+
+            dsToWrite.Dispose();
+
+            return filename;
+        }
+
+
+
+
         public static bool CheckIfDirectoryExists(string filename)
         {
             FileInfo finfo = new FileInfo(filename);
