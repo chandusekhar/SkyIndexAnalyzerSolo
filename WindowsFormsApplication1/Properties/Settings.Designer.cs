@@ -227,5 +227,17 @@ namespace SkyIndexAnalyzerSolo.Properties {
                 this["GrIxSunDetectorArcedCropFactor"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("8")]
+        public string GrIxSunDetectorConcurrentThreadsLimit {
+            get {
+                return ((string)(this["GrIxSunDetectorConcurrentThreadsLimit"]));
+            }
+            set {
+                this["GrIxSunDetectorConcurrentThreadsLimit"] = value;
+            }
+        }
     }
 }

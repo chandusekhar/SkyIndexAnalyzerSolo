@@ -109,6 +109,7 @@ namespace SkyIndexAnalyzerLibraries
         public string randomFileName = "";
 
         public string sourceImageFileName = "";
+        public int concurrentThreadsLimit = 2;
 
         public SunDiskConditions currentSunDiskCondition;
 
@@ -117,6 +118,8 @@ namespace SkyIndexAnalyzerLibraries
 
 
         public bool theSunSuppressionSchemeApplicable = false;
+        
+        
 
 
         public Bitmap PreviewBitmap
@@ -239,6 +242,7 @@ namespace SkyIndexAnalyzerLibraries
             minSunburnYValue = Convert.ToDouble(defaultProperties["GrIxMinimalSunburnYvalue"]);
             minSunburnGrIxValue = Convert.ToDouble(defaultProperties["GrIxMinimalSunburnGrIxvalue"]);
             dSunDetectorArcedCropFactor = Convert.ToDouble(defaultProperties["GrIxSunDetectorArcedCropFactor"]);
+            concurrentThreadsLimit = Convert.ToInt32(defaultProperties["GrIxSunDetectorConcurrentThreadsLimit"]);
         }
 
 
@@ -1920,7 +1924,7 @@ namespace SkyIndexAnalyzerLibraries
             
 
 
-            for (int i = 10; i <= 70; i += 3)
+            for (int i = 10; i <= 82; i += 3)
             {
                 quantilesBy10.Add(Statistics.Percentile(dvGrIxDataToStat, i));
                 //startedBGworkers.Add(false);
@@ -1996,7 +2000,7 @@ namespace SkyIndexAnalyzerLibraries
             for (int i = 0; i < quantilesBy10.Count; i++)
             {
                 //while (startedBGworkers.Sum(boolVal => (boolVal) ? ((int)1) : ((int)0)) >= 2)
-                while (startedBGworkers >= 2)
+                while (startedBGworkers >= concurrentThreadsLimit)
                 {
                     Application.DoEvents();
                     Thread.Sleep(0);

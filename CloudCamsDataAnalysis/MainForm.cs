@@ -389,6 +389,7 @@ namespace CloudCamsDataAnalysis
             classificatorSettings.Add("GrIxMinimalSunburnGrIxvalue", 0.98);
             classificatorSettings.Add("GrIxProcessingVerbosityLevel", 2);
             classificatorSettings.Add("GrIxSunDetectorArcedCropFactor", 0.95d);
+            classificatorSettings.Add("GrIxSunDetectorConcurrentThreadsLimit", 4);
             #endregion
 
             SkyCloudClassification classificatorID1 = new SkyCloudClassification(imgBgrID1, classificatorSettings);
@@ -1140,6 +1141,7 @@ namespace CloudCamsDataAnalysis
                     classificatorSettings.Add("GrIxMinimalSunburnGrIxvalue", 0.98);
                     classificatorSettings.Add("GrIxProcessingVerbosityLevel", 2);
                     classificatorSettings.Add("GrIxSunDetectorArcedCropFactor", 0.95d);
+                    classificatorSettings.Add("GrIxSunDetectorConcurrentThreadsLimit", 4);
                     #endregion
 
                     SkyCloudClassification classificatorID1 = new SkyCloudClassification(imgBgrID1, classificatorSettings);

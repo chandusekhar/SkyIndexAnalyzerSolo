@@ -1,6 +1,17 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2012
+# Visual Studio 2013
+VisualStudioVersion = 12.0.21005.1
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "components", "components", "{56DCDFE4-36AF-4C3E-85B7-BB28D64EF5B2}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{12EC963A-53F5-487A-A4C0-598B0C0176A8}"
+	ProjectSection(SolutionItems) = preProject
+		.gitignore = .gitignore
+		README.md = README.md
+		TODO.txt = TODO.txt
+	EndProjectSection
+EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SkyIndexAnalyzerSolo", "WindowsFormsApplication1\SkyIndexAnalyzerSolo.csproj", "{B6C5644A-F473-448C-B409-7F5948F54016}"
 	ProjectSection(ProjectDependencies) = postProject
 		{7BEAC8E4-E53F-466A-B824-1FE69E60D114} = {7BEAC8E4-E53F-466A-B824-1FE69E60D114}
@@ -18,15 +29,6 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SkyIndexAnalyzerLibraries", "SkyIndexAnalyzerLibraries\SkyIndexAnalyzerLibraries.csproj", "{7BEAC8E4-E53F-466A-B824-1FE69E60D114}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ArduinoUDPconversation", "ArduinoUDPconversation\ArduinoUDPconversation\ArduinoUDPconversation.csproj", "{E5F56C57-D2FA-46E1-90D9-EBFA32B03A3F}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "components", "components", "{56DCDFE4-36AF-4C3E-85B7-BB28D64EF5B2}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{12EC963A-53F5-487A-A4C0-598B0C0176A8}"
-	ProjectSection(SolutionItems) = preProject
-		.gitignore = .gitignore
-		README.md = README.md
-		TODO.txt = TODO.txt
-	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FilesFilteringApp", "FilesFilteringApp\FilesFilteringApp.csproj", "{338C1DB7-7FA6-4134-B599-78A1325BED10}"
 EndProject

@@ -53,5 +53,8 @@
     <Setting Name="GrIxSunDetectorArcedCropFactor" Type="System.String" Scope="User">
       <Value Profile="(Default)">0,95</Value>
     </Setting>
+    <Setting Name="GrIxSunDetectorConcurrentThreadsLimit" Type="System.String" Scope="User">
+      <Value Profile="(Default)">8</Value>
+    </Setting>
   </Settings>
 </SettingsFile>
