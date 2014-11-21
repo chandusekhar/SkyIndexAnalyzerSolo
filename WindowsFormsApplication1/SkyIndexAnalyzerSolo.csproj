@@ -116,15 +116,13 @@
     <UseVSHostingProcess>false</UseVSHostingProcess>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="MathNet.Numerics, Version=2.5.0.27, Culture=neutral, processorArchitecture=MSIL">
+    <Reference Include="MathNet.Numerics, Version=2.6.1.30, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\MathNet.Numerics.2.6.1\lib\net40\MathNet.Numerics.dll</HintPath>
-      <Private>False</Private>
     </Reference>
-    <Reference Include="MathNet.Numerics.IO, Version=2.5.0.27, Culture=neutral, processorArchitecture=MSIL">
+    <Reference Include="MathNet.Numerics.IO, Version=2.6.1.30, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\MathNet.Numerics.2.6.1\lib\net40\MathNet.Numerics.IO.dll</HintPath>
-      <Private>False</Private>
     </Reference>
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
@@ -206,6 +204,7 @@
     <None Include="ncl_default.rgb">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Include="packages.config" />
     <None Include="Properties\app.manifest" />
     <None Include="Properties\Settings.settings">
       <Generator>PublicSettingsSingleFileGenerator</Generator>
@@ -492,11 +491,6 @@
     <ProjectReference Include="..\MRG.Controls.UI\MRG.Controls.UI.csproj">
       <Project>{48e18b56-4c37-4d69-aba7-429c42b45aac}</Project>
       <Name>MRG.Controls.UI</Name>
-      <Private>False</Private>
-    </ProjectReference>
-    <ProjectReference Include="..\numl\numl.csproj">
-      <Project>{11022b54-2310-42aa-b80f-660733243406}</Project>
-      <Name>numl</Name>
       <Private>False</Private>
     </ProjectReference>
     <ProjectReference Include="..\SkyIndexAnalyzerLibraries\SkyIndexAnalyzerLibraries.csproj">

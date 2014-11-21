@@ -84,7 +84,8 @@ namespace SkyIndexAnalyzerLibraries
         {
             imageConditionAndData currentImgData = null;
             if (sender == pbRes) currentImgData = imgData;
-            double clickedValue = currentImgData.GetValueByClickEvent((PictureBox)sender, e);
+            PointD origDataPointPosition = new PointD();
+            double clickedValue = currentImgData.GetValueByClickEvent((PictureBox)sender, e, out origDataPointPosition);
             PointD thePointD = currentImgData.getDataPositionByClickEvent((PictureBox)sender, e);
             Point thePoint = new Point(Convert.ToInt32(thePointD.X), Convert.ToInt32(thePointD.Y));
             string tooltipText = "position: "+thePoint + Environment.NewLine + ServiceTools.DoubleValueRepresentingString(clickedValue);

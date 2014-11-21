@@ -1,19 +1,22 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <DirectedGraph GraphDirection="LeftToRight" xmlns="http://schemas.microsoft.com/vs/2009/dgml">
   <Nodes>
+    <Node Id="DataCollectorAutomator2G" Label="DataCollectorAutomator2G" Category="Project" />
+    <Node Id="MathNet.Numerics 3.2.3" Label="MathNet.Numerics 3.2.3" Category="Package" />
     <Node Id="SkyIndexAnalyzerLibraries" Label="SkyIndexAnalyzerLibraries" Category="Project" />
-    <Node Id="MathNet.Numerics 2.6.1" Label="MathNet.Numerics 2.6.1" Category="Package" />
+    <Node Id="MathNet.Numerics 3.2.3" Label="MathNet.Numerics 3.2.3" Category="Package" />
     <Node Id="QuickGraph 3.6.61119.7" Label="QuickGraph 3.6.61119.7" Category="Package" />
     <Node Id="DataCollectorAutomator" Label="DataCollectorAutomator" Category="Project" />
-    <Node Id="MathNet.Numerics 2.6.1" Label="MathNet.Numerics 2.6.1" Category="Package" />
+    <Node Id="MathNet.Numerics 3.2.3" Label="MathNet.Numerics 3.2.3" Category="Package" />
     <Node Id="SkyIndexAnalyzerSolo" Label="SkyIndexAnalyzerSolo" Category="Project" />
-    <Node Id="MathNet.Numerics 2.5.0" Label="MathNet.Numerics 2.5.0" Category="Package" />
+    <Node Id="MathNet.Numerics 3.2.3" Label="MathNet.Numerics 3.2.3" Category="Package" />
   </Nodes>
   <Links>
-    <Link Source="SkyIndexAnalyzerLibraries" Target="MathNet.Numerics 2.6.1" Category="Installed Package" />
+    <Link Source="DataCollectorAutomator2G" Target="MathNet.Numerics 3.2.3" Category="Installed Package" />
+    <Link Source="SkyIndexAnalyzerLibraries" Target="MathNet.Numerics 3.2.3" Category="Installed Package" />
     <Link Source="SkyIndexAnalyzerLibraries" Target="QuickGraph 3.6.61119.7" Category="Installed Package" />
-    <Link Source="DataCollectorAutomator" Target="MathNet.Numerics 2.6.1" Category="Installed Package" />
-    <Link Source="SkyIndexAnalyzerSolo" Target="MathNet.Numerics 2.5.0" Category="Installed Package" />
+    <Link Source="DataCollectorAutomator" Target="MathNet.Numerics 3.2.3" Category="Installed Package" />
+    <Link Source="SkyIndexAnalyzerSolo" Target="MathNet.Numerics 3.2.3" Category="Installed Package" />
   </Links>
   <Categories>
     <Category Id="Project" />

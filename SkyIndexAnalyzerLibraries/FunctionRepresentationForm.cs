@@ -15,21 +15,14 @@ using MathNet.Numerics.LinearAlgebra.Double;
 
 namespace SkyIndexAnalyzerLibraries
 {
-    //public enum FunctionDefinitionTypes
-    //{
-    //    discrete,
-    //    analytic,
-    //    conditional
-    //}
-
     public partial class FunctionRepresentationForm : Form
     {
         public List<Func<DenseVector, double, double>> theRepresentingFunctions = new List<Func<DenseVector, double, double>>();
         public List<DenseVector> parameters = new List<DenseVector>();
         public DenseVector dvScatterXSpace = null;
         public DenseVector dvScatterFuncValues = null;
+        public SequencesDrawingVariants scatterFuncDrawingVariant = SequencesDrawingVariants.circles;
         public List<Bgr> lineColors = new List<Bgr>();
-        //public FunctionDefinitionTypes currentDefinitionType = FunctionDefinitionTypes.analytic;
         public double xSpaceMin = 0.0d;
         public double xSpaceMax = 1.0d;
         private string currentDescription = "";
@@ -43,6 +36,7 @@ namespace SkyIndexAnalyzerLibraries
         int pictureHeight = 300;
         int serviceSpaceGap = 40;
         Bgr colorBlack = new Bgr(0, 0, 0);
+        private Bgr colorBlue = new Bgr(Color.Blue);
         Image<Bgr, Byte> theImage = null;
 
 
@@ -50,7 +44,7 @@ namespace SkyIndexAnalyzerLibraries
         public FunctionRepresentationForm(string description = "")
         {
             InitializeComponent();
-            ThreadSafeOperations.SetText(label1, description, false);
+            ThreadSafeOperations.SetText(lblTitle1, description, false);
             currentDescription = description;
         }
 
@@ -125,7 +119,7 @@ namespace SkyIndexAnalyzerLibraries
 
 
 
-            
+
             RepresentScatter();
             RepresentAnalytic();
         }
@@ -267,11 +261,41 @@ namespace SkyIndexAnalyzerLibraries
                 pointsList.Add(new Point(xCoordinate, yCoordinate));
             }
 
-            foreach (Point thePoint in pointsList)
+            if (scatterFuncDrawingVariant == SequencesDrawingVariants.circles)
             {
-                theImage.Draw(new CircleF(thePoint, 3), new Bgr(255, 0, 0), 2);
+                foreach (Point thePoint in pointsList)
+                {
+                    theImage.Draw(new CircleF(thePoint, 3), new Bgr(255, 0, 0), 2);
+                }
             }
-            //theImage.DrawPolyline(pointsList.ToArray(), false, colorBlack, 2);
+            else if (scatterFuncDrawingVariant == SequencesDrawingVariants.polyline)
+            {
+                theImage.DrawPolyline(pointsList.ToArray(), false, colorBlue, 2);
+            }
+            else if (scatterFuncDrawingVariant == SequencesDrawingVariants.squares)
+            {
+                foreach (Point thePoint in pointsList)
+                {
+                    List<Point> squareVertices = new List<Point>();
+                    squareVertices.Add(new Point(thePoint.X - 2, thePoint.Y - 2));
+                    squareVertices.Add(new Point(thePoint.X - 2, thePoint.Y + 2));
+                    squareVertices.Add(new Point(thePoint.X + 2, thePoint.Y + 2));
+                    squareVertices.Add(new Point(thePoint.X + 2, thePoint.Y - 2));
+                    theImage.DrawPolyline(squareVertices.ToArray(), true, colorBlue, 2);
+                }
+            }
+            else if (scatterFuncDrawingVariant == SequencesDrawingVariants.triangles)
+            {
+                foreach (Point thePoint in pointsList)
+                {
+                    List<Point> triangleVertices = new List<Point>();
+                    triangleVertices.Add(new Point(thePoint.X - 2, thePoint.Y - 2));
+                    triangleVertices.Add(new Point(thePoint.X, thePoint.Y + 2));
+                    triangleVertices.Add(new Point(thePoint.X + 2, thePoint.Y - 2));
+                    theImage.DrawPolyline(triangleVertices.ToArray(), true, colorBlue, 2);
+                }
+            }
+
         }
 
 
@@ -472,7 +496,7 @@ namespace SkyIndexAnalyzerLibraries
                 for (int i = 0; i < theRepresentingFunctions.Count; i++)
                 {
                     Bgr CurrColor = lineColors[i];
-                    string colR = (CurrColor.Red/255.0d).ToString("e").Replace(",", ".");
+                    string colR = (CurrColor.Red / 255.0d).ToString("e").Replace(",", ".");
                     string colG = (CurrColor.Green / 255.0d).ToString("e").Replace(",", ".");
                     string colB = (CurrColor.Blue / 255.0d).ToString("e").Replace(",", ".");
                     matlabScript += "plot(xSpace, func" + i + ", 'Color', [" + colR + " " + colG + " " + colB + "], 'LineWidth', 2.0);" + Environment.NewLine;
@@ -495,10 +519,10 @@ namespace SkyIndexAnalyzerLibraries
 
                 matlabScript += "scatter(scatterXSpace, scatterFuncVals, 'bo', 'LineWidth', 2);" + Environment.NewLine;
             }
-            
-            matlabScript += "title('"+ currentDescription +"', 'FontWeight','bold', 'FontUnits', 'normalized', 'FontSize', 0.03);" + Environment.NewLine;
-            matlabScript += "ylabel(gca, '"+ yAxisNote +"', 'FontWeight','bold', 'FontUnits', 'normalized', 'FontSize', 0.03);" + Environment.NewLine;
-            matlabScript += "xlabel(gca, '"+ xAxisNote +"', 'FontWeight','bold', 'FontUnits', 'normalized', 'FontSize', 0.03);" + Environment.NewLine;
+
+            matlabScript += "title('" + currentDescription + "', 'FontWeight','bold', 'FontUnits', 'normalized', 'FontSize', 0.03);" + Environment.NewLine;
+            matlabScript += "ylabel(gca, '" + yAxisNote + "', 'FontWeight','bold', 'FontUnits', 'normalized', 'FontSize', 0.03);" + Environment.NewLine;
+            matlabScript += "xlabel(gca, '" + xAxisNote + "', 'FontWeight','bold', 'FontUnits', 'normalized', 'FontSize', 0.03);" + Environment.NewLine;
             matlabScript += "export_fig '" + filename + "';" + Environment.NewLine;
             matlabScript += "close(fig);" + Environment.NewLine;
 
@@ -702,12 +726,48 @@ namespace SkyIndexAnalyzerLibraries
 
         private void FunctionRepresentationForm_Load(object sender, EventArgs e)
         {
-            ThreadSafeOperations.SetText(label1, currentDescription, false);
+            ThreadSafeOperations.SetText(lblTitle1, currentDescription, false);
         }
 
         private void FunctionRepresentationForm_Resize(object sender, EventArgs e)
         {
             Represent();
+        }
+
+
+
+        private void btnSaveImage_Click(object sender, EventArgs e)
+        {
+            if (tbFileName.Text == "")
+            {
+                return;
+            }
+
+            string fileName = tbFileName.Text;
+            if (fileName == "")
+            {
+                SaveFileDialog d1 = new SaveFileDialog();
+                //d1.DefaultExt = "";
+                d1.FileName = DateTime.UtcNow.ToString("s").Replace(":", "-") + ".jpg";
+                d1.Filter = "jpeg images | *.jpg";
+                d1.AddExtension = true;
+                DialogResult res = d1.ShowDialog();
+                if (res == DialogResult.OK)
+                {
+                    fileName = d1.FileName;
+                }
+            }
+
+            try
+            {
+                theImage.Bitmap.Save(fileName, System.Drawing.Imaging.ImageFormat.Jpeg);
+                ThreadSafeOperations.SetText(lblTitle1, fileName, false);
+            }
+            catch (Exception)
+            {
+                ThreadSafeOperations.SetText(lblTitle1, "Couldnt save the file", false);
+                return;
+            }
         }
 
     }

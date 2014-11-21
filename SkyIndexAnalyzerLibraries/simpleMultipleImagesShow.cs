@@ -18,12 +18,14 @@ namespace SkyIndexAnalyzerLibraries
 
         public simpleMultipleImagesShow()
         {
-            InitializeComponent();
+            
             for (int i = 0; i < 6; i++)
             {
                 bmList.Add(null);
                 titlesList.Add("");
             }
+
+            InitializeComponent();
         }
 
 

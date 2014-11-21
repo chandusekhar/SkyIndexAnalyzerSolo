@@ -13,8 +13,9 @@ using System.Windows.Forms;
 using Emgu.CV;
 using Emgu.CV.Structure;
 using MathNet.Numerics.LinearAlgebra.Double;
-using MathNet.Numerics.LinearAlgebra.Generic;
+//using MathNet.Numerics.LinearAlgebra.Generic;
 using System.Data;
+using MathNet.Numerics.LinearAlgebra.Generic;
 
 namespace SkyIndexAnalyzerLibraries
 {

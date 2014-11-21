@@ -80,11 +80,9 @@
   <ItemGroup>
     <Reference Include="MathNet.Numerics">
       <HintPath>..\packages\MathNet.Numerics.2.6.1\lib\net40\MathNet.Numerics.dll</HintPath>
-      <Private>False</Private>
     </Reference>
     <Reference Include="MathNet.Numerics.IO">
       <HintPath>..\packages\MathNet.Numerics.2.6.1\lib\net40\MathNet.Numerics.IO.dll</HintPath>
-      <Private>False</Private>
     </Reference>
     <Reference Include="MRG.Controls.UI">
       <HintPath>..\_bin\libs\MRG.Controls.UI.dll</HintPath>

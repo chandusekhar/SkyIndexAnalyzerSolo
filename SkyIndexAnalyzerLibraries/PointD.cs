@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Globalization;
+using System.Linq;
 using System.Runtime;
 using System.Runtime.InteropServices;
 using System.Drawing;
@@ -179,6 +181,29 @@ namespace SkyIndexAnalyzerLibraries
         {
             return PointD.Add(pt, sz);
         }
+
+
+
+        public static PointD operator +(PointD pt, IEnumerable<double> DenseVectorShift)
+        {
+            PointD retPt = new PointD(pt);
+            retPt.X += DenseVectorShift.ElementAt(0);
+            retPt.Y += DenseVectorShift.ElementAt(1);
+            return retPt;
+        }
+
+
+
+
+        public static PointD operator +(IEnumerable<double> DenseVectorShift, PointD pt)
+        {
+            PointD retPt = new PointD(pt);
+            retPt.X += DenseVectorShift.ElementAt(0);
+            retPt.Y += DenseVectorShift.ElementAt(1);
+            return retPt;
+        }
+
+
 
         /// <summary>
         /// Смещает <see cref="T:System.Drawing.PointD"/> на отрицательное значение, заданное параметром <see cref="T:System.Drawing.Size"/>.
@@ -368,6 +393,17 @@ namespace SkyIndexAnalyzerLibraries
         {
             return Distance(this, p2);
         }
+
+
+
+        public double DistanceToLine(LineDescription l1)
+        {
+            PointD vect1 = new PointD(l1.directionVector[0], l1.directionVector[1]);
+            PointD vect2 = l1.p0 - new SizeD(this);
+            double retDist = (vect1.X * vect2.Y - vect1.Y * vect2.X) / (l1.directionVectorLength);
+            return Math.Abs(retDist);
+        }
+
 
 
         public PointF PointF()

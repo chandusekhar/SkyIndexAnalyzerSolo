@@ -62,11 +62,9 @@
   <ItemGroup>
     <Reference Include="MathNet.Numerics">
       <HintPath>..\packages\MathNet.Numerics.2.6.1\lib\net40\MathNet.Numerics.dll</HintPath>
-      <Private>False</Private>
     </Reference>
     <Reference Include="MathNet.Numerics.IO">
       <HintPath>..\packages\MathNet.Numerics.2.6.1\lib\net40\MathNet.Numerics.IO.dll</HintPath>
-      <Private>False</Private>
     </Reference>
     <Reference Include="Microsoft.GLEE">
       <HintPath>..\QuickGraph\Glee\Microsoft.GLEE.dll</HintPath>
@@ -126,6 +124,14 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="PropertyHelper.cs" />
+    <Compile Include="SectionDescription.cs" />
+    <Compile Include="SectionRequestForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="SectionRequestForm.Designer.cs">
+      <DependentUpon>SectionRequestForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="SequencesDrawingVariants.cs" />
     <Compile Include="ServiceDataClasses.cs" />
     <Compile Include="simpleMultipleImagesShow.cs">
       <SubType>Form</SubType>
@@ -183,6 +189,12 @@
     <Compile Include="SimpleVectorGraphics2D.cs" />
     <Compile Include="SizeD.cs" />
     <Compile Include="SkyCloudClassification.cs" />
+    <Compile Include="SunDiskRepresentingAndCorrectionForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="SunDiskRepresentingAndCorrectionForm.Designer.cs">
+      <DependentUpon>SunDiskRepresentingAndCorrectionForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="ThreadSafeOperations.cs" />
     <Compile Include="TimeSeries.cs" />
     <Compile Include="UdpState.cs" />
@@ -193,6 +205,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="MultipleProgressIndicatingForm.resx">
       <DependentUpon>MultipleProgressIndicatingForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SectionRequestForm.resx">
+      <DependentUpon>SectionRequestForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="simpleMultipleImagesShow.resx">
       <DependentUpon>simpleMultipleImagesShow.cs</DependentUpon>
@@ -211,6 +226,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="SimpleShowImageForm.resx">
       <DependentUpon>SimpleShowImageForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SunDiskRepresentingAndCorrectionForm.resx">
+      <DependentUpon>SunDiskRepresentingAndCorrectionForm.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
@@ -277,25 +295,9 @@
       <Name>colormine</Name>
       <Private>False</Private>
     </ProjectReference>
-    <ProjectReference Include="..\QuickGraph\QuickGraph.Data\QuickGraph.Data.csproj">
-      <Project>{960c14d1-edbd-40e5-8ae6-25e311551b87}</Project>
-      <Name>QuickGraph.Data</Name>
-      <Private>False</Private>
-    </ProjectReference>
-    <ProjectReference Include="..\QuickGraph\QuickGraph.Graphviz\QuickGraph.Graphviz.csproj">
-      <Project>{595d6322-637a-4a36-97f1-d53f3f9ecea7}</Project>
-      <Name>QuickGraph.Graphviz</Name>
-      <Private>False</Private>
-    </ProjectReference>
-    <ProjectReference Include="..\QuickGraph\QuickGraph.Serialization\QuickGraph.Serialization.csproj">
-      <Project>{4d96c520-8eda-49f0-9201-ed8bee69b1fc}</Project>
-      <Name>QuickGraph.Serialization</Name>
-      <Private>False</Private>
-    </ProjectReference>
     <ProjectReference Include="..\QuickGraph\QuickGraph\QuickGraph.csproj">
       <Project>{a9a5c115-0680-44b3-a87e-5ecf4c93814e}</Project>
       <Name>QuickGraph</Name>
-      <Private>False</Private>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

@@ -144,30 +144,13 @@
       <Name>Emgu.Util</Name>
       <Private>False</Private>
     </ProjectReference>
-    <ProjectReference Include="..\QuickGraph\QuickGraph.Data\QuickGraph.Data.csproj">
-      <Project>{960c14d1-edbd-40e5-8ae6-25e311551b87}</Project>
-      <Name>QuickGraph.Data</Name>
-      <Private>False</Private>
-    </ProjectReference>
     <ProjectReference Include="..\QuickGraph\QuickGraph.Glee\QuickGraph.Glee.csproj">
       <Project>{acdd0973-e5d9-4c2b-9eaf-b5b5df44eddd}</Project>
       <Name>QuickGraph.Glee</Name>
-      <Private>False</Private>
-    </ProjectReference>
-    <ProjectReference Include="..\QuickGraph\QuickGraph.Graphviz\QuickGraph.Graphviz.csproj">
-      <Project>{595d6322-637a-4a36-97f1-d53f3f9ecea7}</Project>
-      <Name>QuickGraph.Graphviz</Name>
-      <Private>False</Private>
-    </ProjectReference>
-    <ProjectReference Include="..\QuickGraph\QuickGraph.Serialization\QuickGraph.Serialization.csproj">
-      <Project>{4d96c520-8eda-49f0-9201-ed8bee69b1fc}</Project>
-      <Name>QuickGraph.Serialization</Name>
-      <Private>False</Private>
     </ProjectReference>
     <ProjectReference Include="..\QuickGraph\QuickGraph\QuickGraph.csproj">
       <Project>{a9a5c115-0680-44b3-a87e-5ecf4c93814e}</Project>
       <Name>QuickGraph</Name>
-      <Private>False</Private>
     </ProjectReference>
     <ProjectReference Include="..\SkyIndexAnalyzerLibraries\SkyIndexAnalyzerLibraries.csproj">
       <Project>{7beac8e4-e53f-466a-b824-1fe69e60d114}</Project>

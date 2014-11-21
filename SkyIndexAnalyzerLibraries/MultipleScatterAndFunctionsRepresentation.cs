@@ -20,14 +20,6 @@ using MathNet.Numerics.LinearAlgebra.Double;
 
 namespace SkyIndexAnalyzerLibraries
 {
-    public enum SequencesDrawingVariants
-    {
-        circles,
-        triangles,
-        squares,
-        polyline,
-    }
-
     public class MultipleScatterAndFunctionsRepresentation
     {
         public List<Func<DenseVector, double, double>> theRepresentingFunctions = new List<Func<DenseVector, double, double>>();
@@ -71,8 +63,7 @@ namespace SkyIndexAnalyzerLibraries
             newCopy.dvScatterFuncValues = new System.Collections.Generic.List<DenseVector>(dvScatterFuncValues);
             newCopy.lineColors = new System.Collections.Generic.List<Bgr>(lineColors);
             newCopy.scatterLineColors = new System.Collections.Generic.List<Bgr>(scatterLineColors);
-            newCopy.scatterDrawingVariants =
-                new System.Collections.Generic.List<SequencesDrawingVariants>(scatterDrawingVariants);
+            newCopy.scatterDrawingVariants = new List<SequencesDrawingVariants>(scatterDrawingVariants);
             newCopy.xSpaceMin = xSpaceMin;
             newCopy.xSpaceMax = xSpaceMax;
             newCopy.yAxisNote = yAxisNote;

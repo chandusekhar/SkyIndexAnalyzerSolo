@@ -487,13 +487,16 @@ namespace SkyIndexAnalyzerLibraries
         }
 
 
-        public double GetValueByClickEvent(PictureBox sender, MouseEventArgs e)
+
+        public double GetValueByClickEvent(PictureBox sender, MouseEventArgs e, out PointD origDataPointPosition)
         {
             if (sender.Image == null)
             {
+                origDataPointPosition = PointD.nullPointD();
                 return 0.0d;
             }
             PointD theDataPoint = getDataPositionByClickEvent(sender, e);
+            origDataPointPosition = theDataPoint;
             int dataY = Convert.ToInt32(theDataPoint.Y);
             dataY = (dataY > dmSourceData.RowCount - 1) ? (dmSourceData.RowCount - 1) : (dataY);
             dataY = (dataY < 0) ? (0) : (dataY);

@@ -10,6 +10,7 @@ using System.Windows.Forms;
 using Emgu.CV;
 using Emgu.CV.Structure;
 using MathNet.Numerics.LinearAlgebra.Double;
+//using MathNet.Numerics.LinearAlgebra.Generic;
 using MathNet.Numerics.LinearAlgebra.Generic;
 using MathNet.Numerics.Statistics;
 using System.Collections.Generic;
@@ -48,10 +49,10 @@ namespace SkyIndexAnalyzerLibraries
 
     public enum ClassificationMethods
     {
-        German,
+        US,
         Japan,
         Greek,
-        TestNew
+        GrIx
     }
 
     public enum SunDiskConditions
@@ -105,7 +106,7 @@ namespace SkyIndexAnalyzerLibraries
         private double theImageCircleCropFactor = 0.9d;
 
         public Dictionary<string, object> defaultProperties = null;
-        private int verbosityLevel = 0;
+        public int verbosityLevel = 0;
         public string randomFileName = "";
 
         public string sourceImageFileName = "";
@@ -226,7 +227,7 @@ namespace SkyIndexAnalyzerLibraries
             //ClassifiedBM = null;
             skyCounter = 0;
             cloudCounter = 0;
-            ClassificationMethod = ClassificationMethods.TestNew;
+            ClassificationMethod = ClassificationMethods.GrIx;
             dmSkyIndexData = null;
 
             defaultProperties = settings;
@@ -310,7 +311,7 @@ namespace SkyIndexAnalyzerLibraries
 
 
         #region классификация методом из немецких публикаций
-        private void ClassifyGerman()
+        private void ClassifyUS()
         {
             DenseMatrix denseMatrixRedChannel;
             DenseMatrix denseMatrixBlueChannel;
@@ -748,8 +749,11 @@ namespace SkyIndexAnalyzerLibraries
 
                 BGWorkerReport("аппроксимируем полученное распределение полиномом, МНК");
                 int polynomeOrder = 10;
+
+                //DenseVector dvFixedPoints = DenseVector.Create(dvDataSpace.Count,
+                //    new Func<int, double>(i => (i == 0) ? (1.0d) : (double.NaN)));
                 DenseVector dvFixedPoints = DenseVector.Create(dvDataSpace.Count,
-                    new Func<int, double>(i => (i == 0) ? (1.0d) : (double.NaN)));
+                    new Func<int, double>(i => (i == 0) ? (minSunburnGrIxValue) : (double.NaN)));
 
                 DenseVector approxPolyKoeffs =
                     DataAnalysis.NPolynomeApproximationLessSquareMethod(dvSmoothedDistribution, dvDataSpace, dvFixedPoints, polynomeOrder);
@@ -2737,15 +2741,15 @@ namespace SkyIndexAnalyzerLibraries
             {
                 ClassifyJapan();
             }
-            if (ClassificationMethod == ClassificationMethods.German)
+            if (ClassificationMethod == ClassificationMethods.US)
             {
-                ClassifyGerman();
+                ClassifyUS();
             }
             else if (ClassificationMethod == ClassificationMethods.Greek)
             {
                 ClassifyGreek();
             }
-            else if (ClassificationMethod == ClassificationMethods.TestNew)
+            else if (ClassificationMethod == ClassificationMethods.GrIx)
             {
                 ClassifyGrIx();
             }

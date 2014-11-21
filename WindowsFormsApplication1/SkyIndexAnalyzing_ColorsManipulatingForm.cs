@@ -152,7 +152,7 @@ namespace SkyIndexAnalyzerSolo
                 return;
             }
 
-            InitializeComponent();
+
 
             defaultProperties = settings;
             minSunAreaPart = Convert.ToDouble(defaultProperties["GrIxSunDetectionMinimalSunAreaPartial"]);
@@ -197,13 +197,21 @@ namespace SkyIndexAnalyzerSolo
 
 
 
+
+
+            InitializeComponent();
+
+
+
             ThreadSafeOperations.SetTextTB(tbFormula1, "R+0", false);
             ThreadSafeOperations.SetTextTB(tbFormula2, "G+0", false);
             ThreadSafeOperations.SetTextTB(tbFormula3, "B+0", false);
             ThreadSafeOperations.SetTextTB(tbColorSchemePath1, "matlab_jet.rgb", false);
             ThreadSafeOperations.SetTextTB(tbColorSchemePath2, "matlab_jet.rgb", false);
             ThreadSafeOperations.SetTextTB(tbColorSchemePath3, "matlab_jet.rgb", false);
-
+            chbRes1DynamicScale.Checked = true;
+            chbRes2DynamicScale.Checked = true;
+            chbRes3DynamicScale.Checked = true;
 
             bgwSkyIndexAnalyzer.RunWorkerAsync();
         }
@@ -218,6 +226,11 @@ namespace SkyIndexAnalyzerSolo
         /// <param name="e">The <see cref="PaintEventArgs" /> instance containing the event data. Не используется</param>
         private void SkyIndexAnalyzing_ColorsManipulatingForm_Paint(object sender, PaintEventArgs e)
         {
+            //if (this.WindowState != FormWindowState.Normal)
+            //{
+            //    return;
+            //}
+
             Bitmap bm2Show = null;
             bmColorSchemeVisChannel = null;
 
@@ -1107,10 +1120,14 @@ namespace SkyIndexAnalyzerSolo
             else if (sender == pbRes3) currentImgData = result3;
 
 
-            double clickedValue = currentImgData.GetValueByClickEvent((PictureBox)sender, e);
+            PointD origDataPointPosition = new PointD();
+            double clickedValue = currentImgData.GetValueByClickEvent((PictureBox)sender, e, out origDataPointPosition);
             clickedValue = Math.Round(clickedValue, 2);
 
-            ShowToolTip(e, clickedValue.ToString(), sender);
+            string strToolTipMessage = origDataPointPosition.ToString() + Environment.NewLine;
+            strToolTipMessage += clickedValue.ToString();
+
+            ShowToolTip(e, strToolTipMessage, sender);
         }
 
         /// <summary>
@@ -1158,7 +1175,7 @@ namespace SkyIndexAnalyzerSolo
             }
             else if (parentForm.rbtnClassMethodNew.Checked)
             {
-                classificator.ClassificationMethod = ClassificationMethods.TestNew;
+                classificator.ClassificationMethod = ClassificationMethods.GrIx;
                 classificator.theStdDevMarginValueDefiningSkyCloudSeparation = parentForm.tunedSIMargin;
             }
             classificator.Classify();
@@ -1795,6 +1812,90 @@ namespace SkyIndexAnalyzerSolo
             histForm.HistToRepresent = theHist;
             histForm.Show();
             histForm.Represent();
+
+        }
+
+        /// <summary>
+        /// Handles the Click event of the buttonSectionProfile control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        private void buttonSectionProfile_Click(object sender, EventArgs e)
+        {
+            imageConditionAndData currImagData = null;
+            if (sender == btnSectionProfile1)
+            {
+                currImagData = result1;
+            }
+            else if (sender == btnSectionProfile2)
+            {
+                currImagData = result2;
+            }
+            else if (sender == btnSectionProfile3)
+            {
+                currImagData = result3;
+            }
+
+            PointD p1 = new PointD();
+            PointD p2 = new PointD();
+            bool fromMarginToMargin = false;
+            SectionRequestForm sectionRequestForm = new SectionRequestForm();
+            DialogResult res = sectionRequestForm.ShowDialog();
+            if (res == System.Windows.Forms.DialogResult.Cancel)
+            {
+                return;
+            }
+
+            p1 = sectionRequestForm.retPt1;
+            p2 = sectionRequestForm.retPt2;
+            fromMarginToMargin = sectionRequestForm.fromMarginToMargin;
+            SectionDescription currSection = new SectionDescription(p1, p2, true);
+            currSection = currSection.TransformTillMargins(new Rectangle(0, 0, currImagData.Width, currImagData.Height));
+            LineDescription l1 = currSection.SectionLine;
+
+            DenseMatrix dmValues = (DenseMatrix) currImagData.DmSourceData.Clone();
+            DenseMatrix dmDistanceToLine = (DenseMatrix)currImagData.DmSourceData.Clone();
+            dmDistanceToLine.MapIndexedInplace((row, col, dVal) =>
+            {
+                PointD currPt = new PointD(col, row);
+
+                double dist = currPt.DistanceToLine(l1);
+                return dist;
+            });
+
+            List<Tuple<PointD, double>> dataArray = new List<Tuple<PointD, double>>();
+            for (int row = 0; row < dmValues.RowCount; row++)
+            {
+                for (int col = 0; col < dmValues.ColumnCount; col++)
+                {
+                    if (dmDistanceToLine[row, col] <= 1.0d)
+                        dataArray.Add(new Tuple<PointD, double>(new PointD(col, row), dmValues[row, col]));
+                }
+            }
+
+            List<Tuple<double, double>> dataArrayRotated = dataArray.ConvertAll((tpl) =>
+            {
+                PointPolar ptp = new PointPolar(tpl.Item1 - new SizeD(l1.p0));
+                double angleToSubtract = (new PointPolar(new PointD(l1.directionVector[0], l1.directionVector[1]))).Phi;
+                ptp.Phi -= angleToSubtract;
+                //ptp.CropAngle(true);
+                if (ptp.Phi >= 0.0d) return new Tuple<double, double>(ptp.R, tpl.Item2);
+                else return new Tuple<double, double>(-ptp.R, tpl.Item2);
+            });
+
+            double arrayMinPosition = dataArrayRotated.Min<Tuple<double, double>>(tpl1 => tpl1.Item1);
+            dataArrayRotated =
+                dataArrayRotated.ConvertAll<Tuple<double, double>>(
+                    tpl => new Tuple<double, double>(tpl.Item1 - arrayMinPosition, tpl.Item2));
+
+            dataArrayRotated.Sort((tpl1, tpl2) => tpl1.Item1.CompareTo(tpl2.Item1));
+
+            FunctionRepresentationForm form1 = new FunctionRepresentationForm();
+            form1.dvScatterXSpace = DenseVector.OfEnumerable(dataArrayRotated.ConvertAll<double>(tpl => tpl.Item1));
+            form1.dvScatterFuncValues = DenseVector.OfEnumerable(dataArrayRotated.ConvertAll<double>(tpl => tpl.Item2));
+            form1.Show();
+            form1.Represent();
+            //form1.SaveToImage("D:\\MMAEs-2014MSU\\output\\img-2014-09-20T12-46-55devID1-res002.jpg");
 
         }
 

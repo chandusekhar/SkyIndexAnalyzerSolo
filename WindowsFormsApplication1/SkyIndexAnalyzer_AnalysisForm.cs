@@ -1274,8 +1274,8 @@ namespace SkyIndexAnalyzerSolo
 
                 List<ClassificationMethods> schemesToUse = new List<ClassificationMethods>();
                 schemesToUse.Add(ClassificationMethods.Japan);
-                schemesToUse.Add(ClassificationMethods.German);
-                schemesToUse.Add(ClassificationMethods.TestNew);
+                schemesToUse.Add(ClassificationMethods.US);
+                schemesToUse.Add(ClassificationMethods.GrIx);
 
                 object[] BGWorker2Args = new object[] { path2process, theLogWindow, imagesRepresentingForm, schemesToUse };
 
@@ -1403,7 +1403,7 @@ namespace SkyIndexAnalyzerSolo
                 //ImageHeightRec = (int)Math.Round((imagetoadd.Height * defaultResizeFactor), 0);
                 //imagetoadd = ImageProcessing.ImageResizer(imagetoadd, defaultMaxImageSize);
                 //bitmap2process = (Bitmap)(imagetoadd.Clone());
-                if (schemesToUse.FindIndex(clMethod => clMethod == ClassificationMethods.German) != -1)
+                if (schemesToUse.FindIndex(clMethod => clMethod == ClassificationMethods.US) != -1)
                 {
                     //bitmap2process = ServiceTools.ReadBitmapFromFile(fInfo.FullName);
                     //ThreadSafeOperations.UpdatePictureBox(pictureBox1, bitmap2process, true);
@@ -1412,7 +1412,7 @@ namespace SkyIndexAnalyzerSolo
                     classificator = new SkyCloudClassification(img2process, defaultProperties);
                     classificator.LogWindow = theLogWindow;
                     classificator.ParentForm = this;
-                    classificator.ClassificationMethod = ClassificationMethods.German;
+                    classificator.ClassificationMethod = ClassificationMethods.US;
                     classificator.isCalculatingUsingBgWorker = true;
                     classificator.SelfWorker = sender as BackgroundWorker;
                     classificator.defaultOutputDataDirectory = (string) defaultProperties["DefaultDataFilesLocation"];
@@ -1435,7 +1435,7 @@ namespace SkyIndexAnalyzerSolo
                 //ImageHeightRec = (int)Math.Round((imagetoadd.Height * defaultResizeFactor), 0);
                 //imagetoadd = ImageProcessing.ImageResizer(imagetoadd, defaultMaxImageSize);
                 //bitmap2process = (Bitmap)(imagetoadd.Clone());
-                if (schemesToUse.FindIndex(clMethod => clMethod == ClassificationMethods.TestNew) != -1)
+                if (schemesToUse.FindIndex(clMethod => clMethod == ClassificationMethods.GrIx) != -1)
                 {
                     //bitmap2process = ServiceTools.ReadBitmapFromFile(fInfo.FullName);
                     //ThreadSafeOperations.UpdatePictureBox(pictureBox1, bitmap2process, true);
@@ -1444,7 +1444,7 @@ namespace SkyIndexAnalyzerSolo
                     classificator = new SkyCloudClassification(img2process, defaultProperties);
                     classificator.LogWindow = theLogWindow;
                     classificator.ParentForm = this;
-                    classificator.ClassificationMethod = ClassificationMethods.TestNew;
+                    classificator.ClassificationMethod = ClassificationMethods.GrIx;
                     classificator.isCalculatingUsingBgWorker = true;
                     classificator.SelfWorker = sender as BackgroundWorker;
                     classificator.defaultOutputDataDirectory = (string) defaultProperties["DefaultDataFilesLocation"];
@@ -1502,13 +1502,13 @@ namespace SkyIndexAnalyzerSolo
                     thePicturePlacingMethodInfo.Invoke(imagesRepresentingForm, parametersArray);
                 }
 
-                if (schemesToUse.FindIndex(clMethod => clMethod == ClassificationMethods.German) != -1)
+                if (schemesToUse.FindIndex(clMethod => clMethod == ClassificationMethods.US) != -1)
                 {
                     parametersArray = new object[] {bmG, "German", 3};
                     thePicturePlacingMethodInfo.Invoke(imagesRepresentingForm, parametersArray);
                 }
 
-                if (schemesToUse.FindIndex(clMethod => clMethod == ClassificationMethods.TestNew) != -1)
+                if (schemesToUse.FindIndex(clMethod => clMethod == ClassificationMethods.GrIx) != -1)
                 {
                     parametersArray = new object[] {bmGrIx, "GrIx", 4};
                     thePicturePlacingMethodInfo.Invoke(imagesRepresentingForm, parametersArray);
@@ -1698,6 +1698,12 @@ namespace SkyIndexAnalyzerSolo
             #region new-style analyzing
             DateTime beginNew = DateTime.Now;
             //classificator = new SkyCloudClassification(imagetoadd, pictureBox2, pbUniversalProgressBar, textBox1);
+            
+            FileInfo finfoOriginalFile = new FileInfo(ImageFileName);
+
+            defaultProperties["DefaultDataFilesLocation"] = defaultProperties["DefaultDataFilesLocation"] +
+                                                            Path.GetFileNameWithoutExtension(finfoOriginalFile.Name) +
+                                                            "\\";
             classificator = new SkyCloudClassification(imagetoadd, defaultProperties);
             classificator.cloudSkySeparationValue = tunedSIMargin;
             if (rbtnClassMethodJapan.Checked)
@@ -1711,7 +1717,7 @@ namespace SkyIndexAnalyzerSolo
             else if (rbtnClassMethodNew.Checked)
             {
                 classificator.ParentForm = this;
-                classificator.ClassificationMethod = ClassificationMethods.TestNew;
+                classificator.ClassificationMethod = ClassificationMethods.GrIx;
 
                 classificator.theStdDevMarginValueDefiningSkyCloudSeparation = tunedSIMargin;
             }
@@ -1729,7 +1735,8 @@ namespace SkyIndexAnalyzerSolo
             classificator.sourceImageFileName = ImageFileName;
 
             classificator.LogWindow = theLogWindow;
-            classificator.defaultOutputDataDirectory = (string)defaultProperties["DefaultDataFilesLocation"];
+            string defaultOutputDataDirectory = (string)defaultProperties["DefaultDataFilesLocation"];
+            classificator.defaultOutputDataDirectory = defaultOutputDataDirectory;
             classificator.Classify();
             Note(classificator.resultingStatusMessages);
             classificator.resultingStatusMessages = "";
@@ -1740,6 +1747,21 @@ namespace SkyIndexAnalyzerSolo
             ServiceTools.FlushMemory(textBox1, "#02");
 
             ThreadSafeOperations.UpdatePictureBox(pictureBox2, bitmapSI, true);
+
+            
+            if (classificator.verbosityLevel > 0)
+            {
+                string outputFilename = ImageFileName;
+                outputFilename = Path.GetFileNameWithoutExtension(finfoOriginalFile.Name) + "-result-" +
+                                 classificator.ClassificationMethod.ToString() + ".jpg";
+                outputFilename = defaultOutputDataDirectory + outputFilename;
+                bitmapSI.Save(outputFilename, ImageFormat.Jpeg);
+                
+                string origImageCopyFilename = Path.GetFileNameWithoutExtension(finfoOriginalFile.Name) + "-orig-" + ".jpg";
+                origImageCopyFilename = defaultOutputDataDirectory + origImageCopyFilename;
+                imagetoadd.Save(origImageCopyFilename);
+            }
+
             pictureBox2Bitmap = new Bitmap(bitmapSI);
 
             ThreadSafeOperations.UpdateProgressBar(pbUniversalProgressBar, 0);

@@ -127,6 +127,15 @@ namespace SkyIndexAnalyzerLibraries
       this.height = pt.Y;
     }
 
+
+    public SizeD(PointD pt1, PointD pt2)
+    {
+        this.width = Math.Abs(pt1.X-pt2.X);
+        this.height = Math.Abs(pt1.Y-pt2.Y);
+    }
+
+
+
     [TargetedPatchingOptOut("Performance critical to inline this type of method across NGen image boundaries")]
     public SizeD(double width, double height)
     {
@@ -331,6 +340,14 @@ namespace SkyIndexAnalyzerLibraries
         SizeF tmp = new SizeF((float)this.width, (float)this.height);
         return tmp;
     }
+
+
+
+
+      public double DiagonalLength
+      {
+          get { return Math.Sqrt(width*width + height*height); }
+      }
 
 
     /// <summary>
