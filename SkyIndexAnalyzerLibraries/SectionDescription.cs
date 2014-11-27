@@ -68,8 +68,8 @@ namespace SkyIndexAnalyzerLibraries
 
             if ((pcTop.X >= imageMarginsRect.Left) && (pcTop.X <= imageMarginsRect.Right)) ptCross.Add(pcTop);
             if ((pcBottom.X >= imageMarginsRect.Left) && (pcBottom.X <= imageMarginsRect.Right)) ptCross.Add(pcBottom);
-            if ((pcLeft.Y >= imageMarginsRect.Top) && (pcLeft.X <= imageMarginsRect.Bottom)) ptCross.Add(pcLeft);
-            if ((pcRight.X >= imageMarginsRect.Top) && (pcRight.X <= imageMarginsRect.Bottom)) ptCross.Add(pcRight);
+            if ((pcLeft.Y >= imageMarginsRect.Top) && (pcLeft.Y <= imageMarginsRect.Bottom)) ptCross.Add(pcLeft);
+            if ((pcRight.Y >= imageMarginsRect.Top) && (pcRight.Y <= imageMarginsRect.Bottom)) ptCross.Add(pcRight);
 
             return new SectionDescription(ptCross[0], ptCross[1], true);
         }

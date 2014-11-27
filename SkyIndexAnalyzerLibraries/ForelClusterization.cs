@@ -10,8 +10,8 @@ using Emgu.CV.Structure;
 using MathNet.Numerics.LinearAlgebra.Double;
 using System.Drawing;
 using MathNet.Numerics.Statistics;
-using QuickGraph;
-using QuickGraph.Algorithms;
+//using QuickGraph;
+//using QuickGraph.Algorithms;
 
 namespace SkyIndexAnalyzerLibraries
 {

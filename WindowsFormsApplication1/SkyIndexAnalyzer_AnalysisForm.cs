@@ -1334,7 +1334,7 @@ namespace SkyIndexAnalyzerSolo
             MethodInfo thePicturePlacingMethodInfo = theType.GetMethod("PlaceAPicture");
 
 
-            ServiceTools.logToTextFile(outputStatsDirectory + "statsWithFNames.dat", "Full filename | date+time picture taken | SI amer | SI jap | SI GrIx | SB suppr | Sun disk condition " + Environment.NewLine, true);
+            ServiceTools.logToTextFile(outputStatsDirectory + "statsWithFNames.dat", "Full filename | date+time picture taken | SI US | SI Jap | SI GrIx | SB suppr | Sun disk condition " + Environment.NewLine, true);
 
 
             DirectoryInfo dir = new DirectoryInfo(path2process);
@@ -1384,6 +1384,7 @@ namespace SkyIndexAnalyzerSolo
                     classificator.defaultOutputDataDirectory = (string) defaultProperties["DefaultDataFilesLocation"];
                     classificator.cloudSkySeparationValue =
                         Convert.ToDouble(defaultProperties["JapanCloudSkySeparationValue"]);
+                    classificator.sourceImageFileName = fInfo.FullName;
                     classificator.Classify();
                     classificator.resultingStatusMessages = "";
                     bitmapSI = new Bitmap(classificator.PreviewBitmap);
@@ -1418,6 +1419,7 @@ namespace SkyIndexAnalyzerSolo
                     classificator.defaultOutputDataDirectory = (string) defaultProperties["DefaultDataFilesLocation"];
                     classificator.cloudSkySeparationValue =
                         Convert.ToDouble(defaultProperties["GermanCloudSkySeparationValue"]);
+                    classificator.sourceImageFileName = fInfo.FullName;
                     classificator.Classify();
                     classificator.resultingStatusMessages = "";
                     bitmapSI = new Bitmap(classificator.PreviewBitmap);
@@ -1452,6 +1454,7 @@ namespace SkyIndexAnalyzerSolo
                         Convert.ToDouble(defaultProperties["GermanCloudSkySeparationValue"]);
                     classificator.theStdDevMarginValueDefiningSkyCloudSeparation =
                         Convert.ToDouble(defaultProperties["GrIxDefaultSkyCloudMarginWithoutSun"]);
+                    classificator.sourceImageFileName = fInfo.FullName;
                     classificator.Classify();
                     classificator.resultingStatusMessages = "";
                     bitmapSI = new Bitmap(classificator.PreviewBitmap);
@@ -1472,7 +1475,7 @@ namespace SkyIndexAnalyzerSolo
                     //сохраним картинки
                     string sourceFName = outputDataDirectory + randomFileName + "_SourceImage.jpg";
                     string japanFName = outputDataDirectory + randomFileName + "_si_jap.jpg";
-                    string germanFName = outputDataDirectory + randomFileName + "_si_ger.jpg";
+                    string germanFName = outputDataDirectory + randomFileName + "_si_US.jpg";
                     string GrIxFName = outputDataDirectory + randomFileName + "_si_GrIx.jpg";
 
                     //imagetoadd = Image.FromFile(fInfo.FullName);
@@ -1504,7 +1507,7 @@ namespace SkyIndexAnalyzerSolo
 
                 if (schemesToUse.FindIndex(clMethod => clMethod == ClassificationMethods.US) != -1)
                 {
-                    parametersArray = new object[] {bmG, "German", 3};
+                    parametersArray = new object[] {bmG, "US", 3};
                     thePicturePlacingMethodInfo.Invoke(imagesRepresentingForm, parametersArray);
                 }
 
@@ -1514,7 +1517,6 @@ namespace SkyIndexAnalyzerSolo
                     thePicturePlacingMethodInfo.Invoke(imagesRepresentingForm, parametersArray);
                 }
 
-                //ThreadSafeOperations.UpdatePictureBox(pictureBox4, classificator.PreviewBitmap, true);
 
                 theLogWindow = ServiceTools.LogAText(theLogWindow, strToDisplay);
                 ServiceTools.logToTextFile(outputStatsDirectory + "statsWithFNames.dat",
@@ -3397,6 +3399,53 @@ namespace SkyIndexAnalyzerSolo
 
                 backgroundWorker2.RunWorkerAsync(BGWorker2Args);
             }
+        }
+
+
+
+
+
+        private void pictureBox1_Click(object sender, EventArgs e)
+        {
+            if (imagetoadd == null) return;
+
+            FileInfo fInfo1 = new FileInfo(ImageFileName);
+            string sunDiskInfoFileName = fInfo1.DirectoryName + "\\" + Path.GetFileNameWithoutExtension(ImageFileName) +
+                                         "-SunDiskInfo.xml";
+
+            RoundData existingRoundData = RoundData.nullRoundData();
+            Size imgSizeUnderExistingRoundData = imagetoadd.Bitmap.Size;
+            object existingRoundDataObj = ServiceTools.ReadObjectFromXML(sunDiskInfoFileName, typeof(EoundDataWithUnderlyingImgSize));
+
+            if (existingRoundDataObj != null)
+            {
+                existingRoundData = ((EoundDataWithUnderlyingImgSize)existingRoundDataObj).circle;
+                imgSizeUnderExistingRoundData = ((EoundDataWithUnderlyingImgSize)existingRoundDataObj).imgSize;
+            }
+
+            double currScale = (double)imagetoadd.Width/(double)imgSizeUnderExistingRoundData.Width;
+            if (currScale != 1.0d)
+            {
+                existingRoundData.DCenterX *= currScale;
+                existingRoundData.DCenterY *= currScale;
+                existingRoundData.DRadius *= currScale;
+            }
+
+            SunDiskRepresentingAndCorrectionForm form = new SunDiskRepresentingAndCorrectionForm(imagetoadd, existingRoundData);
+            DialogResult res = form.ShowDialog();
+            if (res == System.Windows.Forms.DialogResult.Cancel)
+            {
+                return;
+            }
+
+            RoundData retSunDiskCircle = form.sunDiskPositionAndSize.Copy();
+            Size imgSize = imagetoadd.Bitmap.Size;
+            EoundDataWithUnderlyingImgSize tplSunDiskPositionData = new EoundDataWithUnderlyingImgSize();
+            tplSunDiskPositionData.circle = retSunDiskCircle;
+            tplSunDiskPositionData.imgSize = imgSize;
+
+            ServiceTools.WriteObjectToXML(tplSunDiskPositionData, sunDiskInfoFileName);
+
         }
 
 

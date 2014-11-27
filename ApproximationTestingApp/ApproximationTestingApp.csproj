@@ -144,14 +144,6 @@
       <Name>Emgu.Util</Name>
       <Private>False</Private>
     </ProjectReference>
-    <ProjectReference Include="..\QuickGraph\QuickGraph.Glee\QuickGraph.Glee.csproj">
-      <Project>{acdd0973-e5d9-4c2b-9eaf-b5b5df44eddd}</Project>
-      <Name>QuickGraph.Glee</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\QuickGraph\QuickGraph\QuickGraph.csproj">
-      <Project>{a9a5c115-0680-44b3-a87e-5ecf4c93814e}</Project>
-      <Name>QuickGraph</Name>
-    </ProjectReference>
     <ProjectReference Include="..\SkyIndexAnalyzerLibraries\SkyIndexAnalyzerLibraries.csproj">
       <Project>{7beac8e4-e53f-466a-b824-1fe69e60d114}</Project>
       <Name>SkyIndexAnalyzerLibraries</Name>

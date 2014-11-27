@@ -10,6 +10,8 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 using System.Windows.Forms;
+using System.Xml;
+using System.Xml.Serialization;
 using Emgu.CV;
 using Emgu.CV.Structure;
 using MathNet.Numerics.LinearAlgebra.Double;
@@ -665,6 +667,60 @@ namespace SkyIndexAnalyzerLibraries
 
             }
             return true;
+        }
+
+
+
+
+
+        public static string WriteObjectToXML(object objToSave, string fileName)
+        {
+            FileInfo finfo = new FileInfo(fileName);
+            if (!Directory.Exists(finfo.DirectoryName))
+            {
+                Directory.CreateDirectory(finfo.DirectoryName);
+            }
+
+            if (File.Exists(fileName))
+            {
+                File.Delete(fileName);
+            }
+
+            Stream fs = new FileStream(fileName, FileMode.Create);
+            XmlWriter writer = new XmlTextWriter(fs, Encoding.UTF8);
+            XmlSerializer serializer = new XmlSerializer(objToSave.GetType());
+            serializer.Serialize(writer, objToSave);
+            writer.Close();
+            return fileName;
+        }
+
+
+
+
+        public static object ReadObjectFromXML(string fileName, Type objType)
+        {
+            if (!File.Exists(fileName)) return null;
+            
+            FileInfo finfo = new FileInfo(fileName);
+            XmlSerializer serializer = new XmlSerializer(objType);
+
+            Stream fs = new FileStream(fileName, FileMode.Open);
+            fs.Position = 0;
+            XmlReader reader = XmlReader.Create(fs);
+
+            object retObj = null;
+            try
+            {
+                retObj = serializer.Deserialize(reader);
+            }
+            catch (Exception e)
+            {
+                return null;
+            }
+            
+            fs.Close();
+
+            return retObj;
         }
 
 

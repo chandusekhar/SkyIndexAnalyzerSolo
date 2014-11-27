@@ -23,8 +23,8 @@ namespace SkyIndexAnalyzerLibraries
 
         private void btnOK_Click(object sender, EventArgs e)
         {
-            retPt1 = new PointD(Convert.ToDouble(textBox1.Text), Convert.ToDouble(textBox2.Text));
-            retPt2 = new PointD(Convert.ToDouble(textBox3.Text), Convert.ToDouble(textBox4.Text));
+            retPt1 = new PointD(Convert.ToDouble(textBox1.Text.Replace(".", ",")), Convert.ToDouble(textBox2.Text.Replace(".", ",")));
+            retPt2 = new PointD(Convert.ToDouble(textBox3.Text.Replace(".", ",")), Convert.ToDouble(textBox4.Text.Replace(".", ",")));
             fromMarginToMargin = checkBox1.Checked;
             this.DialogResult = System.Windows.Forms.DialogResult.OK;
             this.Close();

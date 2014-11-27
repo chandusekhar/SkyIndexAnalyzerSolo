@@ -66,18 +66,6 @@
     <Reference Include="MathNet.Numerics.IO">
       <HintPath>..\packages\MathNet.Numerics.2.6.1\lib\net40\MathNet.Numerics.IO.dll</HintPath>
     </Reference>
-    <Reference Include="Microsoft.GLEE">
-      <HintPath>..\QuickGraph\Glee\Microsoft.GLEE.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Microsoft.GLEE.Drawing">
-      <HintPath>..\QuickGraph\Glee\Microsoft.GLEE.Drawing.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Microsoft.GLEE.GraphViewerGDI">
-      <HintPath>..\QuickGraph\Glee\Microsoft.GLEE.GraphViewerGDI.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
     <Reference Include="Microsoft.Research.Science.Data, Version=1.3.14517.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\Program Files (x86)\Reference Assemblies\Microsoft\Research\Scientific DataSet 1.3\Microsoft.Research.Science.Data.dll</HintPath>
@@ -100,7 +88,7 @@
     <Compile Include="ColorScheme.cs" />
     <Compile Include="Constants.cs" />
     <Compile Include="ContourAnalysisBasics.cs" />
-    <Compile Include="ForelClusterization.cs" />
+    <Compile Include="Extensions.cs" />
     <Compile Include="GeoTrackRenderer.cs" />
     <Compile Include="Graph.cs" />
     <Compile Include="HistogramCalcAndShowForm.cs">
@@ -294,10 +282,6 @@
       <Project>{ae7dc769-4a71-49ba-bdd7-281f3e70b02a}</Project>
       <Name>colormine</Name>
       <Private>False</Private>
-    </ProjectReference>
-    <ProjectReference Include="..\QuickGraph\QuickGraph\QuickGraph.csproj">
-      <Project>{a9a5c115-0680-44b3-a87e-5ecf4c93814e}</Project>
-      <Name>QuickGraph</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

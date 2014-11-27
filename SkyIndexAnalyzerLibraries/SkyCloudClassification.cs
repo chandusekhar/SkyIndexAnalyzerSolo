@@ -117,7 +117,6 @@ namespace SkyIndexAnalyzerLibraries
 
         private Image<Bgr, byte> tmpSunDetectionimage = null;
 
-
         public bool theSunSuppressionSchemeApplicable = false;
         
         
@@ -411,7 +410,8 @@ namespace SkyIndexAnalyzerLibraries
             //Image<Gray, Byte> maskImage = ImageProcessing.getImageSignificantMask(LocalProcessingBitmap);
             ImageProcessing imgP = new ImageProcessing(LocalProcessingImage, true);
             //imgP.getImageSignificantMask();
-            maskImage = imgP.significantMaskImageBinary;
+            //maskImage = imgP.significantMaskImageBinary * imgP.significantMaskImageCircled;
+            maskImage = imgP.significantMaskImageCircled;
             Image<Gray, Byte> maskImageCircled = imgP.imageSignificantMaskCircled(theImageCircleCropFactor * 100.0d);
             PointD imageCircleCenter = imgP.imageRD.pointDCircleCenter();
             double imageCircleRadius = imgP.imageRD.DRadius;
@@ -423,23 +423,6 @@ namespace SkyIndexAnalyzerLibraries
             dmBlueChannel = ImageProcessing.DenseMatrixFromImage(imageBlueChannelByte);
             dmGreenChannel = ImageProcessing.DenseMatrixFromImage(imageGreenChannelByte);
             ServiceTools.FlushMemory();
-
-            #region // УСТАРЕЛО
-            //String evalExpression = "sqrt((R*R+G*G+B*B)/3 - (R+G+B)*(R+G+B)/9) / Y";
-            ////sqrt((R*R+G*G+B*B)/3 - (R+G+B)*(R+G+B)/9)/mean(R+G+B)
-            //ArithmeticsOnImages aoi = new ArithmeticsOnImages();
-            //aoi.dmR = denseMatrixRedChannel;
-            //aoi.dmB = denseMatrixBlueChannel;
-            //aoi.dmG = denseMatrixRedChannel;
-            //aoi.exprString = evalExpression;
-            //aoi.RPNeval();
-            //dmSkyIndexData = (DenseMatrix)aoi.dmRes.Clone();
-            //aoi.Dispose();
-            //aoi = null;
-            //ColorScheme skyCloudColorScheme = ColorScheme.BinaryCloudSkyColorScheme(cloudSkySeparationValue, 0.0d, 1.0d);
-            //ColorSchemeRuler skyCloudRuler = new ColorSchemeRuler(skyCloudColorScheme, 0.0d, 1.0d);
-            #endregion // УСТАРЕЛО
-
 
 
             randomFileName = "m" + System.IO.Path.GetRandomFileName().Replace(".", "");
@@ -466,15 +449,25 @@ namespace SkyIndexAnalyzerLibraries
             //ImageConditionAndDataRepresentingForm originalDataForm = ServiceTools.RepresentDataFromDenseMatrix(dmProcessingData, "original 1-sigma/Y data");
 
 
+            #region
+            //надо отобразить положение снимка в пространстве 5perc-median. Исходную картинку с распределением - брать готовую или генерировать?..
+            #endregion
+
 
 
             #region определим CloudCover без подавления солнца - для сравнения
             //ColorScheme skyCloudColorSchemeWithoutSunSuppression = ColorScheme.InversedBinaryCloudSkyColorScheme(theStdDevMarginValueDefiningSkyCloudSeparation, 0.0d, 1.0d);
-            ColorScheme skyCloudColorSchemeWithoutSunSuppression = ColorScheme.InversedBinaryCloudSkyColorScheme(theStdDevMarginValueDefiningSkyCloudSeparation, 0.0d, minSunburnGrIxValue);
+            ColorScheme skyCloudColorSchemeWithoutSunSuppression = ColorScheme.InversedBinaryCloudSkyColorScheme(theStdDevMarginValueDefiningSkyCloudSeparation, 0.0d, 1.0d);
             Image<Bgr, Byte> previewImageWithoutSunSuppression = ImageProcessing.evalResultColoredWithFixedDataBounds(dmProcessingData, maskImage, skyCloudColorSchemeWithoutSunSuppression, 0.0d, 1.0d);
             int cloudCounterWithoutSunSuppression = previewImageWithoutSunSuppression.CountNonzero()[1];
             int skyCounterWithoutSunSuppression = maskImage.CountNonzero()[0] - cloudCounterWithoutSunSuppression;
             double CloudCoverWithoutSunSuppression = (double)cloudCounterWithoutSunSuppression / (double)(skyCounterWithoutSunSuppression + cloudCounterWithoutSunSuppression);
+            //сохраним результат без подавления засветки
+            //потом еще надо скомпоновать результат-композит
+            if (verbosityLevel > 1)
+            {
+                previewImageWithoutSunSuppression.Save(currentDirectory+randomFileName + "-GrIx-result-withoutSunSuppression.jpg");
+            }
             #endregion
 
 
@@ -493,9 +486,43 @@ namespace SkyIndexAnalyzerLibraries
                 }
             }
 
+            RoundData sunRoundData = RoundData.nullRoundData();
+            if (sourceImageFileName != "")
+            {
+                //посмотрим, нет ли уже имеющихся данных о положении и размере солнечного диска на изображении
+                FileInfo fInfo1 = new FileInfo(sourceImageFileName);
+                string sunDiskInfoFileName = fInfo1.DirectoryName + "\\" + Path.GetFileNameWithoutExtension(sourceImageFileName) +
+                                             "-SunDiskInfo.xml";
+
+                RoundData existingRoundData = RoundData.nullRoundData();
+                Size imgSizeUnderExistingRoundData = LocalProcessingImage.Bitmap.Size;
+                object existingRoundDataObj = ServiceTools.ReadObjectFromXML(sunDiskInfoFileName, typeof(EoundDataWithUnderlyingImgSize));
+
+                if (existingRoundDataObj != null)
+                {
+                    existingRoundData = ((EoundDataWithUnderlyingImgSize)existingRoundDataObj).circle;
+                    imgSizeUnderExistingRoundData = ((EoundDataWithUnderlyingImgSize)existingRoundDataObj).imgSize;
+                }
+
+                double currScale = (double)LocalProcessingImage.Width / (double)imgSizeUnderExistingRoundData.Width;
+                if (currScale != 1.0d)
+                {
+                    existingRoundData.DCenterX *= currScale;
+                    existingRoundData.DCenterY *= currScale;
+                    existingRoundData.DRadius *= currScale;
+                }
+                if (!existingRoundData.IsNull)
+                {
+                    sunRoundData = existingRoundData;
+                }
+            }
 
 
-            RoundData sunRoundData = DetectSunWithSerieOfArcs(imgP, dmProcessingData, currentDirectory, randomFileName);
+            if (sunRoundData.IsNull)
+            {
+                sunRoundData = DetectSunWithSerieOfArcs(imgP, dmProcessingData, currentDirectory, randomFileName);
+            }
+            
 
             theSunSuppressionSchemeApplicable = (!sunRoundData.IsNull);
 
@@ -1574,20 +1601,20 @@ namespace SkyIndexAnalyzerLibraries
                 localPreviewBitmap = previewImage.Bitmap;
 
                 //#region unconditional jump !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-                //if (Math.Abs(CloudCover - CloudCoverWithoutSunSuppression) > 0.7d)
-                ////как-то очень неправильно определилось солнце и засветка - пересчитаем без подавления
-                //{
-                //    theSunSuppressionSchemeApplicable = false;
+                if (Math.Abs(CloudCover - CloudCoverWithoutSunSuppression) > 0.7d)
+                //как-то очень неправильно определилось солнце и засветка - пересчитаем без подавления
+                {
+                    theSunSuppressionSchemeApplicable = false;
 
 
-                //    theLogWindow =
-                //        ServiceTools.LogAText(theLogWindow, "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" + Environment.NewLine +
-                //                              "Слишком нестабильный результат с подавлением засветки. Используем алгоритм без подавления. Case 02" +
-                //                              Environment.NewLine + "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+                    theLogWindow =
+                        ServiceTools.LogAText(theLogWindow, "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" + Environment.NewLine +
+                                              "Слишком нестабильный результат с подавлением засветки. Используем алгоритм без подавления. Case 02" +
+                                              Environment.NewLine + "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
 
 
-                //    goto Mark1;
-                //}
+                    goto Mark1;
+                }
                 //#endregion unconditional jump !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
             }
             else

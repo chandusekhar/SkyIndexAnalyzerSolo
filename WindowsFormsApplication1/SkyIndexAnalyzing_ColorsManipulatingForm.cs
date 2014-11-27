@@ -797,32 +797,7 @@ namespace SkyIndexAnalyzerSolo
             RaisePaintEvent(null, null);
         }
 
-        //private void pbScale_MouseHover(object sender, EventArgs e)
-        //{
-        //    ColorSchemeRuler currentRuler = null;
-        //    if (sender == pbScale)
-        //    {
-        //        if (currentDisplayedChannel == RGB.R) currentRuler = channelDataR.currentColorSchemeRuler;
-        //        else if (currentDisplayedChannel == RGB.G) currentRuler = channelDataG.currentColorSchemeRuler;
-        //        else if (currentDisplayedChannel == RGB.B) currentRuler = channelDataB.currentColorSchemeRuler;
-        //    }
-        //    else if (sender == pbRes1Scale) currentRuler = result1.currentColorSchemeRuler;
-        //    else if (sender == pbRes2Scale) currentRuler = result2.currentColorSchemeRuler;
-        //    else if (sender == pbRes3Scale) currentRuler = result3.currentColorSchemeRuler;
-        //
-        //    try
-        //    {
-        //        MouseEventArgs evArgs = (MouseEventArgs)e;
-        //        double clickedValue = currentRuler.GetValueByClickEvent((PictureBox)sender, evArgs);
-        //        ServiceTools.ShowToolTip(evArgs, clickedValue.ToString());
-        //    }
-        //    catch (Exception)
-        //    {
-        //        return;
-        //        //throw;
-        //    }
-        //}
-
+        
         /// <summary>
         /// Handles the MouseMove event of the pbScale control.
         /// </summary>
@@ -874,6 +849,8 @@ namespace SkyIndexAnalyzerSolo
             previousTooltipMouseLocation = e.Location;
         }
 
+
+
         /// <summary>
         /// Handles the MouseLeave event of the pbScale control.
         /// </summary>
@@ -905,9 +882,10 @@ namespace SkyIndexAnalyzerSolo
             {
                 meLeftButtonDownArgs = e;
                 meLeftButtonDownSender = sender;
-                //clickTrackingStartTime = DateTime.Now;
             }
         }
+
+
 
         /// <summary>
         /// Handles the MouseUp event of the control containing imageConditionAndData or ColorSchemeRuler representing picture.
@@ -916,13 +894,8 @@ namespace SkyIndexAnalyzerSolo
         /// <param name="e">The <see cref="MouseEventArgs"/> instance containing the event data.</param>
         private void pb_MouseUp(object sender, MouseEventArgs e)
         {
-            //if (DateTime.Now - clickTrackingStartTime < System.TimeSpan.FromMilliseconds(SystemInformation.DoubleClickTime + 100))
-            //{
-            //    return;
-            //}
-            // ReSharper disable InconsistentNaming
+            
             imageConditionAndData currentICD = null;
-            // ReSharper restore InconsistentNaming
             Type theSenderDataType = typeof(imageConditionAndData);
             PictureBoxSelection pbSelection = null;
 
@@ -1782,6 +1755,8 @@ namespace SkyIndexAnalyzerSolo
             #endregion Начальное тестирование алгоритмов по использование GrIx
         }
 
+
+
         private void btnRes1Hist_Click(object sender, EventArgs e)
         {
             imageConditionAndData currImagData = null;
@@ -1836,66 +1811,80 @@ namespace SkyIndexAnalyzerSolo
                 currImagData = result3;
             }
 
-            PointD p1 = new PointD();
-            PointD p2 = new PointD();
-            bool fromMarginToMargin = false;
-            SectionRequestForm sectionRequestForm = new SectionRequestForm();
-            DialogResult res = sectionRequestForm.ShowDialog();
-            if (res == System.Windows.Forms.DialogResult.Cancel)
-            {
-                return;
-            }
+            AdditionalFieldAnalysisForm anForm = new AdditionalFieldAnalysisForm(currImagData.DmSourceData);
+            anForm.Show();
 
-            p1 = sectionRequestForm.retPt1;
-            p2 = sectionRequestForm.retPt2;
-            fromMarginToMargin = sectionRequestForm.fromMarginToMargin;
-            SectionDescription currSection = new SectionDescription(p1, p2, true);
-            currSection = currSection.TransformTillMargins(new Rectangle(0, 0, currImagData.Width, currImagData.Height));
-            LineDescription l1 = currSection.SectionLine;
+            #region // вынесено в отдельную форму
+            //PointD p1 = new PointD();
+            //PointD p2 = new PointD();
+            //bool fromMarginToMargin = false;
+            //SectionRequestForm sectionRequestForm = new SectionRequestForm();
+            //DialogResult res = sectionRequestForm.ShowDialog();
+            //if (res == System.Windows.Forms.DialogResult.Cancel)
+            //{
+            //    return;
+            //}
 
-            DenseMatrix dmValues = (DenseMatrix) currImagData.DmSourceData.Clone();
-            DenseMatrix dmDistanceToLine = (DenseMatrix)currImagData.DmSourceData.Clone();
-            dmDistanceToLine.MapIndexedInplace((row, col, dVal) =>
-            {
-                PointD currPt = new PointD(col, row);
+            //p1 = sectionRequestForm.retPt1;
+            //p2 = sectionRequestForm.retPt2;
+            //fromMarginToMargin = sectionRequestForm.fromMarginToMargin;
+            //SectionDescription currSection = new SectionDescription(p1, p2, true);
+            //currSection = currSection.TransformTillMargins(new Rectangle(0, 0, currImagData.Width, currImagData.Height));
+            //LineDescription l1 = currSection.SectionLine;
 
-                double dist = currPt.DistanceToLine(l1);
-                return dist;
-            });
+            //DenseMatrix dmValues = (DenseMatrix) currImagData.DmSourceData.Clone();
+            //DenseMatrix dmDistanceToLine = (DenseMatrix)currImagData.DmSourceData.Clone();
+            //dmDistanceToLine.MapIndexedInplace((row, col, dVal) =>
+            //{
+            //    PointD currPt = new PointD(col, row);
 
-            List<Tuple<PointD, double>> dataArray = new List<Tuple<PointD, double>>();
-            for (int row = 0; row < dmValues.RowCount; row++)
-            {
-                for (int col = 0; col < dmValues.ColumnCount; col++)
-                {
-                    if (dmDistanceToLine[row, col] <= 1.0d)
-                        dataArray.Add(new Tuple<PointD, double>(new PointD(col, row), dmValues[row, col]));
-                }
-            }
+            //    double dist = currPt.DistanceToLine(l1);
+            //    return dist;
+            //});
 
-            List<Tuple<double, double>> dataArrayRotated = dataArray.ConvertAll((tpl) =>
-            {
-                PointPolar ptp = new PointPolar(tpl.Item1 - new SizeD(l1.p0));
-                double angleToSubtract = (new PointPolar(new PointD(l1.directionVector[0], l1.directionVector[1]))).Phi;
-                ptp.Phi -= angleToSubtract;
-                //ptp.CropAngle(true);
-                if (ptp.Phi >= 0.0d) return new Tuple<double, double>(ptp.R, tpl.Item2);
-                else return new Tuple<double, double>(-ptp.R, tpl.Item2);
-            });
+            //List<Tuple<PointD, double>> dataArray = new List<Tuple<PointD, double>>();
+            //for (int row = 0; row < dmValues.RowCount; row++)
+            //{
+            //    for (int col = 0; col < dmValues.ColumnCount; col++)
+            //    {
+            //        if (dmDistanceToLine[row, col] <= 1.0d)
+            //            dataArray.Add(new Tuple<PointD, double>(new PointD(col, row), dmValues[row, col]));
+            //    }
+            //}
 
-            double arrayMinPosition = dataArrayRotated.Min<Tuple<double, double>>(tpl1 => tpl1.Item1);
-            dataArrayRotated =
-                dataArrayRotated.ConvertAll<Tuple<double, double>>(
-                    tpl => new Tuple<double, double>(tpl.Item1 - arrayMinPosition, tpl.Item2));
+            //List<Tuple<double, double>> dataArrayRotated = dataArray.ConvertAll((tpl) =>
+            //{
+            //    PointPolar ptp = new PointPolar(tpl.Item1 - new SizeD(l1.p0));
+            //    double angleToSubtract = (new PointPolar(new PointD(l1.directionVector[0], l1.directionVector[1]))).Phi;
+            //    ptp.Phi -= angleToSubtract;
+            //    //ptp.CropAngle(true);
+            //    if (ptp.Phi >= 0.0d) return new Tuple<double, double>(ptp.R, tpl.Item2);
+            //    else return new Tuple<double, double>(-ptp.R, tpl.Item2);
+            //});
 
-            dataArrayRotated.Sort((tpl1, tpl2) => tpl1.Item1.CompareTo(tpl2.Item1));
+            //double arrayMinPosition = dataArrayRotated.Min<Tuple<double, double>>(tpl1 => tpl1.Item1);
+            //dataArrayRotated =
+            //    dataArrayRotated.ConvertAll<Tuple<double, double>>(
+            //        tpl => new Tuple<double, double>(tpl.Item1 - arrayMinPosition, tpl.Item2));
 
-            FunctionRepresentationForm form1 = new FunctionRepresentationForm();
-            form1.dvScatterXSpace = DenseVector.OfEnumerable(dataArrayRotated.ConvertAll<double>(tpl => tpl.Item1));
-            form1.dvScatterFuncValues = DenseVector.OfEnumerable(dataArrayRotated.ConvertAll<double>(tpl => tpl.Item2));
-            form1.Show();
-            form1.Represent();
-            //form1.SaveToImage("D:\\MMAEs-2014MSU\\output\\img-2014-09-20T12-46-55devID1-res002.jpg");
+            //dataArrayRotated.Sort((tpl1, tpl2) => tpl1.Item1.CompareTo(tpl2.Item1));
+
+            //FunctionRepresentationForm form1 = new FunctionRepresentationForm();
+            //form1.dvScatterXSpace = DenseVector.OfEnumerable(dataArrayRotated.ConvertAll<double>(tpl => tpl.Item1));
+            //form1.dvScatterFuncValues = DenseVector.OfEnumerable(dataArrayRotated.ConvertAll<double>(tpl => tpl.Item2));
+            //form1.Show();
+            //form1.Represent();
+            ////form1.SaveToImage("D:\\MMAEs-2014MSU\\output\\img-2014-09-20T12-46-55devID1-res002.jpg");
+            #endregion // вынесено в отдельную форму
+        }
+
+        private void pbRes_MouseDown(object sender, MouseEventArgs e)
+        {
+
+        }
+
+        private void pbRes_MouseUp(object sender, MouseEventArgs e)
+        {
 
         }
 

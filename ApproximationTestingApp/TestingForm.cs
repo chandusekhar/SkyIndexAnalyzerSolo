@@ -12,8 +12,8 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using MathNet.Numerics.LinearAlgebra.Double;
 using MathNet.Numerics.Statistics;
-using QuickGraph;
-using QuickGraph.Glee;
+//using QuickGraph;
+//using QuickGraph.Glee;
 using SkyIndexAnalyzerLibraries;
 using Emgu.CV;
 using Emgu.CV.Structure;
@@ -408,84 +408,84 @@ namespace ApproximationTestingApp
 
         private void btnTaxonomyTest_Click(object sender, EventArgs e)
         {
-            theForm = new FunctionRepresentationForm("test function");
-            theForm.Show();
+            //theForm = new FunctionRepresentationForm("test function");
+            //theForm.Show();
 
 
 
-            StreamReader sr = new StreamReader(CurrentDir + "2007-polarstern-CanonA640-stats.dat");
-            string dataString = sr.ReadToEnd();
-            string[] dataLines = dataString.Split('\n');
-            sr.Close();
-            sr.Dispose();
-            List<double> perc5List = new List<double>();
-            List<double> medianList = new List<double>();
-            foreach (string dataLine in dataLines)
-            {
-                string[] lineSunbstring = dataLine.Split(',');
-                double currentMedian = 0.0d;
-                double currentPerc5 = 0.0d;
+            //StreamReader sr = new StreamReader(CurrentDir + "2007-polarstern-CanonA640-stats.dat");
+            //string dataString = sr.ReadToEnd();
+            //string[] dataLines = dataString.Split('\n');
+            //sr.Close();
+            //sr.Dispose();
+            //List<double> perc5List = new List<double>();
+            //List<double> medianList = new List<double>();
+            //foreach (string dataLine in dataLines)
+            //{
+            //    string[] lineSunbstring = dataLine.Split(',');
+            //    double currentMedian = 0.0d;
+            //    double currentPerc5 = 0.0d;
 
-                try
-                {
-                    currentMedian = Convert.ToDouble(lineSunbstring[1].Replace(".", ","));
-                    currentPerc5 = Convert.ToDouble(lineSunbstring[2].Replace(".", ","));
-                }
-                catch (Exception)
-                {
-                    continue;
-                }
-                perc5List.Add(currentPerc5);
-                medianList.Add(currentMedian);
-            }
+            //    try
+            //    {
+            //        currentMedian = Convert.ToDouble(lineSunbstring[1].Replace(".", ","));
+            //        currentPerc5 = Convert.ToDouble(lineSunbstring[2].Replace(".", ","));
+            //    }
+            //    catch (Exception)
+            //    {
+            //        continue;
+            //    }
+            //    perc5List.Add(currentPerc5);
+            //    medianList.Add(currentMedian);
+            //}
 
-            List<PointD> pointsList = new List<PointD>();
-            for (int i = 0; i < medianList.Count; i++)
-            {
-                PointD pt = new PointD(medianList[i], perc5List[i]);
-                pointsList.Add(pt);
-            }
+            //List<PointD> pointsList = new List<PointD>();
+            //for (int i = 0; i < medianList.Count; i++)
+            //{
+            //    PointD pt = new PointD(medianList[i], perc5List[i]);
+            //    pointsList.Add(pt);
+            //}
 
-            DenseVector dvDataDistribution = DenseVector.OfEnumerable(perc5List);
-            DenseVector dvDataSpace = DenseVector.OfEnumerable(medianList);
-            //int polynomeOrder = 21;
-            //DenseVector approxPolyKoeffs = DataAnalysis.NPolynomeApproximationLessSquareMethod(dvDataDistribution, dvDataSpace, null, polynomeOrder);
+            //DenseVector dvDataDistribution = DenseVector.OfEnumerable(perc5List);
+            //DenseVector dvDataSpace = DenseVector.OfEnumerable(medianList);
+            ////int polynomeOrder = 21;
+            ////DenseVector approxPolyKoeffs = DataAnalysis.NPolynomeApproximationLessSquareMethod(dvDataDistribution, dvDataSpace, null, polynomeOrder);
 
-            //Func<DenseVector, double, double> theFunctionToShow = DataAnalysis.PolynomeValue;
+            ////Func<DenseVector, double, double> theFunctionToShow = DataAnalysis.PolynomeValue;
 
-            //theForm.theRepresentingFunctions.Add(theFunctionToShow);
-            //theForm.parameters.Add(approxPolyKoeffs);
-            //theForm.lineColors.Add(new Bgr(Color.Magenta));
+            ////theForm.theRepresentingFunctions.Add(theFunctionToShow);
+            ////theForm.parameters.Add(approxPolyKoeffs);
+            ////theForm.lineColors.Add(new Bgr(Color.Magenta));
 
-            theForm.dvScatterXSpace = (DenseVector)dvDataSpace.Clone();
-            theForm.dvScatterFuncValues = (DenseVector)dvDataDistribution.Clone();
-            theForm.xSpaceMin = theForm.dvScatterXSpace.Values.Min();
-            theForm.xSpaceMax = theForm.dvScatterXSpace.Values.Max();
-            theForm.overallFuncMin = theForm.dvScatterFuncValues.Values.Min();
-            theForm.overallFuncMax = theForm.dvScatterFuncValues.Values.Max();
-            theForm.Represent();
+            //theForm.dvScatterXSpace = (DenseVector)dvDataSpace.Clone();
+            //theForm.dvScatterFuncValues = (DenseVector)dvDataDistribution.Clone();
+            //theForm.xSpaceMin = theForm.dvScatterXSpace.Values.Min();
+            //theForm.xSpaceMax = theForm.dvScatterXSpace.Values.Max();
+            //theForm.overallFuncMin = theForm.dvScatterFuncValues.Values.Min();
+            //theForm.overallFuncMax = theForm.dvScatterFuncValues.Values.Max();
+            //theForm.Represent();
 
-            //ThreadSafeOperations.SetTextTB(tbLog, ServiceTools.densevectorToString(approxPolyKoeffs), true);
+            ////ThreadSafeOperations.SetTextTB(tbLog, ServiceTools.densevectorToString(approxPolyKoeffs), true);
 
 
-            ForelClusterization mlForel = new ForelClusterization(
-                pointsList,
-                new Func<PointD, PointD, double>((pt1, pt2) => pt1.Distance(pt2)),
-                0.01d,
-                10);
-            mlForel.theLogWindow = theLogWindow;
-            List<ForelTaxa> taxaList = mlForel.GetHighLevelTaxonomy();
-            //List<ForelTaxa> lowLevelTaxaList = mlForel.GetLowLevelTaxonomy(0.01d, pointsList, 100);
+            //ForelClusterization mlForel = new ForelClusterization(
+            //    pointsList,
+            //    new Func<PointD, PointD, double>((pt1, pt2) => pt1.Distance(pt2)),
+            //    0.01d,
+            //    10);
+            //mlForel.theLogWindow = theLogWindow;
+            //List<ForelTaxa> taxaList = mlForel.GetHighLevelTaxonomy();
+            ////List<ForelTaxa> lowLevelTaxaList = mlForel.GetLowLevelTaxonomy(0.01d, pointsList, 100);
             
-            //AdjacencyGraph<int, TaggedEdge<int, double>> g = mlForel.GetHighLevelTaxonomy();
-            //var populator = GleeGraphExtensions.CreateGleePopulator<int, TaggedEdge<int, double>>(g);
-            //populator.Compute();
-            //Microsoft.Glee.Drawing.Graph g1 = populator.GleeGraph;
-            //gViewer.Graph = g1;
+            ////AdjacencyGraph<int, TaggedEdge<int, double>> g = mlForel.GetHighLevelTaxonomy();
+            ////var populator = GleeGraphExtensions.CreateGleePopulator<int, TaggedEdge<int, double>>(g);
+            ////populator.Compute();
+            ////Microsoft.Glee.Drawing.Graph g1 = populator.GleeGraph;
+            ////gViewer.Graph = g1;
 
 
-            Image<Bgr, byte> representingImage = ForelClusterization.RepresentTaxaList(taxaList, 0.4d, 1.0d, 0.4d, 1.0d, 1024, 1024, true);
-            ServiceTools.ShowPicture(representingImage, "");
+            //Image<Bgr, byte> representingImage = ForelClusterization.RepresentTaxaList(taxaList, 0.4d, 1.0d, 0.4d, 1.0d, 1024, 1024, true);
+            //ServiceTools.ShowPicture(representingImage, "");
 
 
             

@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Windows.Forms;
+using System.Xml.Serialization;
 using Emgu.CV;
 using Emgu.CV.CvEnum;
 using Emgu.CV.Structure;
@@ -15,12 +16,15 @@ namespace SkyIndexAnalyzerLibraries
     /// Class RoundData.
     /// Хранит и рассчитывает различные параметры окружности на изобржении
     /// </summary>
+    [Serializable]
     public class RoundData
     {
         public double RoundArea = 0.0;
         private bool nullCircle;
 
         private int intCenterX;
+
+        [XmlElement("intCenterX")]
         public int IntCenterX
         {
             get { return intCenterX; }
@@ -32,6 +36,8 @@ namespace SkyIndexAnalyzerLibraries
         }
 
         private int intCenterY;
+
+        [XmlElement("intCenterY")]
         public int IntCenterY
         {
             get { return intCenterY; }
@@ -43,6 +49,8 @@ namespace SkyIndexAnalyzerLibraries
         }
 
         private double dCenterX;
+
+        [XmlElement("doubleCenterX")]
         public double DCenterX
         {
             get { return dCenterX; }
@@ -54,6 +62,8 @@ namespace SkyIndexAnalyzerLibraries
         }
 
         private double dCenterY;
+
+        [XmlElement("doubleCenterY")]
         public double DCenterY
         {
             get { return dCenterY; }
@@ -65,6 +75,8 @@ namespace SkyIndexAnalyzerLibraries
         }
 
         private double dRadius;
+
+        [XmlElement("doubleRadius")]
         public double DRadius
         {
             get { return dRadius; }
@@ -144,9 +156,12 @@ namespace SkyIndexAnalyzerLibraries
             set
             {
                 this.nullCircle = value;
-                this.DCenterX = 0.0d;
-                this.DCenterY = 0.0d;
-                this.DRadius = 0.0d;
+                if (nullCircle)
+                {
+                    this.DCenterX = 0.0d;
+                    this.DCenterY = 0.0d;
+                    this.DRadius = 0.0d;
+                }
             }
         }
 
@@ -171,6 +186,16 @@ namespace SkyIndexAnalyzerLibraries
             return c;
         }
     }
+
+
+    [Serializable]
+    public struct EoundDataWithUnderlyingImgSize
+    {
+        public RoundData circle;
+        public Size imgSize;
+    }
+
+
 
 
     /// <summary>
@@ -299,7 +324,7 @@ namespace SkyIndexAnalyzerLibraries
         public void getImageSignificantMask()
         {
             Image<Gray, Byte> emguImage = img2process.Copy().Convert<Gray, Byte>();
-            Image<Gray, Byte> BinaryEmguImage = emguImage.ThresholdBinary(new Gray(50), new Gray(255));
+            Image<Gray, Byte> BinaryEmguImage = emguImage.ThresholdBinary(new Gray(30), new Gray(255));
             Contour<Point> imageContours = BinaryEmguImage.FindContours(CHAIN_APPROX_METHOD.CV_CHAIN_APPROX_SIMPLE, RETR_TYPE.CV_RETR_EXTERNAL);
             double currArea = 0.0;
             Contour<Point> neededContour = imageContours;
