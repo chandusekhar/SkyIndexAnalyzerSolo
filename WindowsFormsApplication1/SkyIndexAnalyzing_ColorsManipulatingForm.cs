@@ -123,12 +123,18 @@ namespace SkyIndexAnalyzerSolo
         /// - используют при формировании данных выделения на PictureBox
         /// </summary>
         private MouseEventArgs meLeftButtonDownArgs = null;
+
+        private MouseEventArgs meResLeftButtonDownArgs = null;
+
         /// <summary>
         /// Left button down sender
         /// Хранит объект, на котором появилось onMouseDown событие, данные которого записалось в meДуаеButtonDownArgs
         /// хранится до тех пор, пока не будет ненужен
         /// </summary>
         private object meLeftButtonDownSender = null;
+
+        private object meResLeftButtonDownSender = null;
+
         //private PictureBoxSelection pbSelection = null;
 
         //private DateTime clickTrackingStartTime;
@@ -845,7 +851,7 @@ namespace SkyIndexAnalyzerSolo
                 textToolTip = new ToolTip();
             }
             Point loc = (Point)ServiceTools.getPropValue(theElement, "Location");
-            textToolTip.Show(textToShow, this, e.X + loc.X, e.Y + loc.Y);
+            textToolTip.Show(textToShow, this, e.X + loc.X + 40, e.Y + loc.Y + 40);
             previousTooltipMouseLocation = e.Location;
         }
 
@@ -894,7 +900,6 @@ namespace SkyIndexAnalyzerSolo
         /// <param name="e">The <see cref="MouseEventArgs"/> instance containing the event data.</param>
         private void pb_MouseUp(object sender, MouseEventArgs e)
         {
-            
             imageConditionAndData currentICD = null;
             Type theSenderDataType = typeof(imageConditionAndData);
             PictureBoxSelection pbSelection = null;
@@ -925,27 +930,6 @@ namespace SkyIndexAnalyzerSolo
                         currentICD = channelDataB;
                         theSenderDataType = channelDataB.GetType();
                     }
-                }
-                else if (sender == pbRes1)
-                {
-                    //pbSelection = new PictureBoxSelection(sender, meLeftButtonDownArgs.Location, e.Location, result1);
-                    //result1.Selection = pbSelection;
-                    currentICD = result1;
-                    theSenderDataType = result1.GetType();
-                }
-                else if (sender == pbRes2)
-                {
-                    //pbSelection = new PictureBoxSelection(sender, meLeftButtonDownArgs.Location, e.Location, result2);
-                    //result2.Selection = pbSelection;
-                    currentICD = result2;
-                    theSenderDataType = result2.GetType();
-                }
-                else if (sender == pbRes3)
-                {
-                    //pbSelection = new PictureBoxSelection(sender, meLeftButtonDownArgs.Location, e.Location, result3);
-                    //result3.Selection = pbSelection;
-                    currentICD = result3;
-                    theSenderDataType = result3.GetType();
                 }
                 else if (sender == pbScale)
                 {
@@ -1878,16 +1862,74 @@ namespace SkyIndexAnalyzerSolo
             #endregion // вынесено в отдельную форму
         }
 
+
+
+
+
+
+
+        #region Обработка действий мышкой на картинках с результатами
+
         private void pbRes_MouseDown(object sender, MouseEventArgs e)
         {
-
+            if (e.Button == MouseButtons.Left)
+            {
+                meResLeftButtonDownArgs = e;
+                meResLeftButtonDownSender = sender;
+            }
         }
 
         private void pbRes_MouseUp(object sender, MouseEventArgs e)
         {
+            imageConditionAndData currentICD = null;
+            Type theSenderDataType = typeof(imageConditionAndData);
+            PictureBoxSelection pbSelection = null;
 
+
+            if (e.Button == MouseButtons.Left && sender.Equals(meResLeftButtonDownSender))
+            {
+                if (sender == pbRes1)
+                {
+                    currentICD = result1;
+                    theSenderDataType = result1.GetType();
+                }
+                else if (sender == pbRes2)
+                {
+                    currentICD = result2;
+                    theSenderDataType = result2.GetType();
+                }
+                else if (sender == pbRes3)
+                {
+                    currentICD = result3;
+                    theSenderDataType = result3.GetType();
+                }
+                
+
+
+                //если уже есть selection у этого объекта, а это выделение пусто - проверить, было ли оно внутри
+                //если было внутри - значит, был клик или даблклик внутри выделения - не обрабатывать здесь
+                if (theSenderDataType == typeof(imageConditionAndData))
+                {
+                    pbSelection = new PictureBoxSelection(sender, meResLeftButtonDownArgs.Location, e.Location, currentICD);
+
+                    if ((pbSelection.IsEmptySelection) && (currentICD.Selection != null))
+                    {
+                        if (currentICD.Selection.CheckIfDoubleclickedinsideSelection(sender, e, currentICD))
+                        {
+                            return;
+                        }
+                    }
+                    currentICD.Selection = pbSelection;
+                }
+
+
+                HighlightLinkedSelection(pbSelection);
+                RaisePaintEvent(null, null);
+
+            }
         }
 
+        #endregion Обработка действий мышкой на картинках с результатами
 
 
     }
