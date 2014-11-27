@@ -17,7 +17,7 @@ using System.Windows.Forms;
 using MathNet.Numerics.LinearAlgebra.Double;
 using MRG.Controls.UI;
 using MathNet.Numerics.Statistics;
-using SkyIndexAnalyzerLibraries;
+using SkyImagesAnalyzerLibraries;
 
 
 namespace DataCollectorAutomator

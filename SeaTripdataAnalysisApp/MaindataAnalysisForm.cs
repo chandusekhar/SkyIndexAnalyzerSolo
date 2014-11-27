@@ -18,7 +18,7 @@ using MathNet.Numerics.IntegralTransforms;
 using MathNet.Numerics.LinearAlgebra.Double;
 using MathNet.Numerics.LinearAlgebra.Generic;
 using MathNet.Numerics.Statistics;
-using SkyIndexAnalyzerLibraries;
+using SkyImagesAnalyzerLibraries;
 
 namespace SeaTripdataAnalysisApp
 {

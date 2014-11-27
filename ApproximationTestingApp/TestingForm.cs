@@ -14,7 +14,7 @@ using MathNet.Numerics.LinearAlgebra.Double;
 using MathNet.Numerics.Statistics;
 //using QuickGraph;
 //using QuickGraph.Glee;
-using SkyIndexAnalyzerLibraries;
+using SkyImagesAnalyzerLibraries;
 using Emgu.CV;
 using Emgu.CV.Structure;
 

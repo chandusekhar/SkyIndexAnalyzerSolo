@@ -85,7 +85,7 @@
       <HintPath>..\packages\MathNet.Numerics.2.6.1\lib\net40\MathNet.Numerics.IO.dll</HintPath>
     </Reference>
     <Reference Include="MRG.Controls.UI">
-      <HintPath>..\_bin\libs\MRG.Controls.UI.dll</HintPath>
+      <HintPath>..\_DBGbin\libs\MRG.Controls.UI.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="System" />
@@ -161,9 +161,9 @@
       <Name>Emgu.Util</Name>
       <Private>False</Private>
     </ProjectReference>
-    <ProjectReference Include="..\SkyIndexAnalyzerLibraries\SkyIndexAnalyzerLibraries.csproj">
+    <ProjectReference Include="..\SkyImagesAnalyzerLibraries\SkyImagesAnalyzerLibraries.csproj">
       <Project>{7beac8e4-e53f-466a-b824-1fe69e60d114}</Project>
-      <Name>SkyIndexAnalyzerLibraries</Name>
+      <Name>SkyImagesAnalyzerLibraries</Name>
       <Private>False</Private>
     </ProjectReference>
   </ItemGroup>

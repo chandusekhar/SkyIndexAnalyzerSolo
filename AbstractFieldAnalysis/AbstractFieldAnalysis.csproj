@@ -119,10 +119,6 @@
       <Project>{ae7dc769-4a71-49ba-bdd7-281f3e70b02a}</Project>
       <Name>colormine</Name>
     </ProjectReference>
-    <ProjectReference Include="..\SkyIndexAnalyzerLibraries\SkyIndexAnalyzerLibraries.csproj">
-      <Project>{7beac8e4-e53f-466a-b824-1fe69e60d114}</Project>
-      <Name>SkyIndexAnalyzerLibraries</Name>
-    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <Content Include="cublas32_50_35.dll">

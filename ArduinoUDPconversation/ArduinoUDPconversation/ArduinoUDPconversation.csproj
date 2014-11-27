@@ -145,9 +145,9 @@
     <Content Include="arduino_icon.ico" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\SkyIndexAnalyzerLibraries\SkyIndexAnalyzerLibraries.csproj">
+    <ProjectReference Include="..\..\SkyImagesAnalyzerLibraries\SkyImagesAnalyzerLibraries.csproj">
       <Project>{7beac8e4-e53f-466a-b824-1fe69e60d114}</Project>
-      <Name>SkyIndexAnalyzerLibraries</Name>
+      <Name>SkyImagesAnalyzerLibraries</Name>
       <Private>False</Private>
     </ProjectReference>
   </ItemGroup>

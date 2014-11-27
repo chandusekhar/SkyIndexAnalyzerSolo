@@ -14,7 +14,7 @@ using System.Net.NetworkInformation;
 using System.Reflection;
 using System.IO;
 using ArduinoUDPconversation.Properties;
-using SkyIndexAnalyzerLibraries;
+using SkyImagesAnalyzerLibraries;
 
 
 namespace ArduinoUDPconversation

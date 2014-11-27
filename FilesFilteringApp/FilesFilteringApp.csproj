@@ -102,9 +102,9 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\SkyIndexAnalyzerLibraries\SkyIndexAnalyzerLibraries.csproj">
-      <Project>{7BEAC8E4-E53F-466A-B824-1FE69E60D114}</Project>
-      <Name>SkyIndexAnalyzerLibraries</Name>
+    <ProjectReference Include="..\SkyImagesAnalyzerLibraries\SkyImagesAnalyzerLibraries.csproj">
+      <Project>{7beac8e4-e53f-466a-b824-1fe69e60d114}</Project>
+      <Name>SkyImagesAnalyzerLibraries</Name>
       <Private>False</Private>
     </ProjectReference>
   </ItemGroup>
