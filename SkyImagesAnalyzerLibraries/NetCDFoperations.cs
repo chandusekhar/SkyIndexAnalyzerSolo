@@ -87,6 +87,7 @@ namespace SkyImagesAnalyzerLibraries
                 {
                     ThreadSafeOperations.SetTextTB(tbLog, "Не получилось :( " + Environment.NewLine + exc.Message, true);
                 }
+                else throw;
             }
 
             ds.Dispose();

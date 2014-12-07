@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Drawing;
 using Emgu.CV;
@@ -28,6 +29,8 @@ namespace SkyImagesAnalyzerLibraries
         //private Image<Gray, double> HighlightMaskBinary;
         public bool datdHasBeenModified;// = false;
         private Bitmap imageRepresentingBitmap = null;
+
+        public List<PointD> lPtdMarks = new List<PointD>();
 
 
 
@@ -404,6 +407,8 @@ namespace SkyImagesAnalyzerLibraries
             datdHasBeenModified = true;
         }
 
+
+
         public Bitmap dataRepresentingImageColored()
         {
             if (datdHasBeenModified)
@@ -427,8 +432,18 @@ namespace SkyImagesAnalyzerLibraries
                         img = img.Mul(HighlightMask);
                     }
 
+                    Image<Bgr, byte> imgBgr = img.Convert<Bgr, byte>();
+
+                    if (lPtdMarks.Count > 0)
+                    {
+                        foreach (PointD ptd in lPtdMarks)
+                        {
+                            imgBgr.Draw(new CircleF(ptd.PointF(), 2.0f), new Bgr(Color.Red), 0);
+                        }
+                    }
+
                     datdHasBeenModified = false;
-                    imageRepresentingBitmap = img.Bitmap;
+                    imageRepresentingBitmap = imgBgr.Bitmap;
                     return imageRepresentingBitmap;
                 }
                 else
@@ -455,8 +470,18 @@ namespace SkyImagesAnalyzerLibraries
                         img = img.Mul(BgrHighlightMask);
                     }
 
+                    Image<Bgr, byte> imgBgr = img.Convert<Bgr, byte>();
+
+                    if (lPtdMarks.Count > 0)
+                    {
+                        foreach (PointD ptd in lPtdMarks)
+                        {
+                            imgBgr.Draw(new CircleF(ptd.PointF(), 2.0f), new Bgr(Color.Red), 0);
+                        }
+                    }
+
                     datdHasBeenModified = false;
-                    imageRepresentingBitmap = img.Bitmap;
+                    imageRepresentingBitmap = imgBgr.Bitmap;
                     return imageRepresentingBitmap;
                 }
             }
@@ -466,6 +491,9 @@ namespace SkyImagesAnalyzerLibraries
             }
             
         }
+
+
+
 
 
 

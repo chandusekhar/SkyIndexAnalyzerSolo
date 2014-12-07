@@ -133,5 +133,48 @@ namespace SkyImagesAnalyzerLibraries
             if ((dvData.Count == 1) && (dvData[0] == 0.0d)) return true;
             else return false;
         }
+
+
+
+
+        public bool SaveHistDataToXMLFole(string filename)
+        {
+            List<PointD> dataToSave = new List<PointD>();
+            for (int i = 0; i < binsCount-1; i++)
+            {
+                dataToSave.Add(new PointD(dvbinsCenters[i], dvProbDens[i]));
+            }
+            try
+            {
+                ServiceTools.WriteObjectToXML(dataToSave, filename);
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+            return true;
+        }
+
+
+        public bool SaveHistDataToASCII(string filename)
+        {
+            List<PointD> dataToSave = new List<PointD>();
+            string strToSave = "bin-center;density" + Environment.NewLine;
+            for (int i = 0; i < binsCount - 1; i++)
+            {
+                dataToSave.Add(new PointD(dvbinsCenters[i], dvProbDens[i]));
+                strToSave += dvbinsCenters[i].ToString("e") + ";" + dvProbDens[i].ToString("e") + Environment.NewLine;
+            }
+
+            try
+            {
+                ServiceTools.logToTextFile(filename, strToSave);
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+            return true;
+        }
     }
 }

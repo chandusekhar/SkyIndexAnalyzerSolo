@@ -42,7 +42,7 @@ namespace SkyImagesAnalyzer
         /// <summary>
         /// The parent form
         /// </summary>
-        private SkyIndexAnalyzer_AnalysisForm parentForm = null;
+        private MainAnalysisForm parentForm = null;
 
         /// <summary>
         /// The objects to dispose
@@ -151,7 +151,7 @@ namespace SkyImagesAnalyzer
         /// <param name="bmToAnalyze">The bitmap to analyze and manipulate with.</param>
         /// <param name="analyzerForm">The analyzer form.</param>
         //public SkyIndexAnalyzing_ColorsManipulatingForm(Bitmap bmToAnalyze, SkyIndexAnalyzer_AnalysisForm analyzerForm, Dictionary<string, object> settings)
-        public SkyImagesAnalyzer_ColorsManipulatingForm(Image<Bgr, Byte> imgToAnalyze, SkyIndexAnalyzer_AnalysisForm analyzerForm, Dictionary<string, object> settings)
+        public SkyImagesAnalyzer_ColorsManipulatingForm(Image<Bgr, Byte> imgToAnalyze, MainAnalysisForm analyzerForm, Dictionary<string, object> settings)
         {
             if (imgToAnalyze == null)
             {
@@ -1126,11 +1126,11 @@ namespace SkyImagesAnalyzer
             {
                 classificator.ClassificationMethod = ClassificationMethods.Japan;
             }
-            else if (parentForm.rbtnClassMethodGreek.Checked)
+            else if (parentForm.rbtnClassMethodUS.Checked)
             {
                 classificator.ClassificationMethod = ClassificationMethods.Greek;
             }
-            else if (parentForm.rbtnClassMethodNew.Checked)
+            else if (parentForm.rbtnClassMethodGrIx.Checked)
             {
                 classificator.ClassificationMethod = ClassificationMethods.GrIx;
                 classificator.theStdDevMarginValueDefiningSkyCloudSeparation = parentForm.tunedSIMargin;
@@ -1764,7 +1764,7 @@ namespace SkyImagesAnalyzer
             DenseMatrix dmProcessingData = (DenseMatrix)currImagData.DmSourceData.Clone();
 
             DenseVector dvDataToHist = DataAnalysis.DataVectorizedExcludingValues(dmProcessingData, 0.0d);
-            HistogramCalcAndShowForm histForm = new HistogramCalcAndShowForm("histogram: " + desc);
+            HistogramCalcAndShowForm histForm = new HistogramCalcAndShowForm("histogram: " + desc, defaultProperties);
             HistogramDataAndProperties theHist = new HistogramDataAndProperties(dvDataToHist, 100);
             theHist.color = Color.Red;
             theHist.description = desc;

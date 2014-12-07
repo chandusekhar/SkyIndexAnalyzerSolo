@@ -122,83 +122,14 @@ namespace SkyImagesAnalyzerLibraries
         
 
 
-        public Bitmap PreviewBitmap
-        {
-            get
-            {
-                return localPreviewBitmap;
-            }
-        }
-
-
-        #region УСТАРЕЛО структуры для классификации точек изображения
-        //public double CloudSkySeparationValue
-        //{
-        //    get
-        //    {
-        //        return (localCloudSkySeparationValue * 2.0 - 1.0);
-        //    }
-        //
-        //    set
-        //    {
-        //        localCloudSkySeparationValue = (value + 1.0) / 2.0;
-        //        localCloudSkySeparationValueByte = (Byte)Math.Round(localCloudSkySeparationValue * 255.0, 0);
-        //    }
-        //}
-
-
-
-        //public PictureBox PreviewDisplayControl
-        //{
-        //    get
-        //    {
-        //        return pbPreviewDisplayControl;
-        //    }
-
-        //    set
-        //    {
-        //        if (pbPreviewDisplayControl != null)
-        //        {
-        //            pbPreviewDisplayControl.Image = null;
-        //        }
-        //        pbPreviewDisplayControl = value;
-        //    }
-        //}
-
-
-
-        //public ProgressBar defProgressBarControl
-        //{
-        //    get
-        //    {
-        //        return defaultProgressBarControl;
-        //    }
-
-        //    set
-        //    {
-        //        if (defaultProgressBarControl != null)
-        //        {
-        //            defaultProgressBarControl.Value = 0;
-        //        }
-        //        defaultProgressBarControl = value;
-        //    }
-        //}
-        #endregion УСТАРЕЛО структуры для классификации точек изображения
-
+        public Bitmap PreviewBitmap{get{return localPreviewBitmap;}}
 
 
 
         public Bitmap BitmapinProcess
         {
-            get
-            {
-                return LocalProcessingImage.Bitmap;
-            }
-
-            set
-            {
-                LocalProcessingImage = new Image<Bgr, byte>(value);
-            }
+            get{return LocalProcessingImage.Bitmap;}
+            set{LocalProcessingImage = new Image<Bgr, byte>(value);}
         }
 
         public LogWindow LogWindow
@@ -374,7 +305,7 @@ namespace SkyImagesAnalyzerLibraries
         {
             if (SelfWorker != null)
             {
-                //SelfWorker.ReportProgress(50, (object)message);
+                theLogWindow = ServiceTools.LogAText(theLogWindow, message + Environment.NewLine, true);
             }
         }
 
@@ -496,12 +427,12 @@ namespace SkyImagesAnalyzerLibraries
 
                 RoundData existingRoundData = RoundData.nullRoundData();
                 Size imgSizeUnderExistingRoundData = LocalProcessingImage.Bitmap.Size;
-                object existingRoundDataObj = ServiceTools.ReadObjectFromXML(sunDiskInfoFileName, typeof(EoundDataWithUnderlyingImgSize));
+                object existingRoundDataObj = ServiceTools.ReadObjectFromXML(sunDiskInfoFileName, typeof(RoundDataWithUnderlyingImgSize));
 
                 if (existingRoundDataObj != null)
                 {
-                    existingRoundData = ((EoundDataWithUnderlyingImgSize)existingRoundDataObj).circle;
-                    imgSizeUnderExistingRoundData = ((EoundDataWithUnderlyingImgSize)existingRoundDataObj).imgSize;
+                    existingRoundData = ((RoundDataWithUnderlyingImgSize)existingRoundDataObj).circle;
+                    imgSizeUnderExistingRoundData = ((RoundDataWithUnderlyingImgSize)existingRoundDataObj).imgSize;
                 }
 
                 double currScale = (double)LocalProcessingImage.Width / (double)imgSizeUnderExistingRoundData.Width;
@@ -680,6 +611,8 @@ namespace SkyImagesAnalyzerLibraries
                 //int distanceBinsCount = 50;
                 double distanceKoeff = dmDistanceToSunCenter.Values.Max() / 50.0d;
                 double angleValueDiff = 2 * Math.PI / (angleBinsCount - 1);
+
+                #region //deprecated
                 //double distanceValueDiff = dmDistanceToSunCenter.Values.Maximum() / (distanceBinsCount - 1);
                 //DenseMatrix angleValuesForDistribution = DenseMatrix.Create(angleBinsCount, distanceBinsCount,
                 //    new Func<int, int, double>(
@@ -687,6 +620,8 @@ namespace SkyImagesAnalyzerLibraries
                 //        {
                 //            return row * angleValueDiff;
                 //        }));
+                #endregion //deprecated
+
                 double dxSunToCenter = (double)imageCircleCenter.X - (double)sunCenterPoint.X;
                 double dySunToCenter = (double)imageCircleCenter.Y - (double)sunCenterPoint.Y;
                 double rSunToCenter = Math.Sqrt(dxSunToCenter * dxSunToCenter + dySunToCenter * dySunToCenter);
@@ -713,29 +648,43 @@ namespace SkyImagesAnalyzerLibraries
 
                 if (verbosityLevel > 1)
                 {
-                    ImageConditionAndDataRepresentingForm theForm =
-                        ServiceTools.RepresentDataFromDenseMatrix(dmPolarSystemMinimumsDistribution,
-                            "minimums distribution in polar coordinates", false, false, 0.0d, 1.0d, false);
-                    theForm.SaveData(currentDirectory + randomFileName + "_SunburnProfilePolar.nc", true);
-                    //theForm.Close();
-                    theForm.Dispose();
+                    #region //deprecated
+                    //ImageConditionAndDataRepresentingForm theForm =
+                    //    ServiceTools.RepresentDataFromDenseMatrix(dmPolarSystemMinimumsDistribution,
+                    //        "minimums distribution in polar coordinates", false, false, 0.0d, 1.0d, false);
+                    //theForm.SaveData(currentDirectory + randomFileName + "_SunburnProfilePolar.nc", true);
+                    ////theForm.Close();
+                    //theForm.Dispose();
+                    #endregion //deprecated
 
-                    ImageConditionAndDataRepresentingForm theForm1 =
-                        ServiceTools.RepresentDataFromDenseMatrix(dmPolarMinimumsDistribution,
-                            "minimums distribution in polar coordinates", false, false, 0.0d, 1.0d, false);
-                    theForm1.SaveData(currentDirectory + randomFileName + "_SunburnProfileMinimums.nc", true);
-                    //theForm1.Close();
-                    theForm1.Dispose();
+                    dmPolarSystemMinimumsDistribution.SaveNetCDFdataMatrix(currentDirectory + randomFileName +
+                                                                           "_SunburnProfilePolar.nc");
+                    #region //deprecated
+                    //ImageConditionAndDataRepresentingForm theForm1 =
+                    //    ServiceTools.RepresentDataFromDenseMatrix(dmPolarMinimumsDistribution,
+                    //        "minimums distribution in polar coordinates", false, false, 0.0d, 1.0d, false);
+                    //theForm1.SaveData(currentDirectory + randomFileName + "_SunburnProfileMinimums.nc", true);
+                    ////theForm1.Close();
+                    //theForm1.Dispose();
+                    #endregion //deprecated
 
-                    ImageConditionAndDataRepresentingForm theForm2 =
-                        ServiceTools.RepresentDataFromDenseMatrix(dmDecartMinimumsDistribution,
-                            "minimums distribution in decart coordinates", false, false, 0.0d, 1.0d, false);
-                    theForm2.SaveData(currentDirectory + randomFileName + "_SunburnProfileMinimumsDecart.nc", true);
-                    //theForm2.Close();
-                    theForm2.Dispose();
-                    //ImageConditionAndDataRepresentingForm TheAngleRepresentation =
-                    //    ServiceTools.RepresentDataFromDenseMatrix(angleValuesForDistribution, "the angle");
-                    //TheAngleRepresentation.SaveData(randomFileName + "_SunburnProfileMinimumsPolarAngles.nc");
+                    dmPolarMinimumsDistribution.SaveNetCDFdataMatrix(currentDirectory + randomFileName +
+                                                                     "_SunburnProfileMinimums.nc");
+
+                    #region //deprecated
+                    //ImageConditionAndDataRepresentingForm theForm2 =
+                    //    ServiceTools.RepresentDataFromDenseMatrix(dmDecartMinimumsDistribution,
+                    //        "minimums distribution in decart coordinates", false, false, 0.0d, 1.0d, false);
+                    //theForm2.SaveData(currentDirectory + randomFileName + "_SunburnProfileMinimumsDecart.nc", true);
+                    ////theForm2.Close();
+                    //theForm2.Dispose();
+                    ////ImageConditionAndDataRepresentingForm TheAngleRepresentation =
+                    ////    ServiceTools.RepresentDataFromDenseMatrix(angleValuesForDistribution, "the angle");
+                    ////TheAngleRepresentation.SaveData(randomFileName + "_SunburnProfileMinimumsPolarAngles.nc");
+                    #endregion //deprecated
+
+                    dmDecartMinimumsDistribution.SaveNetCDFdataMatrix(currentDirectory + randomFileName +
+                                                                      "_SunburnProfileMinimumsDecart.nc");
                 }
 
                 if (!isCalculatingUsingBgWorker)
@@ -775,6 +724,7 @@ namespace SkyImagesAnalyzerLibraries
                 }
 
                 BGWorkerReport("аппроксимируем полученное распределение полиномом, МНК");
+
                 int polynomeOrder = 10;
 
                 //DenseVector dvFixedPoints = DenseVector.Create(dvDataSpace.Count,
@@ -785,10 +735,7 @@ namespace SkyImagesAnalyzerLibraries
                 DenseVector approxPolyKoeffs =
                     DataAnalysis.NPolynomeApproximationLessSquareMethod(dvSmoothedDistribution, dvDataSpace, dvFixedPoints, polynomeOrder);
 
-                //double approxKoeffC = 1.0d;
-                //double approxKoeffA = (1.0d - minDataValue) / (Rs * Rs);
-                //double approxKoeffB = 2.0d * (minDataValue - 1.0d) / Rs;
-
+                
                 if (!isCalculatingUsingBgWorker)
                 {
                     theLogWindow = ServiceTools.LogAText(theLogWindow, "Rs = " + Rs.ToString() + Environment.NewLine);
@@ -1052,11 +999,14 @@ namespace SkyImagesAnalyzerLibraries
 
                 if (verbosityLevel > 1)
                 {
-                    ImageConditionAndDataRepresentingForm theRepresForm =
-                        ServiceTools.RepresentDataFromDenseMatrix(dmValuesToSubtract_plate, "the data to subtract: plate", false, false, 0.0d, 1.0d, false);
-                    theRepresForm.SaveData(currentDirectory + randomFileName + "_TheDataToSubtract_plate.nc", true);
-                    //theRepresForm.Close();
-                    theRepresForm.Dispose();
+                    //ImageConditionAndDataRepresentingForm theRepresForm =
+                    //    ServiceTools.RepresentDataFromDenseMatrix(dmValuesToSubtract_plate, "the data to subtract: plate", false, false, 0.0d, 1.0d, false);
+                    //theRepresForm.SaveData(currentDirectory + randomFileName + "_TheDataToSubtract_plate.nc", true);
+                    ////theRepresForm.Close();
+                    //theRepresForm.Dispose();
+
+                    dmValuesToSubtract_plate.SaveNetCDFdataMatrix(currentDirectory + randomFileName +
+                                                                  "_TheDataToSubtract_plate.nc");
                 }
                 #endregion оценим общий тренд уклона фоновой засветки по распределению локальных минимумов
 
@@ -1065,22 +1015,32 @@ namespace SkyImagesAnalyzerLibraries
 
                 if (verbosityLevel > 1)
                 {
-                    ImageConditionAndDataRepresentingForm distanceToSunMarginDataForm =
-                        ServiceTools.RepresentDataFromDenseMatrix(dmDistanceToSunMargin, "distance to sun margin data", false, false, 0.0d, 1.0d, false);
-                    distanceToSunMarginDataForm.SaveData(currentDirectory + randomFileName + "_SunMarginDistance.nc", true);
-                    //distanceToSunMarginDataForm.Close();
-                    distanceToSunMarginDataForm.Dispose();
-                    ImageConditionAndDataRepresentingForm sunburnProfileDetectionDataForm =
-                        ServiceTools.RepresentDataFromDenseMatrix(dmSunburnProfileDetection, "sunburn profile detection data", false, false, 0.0d, 1.0d, false);
-                    sunburnProfileDetectionDataForm.SaveData(currentDirectory + randomFileName + "_SunburnProfileDetection.nc", true);
-                    //sunburnProfileDetectionDataForm.Close();
-                    sunburnProfileDetectionDataForm.Dispose();
+                    //ImageConditionAndDataRepresentingForm distanceToSunMarginDataForm =
+                    //    ServiceTools.RepresentDataFromDenseMatrix(dmDistanceToSunMargin, "distance to sun margin data", false, false, 0.0d, 1.0d, false);
+                    //distanceToSunMarginDataForm.SaveData(currentDirectory + randomFileName + "_SunMarginDistance.nc", true);
+                    ////distanceToSunMarginDataForm.Close();
+                    //distanceToSunMarginDataForm.Dispose();
 
-                    ImageConditionAndDataRepresentingForm angleAroundTheSunburnDataForm =
-                        ServiceTools.RepresentDataFromDenseMatrix(dmAngleAroundTheSunburn, "angle around the sunburn data", false, false, 0.0d, 1.0d, false);
-                    angleAroundTheSunburnDataForm.SaveData(currentDirectory + randomFileName + "_SunAngle.nc", true);
-                    //angleAroundTheSunburnDataForm.Close();
-                    angleAroundTheSunburnDataForm.Dispose();
+                    dmDistanceToSunMargin.SaveNetCDFdataMatrix(currentDirectory + randomFileName +
+                                                               "_SunMarginDistance.nc");
+
+                    //ImageConditionAndDataRepresentingForm sunburnProfileDetectionDataForm =
+                    //    ServiceTools.RepresentDataFromDenseMatrix(dmSunburnProfileDetection, "sunburn profile detection data", false, false, 0.0d, 1.0d, false);
+                    //sunburnProfileDetectionDataForm.SaveData(currentDirectory + randomFileName + "_SunburnProfileDetection.nc", true);
+                    ////sunburnProfileDetectionDataForm.Close();
+                    //sunburnProfileDetectionDataForm.Dispose();
+
+                    dmSunburnProfileDetection.SaveNetCDFdataMatrix(currentDirectory + randomFileName +
+                                                                   "_SunburnProfileDetection.nc");
+
+                    //ImageConditionAndDataRepresentingForm angleAroundTheSunburnDataForm =
+                    //    ServiceTools.RepresentDataFromDenseMatrix(dmAngleAroundTheSunburn, "angle around the sunburn data", false, false, 0.0d, 1.0d, false);
+                    //angleAroundTheSunburnDataForm.SaveData(currentDirectory + randomFileName + "_SunAngle.nc", true);
+                    ////angleAroundTheSunburnDataForm.Close();
+                    //angleAroundTheSunburnDataForm.Dispose();
+
+                    dmAngleAroundTheSunburn.SaveNetCDFdataMatrix(currentDirectory + randomFileName + "_SunAngle.nc");
+
                     //ImageConditionAndDataRepresentingForm processingDataInPolarDataForm =
                     //    ServiceTools.RepresentDataFromDenseMatrix(dmProcessingDataInPolar, "sunburn data using polar coordinate system");
                     //processingDataInPolarDataForm.SaveData(randomFileName + "_PolarSystemmedData.nc");
@@ -1558,26 +1518,31 @@ namespace SkyImagesAnalyzerLibraries
 
                 if (verbosityLevel > 1)
                 {
-                    ImageConditionAndDataRepresentingForm restoredDataForm = ServiceTools.RepresentDataFromDenseMatrix(dmReversed,
-                        "finally restored GrIx data", false, false, 0.0d, 1.0d, false);
-                    ImageConditionAndDataRepresentingForm originalDataForm = ServiceTools.RepresentDataFromDenseMatrix(dmProcessingData,
-                        "original GrIx data", false, false, 0.0d, 1.0d, false);
-                    ImageConditionAndDataRepresentingForm dataToSubtractForm =
-                        ServiceTools.RepresentDataFromDenseMatrix(dmDataToSubtract, "the approximated data to subtract", false, false, 0.0d, 1.0d, false);
-                    dataToSubtractForm.SaveData(currentDirectory + randomFileName + "_TheDataToSubtractApproximated.nc", true);
-                    restoredDataForm.SaveData(currentDirectory + randomFileName + "_res.nc", true);
-                    originalDataForm.SaveData(currentDirectory + randomFileName + "_orig.nc", true);
+                    //ImageConditionAndDataRepresentingForm restoredDataForm = ServiceTools.RepresentDataFromDenseMatrix(dmReversed,
+                    //    "finally restored GrIx data", false, false, 0.0d, 1.0d, false);
+                    //ImageConditionAndDataRepresentingForm originalDataForm = ServiceTools.RepresentDataFromDenseMatrix(dmProcessingData,
+                    //    "original GrIx data", false, false, 0.0d, 1.0d, false);
+                    //ImageConditionAndDataRepresentingForm dataToSubtractForm =
+                    //    ServiceTools.RepresentDataFromDenseMatrix(dmDataToSubtract, "the approximated data to subtract", false, false, 0.0d, 1.0d, false);
+                    //dataToSubtractForm.SaveData(currentDirectory + randomFileName + "_TheDataToSubtractApproximated.nc", true);
+                    //restoredDataForm.SaveData(currentDirectory + randomFileName + "_res.nc", true);
+                    //originalDataForm.SaveData(currentDirectory + randomFileName + "_orig.nc", true);
 
-                    //MLApp.MLApp ML = new MLApp.MLApp();
-                    //ML.Visible = 0;
-                    //ML.Execute("run('" + currentDirectory + randomFileName + "_MatlabScript.m" + "');");
+                    ////MLApp.MLApp ML = new MLApp.MLApp();
+                    ////ML.Visible = 0;
+                    ////ML.Execute("run('" + currentDirectory + randomFileName + "_MatlabScript.m" + "');");
 
-                    //originalDataForm.Close();
-                    originalDataForm.Dispose();
-                    //dataToSubtractForm.Close();
-                    dataToSubtractForm.Dispose();
-                    //restoredDataForm.Close();
-                    //restoredDataForm.Dispose();
+                    ////originalDataForm.Close();
+                    //originalDataForm.Dispose();
+                    ////dataToSubtractForm.Close();
+                    //dataToSubtractForm.Dispose();
+                    ////restoredDataForm.Close();
+                    ////restoredDataForm.Dispose();
+
+                    dmDataToSubtract.SaveNetCDFdataMatrix(currentDirectory + randomFileName +
+                                                          "_TheDataToSubtractApproximated.nc");
+                    dmReversed.SaveNetCDFdataMatrix(currentDirectory + randomFileName + "_res.nc");
+                    dmProcessingData.SaveNetCDFdataMatrix(currentDirectory + randomFileName + "_orig.nc");
                 }
 
                 BGWorkerReport("формирование изображений для визуализации");
@@ -1620,31 +1585,21 @@ namespace SkyImagesAnalyzerLibraries
             else
             {
                 // исследуем вопрос минимальных значений GrIx c усреднением по крупным ячейкам
-
                 DenseMatrix dmReversed = (DenseMatrix)dmProcessingData.Clone();
-                //dmReversed.MapIndexedInplace(new Func<int, int, double, double>((row, column, val) =>
-                //{
-                //    if (dmMask[row, column] == 0) return 1.0d;
-                //    else if (val >= theStdDevMarginValueDefiningSkyCloudSeparation) return 1.0d;
-                //    else return 0.0d;
-                //}));
-
+                
                 if (verbosityLevel > 1)
                 {
-                    ImageConditionAndDataRepresentingForm restoredDataForm = ServiceTools.RepresentDataFromDenseMatrix(dmReversed,
-                        "finally restored 1-sigma/Y data", true, false, 0.0d, 1.0d, false);
-                    ImageConditionAndDataRepresentingForm originalDataForm = ServiceTools.RepresentDataFromDenseMatrix(dmProcessingData,
-                        "original 1-sigm/Y data", true, false, 0.0d, 1.0d, false);
-                    restoredDataForm.SaveData(currentDirectory + randomFileName + "_res.nc", true);
-                    originalDataForm.SaveData(currentDirectory + randomFileName + "_orig.nc", true);
-                    //originalDataForm.Close();
-                    //originalDataForm.Dispose();
-                    //restoredDataForm.Close();
-                    //restoredDataForm.Dispose();
+                    //ImageConditionAndDataRepresentingForm restoredDataForm = ServiceTools.RepresentDataFromDenseMatrix(dmReversed,
+                    //    "finally restored 1-sigma/Y data", true, false, 0.0d, 1.0d, false);
+                    //ImageConditionAndDataRepresentingForm originalDataForm = ServiceTools.RepresentDataFromDenseMatrix(dmProcessingData,
+                    //    "original 1-sigm/Y data", true, false, 0.0d, 1.0d, false);
+                    //restoredDataForm.SaveData(currentDirectory + randomFileName + "_res.nc", true);
+                    //originalDataForm.SaveData(currentDirectory + randomFileName + "_orig.nc", true);
+                    dmReversed.SaveNetCDFdataMatrix(currentDirectory + randomFileName + "_res.nc");
+                    dmProcessingData.SaveNetCDFdataMatrix(currentDirectory + randomFileName + "_orig.nc");
                 }
 
                 cloudSkySeparationValue = theStdDevMarginValueDefiningSkyCloudSeparation;
-                //ColorScheme skyCloudColorScheme = ColorScheme.BinaryCloudSkyColorScheme(cloudSkySeparationValue, 0.0d, 1.0d);
                 ColorScheme skyCloudColorScheme = ColorScheme.InversedBinaryCloudSkyColorScheme(cloudSkySeparationValue, 0.0d, 1.0d);
                 ColorSchemeRuler skyCloudRuler = new ColorSchemeRuler(skyCloudColorScheme, 0.0d, 1.0d);
                 Image<Bgr, Byte> previewImage = ImageProcessing.evalResultColoredWithFixedDataBounds(dmProcessingData, maskImage, skyCloudColorScheme, 0.0d, 1.0d);
@@ -1983,8 +1938,11 @@ namespace SkyImagesAnalyzerLibraries
 
                     if (verbosityLevel > 1)
                     {
-                        NetCDFoperations.SaveDataToFile(dmResSunDetectionPartial,
-                            currentDirectory + randomFileName + "_SunDetectionPartialData-" + returningBGWthreadID + ".nc", null, true);
+                        //NetCDFoperations.SaveDataToFile(dmResSunDetectionPartial,
+                        //    currentDirectory + randomFileName + "_SunDetectionPartialData-" + returningBGWthreadID + ".nc", null, true);
+                        dmResSunDetectionPartial.SaveNetCDFdataMatrix(currentDirectory + randomFileName +
+                                                                      "_SunDetectionPartialData-" + returningBGWthreadID +
+                                                                      ".nc");
                     }
 
                     dmSunDetectionDataByAnsamble = dmSunDetectionDataByAnsamble + dmResSunDetectionPartial;
@@ -2076,8 +2034,10 @@ namespace SkyImagesAnalyzerLibraries
                 sunDetectionImage.Save(currentDirectory + randomFileName + "_SunDetectionByAnsamble.jpg");
                 sunDetectionImage.Dispose();
                 f1.Dispose();
-                NetCDFoperations.SaveDataToFile(dmSunDetectionDataByAnsamble,
-                    currentDirectory + randomFileName + "_SunDetectionDataByAnsamble.nc", null, true);
+                //NetCDFoperations.SaveDataToFile(dmSunDetectionDataByAnsamble,
+                //    currentDirectory + randomFileName + "_SunDetectionDataByAnsamble.nc", null, true);
+                dmSunDetectionDataByAnsamble.SaveNetCDFdataMatrix(currentDirectory + randomFileName +
+                                                                  "_SunDetectionDataByAnsamble.nc");
             }
 
             dmSunDetectionDataByAnsamble =

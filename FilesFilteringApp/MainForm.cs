@@ -196,11 +196,27 @@ namespace FilesFilteringApp
                 int minute = 0;
                 //String dateTime = (String)newIInfo.getValueByKey("DateTime");
                 String dateTime = (String)newIInfo.getValueByKey("ExifDTOrig");
+                if (dateTime == null)
+                {
+                    //попробуем вытащить из имени файла
+                    string strDateTime = fileInfo.Name;
+                    strDateTime = strDateTime.Substring(4, 19);
+                    dateTime = strDateTime;
+                }
+                
                 
                 //curDateTime = dateTime;
-
-                DateTime curDateTime = DateTimeOfString(dateTime);
-                DateTime theHour = RoundToHour(curDateTime);
+                DateTime theHour = DateTime.UtcNow;
+                try
+                {
+                    DateTime curDateTime = DateTimeOfString(dateTime);
+                    theHour = RoundToHour(curDateTime);
+                }
+                catch (Exception)
+                {
+                    continue;
+                }
+                
 
                 //minute = Convert.ToInt32(dateTime.Substring(14, 2));
 
@@ -260,6 +276,16 @@ namespace FilesFilteringApp
             ThreadSafeOperations.UpdateProgressBar(prbUniversalProgress, 0);
             ThreadSafeOperations.SetTextTB(tbLog, "Finished work" + Environment.NewLine, true);
             ThreadSafeOperations.ToggleButtonState(btnDoWork, true, "SELECT", false);
+        }
+
+
+
+        private void MainForm_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            if (e.KeyChar == 27)//escape key
+            {
+                this.Close();
+            }
         }
     }
 }

@@ -59,7 +59,7 @@
             this.tableLayoutPanel1.Controls.Add(this.prbUniversalProgress, 0, 4);
             this.tableLayoutPanel1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tableLayoutPanel1.Location = new System.Drawing.Point(0, 0);
-            this.tableLayoutPanel1.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.tableLayoutPanel1.Margin = new System.Windows.Forms.Padding(4);
             this.tableLayoutPanel1.Name = "tableLayoutPanel1";
             this.tableLayoutPanel1.RowCount = 5;
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 37F));
@@ -98,7 +98,7 @@
             // 
             this.tbFromPath.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tbFromPath.Location = new System.Drawing.Point(111, 4);
-            this.tbFromPath.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.tbFromPath.Margin = new System.Windows.Forms.Padding(4);
             this.tbFromPath.Name = "tbFromPath";
             this.tbFromPath.Size = new System.Drawing.Size(906, 22);
             this.tbFromPath.TabIndex = 2;
@@ -107,7 +107,7 @@
             // 
             this.tbToPath.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tbToPath.Location = new System.Drawing.Point(111, 41);
-            this.tbToPath.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.tbToPath.Margin = new System.Windows.Forms.Padding(4);
             this.tbToPath.Name = "tbToPath";
             this.tbToPath.Size = new System.Drawing.Size(906, 22);
             this.tbToPath.TabIndex = 3;
@@ -117,7 +117,7 @@
             this.btnFromPathSelect.Dock = System.Windows.Forms.DockStyle.Fill;
             this.btnFromPathSelect.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnFromPathSelect.Location = new System.Drawing.Point(1025, 4);
-            this.btnFromPathSelect.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.btnFromPathSelect.Margin = new System.Windows.Forms.Padding(4);
             this.btnFromPathSelect.Name = "btnFromPathSelect";
             this.btnFromPathSelect.Size = new System.Drawing.Size(59, 29);
             this.btnFromPathSelect.TabIndex = 4;
@@ -130,7 +130,7 @@
             this.btnToPathSelect.Dock = System.Windows.Forms.DockStyle.Fill;
             this.btnToPathSelect.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnToPathSelect.Location = new System.Drawing.Point(1025, 41);
-            this.btnToPathSelect.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.btnToPathSelect.Margin = new System.Windows.Forms.Padding(4);
             this.btnToPathSelect.Name = "btnToPathSelect";
             this.btnToPathSelect.Size = new System.Drawing.Size(59, 29);
             this.btnToPathSelect.TabIndex = 5;
@@ -145,7 +145,7 @@
             this.tableLayoutPanel1.SetColumnSpan(this.tbLog, 3);
             this.tbLog.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tbLog.Location = new System.Drawing.Point(4, 115);
-            this.tbLog.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.tbLog.Margin = new System.Windows.Forms.Padding(4);
             this.tbLog.Multiline = true;
             this.tbLog.Name = "tbLog";
             this.tbLog.ReadOnly = true;
@@ -159,7 +159,7 @@
             this.btnDoWork.Dock = System.Windows.Forms.DockStyle.Fill;
             this.btnDoWork.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnDoWork.Location = new System.Drawing.Point(4, 78);
-            this.btnDoWork.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.btnDoWork.Margin = new System.Windows.Forms.Padding(4);
             this.btnDoWork.Name = "btnDoWork";
             this.btnDoWork.Size = new System.Drawing.Size(1080, 29);
             this.btnDoWork.TabIndex = 7;
@@ -172,7 +172,7 @@
             this.tableLayoutPanel1.SetColumnSpan(this.prbUniversalProgress, 3);
             this.prbUniversalProgress.Dock = System.Windows.Forms.DockStyle.Fill;
             this.prbUniversalProgress.Location = new System.Drawing.Point(4, 388);
-            this.prbUniversalProgress.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.prbUniversalProgress.Margin = new System.Windows.Forms.Padding(4);
             this.prbUniversalProgress.Maximum = 1000;
             this.prbUniversalProgress.Name = "prbUniversalProgress";
             this.prbUniversalProgress.Size = new System.Drawing.Size(1080, 17);
@@ -192,11 +192,13 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1088, 409);
             this.Controls.Add(this.tableLayoutPanel1);
-            this.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.KeyPreview = true;
+            this.Margin = new System.Windows.Forms.Padding(4);
             this.Name = "MainForm";
             this.Text = "Form1";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.MainForm_FormClosing);
             this.Load += new System.EventHandler(this.MainForm_Load);
+            this.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.MainForm_KeyPress);
             this.tableLayoutPanel1.ResumeLayout(false);
             this.tableLayoutPanel1.PerformLayout();
             this.ResumeLayout(false);

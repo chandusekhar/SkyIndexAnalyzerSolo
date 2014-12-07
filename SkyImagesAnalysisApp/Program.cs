@@ -15,8 +15,7 @@ namespace SkyImagesAnalyzer
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new SkyIndexAnalyzer_AnalysisForm());
-            //Application.Run(new AgentForm());
+            Application.Run(new MainAnalysisForm());
         }
     }
 }

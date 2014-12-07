@@ -57,7 +57,7 @@
             this.button1.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.button1.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this.button1.Location = new System.Drawing.Point(4, 41);
-            this.button1.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.button1.Margin = new System.Windows.Forms.Padding(4);
             this.button1.Name = "button1";
             this.button1.Size = new System.Drawing.Size(408, 33);
             this.button1.TabIndex = 0;
@@ -71,7 +71,7 @@
             this.btnTestApprox.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnTestApprox.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this.btnTestApprox.Location = new System.Drawing.Point(836, 41);
-            this.btnTestApprox.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.btnTestApprox.Margin = new System.Windows.Forms.Padding(4);
             this.btnTestApprox.Name = "btnTestApprox";
             this.btnTestApprox.Size = new System.Drawing.Size(408, 33);
             this.btnTestApprox.TabIndex = 1;
@@ -92,7 +92,7 @@
             this.tableLayoutPanel1.SetColumnSpan(this.tbLog, 4);
             this.tbLog.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tbLog.Location = new System.Drawing.Point(4, 131);
-            this.tbLog.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.tbLog.Margin = new System.Windows.Forms.Padding(4);
             this.tbLog.Multiline = true;
             this.tbLog.Name = "tbLog";
             this.tbLog.Size = new System.Drawing.Size(1657, 746);
@@ -116,7 +116,7 @@
             this.cbUseWeights.CheckState = System.Windows.Forms.CheckState.Checked;
             this.cbUseWeights.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this.cbUseWeights.Location = new System.Drawing.Point(1252, 41);
-            this.cbUseWeights.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.cbUseWeights.Margin = new System.Windows.Forms.Padding(4);
             this.cbUseWeights.Name = "cbUseWeights";
             this.cbUseWeights.Size = new System.Drawing.Size(148, 29);
             this.cbUseWeights.TabIndex = 4;
@@ -150,7 +150,7 @@
             this.tableLayoutPanel1.Controls.Add(this.btnProperties, 3, 0);
             this.tableLayoutPanel1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tableLayoutPanel1.Location = new System.Drawing.Point(0, 0);
-            this.tableLayoutPanel1.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.tableLayoutPanel1.Margin = new System.Windows.Forms.Padding(4);
             this.tableLayoutPanel1.Name = "tableLayoutPanel1";
             this.tableLayoutPanel1.RowCount = 7;
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 37F));
@@ -220,7 +220,7 @@
             this.tbXMin.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tbXMin.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this.tbXMin.Location = new System.Drawing.Point(420, 934);
-            this.tbXMin.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.tbXMin.Margin = new System.Windows.Forms.Padding(4);
             this.tbXMin.Name = "tbXMin";
             this.tbXMin.Size = new System.Drawing.Size(408, 30);
             this.tbXMin.TabIndex = 9;
@@ -231,7 +231,7 @@
             this.tbXMax.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tbXMax.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this.tbXMax.Location = new System.Drawing.Point(420, 983);
-            this.tbXMax.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.tbXMax.Margin = new System.Windows.Forms.Padding(4);
             this.tbXMax.Name = "tbXMax";
             this.tbXMax.Size = new System.Drawing.Size(408, 30);
             this.tbXMax.TabIndex = 10;
@@ -242,7 +242,7 @@
             this.tbYMin.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tbYMin.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this.tbYMin.Location = new System.Drawing.Point(1252, 934);
-            this.tbYMin.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.tbYMin.Margin = new System.Windows.Forms.Padding(4);
             this.tbYMin.Name = "tbYMin";
             this.tbYMin.Size = new System.Drawing.Size(409, 30);
             this.tbYMin.TabIndex = 11;
@@ -253,7 +253,7 @@
             this.tbYMax.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tbYMax.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this.tbYMax.Location = new System.Drawing.Point(1252, 983);
-            this.tbYMax.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.tbYMax.Margin = new System.Windows.Forms.Padding(4);
             this.tbYMax.Name = "tbYMax";
             this.tbYMax.Size = new System.Drawing.Size(409, 30);
             this.tbYMax.TabIndex = 12;
@@ -265,7 +265,7 @@
             this.btnTaxonomyTest.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnTaxonomyTest.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this.btnTaxonomyTest.Location = new System.Drawing.Point(4, 82);
-            this.btnTaxonomyTest.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.btnTaxonomyTest.Margin = new System.Windows.Forms.Padding(4);
             this.btnTaxonomyTest.Name = "btnTaxonomyTest";
             this.btnTaxonomyTest.Size = new System.Drawing.Size(408, 41);
             this.btnTaxonomyTest.TabIndex = 13;
@@ -277,7 +277,7 @@
             // 
             this.tbDataFilePrefix.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tbDataFilePrefix.Location = new System.Drawing.Point(420, 41);
-            this.tbDataFilePrefix.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.tbDataFilePrefix.Margin = new System.Windows.Forms.Padding(4);
             this.tbDataFilePrefix.Name = "tbDataFilePrefix";
             this.tbDataFilePrefix.Size = new System.Drawing.Size(408, 22);
             this.tbDataFilePrefix.TabIndex = 15;
@@ -318,7 +318,7 @@
             this.btnProperties.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnProperties.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this.btnProperties.Location = new System.Drawing.Point(1252, 4);
-            this.btnProperties.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.btnProperties.Margin = new System.Windows.Forms.Padding(4);
             this.btnProperties.Name = "btnProperties";
             this.btnProperties.Size = new System.Drawing.Size(409, 29);
             this.btnProperties.TabIndex = 18;
@@ -333,7 +333,7 @@
             this.ClientSize = new System.Drawing.Size(1665, 1029);
             this.Controls.Add(this.tableLayoutPanel1);
             this.KeyPreview = true;
-            this.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.Margin = new System.Windows.Forms.Padding(4);
             this.Name = "TestingForm";
             this.Text = "Form1";
             this.Shown += new System.EventHandler(this.TestingForm_Shown);

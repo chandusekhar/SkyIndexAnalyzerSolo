@@ -119,16 +119,19 @@
     <Reference Include="MathNet.Numerics, Version=2.6.1.30, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\MathNet.Numerics.2.6.1\lib\net40\MathNet.Numerics.dll</HintPath>
+      <Private>False</Private>
     </Reference>
     <Reference Include="MathNet.Numerics.IO, Version=2.6.1.30, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\MathNet.Numerics.2.6.1\lib\net40\MathNet.Numerics.IO.dll</HintPath>
+      <Private>False</Private>
     </Reference>
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
     <Reference Include="System" />
     <Reference Include="System.Configuration.Install" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Design" />
     <Reference Include="System.Management" />
     <Reference Include="System.Numerics" />
     <Reference Include="System.ServiceProcess" />
@@ -159,11 +162,10 @@
     <Compile Include="AdditionalFieldAnalysisForm.Designer.cs">
       <DependentUpon>AdditionalFieldAnalysisForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="PropertiesEditor.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="PropertiesEditor.Designer.cs">
-      <DependentUpon>PropertiesEditor.cs</DependentUpon>
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
     <Compile Include="SkyImagesAnalyzer_ColorsManipulatingForm.cs">
       <SubType>Form</SubType>
@@ -185,8 +187,9 @@
     <EmbeddedResource Include="AdditionalFieldAnalysisForm.resx">
       <DependentUpon>AdditionalFieldAnalysisForm.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="PropertiesEditor.resx">
-      <DependentUpon>PropertiesEditor.cs</DependentUpon>
+    <EmbeddedResource Include="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
     <EmbeddedResource Include="SkyImagesAnalyzer_ColorsManipulatingForm.resx">
       <DependentUpon>SkyImagesAnalyzer_ColorsManipulatingForm.cs</DependentUpon>
@@ -195,16 +198,6 @@
       <DependentUpon>MainAnalysisForm.cs</DependentUpon>
       <SubType>Designer</SubType>
     </EmbeddedResource>
-    <EmbeddedResource Include="Properties\Resources.resx">
-      <Generator>ResXFileCodeGenerator</Generator>
-      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
-      <SubType>Designer</SubType>
-    </EmbeddedResource>
-    <Compile Include="Properties\Resources.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DependentUpon>Resources.resx</DependentUpon>
-      <DesignTime>True</DesignTime>
-    </Compile>
     <None Include="app.config" />
     <None Include="ClassDiagram1.cd" />
     <None Include="ClassDiagram2.cd" />
@@ -250,7 +243,9 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Resources\Ex3SumSchema.xml" />
+    <EmbeddedResource Include="settings\Ex3SumSchema.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
     <Content Include="1381_cog.ico" />
@@ -266,6 +261,11 @@
     <Content Include="libs\cvextern.dll">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Content Include="settings\SkyImagesAnalyzerSettings.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <None Include="Resources\process.png" />
+    <None Include="Resources\info.png" />
     <None Include="gearIcon.png" />
     <Content Include="libs\MathNet.Numerics.dll">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>

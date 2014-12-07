@@ -66,7 +66,7 @@
     </Reference>
     <Reference Include="MRG.Controls.UI, Version=1.0.5304.31396, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\_bin\libs\MRG.Controls.UI.dll</HintPath>
+      <HintPath>..\_DBGbin\libs\MRG.Controls.UI.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -129,6 +129,10 @@
       <Project>{7c2c5325-8235-4a24-9c67-6bd79a4679e2}</Project>
       <Name>Emgu.Util</Name>
       <Private>False</Private>
+    </ProjectReference>
+    <ProjectReference Include="..\SkyImagesAnalyzerLibraries\SkyImagesAnalyzerLibraries.csproj">
+      <Project>{7beac8e4-e53f-466a-b824-1fe69e60d114}</Project>
+      <Name>SkyImagesAnalyzerLibraries</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

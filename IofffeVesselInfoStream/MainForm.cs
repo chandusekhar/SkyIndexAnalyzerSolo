@@ -15,6 +15,7 @@ using Emgu.CV.Structure;
 using MathNet.Numerics.LinearAlgebra.Double;
 using SkyImagesAnalyzerLibraries;
 
+
 namespace IofffeVesselInfoStream
 {
     public partial class MainForm : Form

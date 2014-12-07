@@ -62,9 +62,11 @@
   <ItemGroup>
     <Reference Include="MathNet.Numerics">
       <HintPath>..\packages\MathNet.Numerics.2.6.1\lib\net40\MathNet.Numerics.dll</HintPath>
+      <Private>False</Private>
     </Reference>
     <Reference Include="MathNet.Numerics.IO">
       <HintPath>..\packages\MathNet.Numerics.2.6.1\lib\net40\MathNet.Numerics.IO.dll</HintPath>
+      <Private>False</Private>
     </Reference>
     <Reference Include="Microsoft.Research.Science.Data, Version=1.3.14517.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -91,6 +93,7 @@
     <Compile Include="Extensions.cs" />
     <Compile Include="GeoTrackRenderer.cs" />
     <Compile Include="Graph.cs" />
+    <Compile Include="HeatMap.cs" />
     <Compile Include="HistogramCalcAndShowForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -110,6 +113,12 @@
     <Compile Include="PointPolar.cs" />
     <Compile Include="GradientDescentApproximator.cs">
       <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="PropertiesEditor.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="PropertiesEditor.Designer.cs">
+      <DependentUpon>PropertiesEditor.cs</DependentUpon>
     </Compile>
     <Compile Include="PropertyHelper.cs" />
     <Compile Include="SectionDescription.cs" />
@@ -193,6 +202,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="MultipleProgressIndicatingForm.resx">
       <DependentUpon>MultipleProgressIndicatingForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="PropertiesEditor.resx">
+      <DependentUpon>PropertiesEditor.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="SectionRequestForm.resx">
       <DependentUpon>SectionRequestForm.cs</DependentUpon>

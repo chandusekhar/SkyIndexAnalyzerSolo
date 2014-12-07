@@ -150,6 +150,10 @@
       <Name>MRG.Controls.UI</Name>
       <Private>False</Private>
     </ProjectReference>
+    <ProjectReference Include="..\SkyImagesAnalyzerLibraries\SkyImagesAnalyzerLibraries.csproj">
+      <Project>{7beac8e4-e53f-466a-b824-1fe69e60d114}</Project>
+      <Name>SkyImagesAnalyzerLibraries</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include=".NETFramework,Version=v4.5">

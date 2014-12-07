@@ -245,7 +245,8 @@ namespace SkyImagesAnalyzerLibraries
         {
             if (fileName != "")
             {
-                NetCDFoperations.SaveDataToFile(imgData.DmSourceData, fileName, tbStats, absolutePath);
+                imgData.DmSourceData.SaveNetCDFdataMatrix(fileName);
+                //NetCDFoperations.SaveDataToFile(imgData.DmSourceData, fileName, tbStats, absolutePath);
             }
         }
     }

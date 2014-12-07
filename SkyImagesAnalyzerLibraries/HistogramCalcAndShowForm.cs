@@ -44,16 +44,20 @@ namespace SkyImagesAnalyzerLibraries
 
         private MCvFont theFont = new MCvFont(Emgu.CV.CvEnum.FONT.CV_FONT_HERSHEY_PLAIN, 1.0d, 1.0d);
 
+        public Dictionary<string, object> defaultProperties = null;
 
 
 
-
-        public HistogramCalcAndShowForm(string description)
+        public HistogramCalcAndShowForm(string description, Dictionary<string, object> inDefProperties)
         {
             InitializeComponent();
             ThreadSafeOperations.SetText(lblTitle, description, false);
             currentDescription = description;
             theFont.thickness = 1;
+            if (inDefProperties != null)
+            {
+                defaultProperties = inDefProperties;
+            }
         }
 
         public HistogramDataAndProperties HistToRepresent
@@ -83,10 +87,16 @@ namespace SkyImagesAnalyzerLibraries
             theImage.Bitmap.Save(filename, System.Drawing.Imaging.ImageFormat.Png);
         }
 
+
+
+
         private void HistogramCalcAndShowForm_Load(object sender, EventArgs e)
         {
             ThreadSafeOperations.SetText(lblTitle, currentDescription, false);
         }
+
+
+
 
         private void HistogramCalcAndShowForm_Resize(object sender, EventArgs e)
         {
@@ -326,6 +336,55 @@ namespace SkyImagesAnalyzerLibraries
         private void cbShowQuantiles_CheckedChanged(object sender, EventArgs e)
         {
             Represent();
+        }
+
+
+
+
+
+        private void btnSaveImageToFile_Click(object sender, EventArgs e)
+        {
+            if (theImage != null)
+            {
+                string curOutputDir = (string) defaultProperties["DefaultDataFilesLocation"];
+                string currFileName = "m" + Path.GetRandomFileName().Replace(".", "");
+                if (defaultProperties.Keys.Contains("CurrentFileName"))
+                {
+                    currFileName = Path.GetFileNameWithoutExtension((string) defaultProperties["CurrentFileName"]);
+                }
+                int i = 0;
+                string fName = curOutputDir + currFileName + "-grixHist-" + String.Format("{0:000}", i) + ".jpg";
+                while (File.Exists(fName))
+                {
+                    i++;
+                    fName = curOutputDir + currFileName + "-grixHist-" + String.Format("{0:000}", i) + ".jpg";
+                }
+                theImage.Save(fName);
+            }
+        }
+
+
+
+
+        private void btnSaveDataToFile_Click(object sender, EventArgs e)
+        {
+            if (theImage != null)
+            {
+                string curOutputDir = (string)defaultProperties["DefaultDataFilesLocation"];
+                string currFileName = "m" + Path.GetRandomFileName().Replace(".", "");
+                if (defaultProperties.Keys.Contains("CurrentFileName"))
+                {
+                    currFileName = Path.GetFileNameWithoutExtension((string)defaultProperties["CurrentFileName"]);
+                }
+                int i = 0;
+                string fName = curOutputDir + currFileName + "-grixHist-" + String.Format("{0:000}", i) + ".csv";
+                while (File.Exists(fName))
+                {
+                    i++;
+                    fName = curOutputDir + currFileName + "-grixHist-" + String.Format("{0:000}", i) + ".csv";
+                }
+                histToRepresent.SaveHistDataToASCII(fName);
+            }
         }
 
 

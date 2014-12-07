@@ -255,12 +255,12 @@ namespace SkyImagesAnalyzerLibraries
 
 
 
-        public static HistogramCalcAndShowForm RepresentHistogrammedStatsOfDataMarix(DenseMatrix dmToRepresent, string description = "", bool showTheWindow = true)
+        public static HistogramCalcAndShowForm RepresentHistogrammedStatsOfDataMarix(DenseMatrix dmToRepresent, Dictionary<string, object> inDefProperties, string description = "", bool showTheWindow = true)
         {
             DenseVector dvDataToHist = DataAnalysis.DataVectorizedWithCondition(dmToRepresent, dVal => dVal > 0.0d);
             HistogramDataAndProperties currenthistData = new HistogramDataAndProperties(dvDataToHist, 100);
             currenthistData.color = Color.Red;
-            HistogramCalcAndShowForm histForm = new HistogramCalcAndShowForm(description);
+            HistogramCalcAndShowForm histForm = new HistogramCalcAndShowForm(description, inDefProperties);
             histForm.HistToRepresent = currenthistData;
             if (showTheWindow) histForm.Show();
             histForm.Represent();
@@ -272,12 +272,12 @@ namespace SkyImagesAnalyzerLibraries
 
 
 
-        public static HistogramCalcAndShowForm RepresentHistogrammedStatsOfDataVector(DenseVector dvToRepresent, string description = "", bool showTheWindow = true)
+        public static HistogramCalcAndShowForm RepresentHistogrammedStatsOfDataVector(DenseVector dvToRepresent, Dictionary<string, object> inDefProperties, string description = "", bool showTheWindow = true)
         {
             DenseVector dvDataToHist = DataAnalysis.DataVectorizedWithCondition(dvToRepresent, dVal => dVal > 0.0d);
             HistogramDataAndProperties currenthistData = new HistogramDataAndProperties(dvDataToHist, 100);
             currenthistData.color = Color.Red;
-            HistogramCalcAndShowForm histForm = new HistogramCalcAndShowForm(description);
+            HistogramCalcAndShowForm histForm = new HistogramCalcAndShowForm(description, inDefProperties);
             histForm.HistToRepresent = currenthistData;
             if (showTheWindow) histForm.Show();
             histForm.Represent();
@@ -723,6 +723,14 @@ namespace SkyImagesAnalyzerLibraries
             return retObj;
         }
 
+
+
+        public static string ReadTextFromFile(string fileName)
+        {
+            StreamReader sr = new StreamReader(fileName);
+            string pDataString = sr.ReadToEnd();
+            return pDataString;
+        }
 
     }
 }

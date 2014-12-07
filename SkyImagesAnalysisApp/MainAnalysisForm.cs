@@ -23,12 +23,12 @@ namespace SkyImagesAnalyzer
 {
     public enum pb2Source { SkyindexAnalyzer, ConnectedObjectsDetector, SkyCloudClassificator };
 
-    public partial class SkyIndexAnalyzer_AnalysisForm : Form
+    public partial class MainAnalysisForm : Form
     {
         #region vars
 
         private Assembly _assembly;
-        private StreamReader _textStreamReader;
+        //private StreamReader _textStreamReader;
         //private Image imagetoadd;
         private Image<Bgr, Byte> imagetoadd;
         private Bitmap bitmapSI;
@@ -43,12 +43,13 @@ namespace SkyImagesAnalyzer
         private double tunedSIMarginDefault;
         public System.Data.DataTable datatableFnumber, datatableISOspeed, datatableExposureTime;
         private delegate void DelegateOpenFile(String s);
-        private double resizevalue;
+        //private double resizevalue;
         private int FileCounter, filecounter_prev;
         private int SIClScMarginRangeLowerValue, SIClScMarginRangeHigherValue;
         private SkyCloudClassification classificator;
         private Bitmap pictureBox2Bitmap;
         private Dictionary<string, object> defaultProperties = null;
+        private string defaultPropertiesXMLfileName = "";
         private LogWindow theLogWindow = null;
         #endregion
 
@@ -96,8 +97,7 @@ namespace SkyImagesAnalyzer
 
         private void btnProperties_Click(object sender, EventArgs e)
         {
-            object propertiesObj = Properties.Settings.Default;
-            PropertiesEditor propForm = new PropertiesEditor(propertiesObj);
+            PropertiesEditor propForm = new PropertiesEditor(defaultProperties, defaultPropertiesXMLfileName);
             propForm.FormClosed += new FormClosedEventHandler(PropertiesFormClosed);
             propForm.ShowDialog();
         }
@@ -111,7 +111,7 @@ namespace SkyImagesAnalyzer
 
 
 
-        public SkyIndexAnalyzer_AnalysisForm()
+        public MainAnalysisForm()
         {
             InitializeComponent();
         }
@@ -179,22 +179,22 @@ namespace SkyImagesAnalyzer
 
 
 
-            _assembly = Assembly.GetExecutingAssembly();
-            try
-            {
-                Stream Stream1 = _assembly.GetManifestResourceStream("SkyImagesAnalyzer.Resources.Ex3SumSchema.xml");
-                _textStreamReader = new StreamReader(Stream1);
-            }
-            catch
-            {
-                MessageBox.Show("Error accessing resources!");
+            //_assembly = Assembly.GetExecutingAssembly();
+            //try
+            //{
+            //    Stream Stream1 = _assembly.GetManifestResourceStream("SkyImagesAnalyzer.Resources.Ex3SumSchema");
+            //    _textStreamReader = new StreamReader(Stream1);
+            //}
+            //catch
+            //{
+            //    MessageBox.Show("Error accessing resources!");
 
-            }
+            //}
 
             ReadEx3CalculateScheme();
 
-            ThreadSafeOperations.SetText(label9, "Изменять исходный размер: 1.0", false);
-            ThreadSafeOperations.MoveTrackBar(trackBar3, 7);
+            //ThreadSafeOperations.SetText(label9, "Изменять исходный размер: 1.0", false);
+            //ThreadSafeOperations.MoveTrackBar(trackBar3, 7);
 
             button1.Text = "Обработка директории: ";
 
@@ -237,6 +237,10 @@ namespace SkyImagesAnalyzer
 
         private void ReadEx3CalculateScheme()
         {
+            string Ex3XMLfilename = Directory.GetCurrentDirectory() + "\\settings\\Ex3SumSchema.xml";
+            if (!File.Exists(Ex3XMLfilename)){return;}
+            //Stream Stream1 = _assembly.GetManifestResourceStream("SkyImagesAnalyzer.Resources.Ex3SumSchema");
+            StreamReader _textStreamReader = new StreamReader(Ex3XMLfilename, Encoding.UTF8);
             XmlReader reader;
             XmlDocument xmlfile;
             DataRow row1;
@@ -441,48 +445,48 @@ namespace SkyImagesAnalyzer
         }
 
 
-        private Color ColorScheme_m3(double si_m3, int callcase = 0)
-        {
-            Color new_color3;
-            Color colBlack = Color.FromArgb(0, 0, 0);
-            Color colWhite = Color.FromArgb(255, 250, 250);
-            Color colBlue = Color.FromArgb(0, 0, 128);
+        //private Color ColorScheme_m3(double si_m3, int callcase = 0)
+        //{
+        //    Color new_color3;
+        //    Color colBlack = Color.FromArgb(0, 0, 0);
+        //    Color colWhite = Color.FromArgb(255, 250, 250);
+        //    Color colBlue = Color.FromArgb(0, 0, 128);
 
-            new_color3 = colBlack;
-            if (callcase == 0)
-            {
-                if ((si_m3 < tunedSIMargin) && (si_m3 > -1))
-                {
-                    new_color3 = colWhite;
-                }
-                else
-                {
-                    new_color3 = colBlue;
-                }
+        //    new_color3 = colBlack;
+        //    if (callcase == 0)
+        //    {
+        //        if ((si_m3 < tunedSIMargin) && (si_m3 > -1))
+        //        {
+        //            new_color3 = colWhite;
+        //        }
+        //        else
+        //        {
+        //            new_color3 = colBlue;
+        //        }
 
-                if (si_m3 == -2.0)
-                {
-                    new_color3 = colBlack;
-                }
-            }
-            else if (callcase == 1)
-            {
-                if (si_m3 == -2.0)
-                {
-                    new_color3 = colBlack;
-                }
-                else if (si_m3 == 0.0)
-                {
-                    new_color3 = colBlue;
-                }
-                else if (si_m3 == 1.0)
-                {
-                    new_color3 = colWhite;
-                }
-            }
+        //        if (si_m3 == -2.0)
+        //        {
+        //            new_color3 = colBlack;
+        //        }
+        //    }
+        //    else if (callcase == 1)
+        //    {
+        //        if (si_m3 == -2.0)
+        //        {
+        //            new_color3 = colBlack;
+        //        }
+        //        else if (si_m3 == 0.0)
+        //        {
+        //            new_color3 = colBlue;
+        //        }
+        //        else if (si_m3 == 1.0)
+        //        {
+        //            new_color3 = colWhite;
+        //        }
+        //    }
 
-            return new_color3;
-        }
+        //    return new_color3;
+        //}
 
 
         //private Color ColorScheme_m4(double si_m4, int callcase = 0)
@@ -617,7 +621,8 @@ namespace SkyImagesAnalyzer
         {
             if (imagetoadd == null)
             {
-                ThreadSafeOperations.SetTextTB(textBox1, "Не загружено изображение для обработки!", true);
+                theLogWindow = ServiceTools.LogAText(theLogWindow, "Не загружено изображение для обработки!", true);
+                //ThreadSafeOperations.SetTextTB(textBox1, "Не загружено изображение для обработки!", true);
                 return;
             }
 
@@ -637,7 +642,8 @@ namespace SkyImagesAnalyzer
 
         public void Note(string text)
         {
-            ThreadSafeOperations.SetTextTB(textBox1, text + Environment.NewLine, true);
+            //ThreadSafeOperations.SetTextTB(textBox1, text + Environment.NewLine, true);
+            theLogWindow = ServiceTools.LogAText(theLogWindow, text + Environment.NewLine, true);
             //textBox1.Text += text + Environment.NewLine;
         }
 
@@ -1003,7 +1009,9 @@ namespace SkyImagesAnalyzer
             catch (Exception exc1)
             {
                 timetotal = DateTime.Now - begintotal;
-                ThreadSafeOperations.SetTextTB(textBox1, "Ошибка при обработке Drag&Drop: " + exc1.Message + timetotal, true);
+                //ThreadSafeOperations.SetTextTB(textBox1, "Ошибка при обработке Drag&Drop: " + exc1.Message + timetotal, true);
+                theLogWindow = ServiceTools.LogAText(theLogWindow,
+                    "Ошибка при обработке Drag&Drop: " + exc1.Message + timetotal, true);
                 //textBox1.Text += "Ошибка при обработке Drag&Drop: " + exc1.Message + timetotal;
             }
         }
@@ -1093,9 +1101,13 @@ namespace SkyImagesAnalyzer
         {
             if (e.Error != null)
             {
-                ThreadSafeOperations.SetTextTB(textBox1, "Ошибка! " + e.Error.Message + Environment.NewLine, true);
+                //ThreadSafeOperations.SetTextTB(textBox1, "Ошибка! " + e.Error.Message + Environment.NewLine, true);
+                theLogWindow = ServiceTools.LogAText(theLogWindow, "Ошибка! " + e.Error.Message + Environment.NewLine,
+                    true);
             }
-            ThreadSafeOperations.SetTextTB(textBox1, "операция завершена" + Environment.NewLine + "------------------" + Environment.NewLine, true);
+            theLogWindow = ServiceTools.LogAText(theLogWindow,
+                "операция завершена" + Environment.NewLine + "------------------" + Environment.NewLine, true);
+            //ThreadSafeOperations.SetTextTB(textBox1, "операция завершена" + Environment.NewLine + "------------------" + Environment.NewLine, true);
             //SetButtonEnabledStatus(обработатьToolStripMenuItem, true);
             ThreadSafeOperations.UpdateProgressBar(pbUniversalProgressBar, 0);
 
@@ -1182,26 +1194,26 @@ namespace SkyImagesAnalyzer
             //}
         }
 
-        private void trackBar3_Scroll(object sender, EventArgs e)
-        {
-            double TrackBarValue;
-            double divider;
-            System.Windows.Forms.TrackBar MyTB;
+        //private void trackBar3_Scroll(object sender, EventArgs e)
+        //{
+        //    double TrackBarValue;
+        //    double divider;
+        //    System.Windows.Forms.TrackBar MyTB;
 
-            //ProcessingConditionsChanged = true;
+        //    //ProcessingConditionsChanged = true;
 
-            MyTB = (System.Windows.Forms.TrackBar)sender;
-            TrackBarValue = (double)MyTB.Value;
-            divider = Math.Pow(2.0, (double)(10 - TrackBarValue));
-            resizevalue = 1.0 / divider;
-            //ThreadSafeOperations.SetText(label7, resizevalue.ToString());
-            ThreadSafeOperations.SetText(label9, "Изменять исходный размер: " + resizevalue.ToString(), false);
-            //label7.Text = resizevalue.ToString();
-            if (ImageFileName != null)
-            {
-                OpenFile(ImageFileName);
-            }
-        }
+        //    MyTB = (System.Windows.Forms.TrackBar)sender;
+        //    TrackBarValue = (double)MyTB.Value;
+        //    divider = Math.Pow(2.0, (double)(10 - TrackBarValue));
+        //    resizevalue = 1.0 / divider;
+        //    //ThreadSafeOperations.SetText(label7, resizevalue.ToString());
+        //    ThreadSafeOperations.SetText(label9, "Изменять исходный размер: " + resizevalue.ToString(), false);
+        //    //label7.Text = resizevalue.ToString();
+        //    if (ImageFileName != null)
+        //    {
+        //        OpenFile(ImageFileName);
+        //    }
+        //}
 
 
         //private Image ImageResizer(Image imgToResize, int width, int height)
@@ -1246,7 +1258,10 @@ namespace SkyImagesAnalyzer
             {
                 if (!dir.Exists)
                 {
-                    ThreadSafeOperations.SetTextTB(textBox1, textBox1.Text + "Операция не выполнена. Не найдена директория:" + Environment.NewLine + path2process + Environment.NewLine, true);
+                    theLogWindow = ServiceTools.LogAText(theLogWindow,
+                        "Операция не выполнена. Не найдена директория:" + Environment.NewLine +
+                        path2process + Environment.NewLine, true);
+                    //ThreadSafeOperations.SetTextTB(textBox1, textBox1.Text + "Операция не выполнена. Не найдена директория:" + Environment.NewLine + path2process + Environment.NewLine, true);
                     return;
                 }
 
@@ -1262,10 +1277,11 @@ namespace SkyImagesAnalyzer
                 //object[] BGWorker2Args = new object[] { trackBar3.Value };
                 theLogWindow = ServiceTools.LogAText(theLogWindow, "Multiple images computing started with the following parameters:");
                 string strToDisplay = "";
-                var propertiesObj = Properties.Settings.Default.Properties;
-                foreach (SettingsProperty settingsProperty in propertiesObj)
+                //var propertiesObj = Properties.Settings.Default.Properties;
+                foreach (KeyValuePair<string, object> settingsProperty in defaultProperties)
                 {
-                    strToDisplay += Environment.NewLine + settingsProperty.Name + " = " + settingsProperty.DefaultValue;
+                    //strToDisplay += Environment.NewLine + settingsProperty.Name + " = " + settingsProperty.DefaultValue;
+                    strToDisplay += Environment.NewLine + settingsProperty.Key + " = " + settingsProperty.Value;
                 }
                 theLogWindow = ServiceTools.LogAText(theLogWindow, strToDisplay);
 
@@ -1612,7 +1628,7 @@ namespace SkyImagesAnalyzer
             ThreadSafeOperations.SetButtonEnabledStatus(обработатьToolStripMenuItem, true);
             ThreadSafeOperations.SetButtonEnabledStatus(eXIFыToolStripMenuItem, true);
 
-            ThreadSafeOperations.SetTrackBarEnabledStatus(trackBar3, true);
+            //ThreadSafeOperations.SetTrackBarEnabledStatus(trackBar3, true);
             //ThreadSafeOperations.SetTrackBarEnabledStatus(trackBar4, true);
             //ThreadSafeOperations.SetTrackBarEnabledStatus(trackBar5, true);
 
@@ -1654,7 +1670,9 @@ namespace SkyImagesAnalyzer
         {
             if (imagetoadd == null)
             {
-                ThreadSafeOperations.SetTextTB(textBox1, "Не загружено изображение для обработки!", true);
+                theLogWindow = ServiceTools.LogAText(theLogWindow,
+                    "Не загружено изображение для обработки!" + Environment.NewLine, true);
+                //ThreadSafeOperations.SetTextTB(textBox1, "Не загружено изображение для обработки!", true);
                 return;
             }
 
@@ -1666,9 +1684,9 @@ namespace SkyImagesAnalyzer
         private void DetectImageEdgesCircled()
         {
             ImageProcessing imp = new ImageProcessing(imagetoadd, true);
-            imp.reportingTextBox = textBox1;
+            //imp.reportingTextBox = textBox1;
             //imp.getImageOctLined();
-            ServiceTools.FlushMemory(textBox1, "");
+            ServiceTools.FlushMemory(null, "");
             pictureBox2Bitmap = new Bitmap(imp.significantMaskImageOctLined.Bitmap);
             Image img2show = (Image)imp.significantMaskImageOctLined.Bitmap;
             //ServiceTools.ShowPicture(img2show);
@@ -1712,11 +1730,11 @@ namespace SkyImagesAnalyzer
             {
                 classificator.ClassificationMethod = ClassificationMethods.Japan;
             }
-            else if (rbtnClassMethodGreek.Checked)
+            else if (rbtnClassMethodUS.Checked)
             {
                 classificator.ClassificationMethod = ClassificationMethods.Greek;
             }
-            else if (rbtnClassMethodNew.Checked)
+            else if (rbtnClassMethodGrIx.Checked)
             {
                 classificator.ParentForm = this;
                 classificator.ClassificationMethod = ClassificationMethods.GrIx;
@@ -1746,7 +1764,7 @@ namespace SkyImagesAnalyzer
             TimeSpan timeNew = DateTime.Now - beginNew;
             #endregion
 
-            ServiceTools.FlushMemory(textBox1, "#02");
+            ServiceTools.FlushMemory(null, "#02");
 
             ThreadSafeOperations.UpdatePictureBox(pictureBox2, bitmapSI, true);
 
@@ -1780,7 +1798,7 @@ namespace SkyImagesAnalyzer
             //tunedSIMargin_prev = tunedSIMargin;
 
             UpdateSIIFMlabels(1, classificator.CloudCover);
-            ServiceTools.FlushMemory(textBox1, "");
+            ServiceTools.FlushMemory(null, "");
         }
 
 
@@ -1795,13 +1813,18 @@ namespace SkyImagesAnalyzer
             ServiceTools.ShowPicture(pictureBox2Bitmap);
         }
 
+
+
+
         private void button2_Click(object sender, EventArgs e)
         {
             //Bitmap bm2Process = imagetoadd.Copy().Bitmap;
             SkyImagesAnalyzer_ColorsManipulatingForm ManualAnalysisForm = new SkyImagesAnalyzer_ColorsManipulatingForm(imagetoadd, this, defaultProperties);
-            ManualAnalysisForm.tbLog = textBox1;
+            //ManualAnalysisForm.tbLog = textBox1;
             ManualAnalysisForm.Show();
         }
+
+
 
         /// <summary>
         /// Handles the KeyPress event of the SkyIndexAnalyzer_AnalysisForm control.
@@ -1819,7 +1842,7 @@ namespace SkyImagesAnalyzer
 
         private void rbtnClassMethodNew_CheckedChanged(object sender, EventArgs e)
         {
-            if (rbtnClassMethodNew.Checked)
+            if (rbtnClassMethodGrIx.Checked)
             {
                 //tunedSIMargin = 0.75d;
                 tunedSIMargin = Convert.ToDouble(defaultProperties["GrIxDefaultSkyCloudMarginWithoutSun"]);
@@ -1847,872 +1870,16 @@ namespace SkyImagesAnalyzer
 
 
 
-        #region // УСТАРЕЛО - отдельно стоящий метод определения местоположения солнца
-        /// <summary>
-        /// Handles the Click event of the btnSunDetection control.
-        /// used to test the sun detection algoritms
-        /// deprecated
-        /// dont use!!!
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        //private void btnSunDetection_Click(object sender, EventArgs e)
-        //{
-        //    double minSunAreaPart = 0.003d;
-        //    double maxSunAreaPart = 0.05d;
-        //    double theStdDevMarginValueDefiningTrueSkyArea = 0.65d;
-        //    double theStdDevMarginValueDefiningSkyCloudSeparation = 0.75d;
-        //    double theStdDevMarginValueDefiningSkyCloudSeparation_SunSuppressed = 0.1d;
-
-        //    DenseMatrix dmRedChannel;
-        //    DenseMatrix dmBlueChannel;
-        //    DenseMatrix dmGreenChannel;
-
-        //    Bitmap LocalProcessingBitmap = (Bitmap)(imagetoadd.Clone());
-
-        //    Image<Gray, Byte> imageBlueChannelByte = new Image<Bgr, Byte>(LocalProcessingBitmap)[0];
-        //    Image<Gray, Byte> imageGreenChannelByte = new Image<Bgr, Byte>(LocalProcessingBitmap)[1];
-        //    Image<Gray, Byte> imageRedChannelByte = new Image<Bgr, Byte>(LocalProcessingBitmap)[2];
-        //    ImageProcessing imgP = new ImageProcessing(LocalProcessingBitmap, true);
-        //    //Image<Gray, Byte> maskImage = imgP.significantMaskImageBinary;
-        //    Image<Gray, Byte> maskImage100 = imgP.imageSignificantMaskCircled(100);
-        //    Image<Gray, Byte> maskImage = imgP.imageSignificantMaskCircled(95);
-        //    double overallMaskArea = (double)maskImage.CountNonzero()[0];
-
-        //    imageBlueChannelByte = imageBlueChannelByte.Mul(maskImage100);
-        //    imageRedChannelByte = imageRedChannelByte.Mul(maskImage100);
-        //    imageGreenChannelByte = imageGreenChannelByte.Mul(maskImage100);
-        //    dmRedChannel = ImageProcessing.DenseMatrixFromImage(imageRedChannelByte);
-        //    dmBlueChannel = ImageProcessing.DenseMatrixFromImage(imageBlueChannelByte);
-        //    dmGreenChannel = ImageProcessing.DenseMatrixFromImage(imageGreenChannelByte);
-        //    ServiceTools.FlushMemory(null, null);
-
-
-        //    string formulaString = "1 - sqrt((R*R+G*G+B*B)/3 - (R+G+B)*(R+G+B)/9) / Y";
-        //    DenseMatrix dmProcessingData = (DenseMatrix)imgP.eval(formulaString, dmRedChannel, dmGreenChannel, dmBlueChannel, null).Clone();
-        //    ServiceTools.RepresentDataFromDenseMatrix(dmProcessingData, "original GrIx data");
-        //    DenseMatrix dmMask100 = ImageProcessing.DenseMatrixFromImage(maskImage100);
-        //    DenseMatrix dmMask = ImageProcessing.DenseMatrixFromImage(maskImage);
-        //    dmProcessingData = (DenseMatrix)dmProcessingData.PointwiseMultiply(dmMask100);
-
-
-        //    //formulaString = "Y / 255";
-        //    //DenseMatrix dmTotalLuminance = (DenseMatrix)imgP.eval(formulaString, dmRedChannel, dmGreenChannel, dmBlueChannel, null).Clone();
-        //    //double totalLuminance = dmTotalLuminance.Values.Sum() / dmMask.Values.Sum();
-
-        //    ServiceTools.FlushMemory();
-
-
-        //    #region поиск солнца по засветке
-        //    // ищем солнце по центру масс засветки
-        //    // радиус ищем в предположении, что это круг и его площадь = PI * R^2
-        //    //DenseMatrix dmSunMask = DenseMatrix.Create(dmProcessingData.RowCount, dmProcessingData.ColumnCount,
-        //    //    new Func<int, int, double>(
-        //    //        (row, column) =>
-        //    //        {
-        //    //            if (dmProcessingData[row, column] == 1.0d) return 1.0d;
-        //    //            else return 0.0d;
-        //    //        }));
-        //    //ServiceTools.RepresentDataFromDenseMatrix(dmSunMask, "Sun burning mask");
-        //    ////ImageConditionAndDataRepresentingForm sunMaskDataForm = ServiceTools.RepresentDataFromDenseMatrix(dmSunMask, "Sun mask");
-        //    //PointD sunCenterPoint = new PointD(0.0d, 0.0d);
-        //    //double weightsSum = dmSunMask.Values.Sum();
-        //    //DenseMatrix dmSunCenterResearchingWeights = (DenseMatrix)dmSunMask.Clone();
-        //    //dmSunCenterResearchingWeights.MapInplace(new Func<double, double>(val => val / weightsSum));
-        //    //DenseMatrix dmSunCenterResearching = DenseMatrix.Create(dmSunCenterResearchingWeights.RowCount,
-        //    //    dmSunCenterResearchingWeights.ColumnCount, new Func<int, int, double>((row, column) => (double)column));
-        //    //dmSunCenterResearching = (DenseMatrix)dmSunCenterResearching.PointwiseMultiply(dmSunCenterResearchingWeights);
-        //    //sunCenterPoint.X = dmSunCenterResearching.Values.Sum();
-        //    //dmSunCenterResearching = DenseMatrix.Create(dmSunCenterResearchingWeights.RowCount,
-        //    //    dmSunCenterResearchingWeights.ColumnCount, new Func<int, int, double>((row, column) => (double)row));
-        //    //dmSunCenterResearching = (DenseMatrix)dmSunCenterResearching.PointwiseMultiply(dmSunCenterResearchingWeights);
-        //    //sunCenterPoint.Y = dmSunCenterResearching.Values.Sum();
-        //    //double sunRadius = Math.Sqrt(weightsSum / Math.PI);
-
-        //    //Image<Bgr, Byte> sunRepresentingimage = ImageProcessing.evalResultColored(dmProcessingData, maskImage, new ColorScheme(""));
-        //    //CircleF theSunCircle = new CircleF(new PointF((float)sunCenterPoint.X, (float)sunCenterPoint.Y), (float)sunRadius);
-        //    //Image<Bgr, Byte> theSunCircleImage = sunRepresentingimage.CopyBlank();
-        //    //theSunCircleImage.Draw(theSunCircle, new Bgr(100, 100, 100), 0);
-        //    //sunRepresentingimage = sunRepresentingimage.AddWeighted(theSunCircleImage, 0.5, 0.5, 0.0);
-        //    //ServiceTools.ShowPicture(sunRepresentingimage.Bitmap);
-        //    #endregion поиск солнца по засветке
-
-
-        //    #region посчитаем для объектов засветки разные солнечные метрики
-        //    // lets play with grad field near the sunburn edges
-
-        //    ArithmeticsOnImages aoi = new ArithmeticsOnImages();
-        //    aoi.dmY = dmProcessingData;
-        //    aoi.exprString = "grad(Y)";
-        //    aoi.RPNeval(true);
-        //    DenseMatrix dmGradField = (DenseMatrix)aoi.dmRes.Clone();
-        //    dmGradField = (DenseMatrix)dmGradField.PointwiseMultiply(dmMask);
-
-        //    aoi.exprString = "ddx(Y)";
-        //    aoi.RPNeval(true);
-        //    DenseMatrix dmDDXField = (DenseMatrix)aoi.dmRes.Clone();
-        //    dmDDXField = (DenseMatrix)dmDDXField.PointwiseMultiply(dmMask);
-
-        //    aoi.exprString = "ddy(Y)";
-        //    aoi.RPNeval(true);
-        //    DenseMatrix dmDDYField = (DenseMatrix)aoi.dmRes.Clone();
-        //    dmDDYField = (DenseMatrix)dmDDYField.PointwiseMultiply(dmMask);
-
-        //    //aoi.Dispose();
-        //    //aoi = null;
-        //    ServiceTools.RepresentDataFromDenseMatrix(dmGradField, "Grad field");
-
-        //    // посмотрим, что с градиентами на границах разных отдельных объектов
-
-        //    Image<Gray, Byte> imgSunMask = ImageProcessing.grayscaleImageFromDenseMatrixWithFixedValuesBounds(
-        //        dmProcessingData, 0.0d, 1.0d, false);
-        //    imgSunMask = imgSunMask.ThresholdBinary(new Gray(254), new Gray(255));
-        //    ServiceTools.ShowPicture(imgSunMask.Bitmap);
-
-        //    Contour<Point> contoursDetected = imgSunMask.FindContours(Emgu.CV.CvEnum.CHAIN_APPROX_METHOD.CV_CHAIN_APPROX_NONE, Emgu.CV.CvEnum.RETR_TYPE.CV_RETR_LIST);
-        //    List<Contour<Point>> contoursList = new List<Contour<Point>>();
-
-        //    while (true)
-        //    {
-        //        Contour<Point> currContour = contoursDetected;
-        //        double currcontourArePart = currContour.Area / overallMaskArea;
-        //        if ((currcontourArePart <= maxSunAreaPart) && (currcontourArePart >= minSunAreaPart))
-        //        {
-        //            contoursList.Add(currContour);
-        //        }
-
-        //        contoursDetected = contoursDetected.HNext;
-        //        if (contoursDetected == null)
-        //            break;
-        //    }
-
-
-
-        //    string baseDir = "G:\\_gulevlab\\SkyIndexAnalyzerSolo_appData\\_dataDirectory\\";
-        //    ServiceTools.logToTextFile(baseDir + "ShowHistScript.m", "clear; " + Environment.NewLine, true);
-
-        //    List<double> contourMaxSunMarginCluster = new List<double>();
-        //    List<double> contourMaxSunMarginClusterRel = new List<double>();
-        //    List<double> contourMeanGradDataStdDev = new List<double>();
-        //    List<double> contourMeanGradDataMean = new List<double>();
-        //    List<string> contoursName = new List<string>();
-        //    List<Contour<Point>> countedContours = new List<Contour<Point>>();
-
-        //    Contour<Point> foundSunContour = null;
-        //    double minGradStDevValue = 1.0d;
-        //    foreach (Contour<Point> currContour in contoursList)
-        //    {
-        //        if (currContour.Area < 9)
-        //        {
-        //            continue;
-        //        }
-
-        //        DenseMatrix dmDistanceToCurrContour = DenseMatrix.Create(dmProcessingData.RowCount,
-        //            dmProcessingData.ColumnCount, (row, col) =>
-        //            {
-        //                PointF thePoint = new PointF((float)col, (float)row);
-        //                return currContour.Distance(thePoint);
-        //            });
-
-        //        DenseMatrix dmPointsOutsideCurrContour = DenseMatrix.Create(dmProcessingData.RowCount,
-        //            dmProcessingData.ColumnCount, (row, col) =>
-        //            {
-        //                double currDistance = dmDistanceToCurrContour[row, col];
-        //                if (currDistance > 0.0d) return 0.0;
-        //                else return 1.0d;
-        //            });
-
-
-        //        // celculate the densematrix containing grad(field) close to contour margin, outside the contour
-        //        double currArea = currContour.Area;
-        //        currArea = currArea / (double)maskImage.CountNonzero()[0];
-        //        DenseMatrix dmCurrContourGradData = (DenseMatrix)dmGradField.Clone();
-        //        dmCurrContourGradData.MapIndexedInplace((row, column, val) =>
-        //        {
-        //            double currDistance = dmDistanceToCurrContour[row, column];
-        //            if (Math.Abs(currDistance) > 5.0d) return 0.0;
-        //            //if (Math.Abs(currDistance) < 10.0d) return 0.0;
-        //            if (currDistance > 0.0d) return 0.0;
-        //            else return val;
-        //        });
-
-
-        //        DenseMatrix dmCurrContourDDXData = (DenseMatrix)dmDDXField.Clone();
-        //        dmCurrContourDDXData.MapIndexedInplace((row, column, val) =>
-        //        {
-        //            double currDistance = dmDistanceToCurrContour[row, column];
-        //            if (Math.Abs(currDistance) > 5.0d) return 0.0;
-        //            //if (Math.Abs(currDistance) < 10.0d) return 0.0;
-        //            if (currDistance > 0.0d) return 0.0;
-        //            else return val;
-        //        });
-
-
-
-        //        DenseMatrix dmCurrContourDDYData = (DenseMatrix)dmDDYField.Clone();
-        //        dmCurrContourDDYData.MapIndexedInplace((row, column, val) =>
-        //        {
-        //            double currDistance = dmDistanceToCurrContour[row, column];
-        //            if (Math.Abs(currDistance) > 5.0d) return 0.0;
-        //            //if (Math.Abs(currDistance) < 10.0d) return 0.0;
-        //            if (currDistance > 0.0d) return 0.0;
-        //            else return val;
-        //        });
-
-
-
-        //        #region попробую посчитать статистику по градиенту (mean и stdDev) в пределах 5px, ddx, ddy в пределах 5px для каждой точки границы объекта засветки
-
-        //        string csvFileText = "";
-        //        List<double> meanDataAlongContour = new List<double>();
-        //        List<double> stdDevDataAlongContour = new List<double>();
-
-
-        //        //DenseMatrix dmDDXMeanDataAlongContour = DenseMatrix.Create(dmProcessingData.RowCount,
-        //        //        dmProcessingData.ColumnCount, new Func<int, int, double>((row, col) => 0.0d));
-        //        //DenseMatrix dmDDYMeanDataAlongContour = DenseMatrix.Create(dmProcessingData.RowCount,
-        //        //    dmProcessingData.ColumnCount, new Func<int, int, double>((row, col) => 0.0d));
-
-        //        foreach (Point contourPoint in currContour)
-        //        {
-
-        //            DenseMatrix dmCurrpointDistance = DenseMatrix.Create(dmProcessingData.RowCount,
-        //                dmProcessingData.ColumnCount,
-        //                (row, col) =>
-        //                    PointD.Distance(new PointD((double)col, (double)row), new PointD(contourPoint)));
-        //            DenseMatrix dmCurrpointDistanceLessThan10 = (DenseMatrix)dmCurrpointDistance.Clone();
-        //            dmCurrpointDistanceLessThan10.MapInplace(x => (x <= 10.0d) ? (x) : (0.0d));
-        //            DenseMatrix dmCurrpointDistanceLessThan5 = (DenseMatrix)dmCurrpointDistance.Clone();
-        //            dmCurrpointDistanceLessThan5.MapInplace(x => (x <= 5.0d) ? (x) : (0.0d));
-
-
-        //            Func<int, int, double, double> fLessThan5DistanceToCurrentPoint =
-        //                (row, col, x) => x * dmCurrpointDistanceLessThan5[row, col];
-        //            //Func<int, int, double, double> fLessThan5DistanceToCurrentPoint =
-        //            //    new Func<int, int, double, double>((row, col, x) => x*dmCurrpointDistanceLessThan5[row, col]);
-        //            Func<int, int, double, double> fPointsOutsideTheContour =
-        //                (row, col, x) => x * dmPointsOutsideCurrContour[row, col];
-
-
-        //            //DenseMatrix dmDDXstatsCurrPoint = (DenseMatrix)dmDDXField.Clone();
-        //            //dmDDXstatsCurrPoint.MapIndexedInplace(fLessThan5DistanceToCurrentPoint);
-        //            //dmDDXstatsCurrPoint.MapIndexedInplace(fPointsOutsideTheContour);
-
-
-        //            //DenseMatrix dmDDYstatsCurrPoint = (DenseMatrix)dmDDYField.Clone();
-        //            //dmDDYstatsCurrPoint.MapIndexedInplace(fLessThan5DistanceToCurrentPoint);
-        //            //dmDDYstatsCurrPoint.MapIndexedInplace(fPointsOutsideTheContour);
-
-
-        //            DenseMatrix dmCurrContourGradStatsData = (DenseMatrix)dmGradField.Clone();
-        //            dmCurrContourGradStatsData.MapIndexedInplace(fLessThan5DistanceToCurrentPoint);
-        //            dmCurrContourGradStatsData.MapIndexedInplace(fPointsOutsideTheContour);
-
-
-        //            //DescriptiveStatistics statsCurrPointDDXData = DataAnalysis.StatsOfDataExcludingValues(dmDDXstatsCurrPoint,
-        //            //    0.0d);
-        //            //if (statsCurrPointDDXData != null)
-        //            //{
-        //            //    dmDDXMeanDataAlongContour[contourPoint.Y, contourPoint.X] = statsCurrPointDDXData.Mean;
-        //            //}
-
-        //            //DescriptiveStatistics statsCurrPointDDYData = DataAnalysis.StatsOfDataExcludingValues(dmDDYstatsCurrPoint,
-        //            //    0.0d);
-        //            //if (statsCurrPointDDYData != null)
-        //            //{
-        //            //    dmDDYMeanDataAlongContour[contourPoint.Y, contourPoint.X] = statsCurrPointDDYData.Mean;
-        //            //}
-
-
-        //            DescriptiveStatistics statsCurrPointGradData = DataAnalysis.StatsOfDataExcludingValues(dmCurrContourGradStatsData,
-        //                0.0d);
-        //            if (statsCurrPointGradData != null)
-        //            {
-        //                meanDataAlongContour.Add(statsCurrPointGradData.Mean);
-        //                stdDevDataAlongContour.Add(statsCurrPointGradData.StandardDeviation);
-        //                csvFileText += statsCurrPointGradData.Mean.ToString("e").Replace(",", ".") + ";" +
-        //                               (statsCurrPointGradData.StandardDeviation).ToString("e").Replace(",", ".") +
-        //                               Environment.NewLine;
-        //            }
-        //        }
-
-        //        DescriptiveStatistics statsGradMeansAlongContour = new DescriptiveStatistics(meanDataAlongContour);
-        //        double meanGradValueAlongCurrentContour = statsGradMeansAlongContour.Mean;
-        //        double stdDevGradValueAlongCurrentContour = statsGradMeansAlongContour.StandardDeviation;
-        //        List<int> continousDataClustersLessThanMean =
-        //            DataAnalysis.ContinousDataClustersWithCondition(meanDataAlongContour,
-        //                (x => x <= meanGradValueAlongCurrentContour));
-        //        int maxContinousMeanGradValueCluster = continousDataClustersLessThanMean.Max();
-
-
-        //        #endregion попробую посчитать статистику по градиенту (mean и stdDev) в пределах 5px, ddx, ddy в пределах 5px для каждой точки границы объекта засветки
-
-
-
-
-
-
-
-        //        //aoi.exprString = "Y%2";
-        //        //aoi.dmY = dmCurrContourGradData;
-        //        //aoi.RPNeval(true);
-        //        //dmCurrContourGradData = (DenseMatrix)aoi.dmRes.Clone();
-
-
-        //        //Bgr newBgrColor = new Bgr(colorGenerator.GetNext());
-        //        //List<Contour<Point>> convexContoursList = ImageProcessing.GetConvexContoursListFromNonConvexContour(currContour);
-        //        //foreach (Contour<Point> convContour in convexContoursList)
-        //        //{
-        //        //    imgSunMaskSplittedContours.Draw(convContour, newBgrColor, 0);
-        //        //}
-
-        //        string randFName = "m" + Path.GetRandomFileName().Replace(".", "");
-        //        ImageConditionAndDataRepresentingForm theWindow = ServiceTools.RepresentDataFromDenseMatrix(dmCurrContourGradData, "the contour margins grad field: " + randFName);
-        //        ImageConditionAndDataRepresentingForm theWindowDDX = ServiceTools.RepresentDataFromDenseMatrix(dmCurrContourDDXData, "the contour margins d/dx field: " + randFName, false, false, 0.0d, 1.0d, false);
-        //        ImageConditionAndDataRepresentingForm theWindowDDY = ServiceTools.RepresentDataFromDenseMatrix(dmCurrContourDDYData, "the contour margins d/dy field: " + randFName, false, false, 0.0d, 1.0d, false);
-        //        //ImageConditionAndDataRepresentingForm theWindowMeanDDX = ServiceTools.RepresentDataFromDenseMatrix(dmDDXMeanDataAlongContour, "the contour margins mean d/dx field: " + randFName, false, false, 0.0d, 1.0d, false);
-        //        //ImageConditionAndDataRepresentingForm theWindowMeanDDY = ServiceTools.RepresentDataFromDenseMatrix(dmDDYMeanDataAlongContour, "the contour margins mean d/dy field: " + randFName, false, false, 0.0d, 1.0d, false);
-        //        string matrixNameGrad = "vardataSunBurnGrad" + randFName;
-        //        string matrixNameDDX = "vardataSunBurnDDX" + randFName;
-        //        string matrixNameDDY = "vardataSunBurnDDY" + randFName;
-        //        //string matrixNameMeanDDX = "vardataMeanDDX" + randFName;
-        //        //string matrixNameMeanDDY = "vardataMeanDDY" + randFName;
-        //        string vectName = "vect" + randFName;
-        //        string filenameGrad = "SunburnSpotsGrads" + randFName + ".nc";
-        //        String filenameDDX = "SunburnSpotsDDXs" + randFName + ".nc";
-        //        String filenameDDY = "SunburnSpotsDDYs" + randFName + ".nc";
-        //        //String filenameMeanDDX = "SunburnSpotsMeanDDXs" + randFName + ".nc";
-        //        //String filenameMeanDDY = "SunburnSpotsMeanDDYs" + randFName + ".nc";
-        //        theWindow.SaveData(filenameGrad);
-        //        theWindowDDX.SaveData(filenameDDX);
-        //        theWindowDDY.SaveData(filenameDDY);
-        //        //theWindowMeanDDX.SaveData(filenameMeanDDX);
-        //        //theWindowMeanDDY.SaveData(filenameMeanDDY);
-
-        //        ServiceTools.logToTextFile(baseDir + randFName + "_MeanAndStdDevDistributionAlongContour.csv", csvFileText);
-        //        string matlabScript = "" + Environment.NewLine;
-        //        matlabScript += "gradDistributionMean_" + randFName + " = " + meanGradValueAlongCurrentContour.ToString("e").Replace(",", ".") + ";" + Environment.NewLine;
-        //        matlabScript += "gradDistributionStdDev_" + randFName + " = " + stdDevGradValueAlongCurrentContour.ToString("e").Replace(",", ".") + ";" + Environment.NewLine;
-        //        matlabScript += matrixNameGrad + " = ncread(\'" + baseDir + filenameGrad + "\',\'dataMatrix\');" + Environment.NewLine;
-        //        matlabScript += matrixNameDDX + " = ncread(\'" + baseDir + filenameDDX + "\',\'dataMatrix\');" + Environment.NewLine;
-        //        matlabScript += matrixNameDDY + " = ncread(\'" + baseDir + filenameDDY + "\',\'dataMatrix\');" + Environment.NewLine;
-        //        //matlabScript += matrixNameMeanDDX + " = ncread(\'" + baseDir + filenameMeanDDX + "\',\'dataMatrix\');" + Environment.NewLine;
-        //        //matlabScript += matrixNameMeanDDY + " = ncread(\'" + baseDir + filenameMeanDDY + "\',\'dataMatrix\');" + Environment.NewLine;
-
-        //        matlabScript += "idxGradIsZero" + randFName + " = (" + matrixNameGrad + " == 0);" + Environment.NewLine;
-        //        //matlabScript += matrixNameMeanDDX + "(idxGradIsZero" + randFName + ") = NaN;" + Environment.NewLine;
-        //        //matlabScript += matrixNameMeanDDY + "(idxGradIsZero" + randFName + ") = NaN;" + Environment.NewLine;
-
-        //        matlabScript += vectName + " = reshape(" + matrixNameGrad + ", 1, []);" + Environment.NewLine;
-        //        matlabScript += "idx = (" + vectName + " > 0);" + Environment.NewLine;
-        //        matlabScript += vectName + " = " + vectName + "(idx);" + Environment.NewLine;
-        //        matlabScript += "figure('Name', '" + randFName + "');" + Environment.NewLine;
-        //        //nelements = hist(vect0up1mzqdv3p, 100);
-        //        //text(mean(vect0up1mzqdv3p) * 1.3, max(nelements) * 0.7, strcat('mean = ', num2str(mean(vect0up1mzqdv3p))));
-        //        //matlabScript += "nelements = hist(" + vectName + ", 100);" + Environment.NewLine;
-        //        matlabScript += "[histNElem" + vectName + ", histCenters" + vectName + "] = hist(" + vectName + ", 100);" + Environment.NewLine;
-        //        matlabScript += "bar(histCenters" + vectName + ", histNElem" + vectName + ");" + Environment.NewLine;
-        //        matlabScript += "histMean_" + vectName + " = mean(" + vectName + ");" + Environment.NewLine;
-        //        matlabScript += "histStdDev_" + vectName + " = std(" + vectName + ");" + Environment.NewLine;
-        //        matlabScript += "hist" + vectName + "_MaxCount = max(histNElem" + vectName + ");" + Environment.NewLine;
-        //        matlabScript += "line([histMean_" + vectName + " histMean_" + vectName + "], [0.0 hist" + vectName + "_MaxCount], 'Color', [0 1.0 0], 'LineWidth', 3.0);" + Environment.NewLine;
-        //        matlabScript += "line([histMean_" + vectName + "-histStdDev_" + vectName + " histMean_" + vectName + "-histStdDev_" + vectName + "], [0.0 hist" + vectName + "_MaxCount], 'Color', [1.0 0 0], 'LineWidth', 2.0);" + Environment.NewLine;
-        //        matlabScript += "line([histMean_" + vectName + "+histStdDev_" + vectName + " histMean_" + vectName + "+histStdDev_" + vectName + "], [0.0 hist" + vectName + "_MaxCount], 'Color', [1.0 0 0], 'LineWidth', 2.0);" + Environment.NewLine;
-
-
-        //        matlabScript += "textstrHist(1) = {strcat('mean = ', num2str(histMean_" + vectName + "))};" + Environment.NewLine;
-        //        matlabScript += "textstrHist(2) = {strcat('std = ', num2str(histStdDev_" + vectName + "))};" + Environment.NewLine;
-        //        matlabScript += "textstrHist(3) = {strcat('contour partial area = ', '" + currArea.ToString("e") + "')}" + Environment.NewLine;
-        //        matlabScript += "text(mean(" + vectName + ") * 1.3, max(histNElem" + vectName + ") * 0.7, textstrHist);" + Environment.NewLine;
-
-        //        //matlabScript += "meanGradMaxCount" + randFName + " = max();" + Environment.NewLine;
-        //        //matlabScript += "line([histMean_" + vectName + " 0.0], [histMean_" + vectName + ", 1.0]);" + Environment.NewLine;
-
-
-        //        matlabScript += "csvdata = importdata('" + baseDir + randFName + "_MeanAndStdDevDistributionAlongContour.csv', ';');" + Environment.NewLine;
-        //        matlabScript += "meanAlongContour" + randFName + " = csvdata(:,1);" + Environment.NewLine;
-        //        //matlabScript += "idx" + randFName + " = (meanAlongContour" + randFName + " > 0.012);" + Environment.NewLine;
-        //        //matlabScript += "meanAlongContour" + randFName + "(idx" + randFName + ") = NaN;" + Environment.NewLine;
-        //        matlabScript += "stdDevAlongContour" + randFName + " = csvdata(:,2);" + Environment.NewLine;
-
-
-
-        //        matlabScript += "figure('Name', 'meanGradDataHist_" + randFName + "');" + Environment.NewLine;
-        //        matlabScript += "[histNElemvectHistMeanGradData" + randFName + ", histCentersvectHistMeanGradData" + randFName + "] = hist(meanAlongContour" + randFName + ", 100);" + Environment.NewLine;
-        //        matlabScript += "bar(histCentersvectHistMeanGradData" + randFName + ", histNElemvectHistMeanGradData" + randFName + ");" + Environment.NewLine;
-        //        matlabScript += "histMean_MeanGradData_vect" + randFName + " = mean(meanAlongContour" + randFName + ");" + Environment.NewLine;
-        //        matlabScript += "histStdDev_MeanGradData_vect" + randFName + " = std(meanAlongContour" + randFName + ");" + Environment.NewLine;
-        //        matlabScript += "histvect" + randFName + "_MaxCount_MeanGradData = max(histNElemvectHistMeanGradData" + randFName + ");" + Environment.NewLine;
-        //        matlabScript += "line([histMean_MeanGradData_vect" + randFName + " histMean_MeanGradData_vect" + randFName + "], [0.0 histvect" + randFName + "_MaxCount_MeanGradData], 'Color', [0 1.0 0], 'LineWidth', 3.0);" + Environment.NewLine;
-        //        matlabScript += "line([histMean_MeanGradData_vect" + randFName + "-histStdDev_MeanGradData_vect" + randFName + " histMean_MeanGradData_vect" + randFName + "-histStdDev_MeanGradData_vect" + randFName + "], [0.0 histvect" + randFName + "_MaxCount_MeanGradData], 'Color', [1.0 0 0], 'LineWidth', 2.0);" + Environment.NewLine;
-        //        matlabScript += "line([histMean_MeanGradData_vect" + randFName + "+histStdDev_MeanGradData_vect" + randFName + " histMean_MeanGradData_vect" + randFName + "+histStdDev_MeanGradData_vect" + randFName + "], [0.0 histvect" + randFName + "_MaxCount_MeanGradData], 'Color', [1.0 0 0], 'LineWidth', 2.0);" + Environment.NewLine;
-        //        matlabScript += "textstrHist2(1) = {strcat('mean = ', num2str(histMean_MeanGradData_vect" + randFName + "))};" + Environment.NewLine;
-        //        matlabScript += "textstrHist2(2) = {strcat('std = ', num2str(histStdDev_MeanGradData_vect" + randFName + "))};" + Environment.NewLine;
-        //        matlabScript += "text(histMean_MeanGradData_vect" + randFName + " * 1.3, histvect" + randFName + "_MaxCount_MeanGradData * 0.7, textstrHist2);" + Environment.NewLine;
-
-
-
-        //        matlabScript += "meanPlusStdDev" + randFName + " = meanAlongContour" + randFName + " + stdDevAlongContour" + randFName + ";" + Environment.NewLine;
-        //        matlabScript += "meanMinusStdDev" + randFName + " = meanAlongContour" + randFName + " - stdDevAlongContour" + randFName + ";" + Environment.NewLine;
-
-        //        //matlabScript += "stdDevAlongContour" + randFName + "(idx" + randFName + ") = NaN;" + Environment.NewLine;
-        //        //matlabScript += "pointsSum" + randFName + " = sum(idx" + randFName + ");" + Environment.NewLine;
-        //        //matlabScript += "pointsRelative" + randFName + " = sum(idx" + randFName + ")/numel(idx" + randFName + ");" + Environment.NewLine;
-        //        matlabScript += "pointsTotal" + randFName + " = numel(meanAlongContour" + randFName + ");" + Environment.NewLine;
-
-        //        matlabScript += "fig = figure('Name', 'stats " + randFName + "');" + Environment.NewLine;
-        //        //matlabScript += "set(fig,'units','normalized','outerposition',[0 0 1 1]);" + Environment.NewLine;
-        //        matlabScript += "xSpace = 1:1:" + stdDevDataAlongContour.Count + ";" + Environment.NewLine;
-        //        matlabScript += "maxContinousClusterLessthanMean" + randFName + " = " + maxContinousMeanGradValueCluster + ";" + Environment.NewLine;
-
-        //        matlabScript += "scatter(xSpace, meanAlongContour" + randFName + ", 'g', 'LineWidth', 3.0);" + Environment.NewLine;
-        //        matlabScript += "hold on;" + Environment.NewLine;
-        //        //matlabScript += "scatter(xSpace, stdDevAlongContour" + randFName + ", 'r', 'LineWidth', 1.5);" + Environment.NewLine;
-        //        //matlabScript += "errorbar(xSpace, meanAlongContour" + randFName + ", stdDevAlongContour" + randFName + ", 'r');" + Environment.NewLine;
-        //        matlabScript += "plot(xSpace, meanPlusStdDev" + randFName + ", 'r', 'LineWidth', 1.0) ;" + Environment.NewLine;
-        //        matlabScript += "plot(xSpace, meanMinusStdDev" + randFName + ", 'r', 'LineWidth', 1.0) ;" + Environment.NewLine;
-
-        //        matlabScript += "line([0.0 " + stdDevDataAlongContour.Count + "], [gradDistributionMean_" + randFName + " gradDistributionMean_" + randFName + "], 'Color', [0 1.0 0], 'LineWidth', 3.0);" + Environment.NewLine;
-        //        matlabScript += "line([0.0 " + stdDevDataAlongContour.Count + "], [gradDistributionMean_" + randFName + " - gradDistributionStdDev_" + randFName + " gradDistributionMean_" + randFName + " - gradDistributionStdDev_" + randFName + "], 'Color', [1.0 0 0], 'LineWidth', 2.0);" + Environment.NewLine;
-        //        matlabScript += "line([0.0 " + stdDevDataAlongContour.Count + "], [gradDistributionMean_" + randFName + " + gradDistributionStdDev_" + randFName + " gradDistributionMean_" + randFName + " + gradDistributionStdDev_" + randFName + "], 'Color', [1.0 0 0], 'LineWidth', 2.0);" + Environment.NewLine;
-
-        //        matlabScript += "hold off;" + Environment.NewLine;
-
-        //        matlabScript += "title('grad() values mean and stddev along the contour " + randFName + "', 'FontWeight','bold', 'FontUnits', 'normalized', 'FontSize', 0.03);" + Environment.NewLine;
-        //        matlabScript += "xlabel(gca, 'point along contour, px', 'FontWeight','bold', 'FontUnits', 'normalized', 'FontSize', 0.03);" + Environment.NewLine;
-        //        matlabScript += "ylabel(gca, 'grad(GrIx) value', 'FontWeight','bold', 'FontUnits', 'normalized', 'FontSize', 0.03);" + Environment.NewLine;
-        //        matlabScript += "ylim(gca, [0.0 0.5]);" + Environment.NewLine;
-        //        //matlabScript += "textstr(1) = {strcat('relative sign points count = ', num2str(pointsRelative" + randFName + "))};" + Environment.NewLine;
-        //        //matlabScript += "textstr(2) = {strcat('abs sign points count = ', num2str(pointsSum" + randFName + "))};" + Environment.NewLine;
-
-        //        matlabScript += "textstrScatter(1) = {strcat('total points count = ', num2str(pointsTotal" + randFName + "))};" + Environment.NewLine;
-        //        matlabScript += "textstrScatter(2) = {strcat('max grad mean less than mean cluster = ', num2str(maxContinousClusterLessthanMean" + randFName + "))};" + Environment.NewLine;
-        //        matlabScript += "textstrScatter(3) = {strcat('relative max grad mean less than mean cluster = ', num2str(maxContinousClusterLessthanMean" + randFName + "/pointsTotal" + randFName + "))};" + Environment.NewLine;
-        //        matlabScript += "textstrScatter(4) = {strcat('mean grad values mean = ', num2str(gradDistributionMean_" + randFName + "))};" + Environment.NewLine;
-
-        //        matlabScript += "text(max(xSpace) * 0.1, 0.4, textstrScatter);" + Environment.NewLine;
-
-        //        //matlabScript += "fig = figure('Name', 'grad directions " + randFName + "');" + Environment.NewLine;
-        //        //matlabScript += "quiver(" + matrixNameMeanDDX + ", " + matrixNameMeanDDY + ", 3.0);" + Environment.NewLine;
-        //        ////matlabScript += ";" + Environment.NewLine;
-        //        ////matlabScript += ";" + Environment.NewLine;
-        //        ////matlabScript += ";" + Environment.NewLine;
-        //        ////matlabScript += ";" + Environment.NewLine;
-        //        ////matlabScript += ";" + Environment.NewLine;
-        //        //matlabScript += "title('grad vect field along the contour " + randFName + "', 'FontWeight','bold', 'FontUnits', 'normalized', 'FontSize', 0.03);" + Environment.NewLine;
-        //        //matlabScript += "xlabel(gca, 'x, px', 'FontWeight','bold', 'FontUnits', 'normalized', 'FontSize', 0.03);" + Environment.NewLine;
-        //        //matlabScript += "ylabel(gca, 'y, px', 'FontWeight','bold', 'FontUnits', 'normalized', 'FontSize', 0.03);" + Environment.NewLine;
-
-        //        ServiceTools.logToTextFile(baseDir + "ShowHistScript.m", matlabScript, true);
-
-
-        //        //List<double> valuesToStat = new List<double>();
-        //        //foreach (double dVal in dmCurrContourGradData.Values)
-        //        //{
-        //        //    if (dVal == 0.0) continue;
-        //        //    if (double.IsNaN(dVal)) continue;
-        //        //    valuesToStat.Add(dVal);
-        //        //}
-
-        //        DescriptiveStatistics stats = DataAnalysis.StatsOfDataExcludingValues(dmCurrContourGradData, 0.0d);
-        //        if (stats != null)
-        //        {
-        //            contourMeanGradDataStdDev.Add(stats.StandardDeviation);
-        //            contourMeanGradDataMean.Add(stats.Mean);
-        //            contourMaxSunMarginCluster.Add((double)maxContinousMeanGradValueCluster);
-        //            contourMaxSunMarginClusterRel.Add((double)maxContinousMeanGradValueCluster / (double)currContour.Count());
-        //            countedContours.Add(currContour);
-        //            contoursName.Add(randFName);
-        //        }
-
-
-
-        //        //DescriptiveStatistics stats = new DescriptiveStatistics(valuesToStat, true);
-        //        //if (stats.StandardDeviation <= minGradStDevValue)
-        //        //{
-        //        //    minGradStDevValue = stats.StandardDeviation;
-        //        //    foundSunContour = currContour;
-        //        //}
-        //    }
-        //    //ServiceTools.ShowPicture(imgSunMaskSplittedContours.Bitmap);
-
-        //    // 1. посчитаем площади. Отфильтруем объекты с относительной площадью меньше 2.5e-3
-        //    // 2. посчитаем стандартное отклонение градиентов без учета нулей. объект с наименьшим градиентом - объект, содержащий солнце
-        //    // 3. При площади засветки максимального пятна больше 0,02 - это обложная засветка, не использовать схему с подавлением солнечной засветки
-        //    //  3а в этом случае использовать схему прямого разделения.
-        //    //      При этом чем больше засветка, - тем выше граница.
-        //    //      При стандартной засветке площадью 0,0025 граница - ???
-        //    //      При площади засветки 0,0516 - 0,92
-
-        //    int indexMaxRelativeSunMargin =
-        //        DenseVector.OfEnumerable(contourMaxSunMarginClusterRel).AbsoluteMaximumIndex();
-        //    int indexMaxSunMargin =
-        //        DenseVector.OfEnumerable(contourMaxSunMarginCluster).AbsoluteMaximumIndex();
-        //    int indexMinGradStdDev = DenseVector.OfEnumerable(contourMeanGradDataStdDev).AbsoluteMinimumIndex();
-        //    int indexMinMeanGradValue = DenseVector.OfEnumerable(contourMeanGradDataMean).AbsoluteMinimumIndex();
-
-        //    if ((indexMaxRelativeSunMargin == indexMaxSunMargin) && (indexMaxSunMargin == indexMinGradStdDev) && (indexMinMeanGradValue == indexMinGradStdDev))
-        //    {
-        //        currentLogWindow = ServiceTools.LogAText(currentLogWindow,
-        //            "found the contour with" + Environment.NewLine +
-        //            "rel max sunburn margin length = " + contourMaxSunMarginClusterRel[indexMaxRelativeSunMargin] + "" +
-        //            Environment.NewLine +
-        //            "abs max sunburn margin length = " + contourMaxSunMarginCluster[indexMaxSunMargin] + "" +
-        //            Environment.NewLine +
-        //            "min grad stddev value = " + contourMeanGradDataStdDev[indexMinGradStdDev] + "" + Environment.NewLine +
-        //            "contour name = " + contoursName[indexMaxRelativeSunMargin]);
-        //        foundSunContour = countedContours[indexMaxRelativeSunMargin];
-        //    }
-        //    else
-        //    {
-        //        currentLogWindow = ServiceTools.LogAText(currentLogWindow,
-        //            "contours parameters is:" + Environment.NewLine +
-        //            "rel max sunburn margin length = " + contourMaxSunMarginClusterRel[indexMaxRelativeSunMargin] + " (name = " + contoursName[indexMaxRelativeSunMargin] + ")" + Environment.NewLine +
-        //            "abs max sunburn margin length = " + contourMaxSunMarginCluster[indexMaxSunMargin] + " (name = " + contoursName[indexMaxSunMargin] + ")" + Environment.NewLine +
-        //            "min grad stddev value = " + contourMeanGradDataStdDev[indexMinGradStdDev] + " (name = " + contoursName[indexMinGradStdDev] + ")" + Environment.NewLine +
-        //            "min grad mean value = " + contourMeanGradDataMean[indexMinMeanGradValue] + " (name = " + contoursName[indexMinMeanGradValue] + ")" + Environment.NewLine +
-        //            "contour, to count on, name = " + contoursName[indexMinMeanGradValue]);
-        //        foundSunContour = countedContours[indexMinMeanGradValue];
-        //    }
-
-
-
-        //    #endregion посчитаем для объектов засветки разные солнечные метрики
-
-
-
-
-        //    #region оценка применимости алгоритма подавления солнечной засветки
-        //    // оценить общую площадь засветки 255 - должно быть прилично ---СКОЛЬКО?
-        //    // найдем все куски площадью больше - ЧЕГО?
-        //    // оценить разброс кластеров засветки - должно быть единое круглое солнце, возможно, с лучами
-        //    // если засветки слишком мало - неприменимо, использовать без подавления
-        //    // если засветки слишком много - неприменимо, использовать без подавления
-
-        //    bool theSunSuppressionSchemeApplicable = true;
-
-
-
-        //    #region поиск солнца по найденному контуру
-
-        //    if (foundSunContour != null)
-        //    {
-        //        #region обработаем найденный контур еще раз
-
-        //        DenseMatrix dmDistanceToCurrContour = DenseMatrix.Create(dmProcessingData.RowCount,
-        //            dmProcessingData.ColumnCount, (row, col) =>
-        //            {
-        //                PointF thePoint = new PointF((float)col, (float)row);
-        //                return foundSunContour.Distance(thePoint);
-        //            });
-
-        //        DenseMatrix dmPointsOutsideCurrContour = DenseMatrix.Create(dmProcessingData.RowCount,
-        //            dmProcessingData.ColumnCount, (row, col) =>
-        //            {
-        //                double currDistance = dmDistanceToCurrContour[row, col];
-        //                if (currDistance > 0.0d) return 0.0;
-        //                else return 1.0d;
-        //            });
-
-        //        DenseMatrix dmCurrContourGradData = (DenseMatrix)dmGradField.Clone();
-        //        dmCurrContourGradData.MapIndexedInplace((row, col, val) =>
-        //        {
-        //            double currDistance = dmDistanceToCurrContour[row, col];
-        //            if (Math.Abs(currDistance) > 5.0d) return 0.0;
-        //            if (currDistance > 0.0d) return 0.0;
-        //            else return val;
-        //        });
-
-        //        List<Point> countedContourPoints = new List<Point>();
-        //        List<double> meanDataAlongContour = new List<double>();
-        //        List<double> stdDevDataAlongContour = new List<double>();
-
-        //        foreach (Point foundContourPoint in foundSunContour)
-        //        {
-
-        //            DenseMatrix dmCurrpointDistance = DenseMatrix.Create(dmProcessingData.RowCount,
-        //                dmProcessingData.ColumnCount,
-        //                (row, col) =>
-        //                    PointD.Distance(new PointD((double)col, (double)row), new PointD(foundContourPoint)));
-        //            DenseMatrix dmCurrpointDistanceLessThan5 = (DenseMatrix)dmCurrpointDistance.Clone();
-        //            dmCurrpointDistanceLessThan5.MapInplace(x => (x <= 5.0d) ? (x) : (0.0d));
-
-        //            Func<int, int, double, double> fLessThan5DistanceToCurrentPoint =
-        //                (row, col, x) => x * dmCurrpointDistanceLessThan5[row, col];
-        //            Func<int, int, double, double> fPointsOutsideTheContour =
-        //                (row, col, x) => x * dmPointsOutsideCurrContour[row, col];
-
-        //            DenseMatrix dmCurrContourGradStatsData = (DenseMatrix)dmGradField.Clone();
-        //            dmCurrContourGradStatsData.MapIndexedInplace(fLessThan5DistanceToCurrentPoint);
-        //            dmCurrContourGradStatsData.MapIndexedInplace(fPointsOutsideTheContour);
-
-        //            DescriptiveStatistics statsCurrPointGradData = DataAnalysis.StatsOfDataExcludingValues(dmCurrContourGradStatsData, 0.0d);
-        //            if (statsCurrPointGradData != null)
-        //            {
-        //                meanDataAlongContour.Add(statsCurrPointGradData.Mean);
-        //                stdDevDataAlongContour.Add(statsCurrPointGradData.StandardDeviation);
-        //                countedContourPoints.Add(foundContourPoint);
-        //            }
-        //        }
-
-        //        DescriptiveStatistics statsGradMeansAlongContour = new DescriptiveStatistics(meanDataAlongContour);
-        //        double meanGradValueAlongCurrentContour = statsGradMeansAlongContour.Mean;
-
-
-        //        DenseMatrix dmCurrContourGradDataCapturedSunMargin = (DenseMatrix)dmCurrContourGradData.Clone();
-        //        DenseMatrix dmCurrContourGradDataCapturedSunMarginMask = (DenseMatrix)dmCurrContourGradData.Clone();
-        //        dmCurrContourGradDataCapturedSunMarginMask.MapInplace(x => (x > 0.0d) ? (1.0d) : (0.0d));
-        //        List<PointD> acceptablePointsList = new List<PointD>();
-        //        List<double> lPointsWeights = new List<double>();
-
-        //        foreach (Point foundContourPoint in foundSunContour)
-        //        {
-        //            // найдем данные по этой точке
-        //            int ind = countedContourPoints.FindIndex(pt => pt == foundContourPoint);
-        //            if (ind == -1)
-        //            {
-        //                // точка не была учтена в статистиках, нет в листе точек, по которым посчитана статистика - пропускаем и тут
-        //                continue;
-        //            }
-        //            double currGradMean5pxValue = meanDataAlongContour[ind];
-
-        //            DenseMatrix dmCurrpointDistance = DenseMatrix.Create(dmProcessingData.RowCount,
-        //                dmProcessingData.ColumnCount,
-        //                (row, col) =>
-        //                    PointD.Distance(new PointD((double)col, (double)row), new PointD(foundContourPoint)));
-
-        //            // если проходит в качестве границы - сформировать матрицу, где в пределах 5px 1.0, остальные нули, и маску с ней сложить
-        //            if (currGradMean5pxValue <= meanGradValueAlongCurrentContour)
-        //            {
-        //                DenseMatrix dmCurrpointDistanceLessThan5 = (DenseMatrix)dmCurrpointDistance.Clone();
-        //                dmCurrpointDistanceLessThan5.MapInplace(x => (x <= 5.0d) ? (1.0) : (0.0d));
-        //                dmCurrContourGradDataCapturedSunMarginMask = dmCurrContourGradDataCapturedSunMarginMask +
-        //                                                             dmCurrpointDistanceLessThan5;
-        //                acceptablePointsList.Add(new PointD(foundContourPoint));
-        //                lPointsWeights.Add(currGradMean5pxValue);
-        //            }
-        //            // если не проходит - надо сформировать матрицу, где в пределах 5px нули, остальные 1.0, и на нее домножить маску
-        //            else
-        //            {
-        //                DenseMatrix dmCurrpointDistanceLessThan5 = (DenseMatrix)dmCurrpointDistance.Clone();
-        //                dmCurrpointDistanceLessThan5.MapInplace(x => (x <= 5.0d) ? (0.0d) : (1.0d));
-        //                dmCurrContourGradDataCapturedSunMarginMask =
-        //                    (DenseMatrix)
-        //                        dmCurrContourGradDataCapturedSunMarginMask.PointwiseMultiply(
-        //                            dmCurrpointDistanceLessThan5);
-        //            }
-        //        }
-        //        dmCurrContourGradDataCapturedSunMarginMask.MapInplace(x => (x > 0.0d) ? (1.0d) : (0.0d));
-        //        dmCurrContourGradDataCapturedSunMargin =
-        //            (DenseMatrix)
-        //                dmCurrContourGradDataCapturedSunMargin.PointwiseMultiply(
-        //                    dmCurrContourGradDataCapturedSunMarginMask);
-
-        //        Image<Bgr, byte> SunMarginGradToShowImage =
-        //            ImageProcessing.evalResultColored(dmCurrContourGradDataCapturedSunMargin, maskImage,
-        //                new ColorScheme(""));
-
-
-        //        // есть набор точек, которые подходят под описание границы солнца
-        //        // есть уравнение окружности с центром в (a,b) и радиусом c - три параметра
-        //        // начальные значения можно взять как центр масс набора точек - центр окружности, и радиус c - как радиус круга с площадью равной площади необрезанного контура
-        //        // снова применим аппроксимацию методом градиентного спуска. минимизировать будем такую функцию:
-        //        //          сумму абсолютных отклонений c от расстояния от точки контура до центра (a,b)
-
-        //        //DenseVector dvZeroValues = DenseVector.Create(acceptablePointsList.Count, (i => 0.0d));
-        //        //DenseVector dvIntSpace = DenseVector.Create(acceptablePointsList.Count, (i => (double)i));
-
-        //        DenseVector dvPointsWeight = DenseVector.OfEnumerable(lPointsWeights);
-        //        double gradMaxVal = dvPointsWeight.Max();
-        //        double gradMinVal = dvPointsWeight.Min();
-        //        dvPointsWeight.MapInplace(x =>
-        //        {
-        //            return (1.0d - (x - gradMinVal)/(gradMaxVal - gradMinVal));
-        //        }, true);
-
-        //        Func<DenseVector, PointD, double> minimizingFunc = (dvParameters, pt) =>
-        //        {
-        //            double sunCenterX = dvParameters[0];
-        //            double sunCenterY = dvParameters[1];
-        //            double r = dvParameters[2];
-        //            double diffX = pt.X - sunCenterX;
-        //            double diffY = pt.Y - sunCenterY;
-        //            double diff = r - Math.Sqrt(diffX * diffX + diffY * diffY);
-        //            //diff = Math.Abs(diff);
-        //            return diff;
-        //        };
-
-        //        double initSunCenterX = acceptablePointsList.Sum((pt => pt.X)) / (double)acceptablePointsList.Count;
-        //        double initSunCenterY = acceptablePointsList.Sum((pt => pt.Y)) / (double)acceptablePointsList.Count;
-        //        double initSunRadius = Math.Sqrt(foundSunContour.Area / Math.PI);
-        //        List<double> parametersList = new List<double>();
-        //        parametersList.Add(initSunCenterX);
-        //        parametersList.Add(initSunCenterY);
-        //        parametersList.Add(initSunRadius);
-        //        DenseVector dvInitialParameters = DenseVector.OfEnumerable(parametersList);
-        //        DenseVector initialParametersIncremnt = DenseVector.Create(dvInitialParameters.Count, (i => 1.0d));
-
-        //        GradientDescentApproximator approximator = new GradientDescentApproximator(acceptablePointsList, minimizingFunc);
-        //        approximator.DvWeights = dvPointsWeight;
-        //        //approximator.DvWeights = "";
-        //        DenseVector approximatedParameters = approximator.ApproximationGradientDescent2DPt(dvInitialParameters, initialParametersIncremnt, 0.000001d);
-
-        //        #endregion обработаем найденный контур еще раз
-
-
-
-
-        //        Image<Gray, Byte> imgSunMaskFiltered = imgSunMask.CopyBlank();
-        //        imgSunMaskFiltered.Draw(foundSunContour, new Gray(255), -1);
-        //        DenseMatrix dmSunMask = ImageProcessing.DenseMatrixFromImage(imgSunMaskFiltered);
-        //        dmSunMask.MapInplace(val => val / 255.0d);
-
-        //        //DenseMatrix.Create(dmProcessingData.RowCount, dmProcessingData.ColumnCount,
-        //        //new Func<int, int, double>(
-        //        //    (row, column) =>
-        //        //    {
-        //        //        if (dmProcessingData[row, column] == 1.0d) return 1.0d;
-        //        //        else return 0.0d;
-        //        //    }));
-        //        //ImageConditionAndDataRepresentingForm sunMaskDataForm = ServiceTools.RepresentDataFromDenseMatrix(dmSunMask, "Sun mask");
-        //        //PointD sunCenterPoint = new PointD(0.0d, 0.0d);
-
-        //        #region заменен алгоритм нахождения солнца
-        //        //double weightsSum = dmSunMask.Values.Sum();
-        //        //DenseMatrix dmSunCenterResearchingWeights = (DenseMatrix)dmSunMask.Clone();
-        //        //dmSunCenterResearchingWeights.MapInplace(new Func<double, double>(val => val / weightsSum));
-        //        //DenseMatrix dmSunCenterResearching = DenseMatrix.Create(dmSunCenterResearchingWeights.RowCount,
-        //        //    dmSunCenterResearchingWeights.ColumnCount,
-        //        //    new Func<int, int, double>((row, column) => (double)column));
-        //        //dmSunCenterResearching = (DenseMatrix)dmSunCenterResearching.PointwiseMultiply(dmSunCenterResearchingWeights);
-        //        //sunCenterPoint.X = dmSunCenterResearching.Values.Sum();
-        //        //dmSunCenterResearching = DenseMatrix.Create(dmSunCenterResearchingWeights.RowCount,
-        //        //    dmSunCenterResearchingWeights.ColumnCount, new Func<int, int, double>((row, column) => (double)row));
-        //        //dmSunCenterResearching = (DenseMatrix)dmSunCenterResearching.PointwiseMultiply(dmSunCenterResearchingWeights);
-        //        //sunCenterPoint.Y = dmSunCenterResearching.Values.Sum();
-        //        //double sunRadius = Math.Sqrt(weightsSum / Math.PI);
-        //        #endregion заменен алгоритм нахождения солнца
-
-        //        PointD sunCenterPoint = new PointD(approximatedParameters[0], approximatedParameters[1]);
-        //        double sunRadius = approximatedParameters[2];
-
-
-
-
-        //        Image<Bgr, Byte> imageSunDemonstration = ImageProcessing.evalResultColored(dmProcessingData, maskImage,
-        //            new ColorScheme(""));
-        //        Image<Bgr, Byte> calculatedSunMaskImage = imageSunDemonstration.CopyBlank();
-        //        calculatedSunMaskImage.Draw(new CircleF(new PointF((float)sunCenterPoint.X, (float)sunCenterPoint.Y), (float)sunRadius), new Bgr(255, 255, 255), 0);
-        //        imageSunDemonstration = imageSunDemonstration.AddWeighted(calculatedSunMaskImage, 0.7, 0.3, 0.0);
-        //        ServiceTools.ShowPicture(imageSunDemonstration, "Sun position and radius demonstration");
-
-        //        SunMarginGradToShowImage = SunMarginGradToShowImage.AddWeighted(calculatedSunMaskImage, 0.7, 0.3, 0.0);
-        //        ServiceTools.ShowPicture(SunMarginGradToShowImage, "SUN margin image");
-
-        //        currentLogWindow = ServiceTools.LogAText(currentLogWindow, "положение центра солнца: " + sunCenterPoint + Environment.NewLine);
-        //        currentLogWindow = ServiceTools.LogAText(currentLogWindow, "радиус солнечной засветки: " + sunRadius + Environment.NewLine);
-        //    #endregion поиск солнца по найденному контуру
-
-
-        //        // пройдемся по всем раздельным объектам засветки и оценим площадь каждого из них
-        //        /*
-        //        Contour<Point> contoursDetected = imgSunMask.FindContours(Emgu.CV.CvEnum.CHAIN_APPROX_METHOD.CV_CHAIN_APPROX_SIMPLE, Emgu.CV.CvEnum.RETR_TYPE.CV_RETR_LIST);
-        //        List<Contour<Point>> contoursArray = new List<Contour<Point>>();
-
-        //        while (true)
-        //        {
-        //            Contour<Point> currContour = contoursDetected;
-        //            contoursArray.Add(currContour);
-
-        //            contoursDetected = contoursDetected.HNext;
-        //            if (contoursDetected == null)
-        //                break;
-        //        }
-
-        //        List<Contour<Point>> contoursArrayFilteredByArea = new List<Contour<Point>>();
-        //        if (contoursArray.Count > 0)
-        //        {
-        //            foreach (Contour<Point> contour in contoursArray)
-        //            {
-        //                double currArea = contour.Area / overallimageMaskArea;
-        //                if ((currArea <= maxSunAreaPart) && (currArea >= minSunAreaPart))
-        //                {
-        //                    contoursArrayFilteredByArea.Add(contour);
-        //                }
-        //            }
-        //        }
-
-        //        // =====================================================================
-        //        //     еще отфильтровать по форме. постараться найти объекты покруглее
-        //        // =====================================================================
-
-        //        if (contoursArrayFilteredByArea.Count == 0)
-        //        {
-        //            theSunSuppressionSchemeApplicable = false;
-        //        }
-        //         */
-
-
-        //        //currentLogWindow = ServiceTools.LogAText(currentLogWindow, "average sun data grad: " + );
-        //    }
-        //    else
-        //    {
-        //        theSunSuppressionSchemeApplicable = false;
-        //    }
-
-        //    currentLogWindow = ServiceTools.LogAText(currentLogWindow, "sun suppression scheme applicable: " + theSunSuppressionSchemeApplicable.ToString());
-
-        //    #endregion оценка применимости алгоритма подавления солнечной засветки
-        //}
-        #endregion // УСТАРЕЛО - отдельно стоящий метод определения местоположения солнца
-
-
-
-
-
         private void button3_Click_1(object sender, EventArgs e)
         {
-            //row - brightness
-            //col - grayness
-            //DenseMatrix dmDataR = DenseMatrix.Create(250, 250, (r, c) =>
-            //{
-            //    double brightnessLimit = (double)(r + 2);
-            //    return ((double)(c + 2) / 255.0d) * brightnessLimit;
-            //});
-            //DenseMatrix dmDataG = (DenseMatrix)dmDataR.Clone();
-            //DenseMatrix dmDataB = DenseMatrix.Create(250, 250, (r, c) =>
-            //{
-            //    return (double)(r + 2);
-            //});
-            //Image<Gray, Byte> imgR = ImageProcessing.grayscaleImageFromDenseMatrixWithFixedValuesBounds(dmDataR, 0.0d, 255.0d);
-            //Image<Gray, Byte> imgG = ImageProcessing.grayscaleImageFromDenseMatrixWithFixedValuesBounds(dmDataG, 0.0d, 255.0d);
-            //Image<Gray, Byte> imgB = ImageProcessing.grayscaleImageFromDenseMatrixWithFixedValuesBounds(dmDataB, 0.0d, 255.0d);
-            ////ServiceTools.ShowPicture(imgR.Bitmap);
-            ////ServiceTools.ShowPicture(imgG.Bitmap);
-            ////ServiceTools.ShowPicture(imgB.Bitmap);
-            //Image<Bgr, Byte> imgRes = new Image<Bgr, byte>(new Image<Gray, byte>[] { imgB, imgG, imgR });
-            //ServiceTools.ShowPicture(imgRes.Bitmap);
-            //imgRes.Bitmap.Save((string)defaultProperties["DefaultDataFilesLocation"] + "TestColoringGrIxBitmap.jpg", System.Drawing.Imaging.ImageFormat.Jpeg);
-
-            //ArithmeticsOnImages aoi = new ArithmeticsOnImages();
-            //aoi.dmR = dmDataR;
-            //aoi.dmG = dmDataG;
-            //aoi.dmB = dmDataB;
-            //aoi.ExprString = "1 - sqrt((R*R+G*G+B*B)/3 - (R+G+B)*(R+G+B)/9) / Y";
-            //aoi.RPNeval();
-            //ColorScheme evaluatingColorScheme = new ColorScheme("");
-            //DenseMatrix dmRes = (DenseMatrix)aoi.dmRes.Clone();
-            //aoi.Dispose();
-            //aoi = null;
-            //imageConditionAndData imgData = new imageConditionAndData(dmRes, null);
-            //imgData.currentColorScheme = new ColorScheme("");
-            //imgData.currentColorSchemeRuler = new ColorSchemeRuler(imgData.currentColorScheme);
-            //imgData.currentColorSchemeRuler.imgToRule = imgData;
-            //imgData.currentColorSchemeRuler.IsMarginsFixed = false;
-            //ImageConditionAndDataRepresentingForm form1 = new ImageConditionAndDataRepresentingForm(imgData, "GrIx");
-            //form1.Show();
-
-
+            if ((ImageFileName == null) || (ImageFileName == ""))
+            {
+                return;
+            }
+            if (!File.Exists(ImageFileName))
+            {
+                return;
+            }
 
             FileInfo fInfo = new FileInfo(ImageFileName);
             //imagetoadd = Image.FromFile(fInfo.FullName);
@@ -2737,7 +1904,8 @@ namespace SkyImagesAnalyzer
 
             HistogramDataAndProperties theHist = new HistogramDataAndProperties(dvGrixData, 500);
             theHist.quantilesCount = 20;
-            HistogramCalcAndShowForm theHistForm = new HistogramCalcAndShowForm(ImageFileName);
+            HistogramCalcAndShowForm theHistForm = new HistogramCalcAndShowForm(ImageFileName, defaultProperties);
+            theHistForm.defaultProperties.Add("CurrentFileName", ImageFileName);
             theHistForm.HistToRepresent = theHist;
             theHistForm.Show();
             theHistForm.rbtnShowAsBars.Checked = false;
@@ -2851,11 +2019,11 @@ namespace SkyImagesAnalyzer
         private void readDefaultProperties()
         {
             defaultProperties = new Dictionary<string, object>();
-            var settings = Properties.Settings.Default;
-            foreach (SettingsProperty property in settings.Properties)
-            {
-                defaultProperties.Add(property.Name, settings[property.Name]);
-            }
+            defaultPropertiesXMLfileName = Directory.GetCurrentDirectory() +
+                                         "\\settings\\SkyImagesAnalyzerSettings.xml";
+            if (!File.Exists(defaultPropertiesXMLfileName)) return;
+            defaultProperties = ServiceTools.ReadDictionaryFromXML(defaultPropertiesXMLfileName);
+
 
             tunedSIMargin = Convert.ToDouble(defaultProperties["JapanCloudSkySeparationValue"]);
             //tunedIFMMargin = Convert.ToDouble(defaultProperties["GermanCloudSkySeparationValue"]);
@@ -3183,7 +2351,10 @@ namespace SkyImagesAnalyzer
 
             if (!dir.Exists)
             {
-                ThreadSafeOperations.SetTextTB(textBox1, textBox1.Text + "Операция не выполнена. Не найдена директория:" + Environment.NewLine + path2process + Environment.NewLine, true);
+                theLogWindow = ServiceTools.LogAText(theLogWindow,
+                    "Операция не выполнена. Не найдена директория:" + Environment.NewLine + path2process +
+                    Environment.NewLine, true);
+                //ThreadSafeOperations.SetTextTB(textBox1, textBox1.Text + "Операция не выполнена. Не найдена директория:" + Environment.NewLine + path2process + Environment.NewLine, true);
                 return;
             }
 
@@ -3363,7 +2534,10 @@ namespace SkyImagesAnalyzer
             {
                 if (!dir.Exists)
                 {
-                    ThreadSafeOperations.SetTextTB(textBox1, textBox1.Text + "Операция не выполнена. Не найдена директория:" + Environment.NewLine + path2process + Environment.NewLine, true);
+                    theLogWindow = ServiceTools.LogAText(theLogWindow,
+                        "Операция не выполнена. Не найдена директория:" + Environment.NewLine + path2process +
+                        Environment.NewLine, true);
+                    //ThreadSafeOperations.SetTextTB(textBox1, textBox1.Text + "Операция не выполнена. Не найдена директория:" + Environment.NewLine + path2process + Environment.NewLine, true);
                     return;
                 }
 
@@ -3379,10 +2553,10 @@ namespace SkyImagesAnalyzer
                 //object[] BGWorker2Args = new object[] { trackBar3.Value };
                 theLogWindow = ServiceTools.LogAText(theLogWindow, "Multiple images computing started with the following parameters:");
                 string strToDisplay = "";
-                var propertiesObj = Properties.Settings.Default.Properties;
-                foreach (SettingsProperty settingsProperty in propertiesObj)
+                //var propertiesObj = Properties.Settings.Default.Properties;
+                foreach (KeyValuePair<string, object> settingsProperty in defaultProperties)
                 {
-                    strToDisplay += Environment.NewLine + settingsProperty.Name + " = " + settingsProperty.DefaultValue;
+                    strToDisplay += Environment.NewLine + settingsProperty.Key + " = " + settingsProperty.Value;
                 }
                 theLogWindow = ServiceTools.LogAText(theLogWindow, strToDisplay);
 
@@ -3415,12 +2589,12 @@ namespace SkyImagesAnalyzer
 
             RoundData existingRoundData = RoundData.nullRoundData();
             Size imgSizeUnderExistingRoundData = imagetoadd.Bitmap.Size;
-            object existingRoundDataObj = ServiceTools.ReadObjectFromXML(sunDiskInfoFileName, typeof(EoundDataWithUnderlyingImgSize));
+            object existingRoundDataObj = ServiceTools.ReadObjectFromXML(sunDiskInfoFileName, typeof(RoundDataWithUnderlyingImgSize));
 
             if (existingRoundDataObj != null)
             {
-                existingRoundData = ((EoundDataWithUnderlyingImgSize)existingRoundDataObj).circle;
-                imgSizeUnderExistingRoundData = ((EoundDataWithUnderlyingImgSize)existingRoundDataObj).imgSize;
+                existingRoundData = ((RoundDataWithUnderlyingImgSize)existingRoundDataObj).circle;
+                imgSizeUnderExistingRoundData = ((RoundDataWithUnderlyingImgSize)existingRoundDataObj).imgSize;
             }
 
             double currScale = (double)imagetoadd.Width/(double)imgSizeUnderExistingRoundData.Width;
@@ -3440,7 +2614,7 @@ namespace SkyImagesAnalyzer
 
             RoundData retSunDiskCircle = form.sunDiskPositionAndSize.Copy();
             Size imgSize = imagetoadd.Bitmap.Size;
-            EoundDataWithUnderlyingImgSize tplSunDiskPositionData = new EoundDataWithUnderlyingImgSize();
+            RoundDataWithUnderlyingImgSize tplSunDiskPositionData = new RoundDataWithUnderlyingImgSize();
             tplSunDiskPositionData.circle = retSunDiskCircle;
             tplSunDiskPositionData.imgSize = imgSize;
 
@@ -3449,5 +2623,117 @@ namespace SkyImagesAnalyzer
         }
 
 
+
+
+
+
+        private void btnShowMedianPerc5Diagram_Click(object sender, EventArgs e)
+        {
+            #region //конвертировали .dat в .xml для упрощенной обработки
+            //OpenFileDialog dlg = new OpenFileDialog();
+            //dlg.InitialDirectory = (string)defaultProperties["DefaultDataFilesLocation"];
+            //dlg.DefaultExt = "*.dat files|*.dat";
+            //DialogResult res = dlg.ShowDialog();
+            //if (res != System.Windows.Forms.DialogResult.OK)
+            //{
+            //    return;
+            //}
+
+            //string fName = dlg.FileName;
+            //string fileContent = ServiceTools.ReadTextFromFile(fName);
+
+            //string[] substrings = fileContent.Split('\n');
+            //List<SkyImageMedianPerc5Data> lData = new List<SkyImageMedianPerc5Data>();
+
+            //foreach (string pDataSubstring in substrings)
+            //{
+            //    string[] strValues = pDataSubstring.Split(';');
+            //    if (strValues.Count() != 3)
+            //    {
+            //        continue;
+            //    }
+
+            //    lData.Add(new SkyImageMedianPerc5Data(
+            //        Convert.ToString(strValues[0]),
+            //        Convert.ToDouble(strValues[1].Replace(".", ",")),
+            //        Convert.ToDouble(strValues[2].Replace(".", ","))));
+            //}
+
+            //ServiceTools.WriteObjectToXML(lData, fName + ".xml");
+            #endregion //конвертировали .dat в .xml для упрощенной обработки
+
+            string strStatsDataFilename = ((string)defaultProperties["DefaultDataFilesLocation"]) + "statsWithFNames.xml";
+            List<SkyImageMedianPerc5Data> lStatsData =
+                (List<SkyImageMedianPerc5Data>)
+                    ServiceTools.ReadObjectFromXML(strStatsDataFilename, typeof(List<SkyImageMedianPerc5Data>));
+            //List<SkyImageMedianPerc5Data> lStatsData =
+            //    lStatsDataObj.ConvertAll<SkyImageMedianPerc5Data>(obj => (SkyImageMedianPerc5Data)obj);
+
+            List<PointD> lPointsList = lStatsData.ConvertAll<PointD>(statsDatum => new PointD(statsDatum.GrIxStatsMedian, statsDatum.GrIxStatsPerc5));
+            HeatMap hm = new HeatMap(lPointsList, 500);
+            hm.SetEqualMeasures();
+            //hm.RepresentHeatMap();
+
+
+            if ((ImageFileName == "") || (ImageFileName == null))
+            {
+                return;
+            }
+
+            string currentFullFileName = ImageFileName;
+            Dictionary<string, object> defaultProps = defaultProperties;
+
+            FileInfo fInfo = new FileInfo(currentFullFileName);
+            int maxImageSize = Convert.ToInt32(defaultProps["DefaultMaxImageSize"]); ;
+
+            Image<Bgr, byte> img2process = new Image<Bgr, byte>(fInfo.FullName);
+            img2process = ImageProcessing.ImageResizer(img2process, maxImageSize);
+
+            ImageProcessing imgP = new ImageProcessing(img2process, true);
+
+            Image<Gray, Byte> maskImageCircled = imgP.imageSignificantMaskCircled(100.0d);
+
+            DenseMatrix dmMaskCircled100 = ImageProcessing.DenseMatrixFromImage(maskImageCircled);
+
+            DenseMatrix dmGrixData = imgP.eval("grix+0", null);
+            dmGrixData = (DenseMatrix)dmGrixData.PointwiseMultiply(dmMaskCircled100);
+            DenseVector dvGrixData = DataAnalysis.DataVectorizedWithCondition(dmGrixData, dval => ((dval > 0.0d) && (dval < 1.0d)));
+            DescriptiveStatistics stats = new DescriptiveStatistics(dvGrixData, true);
+            double median = stats.Median;
+            double perc5 = Statistics.Percentile(dvGrixData, 5);
+
+            hm.lPtdMarks.Add(new PointD(median, perc5));
+            hm.RepresentHeatMap();
+
+            //Image<Bgr, byte> imgDiagram = new Image<Bgr, byte>(hm.CurrHeatMapData.dataRepresentingImageColored());
+
+            //PointD currImgPosition = new PointD();
+            //currImgPosition.Y = imgDiagram.Height*(1.0d - (perc5 - hm.minYval)/(hm.maxYval - hm.minYval));
+            //currImgPosition.X = imgDiagram.Width*(median - hm.minXval)/(hm.maxXval - hm.minXval);
+            //imgDiagram.Draw(new CircleF(currImgPosition.PointF(), 1), new Bgr(Color.Red), 0);
+            //ServiceTools.ShowPicture(imgDiagram, "");
+
+        }
+
+
+    }
+
+
+
+
+
+    [Serializable]
+    public struct SkyImageMedianPerc5Data
+    {
+        public string FileName;
+        public double GrIxStatsMedian;
+        public double GrIxStatsPerc5;
+
+        public SkyImageMedianPerc5Data(string inFName, double median, double perc5)
+        {
+            FileName = inFName;
+            GrIxStatsMedian = median;
+            GrIxStatsPerc5 = perc5;
+        }
     }
 }
