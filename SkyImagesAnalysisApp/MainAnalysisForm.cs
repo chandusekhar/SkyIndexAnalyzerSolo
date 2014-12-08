@@ -2716,6 +2716,24 @@ namespace SkyImagesAnalyzer
         }
 
 
+
+
+
+
+
+
+        private void btnDensityProcessing_Click(object sender, EventArgs e)
+        {
+            string strStatsDataFilename = ((string)defaultProperties["DefaultDataFilesLocation"]) + "statsWithFNames.xml";
+            List<SkyImageMedianPerc5Data> lStatsData =
+                (List<SkyImageMedianPerc5Data>)
+                    ServiceTools.ReadObjectFromXML(strStatsDataFilename, typeof(List<SkyImageMedianPerc5Data>));
+            
+            List<PointD> lPointsList = lStatsData.ConvertAll<PointD>(statsDatum => new PointD(statsDatum.GrIxStatsMedian, statsDatum.GrIxStatsPerc5));
+            EventsDensityAnalysisForm Form1 = new EventsDensityAnalysisForm(lPointsList, defaultProperties, 512);
+        }
+
+
     }
 
 

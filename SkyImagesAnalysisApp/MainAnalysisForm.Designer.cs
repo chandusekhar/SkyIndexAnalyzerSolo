@@ -66,6 +66,7 @@
             this.btnTest1 = new System.Windows.Forms.Button();
             this.btnProcessDirectorySI = new System.Windows.Forms.Button();
             this.btnShowMedianPerc5Diagram = new System.Windows.Forms.Button();
+            this.btnDensityProcessing = new System.Windows.Forms.Button();
             this.backgroundWorker2 = new System.ComponentModel.BackgroundWorker();
             this.bgwSunDetectionOnly = new System.ComponentModel.BackgroundWorker();
             ((System.ComponentModel.ISupportInitialize)(this.trackBar1)).BeginInit();
@@ -301,6 +302,7 @@
             this.tableLayoutPanel1.Controls.Add(this.btnTest1, 4, 19);
             this.tableLayoutPanel1.Controls.Add(this.btnProcessDirectorySI, 10, 19);
             this.tableLayoutPanel1.Controls.Add(this.btnShowMedianPerc5Diagram, 10, 3);
+            this.tableLayoutPanel1.Controls.Add(this.btnDensityProcessing, 10, 5);
             this.tableLayoutPanel1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tableLayoutPanel1.Location = new System.Drawing.Point(0, 0);
             this.tableLayoutPanel1.Margin = new System.Windows.Forms.Padding(0);
@@ -514,7 +516,7 @@
             // 
             this.btnProperties.Dock = System.Windows.Forms.DockStyle.Fill;
             this.btnProperties.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnProperties.Image = global::SkyIndexAnalyzerSolo.Properties.Resources.process;
+            this.btnProperties.Image = global::SkyImagesAnalyzer.Properties.Resources.process;
             this.btnProperties.Location = new System.Drawing.Point(1213, 4);
             this.btnProperties.Margin = new System.Windows.Forms.Padding(4);
             this.btnProperties.Name = "btnProperties";
@@ -558,7 +560,7 @@
             // 
             this.btnAbout.Dock = System.Windows.Forms.DockStyle.Fill;
             this.btnAbout.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnAbout.Image = global::SkyIndexAnalyzerSolo.Properties.Resources.info;
+            this.btnAbout.Image = global::SkyImagesAnalyzer.Properties.Resources.info;
             this.btnAbout.Location = new System.Drawing.Point(1306, 4);
             this.btnAbout.Margin = new System.Windows.Forms.Padding(4);
             this.btnAbout.Name = "btnAbout";
@@ -613,6 +615,21 @@
             this.btnShowMedianPerc5Diagram.Text = "Show at median-5perc diagram";
             this.btnShowMedianPerc5Diagram.UseVisualStyleBackColor = true;
             this.btnShowMedianPerc5Diagram.Click += new System.EventHandler(this.btnShowMedianPerc5Diagram_Click);
+            // 
+            // btnDensityProcessing
+            // 
+            this.tableLayoutPanel1.SetColumnSpan(this.btnDensityProcessing, 5);
+            this.btnDensityProcessing.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.btnDensityProcessing.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnDensityProcessing.Font = new System.Drawing.Font("Microsoft Sans Serif", 13.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.btnDensityProcessing.Location = new System.Drawing.Point(933, 215);
+            this.btnDensityProcessing.Name = "btnDensityProcessing";
+            this.tableLayoutPanel1.SetRowSpan(this.btnDensityProcessing, 2);
+            this.btnDensityProcessing.Size = new System.Drawing.Size(472, 60);
+            this.btnDensityProcessing.TabIndex = 62;
+            this.btnDensityProcessing.Text = "Process density (m;p5)...";
+            this.btnDensityProcessing.UseVisualStyleBackColor = true;
+            this.btnDensityProcessing.Click += new System.EventHandler(this.btnDensityProcessing_Click);
             // 
             // backgroundWorker2
             // 
@@ -692,6 +709,7 @@
         private System.Windows.Forms.Button btnTest1;
         private System.Windows.Forms.Button btnProcessDirectorySI;
         private System.Windows.Forms.Button btnShowMedianPerc5Diagram;
+        private System.Windows.Forms.Button btnDensityProcessing;
     }
 }
 

@@ -8,8 +8,8 @@
     <ProjectGuid>{B6C5644A-F473-448C-B409-7F5948F54016}</ProjectGuid>
     <OutputType>WinExe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>SkyIndexAnalyzerSolo</RootNamespace>
-    <AssemblyName>SkyIndexAnalyzerSolo</AssemblyName>
+    <RootNamespace>SkyImagesAnalyzer</RootNamespace>
+    <AssemblyName>SkyImagesAnalyzer</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <TargetFrameworkProfile>
     </TargetFrameworkProfile>
@@ -155,6 +155,12 @@
       <DependentUpon>AboutBox1.cs</DependentUpon>
     </Compile>
     <Compile Include="DataSocketReader.cs" />
+    <Compile Include="EventsDensityAnalysisForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="EventsDensityAnalysisForm.Designer.cs">
+      <DependentUpon>EventsDensityAnalysisForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="Extensions.cs" />
     <Compile Include="AdditionalFieldAnalysisForm.cs">
       <SubType>Form</SubType>
@@ -186,6 +192,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="AdditionalFieldAnalysisForm.resx">
       <DependentUpon>AdditionalFieldAnalysisForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="EventsDensityAnalysisForm.resx">
+      <DependentUpon>EventsDensityAnalysisForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>

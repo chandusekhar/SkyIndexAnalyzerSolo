@@ -8,4 +8,4 @@ SkyIndexAnalyzerSolo
 Все вопросы по функционированию и назначению следует задавать напрямую автору проекта:
 Михаил Криницкий
 ЛВОАМКИ ИОРАН
-krinitsky@nral.org
+krinitsky@sail.msk.ru

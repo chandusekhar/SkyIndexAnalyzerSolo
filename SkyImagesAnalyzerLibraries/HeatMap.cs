@@ -15,8 +15,8 @@ namespace SkyImagesAnalyzerLibraries
         public List<PointD> lPointsArray = new List<PointD>();
         public int spaceDiscretization = 100;
         public DenseMatrix dmDensityMesh = null;
-        public DenseMatrix dmDensityMeshXcoord = null;
-        public DenseMatrix dmDensityMeshYcoord = null;
+        //public DenseMatrix dmDensityMeshXcoord = null;
+        //public DenseMatrix dmDensityMeshYcoord = null;
 
         public double minXval;
         public double maxXval;
@@ -67,14 +67,14 @@ namespace SkyImagesAnalyzerLibraries
         private void CalculateDensityMesh()
         {
             dmDensityMesh = DenseMatrix.Create(spaceDiscretization, spaceDiscretization, (r, c) => 0.0d);
-            dmDensityMeshXcoord = DenseMatrix.Create(spaceDiscretization, spaceDiscretization, (r, c) =>
-            {
-                return minXval + ((double) c/(double) spaceDiscretization)*(maxXval - minXval);
-            });
-            dmDensityMeshYcoord = DenseMatrix.Create(spaceDiscretization, spaceDiscretization, (r, c) =>
-            {
-                return minYval + ((double)r / (double)spaceDiscretization) * (maxYval - minYval);
-            });
+            //dmDensityMeshXcoord = DenseMatrix.Create(spaceDiscretization, spaceDiscretization, (r, c) =>
+            //{
+            //    return minXval + ((double) c/(double) spaceDiscretization)*(maxXval - minXval);
+            //});
+            //dmDensityMeshYcoord = DenseMatrix.Create(spaceDiscretization, spaceDiscretization, (r, c) =>
+            //{
+            //    return minYval + ((double)r / (double)spaceDiscretization) * (maxYval - minYval);
+            //});
 
             double xSpaceDiscrete = (maxXval - minXval)/spaceDiscretization;
             double ySpaceDiscrete = (maxYval - minYval)/spaceDiscretization;
