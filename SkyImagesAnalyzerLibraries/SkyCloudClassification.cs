@@ -459,8 +459,8 @@ namespace SkyImagesAnalyzerLibraries
 
             BGWorkerReport("закончен поиск солнечного диска. применимость подавления засветки: " + theSunSuppressionSchemeApplicable.ToString());
 
-        Mark1:
-            if (theSunSuppressionSchemeApplicable)
+        //Mark1:
+            while (theSunSuppressionSchemeApplicable)
             {
                 BGWorkerReport("расположение солнечного диска: " + Environment.NewLine + sunRoundData.ToString());
                 string strGeometryData = "" + imgP.imageRD.DCenterX.ToString("e").Replace(",", ".") +
@@ -792,7 +792,7 @@ namespace SkyImagesAnalyzerLibraries
                 }
 
 
-                #region unconditional jump !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+                //#region unconditional jump !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
                 if (dataMinimumsList.Count < 5)
                 {
                     theSunSuppressionSchemeApplicable = false;
@@ -801,10 +801,11 @@ namespace SkyImagesAnalyzerLibraries
                         ServiceTools.LogAText(theLogWindow, "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" + Environment.NewLine +
                                               "Слишком нестабильный результат с подавлением засветки. Используем алгоритм без подавления. Case 01" +
                                               Environment.NewLine + "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-
-                    goto Mark1;
+                    
+                    //goto Mark1;
+                    break;
                 }
-                #endregion unconditional jump !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+                //#endregion unconditional jump !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
                 Func<DenseVector, double, double> theApproximatinFunction = new Func<DenseVector, double, double>(
                     (dvParameters, phi) =>
@@ -1578,11 +1579,14 @@ namespace SkyImagesAnalyzerLibraries
                                               Environment.NewLine + "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
 
 
-                    goto Mark1;
+                    //goto Mark1;
+                    break;
                 }
                 //#endregion unconditional jump !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+                break;
             }
-            else
+
+            if (!theSunSuppressionSchemeApplicable)
             {
                 // исследуем вопрос минимальных значений GrIx c усреднением по крупным ячейкам
                 DenseMatrix dmReversed = (DenseMatrix)dmProcessingData.Clone();
@@ -1614,6 +1618,10 @@ namespace SkyImagesAnalyzerLibraries
 
 
         }
+
+
+
+
 
 
 
@@ -1886,7 +1894,7 @@ namespace SkyImagesAnalyzerLibraries
         public RoundData DetectSunWithSerieOfArcs(ImageProcessing imgP, DenseMatrix dmGrIx, string currentDirectory = "",
             string randomFileName = "")
         {
-            DenseMatrix dmSunburnData = imgP.eval("Y+0", null);
+            DenseMatrix dmSunburnData = imgP.eval("Y", null);
 
             //DenseVector dvGrIxDataEqualsOne = DataAnalysis.DataVectorizedWithCondition(dmSunburnData, dval => dval >= 254.0d);
             DenseVector dvGrIxDataEqualsOne = DataAnalysis.DataVectorizedWithCondition(dmSunburnData, dval => dval >= minSunburnYValue);

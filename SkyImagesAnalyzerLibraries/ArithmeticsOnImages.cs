@@ -204,7 +204,14 @@ namespace SkyImagesAnalyzerLibraries
                 if (!rpn.operators.Contains(str))
                 {
                     pushImageToStackByColorChar(stack, str);
-                    str = queue.Dequeue();
+                    try
+                    {
+                        str = queue.Dequeue();
+                    }
+                    catch (Exception)
+                    {
+                        break;
+                    }
                 }
                 else
                 {

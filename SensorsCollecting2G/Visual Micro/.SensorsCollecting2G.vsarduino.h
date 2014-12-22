@@ -72,8 +72,20 @@ int int2Char(int num, char str[]);
 int calcFreeRAM();
 void reportFreeRam();
 void reportFreeRamToSerial();
+double Datatransfer(char *data_buf,char num);
+char ID();
+void comma(char num);
+void UTC();
+void latitude();
+void lat_dir();
+void longitude();
+void lon_dir();
+void altitude();
+//
+//
 
 #include "C:\Program Files (x86)\Arduino\hardware\arduino\cores\arduino\arduino.h"
 #include "C:\Program Files (x86)\Arduino\hardware\arduino\variants\standard\pins_arduino.h" 
 #include "D:\_gulevlab\SkyIndexAnalyzerSolo\SensorsCollecting2G\SensorsCollecting2G.ino"
+#include "D:\_gulevlab\SkyIndexAnalyzerSolo\SensorsCollecting2G\SensorsCollecting2G-draft.ino"
 #endif

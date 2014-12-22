@@ -29,8 +29,7 @@
         private void InitializeComponent()
         {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainAnalysisForm));
-            this.backgroundWorker1 = new System.ComponentModel.BackgroundWorker();
-            this.openFileDialog1 = new System.Windows.Forms.OpenFileDialog();
+            this.bgwProcessOneImage = new System.ComponentModel.BackgroundWorker();
             this.pbUniversalProgressBar = new System.Windows.Forms.ProgressBar();
             this.StatusLabel = new System.Windows.Forms.Label();
             this.label5 = new System.Windows.Forms.Label();
@@ -52,7 +51,6 @@
             this.button1 = new System.Windows.Forms.Button();
             this.открытьФайлToolStripMenuItem = new System.Windows.Forms.Button();
             this.обработатьToolStripMenuItem = new System.Windows.Forms.Button();
-            this.eXIFыToolStripMenuItem = new System.Windows.Forms.Button();
             this.DetectEdgesButton = new System.Windows.Forms.Button();
             this.lblClassificationMethod = new System.Windows.Forms.Label();
             this.rbtnClassMethodJapan = new System.Windows.Forms.RadioButton();
@@ -67,7 +65,7 @@
             this.btnProcessDirectorySI = new System.Windows.Forms.Button();
             this.btnShowMedianPerc5Diagram = new System.Windows.Forms.Button();
             this.btnDensityProcessing = new System.Windows.Forms.Button();
-            this.backgroundWorker2 = new System.ComponentModel.BackgroundWorker();
+            this.bgwProcessDirectoryOfImages = new System.ComponentModel.BackgroundWorker();
             this.bgwSunDetectionOnly = new System.ComponentModel.BackgroundWorker();
             ((System.ComponentModel.ISupportInitialize)(this.trackBar1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).BeginInit();
@@ -75,19 +73,13 @@
             this.tableLayoutPanel1.SuspendLayout();
             this.SuspendLayout();
             // 
-            // backgroundWorker1
+            // bgwProcessOneImage
             // 
-            this.backgroundWorker1.WorkerReportsProgress = true;
-            this.backgroundWorker1.WorkerSupportsCancellation = true;
-            this.backgroundWorker1.DoWork += new System.ComponentModel.DoWorkEventHandler(this.backgroundWorker1_DoWork);
-            this.backgroundWorker1.ProgressChanged += new System.ComponentModel.ProgressChangedEventHandler(this.backgroundWorker1_ProgressChanged);
-            this.backgroundWorker1.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(this.backgroundWorker1_RunWorkerCompleted);
-            // 
-            // openFileDialog1
-            // 
-            this.openFileDialog1.Filter = "*.jpg|*.jpg";
-            this.openFileDialog1.Multiselect = true;
-            this.openFileDialog1.Title = "Укажите загружаемые файлы";
+            this.bgwProcessOneImage.WorkerReportsProgress = true;
+            this.bgwProcessOneImage.WorkerSupportsCancellation = true;
+            this.bgwProcessOneImage.DoWork += new System.ComponentModel.DoWorkEventHandler(this.backgroundWorker1_DoWork);
+            this.bgwProcessOneImage.ProgressChanged += new System.ComponentModel.ProgressChangedEventHandler(this.backgroundWorker1_ProgressChanged);
+            this.bgwProcessOneImage.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(this.backgroundWorker1_RunWorkerCompleted);
             // 
             // pbUniversalProgressBar
             // 
@@ -288,8 +280,7 @@
             this.tableLayoutPanel1.Controls.Add(this.button1, 0, 19);
             this.tableLayoutPanel1.Controls.Add(this.открытьФайлToolStripMenuItem, 0, 0);
             this.tableLayoutPanel1.Controls.Add(this.обработатьToolStripMenuItem, 2, 0);
-            this.tableLayoutPanel1.Controls.Add(this.eXIFыToolStripMenuItem, 4, 0);
-            this.tableLayoutPanel1.Controls.Add(this.DetectEdgesButton, 5, 0);
+            this.tableLayoutPanel1.Controls.Add(this.DetectEdgesButton, 4, 0);
             this.tableLayoutPanel1.Controls.Add(this.lblClassificationMethod, 0, 13);
             this.tableLayoutPanel1.Controls.Add(this.rbtnClassMethodJapan, 4, 13);
             this.tableLayoutPanel1.Controls.Add(this.rbtnClassMethodUS, 4, 14);
@@ -406,27 +397,13 @@
             this.обработатьToolStripMenuItem.UseVisualStyleBackColor = true;
             this.обработатьToolStripMenuItem.Click += new System.EventHandler(this.button2_Click_1);
             // 
-            // eXIFыToolStripMenuItem
-            // 
-            this.eXIFыToolStripMenuItem.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.eXIFыToolStripMenuItem.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.eXIFыToolStripMenuItem.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.eXIFыToolStripMenuItem.Location = new System.Drawing.Point(376, 4);
-            this.eXIFыToolStripMenuItem.Margin = new System.Windows.Forms.Padding(4);
-            this.eXIFыToolStripMenuItem.Name = "eXIFыToolStripMenuItem";
-            this.eXIFыToolStripMenuItem.Size = new System.Drawing.Size(85, 72);
-            this.eXIFыToolStripMenuItem.TabIndex = 36;
-            this.eXIFыToolStripMenuItem.Text = "EXIF";
-            this.eXIFыToolStripMenuItem.UseVisualStyleBackColor = true;
-            this.eXIFыToolStripMenuItem.Click += new System.EventHandler(this.button3_Click);
-            // 
             // DetectEdgesButton
             // 
             this.tableLayoutPanel1.SetColumnSpan(this.DetectEdgesButton, 2);
             this.DetectEdgesButton.Dock = System.Windows.Forms.DockStyle.Fill;
             this.DetectEdgesButton.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.DetectEdgesButton.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.DetectEdgesButton.Location = new System.Drawing.Point(469, 4);
+            this.DetectEdgesButton.Location = new System.Drawing.Point(376, 4);
             this.DetectEdgesButton.Margin = new System.Windows.Forms.Padding(4);
             this.DetectEdgesButton.Name = "DetectEdgesButton";
             this.DetectEdgesButton.Size = new System.Drawing.Size(178, 72);
@@ -631,13 +608,13 @@
             this.btnDensityProcessing.UseVisualStyleBackColor = true;
             this.btnDensityProcessing.Click += new System.EventHandler(this.btnDensityProcessing_Click);
             // 
-            // backgroundWorker2
+            // bgwProcessDirectoryOfImages
             // 
-            this.backgroundWorker2.WorkerReportsProgress = true;
-            this.backgroundWorker2.WorkerSupportsCancellation = true;
-            this.backgroundWorker2.DoWork += new System.ComponentModel.DoWorkEventHandler(this.backgroundWorker2_DoWork);
-            this.backgroundWorker2.ProgressChanged += new System.ComponentModel.ProgressChangedEventHandler(this.backgroundWorker2_ProgressChanged);
-            this.backgroundWorker2.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(this.backgroundWorker2_RunWorkerCompleted);
+            this.bgwProcessDirectoryOfImages.WorkerReportsProgress = true;
+            this.bgwProcessDirectoryOfImages.WorkerSupportsCancellation = true;
+            this.bgwProcessDirectoryOfImages.DoWork += new System.ComponentModel.DoWorkEventHandler(this.backgroundWorker2_DoWork);
+            this.bgwProcessDirectoryOfImages.ProgressChanged += new System.ComponentModel.ProgressChangedEventHandler(this.backgroundWorker2_ProgressChanged);
+            this.bgwProcessDirectoryOfImages.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(this.backgroundWorker2_RunWorkerCompleted);
             // 
             // MainAnalysisForm
             // 
@@ -670,8 +647,7 @@
 
         #endregion
 
-        private System.Windows.Forms.OpenFileDialog openFileDialog1;
-        public System.ComponentModel.BackgroundWorker backgroundWorker1;
+        public System.ComponentModel.BackgroundWorker bgwProcessOneImage;
         private System.Windows.Forms.TableLayoutPanel tableLayoutPanel1;
         private System.Windows.Forms.ToolStripMenuItem помощьToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem оПрограммеToolStripMenuItem;
@@ -688,10 +664,9 @@
         private System.Windows.Forms.Label StatusLabel;
         private System.Windows.Forms.ProgressBar pbUniversalProgressBar;
         private System.Windows.Forms.Label label8;
-        private System.ComponentModel.BackgroundWorker backgroundWorker2;
+        private System.ComponentModel.BackgroundWorker bgwProcessDirectoryOfImages;
         private System.Windows.Forms.Button открытьФайлToolStripMenuItem;
         private System.Windows.Forms.Button обработатьToolStripMenuItem;
-        private System.Windows.Forms.Button eXIFыToolStripMenuItem;
         private System.Windows.Forms.Button button1;
         private System.Windows.Forms.ToolStripMenuItem настройкиСбораДанныхToolStripMenuItem;
         private System.Windows.Forms.Button DetectEdgesButton;

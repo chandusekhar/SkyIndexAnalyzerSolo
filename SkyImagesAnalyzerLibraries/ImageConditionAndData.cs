@@ -27,8 +27,8 @@ namespace SkyImagesAnalyzerLibraries
         public Image<Gray, double> HighlightMask;
         public double highlightedArea;
         //private Image<Gray, double> HighlightMaskBinary;
-        public bool datdHasBeenModified;// = false;
-        private Bitmap imageRepresentingBitmap = null;
+        public bool dataHasBeenModified;// = false;
+        private Image<Bgr, Byte> imageRepresentingImage = null;
 
         public List<PointD> lPtdMarks = new List<PointD>();
 
@@ -55,7 +55,7 @@ namespace SkyImagesAnalyzerLibraries
             {
                 thresholdingValue = value;
                 //makeThresholdedDataImage();
-                datdHasBeenModified = true;
+                dataHasBeenModified = true;
             }
         }
 
@@ -66,7 +66,7 @@ namespace SkyImagesAnalyzerLibraries
             {
                 thresholdingUsageTop = value;
                 //makeThresholdedDataImage();
-                datdHasBeenModified = true;
+                dataHasBeenModified = true;
             }
         }
 
@@ -77,7 +77,7 @@ namespace SkyImagesAnalyzerLibraries
             {
                 thresholdingUsageBtm = value;
                 //makeThresholdedDataImage();
-                datdHasBeenModified = true;
+                dataHasBeenModified = true;
             }
         }
 
@@ -101,7 +101,7 @@ namespace SkyImagesAnalyzerLibraries
                 HighlightMask = null;
                 highlightedArea = 0.0d;
                 //makeThresholdedDataImage();
-                datdHasBeenModified = true;
+                dataHasBeenModified = true;
             }
         }
 
@@ -125,7 +125,7 @@ namespace SkyImagesAnalyzerLibraries
             set
             {
                 dmSourceData = value;
-                datdHasBeenModified = true;
+                dataHasBeenModified = true;
             }
         }
 
@@ -135,7 +135,7 @@ namespace SkyImagesAnalyzerLibraries
             selection = null;
             HighlightMask = null;
             highlightedArea = 0.0d;
-            datdHasBeenModified = true;
+            dataHasBeenModified = true;
         }
 
 
@@ -165,7 +165,7 @@ namespace SkyImagesAnalyzerLibraries
             {
                 currentColorSchemeRuler = new ColorSchemeRuler(this);
             }
-            datdHasBeenModified = true;
+            dataHasBeenModified = true;
         }
 
 
@@ -193,7 +193,7 @@ namespace SkyImagesAnalyzerLibraries
             selection = null;
 
             //makeThresholdedDataImage();
-            datdHasBeenModified = true;
+            dataHasBeenModified = true;
 
             HighlightMask = null;
             highlightedArea = 0.0d;
@@ -209,7 +209,7 @@ namespace SkyImagesAnalyzerLibraries
         /// <param name="channelNum">The channel number.</param>
         public imageConditionAndData(ImageProcessing imgPr, int channelNum)
         {
-            maskImageBinary = imgPr.significantMaskImageBinary;
+            maskImageBinary = imgPr.significantMaskImageBinary.Copy();
             isImageGrayscaled = true;
             sourceImageGrayscale = imgPr.getMaskedImageChannelImage(channelNum);
             sourceImageBgr = null;
@@ -227,7 +227,7 @@ namespace SkyImagesAnalyzerLibraries
 
 
             //makeThresholdedDataImage();
-            datdHasBeenModified = true;
+            dataHasBeenModified = true;
 
             HighlightMask = null;
             highlightedArea = 0.0d;
@@ -241,7 +241,7 @@ namespace SkyImagesAnalyzerLibraries
         /// <param name="imgPr">The image processing object contains image data and some processing templates.</param>
         public imageConditionAndData(ImageProcessing imgPr)
         {
-            maskImageBinary = imgPr.significantMaskImageBinary;
+            maskImageBinary = imgPr.significantMaskImageBinary.Copy();
             isImageGrayscaled = false;
             sourceImageBgr = imgPr.tmpImage.Copy();
             sourceImageGrayscale = null;
@@ -258,7 +258,7 @@ namespace SkyImagesAnalyzerLibraries
             selection = null;
 
             //makeThresholdedDataImage();
-            datdHasBeenModified = true;
+            dataHasBeenModified = true;
 
             HighlightMask = null;
             highlightedArea = 0.0d;
@@ -291,7 +291,7 @@ namespace SkyImagesAnalyzerLibraries
 
             currentColorScheme = new ColorScheme("");
             //makeThresholdedDataImage();
-            datdHasBeenModified = true;
+            dataHasBeenModified = true;
 
             HighlightMask = null;
             highlightedArea = 0.0d;
@@ -328,7 +328,7 @@ namespace SkyImagesAnalyzerLibraries
 
             currentColorScheme = new ColorScheme("");
             //makeThresholdedDataImage();
-            datdHasBeenModified = true;
+            dataHasBeenModified = true;
 
             HighlightMask = null;
             highlightedArea = 0.0d;
@@ -386,7 +386,7 @@ namespace SkyImagesAnalyzerLibraries
 
             selection = null;
 
-            datdHasBeenModified = true;
+            dataHasBeenModified = true;
         }
 
 
@@ -404,14 +404,14 @@ namespace SkyImagesAnalyzerLibraries
             currentColorScheme = new ColorScheme(true);
             //currentColorSchemeRuler = new ColorSchemeRuler(currentColorScheme, dataMinValue(), dataMaxValue());
             currentColorSchemeRuler = new ColorSchemeRuler(this, 0.0d, 255.0d);
-            datdHasBeenModified = true;
+            dataHasBeenModified = true;
         }
 
 
 
         public Bitmap dataRepresentingImageColored()
         {
-            if (datdHasBeenModified)
+            if (dataHasBeenModified)
             {
                 if (isImageGrayscaled)
                 {
@@ -442,9 +442,9 @@ namespace SkyImagesAnalyzerLibraries
                         }
                     }
 
-                    datdHasBeenModified = false;
-                    imageRepresentingBitmap = imgBgr.Bitmap;
-                    return imageRepresentingBitmap;
+                    dataHasBeenModified = false;
+                    imageRepresentingImage = imgBgr.Copy();
+                    return imageRepresentingImage.Bitmap;
                 }
                 else
                 {
@@ -480,14 +480,14 @@ namespace SkyImagesAnalyzerLibraries
                         }
                     }
 
-                    datdHasBeenModified = false;
-                    imageRepresentingBitmap = imgBgr.Bitmap;
-                    return imageRepresentingBitmap;
+                    dataHasBeenModified = false;
+                    imageRepresentingImage = imgBgr.Copy();
+                    return imageRepresentingImage.Bitmap;
                 }
             }
             else
             {
-                return imageRepresentingBitmap;
+                return imageRepresentingImage.Bitmap;
             }
             
         }

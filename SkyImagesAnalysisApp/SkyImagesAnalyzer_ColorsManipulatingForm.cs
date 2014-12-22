@@ -32,8 +32,8 @@ namespace SkyImagesAnalyzer
     {
         public Dictionary<string, object> defaultProperties = null;
 
-        private double minSunAreaPart = 0.0003d;
-        private double maxSunAreaPart = 0.0005d;
+        //private double minSunAreaPart = 0.0003d;
+        //private double maxSunAreaPart = 0.0005d;
         private double theStdDevMarginValueDefiningTrueSkyArea = 0.65d;
         private double theStdDevMarginValueDefiningSkyCloudSeparation = 0.75d;
 
@@ -47,7 +47,7 @@ namespace SkyImagesAnalyzer
         /// <summary>
         /// The objects to dispose
         /// </summary>
-        private List<object> objectsToDispose = new List<object>();
+        //private List<object> objectsToDispose = new List<object>();
 
         /// <summary>
         /// The input bitmap
@@ -161,8 +161,8 @@ namespace SkyImagesAnalyzer
 
 
             defaultProperties = settings;
-            minSunAreaPart = Convert.ToDouble(defaultProperties["GrIxSunDetectionMinimalSunAreaPartial"]);
-            maxSunAreaPart = Convert.ToDouble(defaultProperties["GrIxSunDetectionMaximalSunAreaPartial"]);
+            //minSunAreaPart = Convert.ToDouble(defaultProperties["GrIxSunDetectionMinimalSunAreaPartial"]);
+            //maxSunAreaPart = Convert.ToDouble(defaultProperties["GrIxSunDetectionMaximalSunAreaPartial"]);
             //theStdDevMarginValueDefiningTrueSkyArea = 0.65d;
             //theStdDevMarginValueDefiningSkyCloudSeparation = 0.75d;
 
@@ -192,14 +192,14 @@ namespace SkyImagesAnalyzer
             //result3.isColorSchemeMarginsFixed = true;
             //result3.UpdateColorSchemeRuler();
 
-            objectsToDispose.Add(imgP);
-            objectsToDispose.Add(channelDataR);
-            objectsToDispose.Add(channelDataG);
-            objectsToDispose.Add(channelDataB);
-            objectsToDispose.Add(inputImage);
-            objectsToDispose.Add(result1);
-            objectsToDispose.Add(result2);
-            objectsToDispose.Add(result3);
+            //objectsToDispose.Add(imgP);
+            //objectsToDispose.Add(channelDataR);
+            //objectsToDispose.Add(channelDataG);
+            //objectsToDispose.Add(channelDataB);
+            //objectsToDispose.Add(inputImage);
+            //objectsToDispose.Add(result1);
+            //objectsToDispose.Add(result2);
+            //objectsToDispose.Add(result3);
 
 
 
@@ -209,9 +209,9 @@ namespace SkyImagesAnalyzer
 
 
 
-            ThreadSafeOperations.SetTextTB(tbFormula1, "R+0", false);
-            ThreadSafeOperations.SetTextTB(tbFormula2, "G+0", false);
-            ThreadSafeOperations.SetTextTB(tbFormula3, "B+0", false);
+            ThreadSafeOperations.SetTextTB(tbFormula1, "R", false);
+            ThreadSafeOperations.SetTextTB(tbFormula2, "G", false);
+            ThreadSafeOperations.SetTextTB(tbFormula3, "B", false);
             ThreadSafeOperations.SetTextTB(tbColorSchemePath1, "matlab_jet.rgb", false);
             ThreadSafeOperations.SetTextTB(tbColorSchemePath2, "matlab_jet.rgb", false);
             ThreadSafeOperations.SetTextTB(tbColorSchemePath3, "matlab_jet.rgb", false);
@@ -219,7 +219,10 @@ namespace SkyImagesAnalyzer
             chbRes2DynamicScale.Checked = true;
             chbRes3DynamicScale.Checked = true;
 
-            bgwSkyIndexAnalyzer.RunWorkerAsync();
+
+            Image<Bgr, Byte> imgToFastAnalyze = imgToAnalyze.Copy();
+            object[] bgwSkyIndexAnalyzerArgs = new object[] { imgToFastAnalyze };
+            bgwSkyIndexAnalyzer.RunWorkerAsync(bgwSkyIndexAnalyzerArgs);
         }
 
 
@@ -1120,21 +1123,25 @@ namespace SkyImagesAnalyzer
         /// <param name="e">The <see cref="DoWorkEventArgs"/> instance containing the event data.</param>
         private void bgwSkyIndexAnalyzer_DoWork(object sender, DoWorkEventArgs e)
         {
-            SkyCloudClassification classificator = new SkyCloudClassification(inputImage, defaultProperties);
+            object[] objInputArgs = (object[]) e.Argument;
+            Image<Bgr, byte> imgToClassifyFast = (Image<Bgr, byte>)objInputArgs[0];
+
+            SkyCloudClassification classificator = new SkyCloudClassification(imgToClassifyFast, defaultProperties);
             classificator.cloudSkySeparationValue = parentForm.tunedSIMargin;
-            if (parentForm.rbtnClassMethodJapan.Checked)
-            {
-                classificator.ClassificationMethod = ClassificationMethods.Japan;
-            }
-            else if (parentForm.rbtnClassMethodUS.Checked)
-            {
-                classificator.ClassificationMethod = ClassificationMethods.Greek;
-            }
-            else if (parentForm.rbtnClassMethodGrIx.Checked)
-            {
-                classificator.ClassificationMethod = ClassificationMethods.GrIx;
-                classificator.theStdDevMarginValueDefiningSkyCloudSeparation = parentForm.tunedSIMargin;
-            }
+            classificator.ClassificationMethod = ClassificationMethods.Japan;
+            //if (parentForm.rbtnClassMethodJapan.Checked)
+            //{
+            //    classificator.ClassificationMethod = ClassificationMethods.Japan;
+            //}
+            //else if (parentForm.rbtnClassMethodUS.Checked)
+            //{
+            //    classificator.ClassificationMethod = ClassificationMethods.Greek;
+            //}
+            //else if (parentForm.rbtnClassMethodGrIx.Checked)
+            //{
+            //    classificator.ClassificationMethod = ClassificationMethods.GrIx;
+            //    classificator.theStdDevMarginValueDefiningSkyCloudSeparation = parentForm.tunedSIMargin;
+            //}
             classificator.Classify();
 
 
@@ -1147,9 +1154,12 @@ namespace SkyImagesAnalyzer
             //ThreadSafeOperations.UpdatePictureBox(pbSkyIndexImage, currentSkyIndexData.dataRepresentingImageColored(), true);
         }
 
+
+
+
         private void bgwSkyIndexAnalyzer_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
         {
-            objectsToDispose.Add(currentSkyIndexData);
+            //objectsToDispose.Add(currentSkyIndexData);
             RaisePaintEvent(null, null);
         }
 

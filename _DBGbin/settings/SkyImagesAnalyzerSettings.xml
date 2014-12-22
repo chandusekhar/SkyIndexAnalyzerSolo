@@ -14,7 +14,7 @@
   </table>
   <table>
     <key>BatchProcessingDirectory</key>
-    <value>D:\_gulevlab\SkyIndexAnalyzerSolo_appData\AI45-total\ID1\</value>
+    <value>D:\_gulevlab\SkyIndexAnalyzerSolo_appData\AI45\sky-images\</value>
   </table>
   <table>
     <key>GermanCloudSkySeparationValue</key>
@@ -30,7 +30,7 @@
   </table>
   <table>
     <key>GrIxAnalysisImageCircledCropFactor</key>
-    <value>0,9</value>
+    <value>0,95</value>
   </table>
   <table>
     <key>GrIxSunDetectorConcurrentThreadsLimit</key>
@@ -54,7 +54,7 @@
   </table>
   <table>
     <key>DefaultMaxImageSize</key>
-    <value>512</value>
+    <value>1024</value>
   </table>
   <table>
     <key>DefaultScalingFactor</key>
@@ -62,7 +62,7 @@
   </table>
   <table>
     <key>DefaultDataFilesLocation</key>
-    <value>D:\_gulevlab\SkyIndexAnalyzerSolo_appData\AI45-total\ID2\stats\</value>
+    <value>D:\_gulevlab\SkyIndexAnalyzerSolo_appData\AI45\sky-images-result\</value>
   </table>
   <table>
     <key>GrIxDefaultSkyCloudMarginWithoutSun</key>
@@ -71,5 +71,9 @@
   <table>
     <key>JapanCloudSkySeparationValue</key>
     <value>0,1</value>
+  </table>
+  <table>
+    <key>DefaultMedianPerc5StatsXMLFile</key>
+    <value>D:\_gulevlab\SkyIndexAnalyzerSolo_appData\AI45-total\ID1\stats\statsWithFNames.xml</value>
   </table>
 </DataSet>

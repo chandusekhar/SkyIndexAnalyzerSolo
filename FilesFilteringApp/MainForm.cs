@@ -218,10 +218,10 @@ namespace FilesFilteringApp
                 }
                 
 
-                //minute = Convert.ToInt32(dateTime.Substring(14, 2));
+                minute = Convert.ToInt32(dateTime.Substring(14, 2));
 
-                //if ((minute == 0) && (!usedDateTimes.Contains(curDateTime.Substring(0, 16))))
-                if (!listUsedHours.Contains(theHour))
+                if ((minute == 0) && (!listUsedHours.Contains(theHour)))
+                //if (!listUsedHours.Contains(theHour))
                 {
                     //usedDateTimes = usedDateTimes + Environment.NewLine + curDateTime.Substring(0, 16);
                     //String newFileName = destDirectory + curDateTime.Substring(0, 16).Replace(":", "-").Replace(" ", "-") + "-" + fileInfo.Name;

@@ -1,16 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Configuration;
 using System.Linq;
 using System.Windows.Forms;
 using System.Drawing;
-using System.Data;
 using System.IO;
 using MathNet.Numerics.LinearAlgebra.Double;
-using System.Text;
 using System.Drawing.Imaging;
-using System.Xml;
 using System.Threading;
 using System.Reflection;
 using Emgu.CV;
@@ -21,29 +17,42 @@ using SkyImagesAnalyzerLibraries;
 
 namespace SkyImagesAnalyzer
 {
-    public enum pb2Source { SkyindexAnalyzer, ConnectedObjectsDetector, SkyCloudClassificator };
+    //public enum pb2Source
+    //{
+    //    SkyindexAnalyzer,
+    //    ConnectedObjectsDetector,
+    //    SkyCloudClassificator };
+
+
 
     public partial class MainAnalysisForm : Form
     {
         #region vars
 
-        private Assembly _assembly;
+        #region устарели
         //private StreamReader _textStreamReader;
         //private Image imagetoadd;
+        //public FileStream CCDataFile;
+        //public FileStream EXIFdataFile;
+        //private FileStream StatDataFile1;
+        //private bool gotexifs;
+        //public System.Data.DataTable datatableFnumber, datatableISOspeed, datatableExposureTime;
+        //private double resizevalue;
+        #endregion
+
+        private Assembly _assembly;
         private Image<Bgr, Byte> imagetoadd;
         private Bitmap bitmapSI;
         private AboutBox1 aboutprog;
-        private TimeSpan timetotal; 
-        private DateTime begintotal; 
+        private TimeSpan timetotal;
+        private DateTime begintotal;
         private string ImageFileName;
-        public FileStream CCDataFile, EXIFdataFile;
-        private FileStream StatDataFile1;
-        private bool gotexifs;
+        
         public double tunedSIMargin;
         private double tunedSIMarginDefault;
-        public System.Data.DataTable datatableFnumber, datatableISOspeed, datatableExposureTime;
+        
         private delegate void DelegateOpenFile(String s);
-        //private double resizevalue;
+        
         private int FileCounter, filecounter_prev;
         private int SIClScMarginRangeLowerValue, SIClScMarginRangeHigherValue;
         private SkyCloudClassification classificator;
@@ -143,14 +152,14 @@ namespace SkyImagesAnalyzer
 
 
             //text1 = "comments will be here";
-            gotexifs = false;
+            //gotexifs = false;
 
             ThreadSafeOperations.UpdatePictureBox(pictureBox1, imagetoadd.Bitmap, true);
             ThreadSafeOperations.UpdatePictureBox(pictureBox2, null);
             pictureBox2Bitmap = null;
 
-            FileInfo finfo = new FileInfo(ImageFileName);
-            string shortfname1 = finfo.Name;
+            //FileInfo finfo = new FileInfo(ImageFileName);
+            //string shortfname1 = finfo.Name;
 
             //SkyCloudClassificator = null;
             //ObjectsDetector = null;
@@ -191,7 +200,7 @@ namespace SkyImagesAnalyzer
 
             //}
 
-            ReadEx3CalculateScheme();
+            // ReadEx3CalculateScheme();
 
             //ThreadSafeOperations.SetText(label9, "Изменять исходный размер: 1.0", false);
             //ThreadSafeOperations.MoveTrackBar(trackBar3, 7);
@@ -234,217 +243,224 @@ namespace SkyImagesAnalyzer
         }
 
 
+        #region // устарело, пока больше не применяется
+        //private void ReadEx3CalculateScheme()
+        //{
+        //    string Ex3XMLfilename = Directory.GetCurrentDirectory() + "\\settings\\Ex3SumSchema.xml";
+        //    if (!File.Exists(Ex3XMLfilename)){return;}
+        //    //Stream Stream1 = _assembly.GetManifestResourceStream("SkyImagesAnalyzer.Resources.Ex3SumSchema");
+        //    StreamReader _textStreamReader = new StreamReader(Ex3XMLfilename, Encoding.UTF8);
+        //    XmlReader reader;
+        //    XmlDocument xmlfile;
+        //    DataRow row1;
 
-        private void ReadEx3CalculateScheme()
-        {
-            string Ex3XMLfilename = Directory.GetCurrentDirectory() + "\\settings\\Ex3SumSchema.xml";
-            if (!File.Exists(Ex3XMLfilename)){return;}
-            //Stream Stream1 = _assembly.GetManifestResourceStream("SkyImagesAnalyzer.Resources.Ex3SumSchema");
-            StreamReader _textStreamReader = new StreamReader(Ex3XMLfilename, Encoding.UTF8);
-            XmlReader reader;
-            XmlDocument xmlfile;
-            DataRow row1;
+        //    datatableISOspeed = new System.Data.DataTable();
+        //    datatableISOspeed.Columns.Add("Value", typeof(double));
+        //    datatableISOspeed.Columns.Add("sum", typeof(double));
+        //    datatableFnumber = new System.Data.DataTable();
+        //    datatableFnumber.Columns.Add("Value", typeof(double));
+        //    datatableFnumber.Columns.Add("sum", typeof(double));
+        //    datatableExposureTime = new System.Data.DataTable();
+        //    datatableExposureTime.Columns.Add("Value", typeof(double));
+        //    datatableExposureTime.Columns.Add("sum", typeof(double));
 
-            datatableISOspeed = new System.Data.DataTable();
-            datatableISOspeed.Columns.Add("Value", typeof(double));
-            datatableISOspeed.Columns.Add("sum", typeof(double));
-            datatableFnumber = new System.Data.DataTable();
-            datatableFnumber.Columns.Add("Value", typeof(double));
-            datatableFnumber.Columns.Add("sum", typeof(double));
-            datatableExposureTime = new System.Data.DataTable();
-            datatableExposureTime.Columns.Add("Value", typeof(double));
-            datatableExposureTime.Columns.Add("sum", typeof(double));
+        //    reader = XmlReader.Create(_textStreamReader);
+        //    xmlfile = new XmlDocument();
+        //    xmlfile.Load(reader);
 
-            reader = XmlReader.Create(_textStreamReader);
-            xmlfile = new XmlDocument();
-            xmlfile.Load(reader);
-
-            XmlNode ISOspeedTree = xmlfile.GetElementsByTagName("ISOSpeedTable").Item(0);
-            for (int n = 0; n < ISOspeedTree.ChildNodes.Count; n++)
-            {
-                XmlNode ISODataRaw = ISOspeedTree.ChildNodes.Item(n);
-                double ISOvalue = Convert.ToDouble(ISODataRaw.ChildNodes.Item(0).InnerText);
-                double sum = Convert.ToDouble(ISODataRaw.ChildNodes.Item(1).InnerText);
-                row1 = datatableISOspeed.NewRow();
-                row1["Value"] = ISOvalue;
-                row1["sum"] = sum;
-                datatableISOspeed.Rows.Add(row1);
-            }
-            XmlNode FNumberTree = xmlfile.GetElementsByTagName("FNumberTable").Item(0);
-            for (int n = 0; n < FNumberTree.ChildNodes.Count; n++)
-            {
-                XmlNode FNumberDataRaw = FNumberTree.ChildNodes.Item(n);
-                double FNumberValue = Convert.ToDouble(FNumberDataRaw.ChildNodes.Item(0).InnerText);
-                double sum = Convert.ToDouble(FNumberDataRaw.ChildNodes.Item(1).InnerText);
-                row1 = datatableFnumber.NewRow();
-                row1["Value"] = FNumberValue;
-                row1["sum"] = sum;
-                datatableFnumber.Rows.Add(row1);
-            }
-            XmlNode ExposureTimeTree = xmlfile.GetElementsByTagName("ExposureTimeTable").Item(0);
-            for (int n = 0; n < ExposureTimeTree.ChildNodes.Count; n++)
-            {
-                XmlNode ExposureTimeDataRaw = ExposureTimeTree.ChildNodes.Item(n);
-                double ExposureTimevalue = Convert.ToDouble(ExposureTimeDataRaw.ChildNodes.Item(0).InnerText);
-                if (ExposureTimevalue > 1.0)
-                {
-                    ExposureTimevalue = 1.0 / ExposureTimevalue;
-                }
-                double sum = Convert.ToDouble(ExposureTimeDataRaw.ChildNodes.Item(1).InnerText);
-                row1 = datatableExposureTime.NewRow();
-                row1["Value"] = ExposureTimevalue;
-                row1["sum"] = sum;
-                datatableExposureTime.Rows.Add(row1);
-            }
-            reader.Close();
-        }
-
-
-
-        private double ex3_calculate(double Fnumber, double ExposureTime, double ISOspeed)
-        {
-            double ex3 = 0.0;
-            double FNumberValue = (double)datatableFnumber.Rows[0].ItemArray[0];
-            double FnumberSum = (double)datatableFnumber.Rows[0].ItemArray[1];
-            double ISOSpeedValue = (double)datatableISOspeed.Rows[0].ItemArray[0];
-            double ISOspeedSum = (double)datatableISOspeed.Rows[0].ItemArray[1];
-            double ExposureTimeValue = (double)datatableExposureTime.Rows[0].ItemArray[0];
-            double ExposureTimeSum = (double)datatableExposureTime.Rows[0].ItemArray[1];
-            foreach (DataRow drFnumber in datatableFnumber.Rows)
-            {
-                double FNumberValue1 = (double)drFnumber.ItemArray[0];
-                if (Math.Abs(FNumberValue1 - Fnumber) < Math.Abs(FNumberValue - Fnumber))
-                {
-                    FNumberValue = FNumberValue1;
-                    FnumberSum = (double)drFnumber.ItemArray[1];
-                }
-            }
-
-            foreach (DataRow drISOspeed in datatableISOspeed.Rows)
-            {
-                double ISOspeedValue1 = (double)drISOspeed.ItemArray[0];
-                if (Math.Abs(ISOspeedValue1 - ISOspeed) < Math.Abs(ISOSpeedValue - ISOspeed))
-                {
-                    ISOSpeedValue = ISOspeedValue1;
-                    ISOspeedSum = (double)drISOspeed.ItemArray[1];
-                }
-            }
-
-            foreach (DataRow drExposureTime in datatableExposureTime.Rows)
-            {
-                double ExposureTimeValue1 = (double)drExposureTime.ItemArray[0];
-                if (Math.Abs(ExposureTimeValue1 - ExposureTime) < Math.Abs(ExposureTimeValue - ExposureTime))
-                {
-                    ExposureTimeValue = ExposureTimeValue1;
-                    ExposureTimeSum = (double)drExposureTime.ItemArray[1];
-                }
-            }
-
-            ex3 = FnumberSum + ISOspeedSum + ExposureTimeSum;
-            if (Math.Abs(Math.Abs(ex3 - Math.Truncate(ex3)) - 0.9) < 0.01)
-            {
-                ex3 = Math.Round(ex3);
-            }
-
-            return ex3;
-        }
+        //    XmlNode ISOspeedTree = xmlfile.GetElementsByTagName("ISOSpeedTable").Item(0);
+        //    for (int n = 0; n < ISOspeedTree.ChildNodes.Count; n++)
+        //    {
+        //        XmlNode ISODataRaw = ISOspeedTree.ChildNodes.Item(n);
+        //        double ISOvalue = Convert.ToDouble(ISODataRaw.ChildNodes.Item(0).InnerText);
+        //        double sum = Convert.ToDouble(ISODataRaw.ChildNodes.Item(1).InnerText);
+        //        row1 = datatableISOspeed.NewRow();
+        //        row1["Value"] = ISOvalue;
+        //        row1["sum"] = sum;
+        //        datatableISOspeed.Rows.Add(row1);
+        //    }
+        //    XmlNode FNumberTree = xmlfile.GetElementsByTagName("FNumberTable").Item(0);
+        //    for (int n = 0; n < FNumberTree.ChildNodes.Count; n++)
+        //    {
+        //        XmlNode FNumberDataRaw = FNumberTree.ChildNodes.Item(n);
+        //        double FNumberValue = Convert.ToDouble(FNumberDataRaw.ChildNodes.Item(0).InnerText);
+        //        double sum = Convert.ToDouble(FNumberDataRaw.ChildNodes.Item(1).InnerText);
+        //        row1 = datatableFnumber.NewRow();
+        //        row1["Value"] = FNumberValue;
+        //        row1["sum"] = sum;
+        //        datatableFnumber.Rows.Add(row1);
+        //    }
+        //    XmlNode ExposureTimeTree = xmlfile.GetElementsByTagName("ExposureTimeTable").Item(0);
+        //    for (int n = 0; n < ExposureTimeTree.ChildNodes.Count; n++)
+        //    {
+        //        XmlNode ExposureTimeDataRaw = ExposureTimeTree.ChildNodes.Item(n);
+        //        double ExposureTimevalue = Convert.ToDouble(ExposureTimeDataRaw.ChildNodes.Item(0).InnerText);
+        //        if (ExposureTimevalue > 1.0)
+        //        {
+        //            ExposureTimevalue = 1.0 / ExposureTimevalue;
+        //        }
+        //        double sum = Convert.ToDouble(ExposureTimeDataRaw.ChildNodes.Item(1).InnerText);
+        //        row1 = datatableExposureTime.NewRow();
+        //        row1["Value"] = ExposureTimevalue;
+        //        row1["sum"] = sum;
+        //        datatableExposureTime.Rows.Add(row1);
+        //    }
+        //    reader.Close();
+        //}
+        #endregion // устарело, пока больше не применяется
 
 
+        #region // устарело, пока больше не применяется
+        //private double ex3_calculate(double Fnumber, double ExposureTime, double ISOspeed)
+        //{
+        //    double ex3 = 0.0;
+        //    double FNumberValue = (double)datatableFnumber.Rows[0].ItemArray[0];
+        //    double FnumberSum = (double)datatableFnumber.Rows[0].ItemArray[1];
+        //    double ISOSpeedValue = (double)datatableISOspeed.Rows[0].ItemArray[0];
+        //    double ISOspeedSum = (double)datatableISOspeed.Rows[0].ItemArray[1];
+        //    double ExposureTimeValue = (double)datatableExposureTime.Rows[0].ItemArray[0];
+        //    double ExposureTimeSum = (double)datatableExposureTime.Rows[0].ItemArray[1];
+        //    foreach (DataRow drFnumber in datatableFnumber.Rows)
+        //    {
+        //        double FNumberValue1 = (double)drFnumber.ItemArray[0];
+        //        if (Math.Abs(FNumberValue1 - Fnumber) < Math.Abs(FNumberValue - Fnumber))
+        //        {
+        //            FNumberValue = FNumberValue1;
+        //            FnumberSum = (double)drFnumber.ItemArray[1];
+        //        }
+        //    }
 
-        private void GetEXIFs()
-        {
-            string strtowrite;
-            byte[] info2write;
+        //    foreach (DataRow drISOspeed in datatableISOspeed.Rows)
+        //    {
+        //        double ISOspeedValue1 = (double)drISOspeed.ItemArray[0];
+        //        if (Math.Abs(ISOspeedValue1 - ISOspeed) < Math.Abs(ISOSpeedValue - ISOspeed))
+        //        {
+        //            ISOSpeedValue = ISOspeedValue1;
+        //            ISOspeedSum = (double)drISOspeed.ItemArray[1];
+        //        }
+        //    }
 
-            if (ImageFileName == null)
-            {
-                return;
-            }
-            double ex3, DataValueFnumber, DataValueExpTime, DataValueISO, DataValueExpCorr;
-            //string DataValueExpTimeHR = "";
-            //System.Text.ASCIIEncoding encoding = new System.Text.ASCIIEncoding();
+        //    foreach (DataRow drExposureTime in datatableExposureTime.Rows)
+        //    {
+        //        double ExposureTimeValue1 = (double)drExposureTime.ItemArray[0];
+        //        if (Math.Abs(ExposureTimeValue1 - ExposureTime) < Math.Abs(ExposureTimeValue - ExposureTime))
+        //        {
+        //            ExposureTimeValue = ExposureTimeValue1;
+        //            ExposureTimeSum = (double)drExposureTime.ItemArray[1];
+        //        }
+        //    }
 
-            //string MetadataStatFilename = Directory.GetCurrentDirectory() + "\\meta_stat.dat";
-            //MetadataStatFile = new FileStream(MetadataStatFilename, FileMode.Create, FileAccess.Write);
-            string filename1 = ImageFileName;
-            FileInfo imagefinfo = new FileInfo(filename1);
-            string filenameEXIFdata = imagefinfo.DirectoryName + "\\exif.dat";
-            EXIFdataFile = new FileStream(filenameEXIFdata, FileMode.Append, FileAccess.Write);
-            FileInfo finfo2 = new FileInfo(filenameEXIFdata);
-            if (finfo2.Length == 0)
-            {
-                strtowrite = "Filename\t\t\tISO\tFn\tT\texp3\n";
-                info2write = new UTF8Encoding(true).GetBytes(strtowrite);
-                EXIFdataFile.Write(info2write, 0, info2write.Length);
-            }
+        //    ex3 = FnumberSum + ISOspeedSum + ExposureTimeSum;
+        //    if (Math.Abs(Math.Abs(ex3 - Math.Truncate(ex3)) - 0.9) < 0.01)
+        //    {
+        //        ex3 = Math.Round(ex3);
+        //    }
 
-            string stattxt = "";
-            if (imagetoadd == null)
-            {
-                return;
-            }
-
-            Image image2Process = Image.FromFile(filename1);
-            ImageInfo imInfo = new ImageInfo(image2Process);
-            stattxt += filename1 + ";";
-
-            //PropertyItem[] propItems = imagetoadd.PropertyItems;
-
-            ex3 = 0.0;
-            DataValueExpCorr = Convert.ToDouble(imInfo.getValueByKey("ExifExposureBias"));//ExifExposureBias
-            DataValueExpTime = Convert.ToDouble(imInfo.getValueByKey("ExifExposureTime"));//ExifExposureTime
-            DataValueFnumber = Convert.ToDouble(imInfo.getValueByKey("ExifFNumber"));
-            DataValueISO = Convert.ToDouble(imInfo.getValueByKey("ExifISOSpeed"));//ExifISOSpeed
-            ex3 += DataValueFnumber;
-
-            if ((DataValueISO != 0.0d) && (DataValueExpCorr != 0.0d) && (DataValueExpTime != 0.0d) &&
-                (DataValueFnumber != 0.0d))
-            {
-                ex3 = ex3_calculate(DataValueFnumber, DataValueExpTime, DataValueISO);
-
-                Note("ISO speed = " + DataValueISO.ToString() + Environment.NewLine
-                     + "Exp. time = " + DataValueExpTime.ToString() + Environment.NewLine
-                     + "F number  = " + DataValueFnumber.ToString() + Environment.NewLine
-                     + "Exp.corr. = " + DataValueExpCorr.ToString() + Environment.NewLine
-                     + "Exp3 = " + ex3.ToString());
-
-                stattxt += "\t" + ex3.ToString() + ";\tex.correction = " + DataValueExpCorr.ToString() +
-                           Environment.NewLine;
-
-
-                Note(DateTime.Now + "\tГотово! " + Environment.NewLine);
-                //info1 = new UTF8Encoding(true).GetBytes(stattxt);
-                //MetadataStatFile.Write(info1, 0, info1.Length);
-                //MetadataStatFile.Close();
-                if (!gotexifs)
-                {
-                    strtowrite = imagefinfo.Name + "\t\t"
-                                 + DataValueISO.ToString() + "\t"
-                                 + DataValueFnumber.ToString() + "\t"
-                                 + DataValueExpTime.ToString() + "\t"
-                                 + ex3.ToString() + "\n";
-                    info2write = new UTF8Encoding(true).GetBytes(strtowrite);
-                    EXIFdataFile.Write(info2write, 0, info2write.Length);
-                    EXIFdataFile.Close();
-                }
-            }
-
-            gotexifs = true;
-            EXIFdataFile.Close();
-        }
+        //    return ex3;
+        //}
+        #endregion // устарело, пока больше не применяется
 
 
 
 
+        #region // private void GetEXIFs() - устарело, пока больше не применяется
+        //private void GetEXIFs()
+        //{
+        //    string strtowrite;
+        //    byte[] info2write;
+
+        //    if (ImageFileName == null)
+        //    {
+        //        return;
+        //    }
+        //    double ex3, DataValueFnumber, DataValueExpTime, DataValueISO, DataValueExpCorr;
+        //    //string DataValueExpTimeHR = "";
+        //    //System.Text.ASCIIEncoding encoding = new System.Text.ASCIIEncoding();
+
+        //    //string MetadataStatFilename = Directory.GetCurrentDirectory() + "\\meta_stat.dat";
+        //    //MetadataStatFile = new FileStream(MetadataStatFilename, FileMode.Create, FileAccess.Write);
+        //    string filename1 = ImageFileName;
+        //    FileInfo imagefinfo = new FileInfo(filename1);
+        //    string filenameEXIFdata = imagefinfo.DirectoryName + "\\exif.dat";
+        //    EXIFdataFile = new FileStream(filenameEXIFdata, FileMode.Append, FileAccess.Write);
+        //    FileInfo finfo2 = new FileInfo(filenameEXIFdata);
+        //    if (finfo2.Length == 0)
+        //    {
+        //        strtowrite = "Filename\t\t\tISO\tFn\tT\texp3\n";
+        //        info2write = new UTF8Encoding(true).GetBytes(strtowrite);
+        //        EXIFdataFile.Write(info2write, 0, info2write.Length);
+        //    }
+
+        //    string stattxt = "";
+        //    if (imagetoadd == null)
+        //    {
+        //        return;
+        //    }
+
+        //    Image image2Process = Image.FromFile(filename1);
+        //    ImageInfo imInfo = new ImageInfo(image2Process);
+        //    stattxt += filename1 + ";";
+
+        //    //PropertyItem[] propItems = imagetoadd.PropertyItems;
+
+        //    ex3 = 0.0;
+        //    DataValueExpCorr = Convert.ToDouble(imInfo.getValueByKey("ExifExposureBias"));//ExifExposureBias
+        //    DataValueExpTime = Convert.ToDouble(imInfo.getValueByKey("ExifExposureTime"));//ExifExposureTime
+        //    DataValueFnumber = Convert.ToDouble(imInfo.getValueByKey("ExifFNumber"));
+        //    DataValueISO = Convert.ToDouble(imInfo.getValueByKey("ExifISOSpeed"));//ExifISOSpeed
+        //    ex3 += DataValueFnumber;
+
+        //    if ((DataValueISO != 0.0d) && (DataValueExpCorr != 0.0d) && (DataValueExpTime != 0.0d) &&
+        //        (DataValueFnumber != 0.0d))
+        //    {
+        //        ex3 = ex3_calculate(DataValueFnumber, DataValueExpTime, DataValueISO);
+
+        //        Note("ISO speed = " + DataValueISO.ToString() + Environment.NewLine
+        //             + "Exp. time = " + DataValueExpTime.ToString() + Environment.NewLine
+        //             + "F number  = " + DataValueFnumber.ToString() + Environment.NewLine
+        //             + "Exp.corr. = " + DataValueExpCorr.ToString() + Environment.NewLine
+        //             + "Exp3 = " + ex3.ToString());
+
+        //        stattxt += "\t" + ex3.ToString() + ";\tex.correction = " + DataValueExpCorr.ToString() +
+        //                   Environment.NewLine;
 
 
-        private int countrows(System.Data.DataTable table_in, string column_id, double filtervalue)
-        {
-            DataRow[] filteredrows = table_in.Select("" + column_id + " = " + filtervalue.ToString());
-            return filteredrows.Length;
-        }
+        //        Note(DateTime.Now + "\tГотово! " + Environment.NewLine);
+        //        //info1 = new UTF8Encoding(true).GetBytes(stattxt);
+        //        //MetadataStatFile.Write(info1, 0, info1.Length);
+        //        //MetadataStatFile.Close();
+        //        if (!gotexifs)
+        //        {
+        //            strtowrite = imagefinfo.Name + "\t\t"
+        //                         + DataValueISO.ToString() + "\t"
+        //                         + DataValueFnumber.ToString() + "\t"
+        //                         + DataValueExpTime.ToString() + "\t"
+        //                         + ex3.ToString() + "\n";
+        //            info2write = new UTF8Encoding(true).GetBytes(strtowrite);
+        //            EXIFdataFile.Write(info2write, 0, info2write.Length);
+        //            EXIFdataFile.Close();
+        //        }
+        //    }
+
+        //    gotexifs = true;
+        //    EXIFdataFile.Close();
+        //}
+        #endregion // private void GetEXIFs() - устарело, пока больше не применяется
 
 
+
+
+        #region // устарело, пока больше не применяется
+        //private int countrows(System.Data.DataTable table_in, string column_id, double filtervalue)
+        //{
+        //    DataRow[] filteredrows = table_in.Select("" + column_id + " = " + filtervalue.ToString());
+        //    return filteredrows.Length;
+        //}
+        #endregion // устарело, пока больше не применяется
+
+
+
+        #region // устарело, больше не применяется
         //private Color ColorScheme_m3(double si_m3, int callcase = 0)
         //{
         //    Color new_color3;
@@ -531,6 +547,9 @@ namespace SkyImagesAnalyzer
 
         //    return new_color4;
         //}
+        #endregion // устарело, больше не применяется
+
+
 
 
         private void button1_Click_1(object sender, EventArgs e)
@@ -543,19 +562,19 @@ namespace SkyImagesAnalyzer
         private void DumpKeyData()
         {
             string strtowrite;
-            byte[] info2write;
+            //byte[] info2write;
 
             string filename1 = ImageFileName;
 
-            imagetoadd = new Image<Bgr, byte>(filename1); // Image.FromFile(filename1);
+            // imagetoadd = new Image<Bgr, byte>(filename1); // Image.FromFile(filename1);
             FileInfo imagefinfo = new FileInfo(filename1);
 
             string filenameCCdata = imagefinfo.DirectoryName + "\\result.dat";
             string filenameStatData1File = imagefinfo.DirectoryName + "\\StatData1.dat";
 
 
-            CCDataFile = new FileStream(filenameCCdata, FileMode.Append, FileAccess.Write);
-            StatDataFile1 = new FileStream(filenameStatData1File, FileMode.Append, FileAccess.Write);
+            //CCDataFile = new FileStream(filenameCCdata, FileMode.Append, FileAccess.Write);
+            //StatDataFile1 = new FileStream(filenameStatData1File, FileMode.Append, FileAccess.Write);
 
             FileInfo finfo1 = new FileInfo(filenameCCdata);
             if (finfo1.Length == 0)
@@ -563,9 +582,12 @@ namespace SkyImagesAnalyzer
                 strtowrite = "CCv - cloud cover index" + Environment.NewLine
                             + "MVl = sky-cloud margin value" + Environment.NewLine
                             + "Filename\t\tMVlSI\tCCvSI\n";
+                ServiceTools.logToTextFile(filenameCCdata, strtowrite, true);
+
+
                 //+ "Filename\t\tMVlSI\tCCvSI\tMVlIFM\tCCvIFM\n";
-                info2write = new UTF8Encoding(true).GetBytes(strtowrite);
-                CCDataFile.Write(info2write, 0, info2write.Length);
+                //info2write = new UTF8Encoding(true).GetBytes(strtowrite);
+                //CCDataFile.Write(info2write, 0, info2write.Length);
 
                 strtowrite = "SkClMV = sky-cloud margin values" + Environment.NewLine
                             + "data fields contains sky-index values by files for each SkClMV" + Environment.NewLine
@@ -576,8 +598,9 @@ namespace SkyImagesAnalyzer
                     strtowrite += marginval.ToString() + "\t";
                 }
                 strtowrite += Environment.NewLine + "Filename" + Environment.NewLine;
-                info2write = new UTF8Encoding(true).GetBytes(strtowrite);
-                StatDataFile1.Write(info2write, 0, info2write.Length);
+                //info2write = new UTF8Encoding(true).GetBytes(strtowrite);
+                //StatDataFile1.Write(info2write, 0, info2write.Length);
+                ServiceTools.logToTextFile(filenameStatData1File, strtowrite, true);
             }
 
 
@@ -594,8 +617,9 @@ namespace SkyImagesAnalyzer
             //+ Math.Round(CloudCover3, 2).ToString() + "\t"
             //+ tunedIFMMargin.ToString() + "\t"
             //+ Math.Round(CloudCover4, 2).ToString() + "\n";
-            info2write = new UTF8Encoding(true).GetBytes(strtowrite);
-            CCDataFile.Write(info2write, 0, info2write.Length);
+            //info2write = new UTF8Encoding(true).GetBytes(strtowrite);
+            //CCDataFile.Write(info2write, 0, info2write.Length);
+            ServiceTools.logToTextFile(filenameCCdata, strtowrite, true);
 
 
             if (filecounter_prev != FileCounter)
@@ -608,11 +632,13 @@ namespace SkyImagesAnalyzer
                 strtowrite = "";
             }
             strtowrite += Math.Round(classificator.CloudCover, 3).ToString() + "\t";
-            info2write = new UTF8Encoding(true).GetBytes(strtowrite);
-            StatDataFile1.Write(info2write, 0, info2write.Length);
+            ServiceTools.logToTextFile(filenameStatData1File, strtowrite, true);
 
-            StatDataFile1.Close();
-            CCDataFile.Close();
+            //info2write = new UTF8Encoding(true).GetBytes(strtowrite);
+            //StatDataFile1.Write(info2write, 0, info2write.Length);
+
+            //StatDataFile1.Close();
+            //CCDataFile.Close();
         }
 
 
@@ -634,10 +660,17 @@ namespace SkyImagesAnalyzer
         }
 
 
-        private void button3_Click(object sender, EventArgs e)
-        {
-            GetEXIFs();
-        }
+
+
+        #region // private void GetEXIFs() - устарело, пока больше не применяется
+        //private void button3_Click(object sender, EventArgs e)
+        //{
+        //    GetEXIFs();
+        //}
+        #endregion // private void GetEXIFs() - устарело, пока больше не применяется
+
+
+
 
 
         public void Note(string text)
@@ -1035,7 +1068,7 @@ namespace SkyImagesAnalyzer
 
         private void Form1_Resize(object sender, EventArgs e)
         {
-            if ((imagetoadd != null) && (!backgroundWorker1.IsBusy))
+            if ((imagetoadd != null) && (!bgwProcessOneImage.IsBusy))
             {
                 ThreadSafeOperations.UpdatePictureBox(pictureBox1, imagetoadd.Bitmap, true);
                 ThreadSafeOperations.UpdatePictureBox(pictureBox2, pictureBox2Bitmap, true);
@@ -1083,9 +1116,12 @@ namespace SkyImagesAnalyzer
         //    sp.Close();
         //}
 
+
+
+        // bgwProcessOneImage - DoWork
         private void backgroundWorker1_DoWork(object sender, System.ComponentModel.DoWorkEventArgs e)
         {
-            System.ComponentModel.BackgroundWorker SelfWorker = sender as System.ComponentModel.BackgroundWorker;
+            BackgroundWorker SelfWorker = sender as BackgroundWorker;
 
             AnalyzeImage();
             if (SelfWorker.CancellationPending)
@@ -1097,6 +1133,8 @@ namespace SkyImagesAnalyzer
             //ProcessButtonPushedOnceThisFile = true;
         }
 
+
+        // bgwProcessOneImage - RunWorkerCompleted
         private void backgroundWorker1_RunWorkerCompleted(object sender, System.ComponentModel.RunWorkerCompletedEventArgs e)
         {
             if (e.Error != null)
@@ -1120,6 +1158,7 @@ namespace SkyImagesAnalyzer
             ThreadSafeOperations.ToggleButtonState(button4, true, "OK", false);
         }
 
+        //bgwProcessOneImage - ProgressChanged
         private void backgroundWorker1_ProgressChanged(object sender, System.ComponentModel.ProgressChangedEventArgs e)
         {
             ThreadSafeOperations.UpdateProgressBar(pbUniversalProgressBar, e.ProgressPercentage);
@@ -1131,6 +1170,9 @@ namespace SkyImagesAnalyzer
             }
 
         }
+
+
+
 
         //private void GetSensorsDataCycle_DoWork(object sender, System.ComponentModel.DoWorkEventArgs e)
         //{
@@ -1181,6 +1223,9 @@ namespace SkyImagesAnalyzer
         //    }
 
         //}
+
+
+
 
         private void Form1_Paint(object sender, PaintEventArgs e)
         {
@@ -1235,7 +1280,7 @@ namespace SkyImagesAnalyzer
 
 
 
-        
+
 
 
 
@@ -1250,9 +1295,9 @@ namespace SkyImagesAnalyzer
 
             DirectoryInfo dir = new DirectoryInfo(path2process);
 
-            if (backgroundWorker2.IsBusy)
+            if (bgwProcessDirectoryOfImages.IsBusy)
             {
-                backgroundWorker2.CancelAsync();
+                bgwProcessDirectoryOfImages.CancelAsync();
             }
             else
             {
@@ -1307,16 +1352,16 @@ namespace SkyImagesAnalyzer
 
                 ThreadSafeOperations.ToggleButtonState(button1, true, "Прекратить обработку", true);
 
-                backgroundWorker2.RunWorkerAsync(BGWorker2Args);
+                bgwProcessDirectoryOfImages.RunWorkerAsync(BGWorker2Args);
             }
         }
 
 
 
         /// <summary>
-        /// Backgrounds the worker2_ do work.
+        /// Handles the DoWork event of the bgwProcessDirectoryOfImages.
         /// </summary>
-        /// <param name="sender">The sender.</param>
+        /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="System.ComponentModel.DoWorkEventArgs"/> instance containing the event data.</param>
         private void backgroundWorker2_DoWork(object sender, System.ComponentModel.DoWorkEventArgs e)
         {
@@ -1333,15 +1378,11 @@ namespace SkyImagesAnalyzer
 
             ThreadSafeOperations.UpdateProgressBar(pbUniversalProgressBar, 0);
 
-            //SimpleShowImageForm GrIxResultForm = null;
-            //SimpleShowImageForm sourceImageForm = null;
-
             SIValueRange_min = SIClScMarginRangeLowerValue;
             SIValueRange_max = SIClScMarginRangeHigherValue;
             SIValueRange = SIValueRange_max - SIValueRange_min;
             FileCounter = 0; filecounter_prev = 0;
-
-            //TrackBar3Value = ((int)(e.Argument as object[])[0]);
+            
             string path2process = (string)arguments[0];
             LogWindow theLogWindow = (LogWindow)arguments[1];
             simpleMultipleImagesShow imagesRepresentingForm = (simpleMultipleImagesShow)arguments[2];
@@ -1370,24 +1411,21 @@ namespace SkyImagesAnalyzer
                 ImageInfo imInfo = new ImageInfo(Image.FromFile(fInfo.FullName));
                 //String dateTime = (String)imInfo.getValueByKey("DateTime");
                 String dateTime = (String)imInfo.getValueByKey("ExifDTOrig");
+
+                if (dateTime == null)
+                {
+                    //попробуем вытащить из имени файла
+                    string strDateTime = fInfo.Name;
+                    strDateTime = strDateTime.Substring(4, 19);
+                    dateTime = strDateTime;
+                }
+
                 strToDisplay += dateTime;
 
-
-                //imagetoadd = Image.FromFile(fInfo.FullName);
-                //int ImageWidthRec = (int)Math.Round((imagetoadd.Width * defaultResizeFactor), 0);
-                //int ImageHeightRec = (int)Math.Round((imagetoadd.Height * defaultResizeFactor), 0);
-                //imagetoadd = ImageProcessing.ImageResizer(imagetoadd, defaultMaxImageSize);
-
-                
-                //Bitmap bm1 = new Bitmap(imagetoadd);
-
-
-
-                Image<Bgr, Byte> img2process = new Image<Bgr,byte>(fInfo.FullName);
+                Image<Bgr, Byte> img2process = new Image<Bgr, byte>(fInfo.FullName);
 
                 if (schemesToUse.FindIndex(clMethod => clMethod == ClassificationMethods.Japan) != -1)
                 {
-                    //bitmap2process = ServiceTools.ReadBitmapFromFile(fInfo.FullName);
                     ThreadSafeOperations.UpdatePictureBox(pictureBox1, img2process.Bitmap, true);
                     img2process = ImageProcessing.ImageResizer(img2process, defaultMaxImageSize);
 
@@ -1397,7 +1435,7 @@ namespace SkyImagesAnalyzer
                     classificator.ClassificationMethod = ClassificationMethods.Japan;
                     classificator.isCalculatingUsingBgWorker = true;
                     classificator.SelfWorker = sender as BackgroundWorker;
-                    classificator.defaultOutputDataDirectory = (string) defaultProperties["DefaultDataFilesLocation"];
+                    classificator.defaultOutputDataDirectory = (string)defaultProperties["DefaultDataFilesLocation"];
                     classificator.cloudSkySeparationValue =
                         Convert.ToDouble(defaultProperties["JapanCloudSkySeparationValue"]);
                     classificator.sourceImageFileName = fInfo.FullName;
@@ -1412,27 +1450,19 @@ namespace SkyImagesAnalyzer
                     bmJ = new Bitmap(bitmapSI);
                 }
 
+
+
+
                 
-
-
-                //imagetoadd = Image.FromFile(fInfo.FullName);
-                //ImageWidthRec = (int)Math.Round((imagetoadd.Width * defaultResizeFactor), 0);
-                //ImageHeightRec = (int)Math.Round((imagetoadd.Height * defaultResizeFactor), 0);
-                //imagetoadd = ImageProcessing.ImageResizer(imagetoadd, defaultMaxImageSize);
-                //bitmap2process = (Bitmap)(imagetoadd.Clone());
                 if (schemesToUse.FindIndex(clMethod => clMethod == ClassificationMethods.US) != -1)
                 {
-                    //bitmap2process = ServiceTools.ReadBitmapFromFile(fInfo.FullName);
-                    //ThreadSafeOperations.UpdatePictureBox(pictureBox1, bitmap2process, true);
-                    //bitmap2process = ImageProcessing.BitmapResizer(bitmap2process, defaultMaxImageSize);
-
                     classificator = new SkyCloudClassification(img2process, defaultProperties);
                     classificator.LogWindow = theLogWindow;
                     classificator.ParentForm = this;
                     classificator.ClassificationMethod = ClassificationMethods.US;
                     classificator.isCalculatingUsingBgWorker = true;
                     classificator.SelfWorker = sender as BackgroundWorker;
-                    classificator.defaultOutputDataDirectory = (string) defaultProperties["DefaultDataFilesLocation"];
+                    classificator.defaultOutputDataDirectory = (string)defaultProperties["DefaultDataFilesLocation"];
                     classificator.cloudSkySeparationValue =
                         Convert.ToDouble(defaultProperties["GermanCloudSkySeparationValue"]);
                     classificator.sourceImageFileName = fInfo.FullName;
@@ -1448,24 +1478,16 @@ namespace SkyImagesAnalyzer
                     bmG = new Bitmap(bitmapSI);
                 }
 
-                //imagetoadd = Image.FromFile(fInfo.FullName);
-                //ImageWidthRec = (int)Math.Round((imagetoadd.Width * defaultResizeFactor), 0);
-                //ImageHeightRec = (int)Math.Round((imagetoadd.Height * defaultResizeFactor), 0);
-                //imagetoadd = ImageProcessing.ImageResizer(imagetoadd, defaultMaxImageSize);
-                //bitmap2process = (Bitmap)(imagetoadd.Clone());
+                
                 if (schemesToUse.FindIndex(clMethod => clMethod == ClassificationMethods.GrIx) != -1)
                 {
-                    //bitmap2process = ServiceTools.ReadBitmapFromFile(fInfo.FullName);
-                    //ThreadSafeOperations.UpdatePictureBox(pictureBox1, bitmap2process, true);
-                    //bitmap2process = ImageProcessing.BitmapResizer(bitmap2process, defaultMaxImageSize);
-
                     classificator = new SkyCloudClassification(img2process, defaultProperties);
                     classificator.LogWindow = theLogWindow;
                     classificator.ParentForm = this;
                     classificator.ClassificationMethod = ClassificationMethods.GrIx;
                     classificator.isCalculatingUsingBgWorker = true;
                     classificator.SelfWorker = sender as BackgroundWorker;
-                    classificator.defaultOutputDataDirectory = (string) defaultProperties["DefaultDataFilesLocation"];
+                    classificator.defaultOutputDataDirectory = (string)defaultProperties["DefaultDataFilesLocation"];
                     classificator.cloudSkySeparationValue =
                         Convert.ToDouble(defaultProperties["GermanCloudSkySeparationValue"]);
                     classificator.theStdDevMarginValueDefiningSkyCloudSeparation =
@@ -1494,16 +1516,6 @@ namespace SkyImagesAnalyzer
                     string germanFName = outputDataDirectory + randomFileName + "_si_US.jpg";
                     string GrIxFName = outputDataDirectory + randomFileName + "_si_GrIx.jpg";
 
-                    //imagetoadd = Image.FromFile(fInfo.FullName);
-                    //ImageWidthRec = (int)Math.Round((imagetoadd.Width * defaultResizeFactor), 0);
-                    //ImageHeightRec = (int)Math.Round((imagetoadd.Height * defaultResizeFactor), 0);
-                    //imagetoadd = ImageProcessing.ImageResizer(imagetoadd, defaultMaxImageSize);
-                    //bitmap2process = (Bitmap)(imagetoadd.Clone());
-
-                    //bitmap2process = ServiceTools.ReadBitmapFromFile(fInfo.FullName);
-                    //ThreadSafeOperations.UpdatePictureBox(pictureBox1, bitmap2process, true);
-                    //bitmap2process = ImageProcessing.BitmapResizer(bitmap2process, defaultMaxImageSize);
-
                     img2process.Save(sourceFName);
                     bmJ.Save(japanFName, ImageFormat.Jpeg);
                     bmG.Save(germanFName, ImageFormat.Jpeg);
@@ -1517,19 +1529,19 @@ namespace SkyImagesAnalyzer
 
                 if (schemesToUse.FindIndex(clMethod => clMethod == ClassificationMethods.Japan) != -1)
                 {
-                    parametersArray = new object[] {bmJ, "Japan", 2};
+                    parametersArray = new object[] { bmJ, "Japan", 2 };
                     thePicturePlacingMethodInfo.Invoke(imagesRepresentingForm, parametersArray);
                 }
 
                 if (schemesToUse.FindIndex(clMethod => clMethod == ClassificationMethods.US) != -1)
                 {
-                    parametersArray = new object[] {bmG, "US", 3};
+                    parametersArray = new object[] { bmG, "US", 3 };
                     thePicturePlacingMethodInfo.Invoke(imagesRepresentingForm, parametersArray);
                 }
 
                 if (schemesToUse.FindIndex(clMethod => clMethod == ClassificationMethods.GrIx) != -1)
                 {
-                    parametersArray = new object[] {bmGrIx, "GrIx", 4};
+                    parametersArray = new object[] { bmGrIx, "GrIx", 4 };
                     thePicturePlacingMethodInfo.Invoke(imagesRepresentingForm, parametersArray);
                 }
 
@@ -1548,42 +1560,6 @@ namespace SkyImagesAnalyzer
 
 
             theLogWindow = ServiceTools.LogAText(theLogWindow, "TOTAL files count: " + fileList2Process.Length);
-
-            #region // УСТАРЕЛО
-            //foreach (FileInfo FileListMember in fileList2Process)
-            //{
-            //    FileCounter++;
-            //    for (SIValueCounter = SIValueRange_min; SIValueCounter < (SIValueRange_max + 1); SIValueCounter++)
-            //    {
-            //        OpenFile(FileListMember.FullName);
-
-            //        ThreadSafeOperations.MoveTrackBar(trackBar1, SIValueCounter);
-            //        tunedSIMargin = SIValueCounter / 100.0;
-            //        ThreadSafeOperations.SetText(label2, tunedSIMargin.ToString(), false);
-
-            //        button2_Click_1(null, null);
-            //        while (backgroundWorker1.IsBusy)
-            //        {
-            //            System.Threading.Thread.Sleep(20);
-            //        }
-
-
-            //        ProgressPerc = ((double)((FileCounter - 1) * SIValueRange + SIValueCounter - SIValueRange_min) / (double)(fileList2Process.Length * SIValueRange)) * 100;
-            //        SelfWorker.ReportProgress((int)ProgressPerc);
-
-            //        if (SelfWorker.CancellationPending)
-            //        {
-            //            e.Cancel = true;
-            //            break;
-            //        }
-            //    }
-            //    if (SelfWorker.CancellationPending)
-            //    {
-            //        e.Cancel = true;
-            //        break;
-            //    }
-            //}
-            #endregion // УСТАРЕЛО
         }
 
 
@@ -1614,6 +1590,11 @@ namespace SkyImagesAnalyzer
 
 
 
+        /// <summary>
+        /// Handles the ProgressChanged event of the bgwProcessDirectoryOfImages.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="System.ComponentModel.ProgressChangedEventArgs"/> instance containing the event data.</param>
         private void backgroundWorker2_ProgressChanged(object sender, System.ComponentModel.ProgressChangedEventArgs e)
         {
             //ThreadSafeOperations.UpdateProgressBar(pbUniversalProgressBar, e.ProgressPercentage);
@@ -1622,11 +1603,16 @@ namespace SkyImagesAnalyzer
 
 
 
+        /// <summary>
+        /// Handles the RunWorkerCompleted event of the bgwProcessDirectoryOfImages.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="System.ComponentModel.RunWorkerCompletedEventArgs"/> instance containing the event data.</param>
         private void backgroundWorker2_RunWorkerCompleted(object sender, System.ComponentModel.RunWorkerCompletedEventArgs e)
         {
             ThreadSafeOperations.SetButtonEnabledStatus(открытьФайлToolStripMenuItem, true);
             ThreadSafeOperations.SetButtonEnabledStatus(обработатьToolStripMenuItem, true);
-            ThreadSafeOperations.SetButtonEnabledStatus(eXIFыToolStripMenuItem, true);
+            //ThreadSafeOperations.SetButtonEnabledStatus(eXIFыToolStripMenuItem, true);
 
             //ThreadSafeOperations.SetTrackBarEnabledStatus(trackBar3, true);
             //ThreadSafeOperations.SetTrackBarEnabledStatus(trackBar4, true);
@@ -1657,7 +1643,7 @@ namespace SkyImagesAnalyzer
 
 
 
-        
+
         private void настройкиСбораДанныхToolStripMenuItem_Click(object sender, EventArgs e)
         {
             //SkyIndexAnalyzerDataCollector CollectorForm = new SkyIndexAnalyzerDataCollector();
@@ -1699,7 +1685,7 @@ namespace SkyImagesAnalyzer
         private void AnalyzeImage(object sender = null)
         {
             begintotal = DateTime.Now;
-            
+
 
             #region //XLS dumping
             //XLdumper.doubleArrayToDump = SIdataDouble;
@@ -1718,7 +1704,7 @@ namespace SkyImagesAnalyzer
             #region new-style analyzing
             DateTime beginNew = DateTime.Now;
             //classificator = new SkyCloudClassification(imagetoadd, pictureBox2, pbUniversalProgressBar, textBox1);
-            
+
             FileInfo finfoOriginalFile = new FileInfo(ImageFileName);
 
             defaultProperties["DefaultDataFilesLocation"] = defaultProperties["DefaultDataFilesLocation"] +
@@ -1742,10 +1728,10 @@ namespace SkyImagesAnalyzer
                 classificator.theStdDevMarginValueDefiningSkyCloudSeparation = tunedSIMargin;
             }
 
-            if (backgroundWorker1.IsBusy)
+            if (bgwProcessOneImage.IsBusy)
             {
                 classificator.isCalculatingUsingBgWorker = true;
-                classificator.SelfWorker = backgroundWorker1;
+                classificator.SelfWorker = bgwProcessOneImage;
             }
             else
             {
@@ -1768,7 +1754,7 @@ namespace SkyImagesAnalyzer
 
             ThreadSafeOperations.UpdatePictureBox(pictureBox2, bitmapSI, true);
 
-            
+
             if (classificator.verbosityLevel > 0)
             {
                 string outputFilename = ImageFileName;
@@ -1776,7 +1762,7 @@ namespace SkyImagesAnalyzer
                                  classificator.ClassificationMethod.ToString() + ".jpg";
                 outputFilename = defaultOutputDataDirectory + outputFilename;
                 bitmapSI.Save(outputFilename, ImageFormat.Jpeg);
-                
+
                 string origImageCopyFilename = Path.GetFileNameWithoutExtension(finfoOriginalFile.Name) + "-orig-" + ".jpg";
                 origImageCopyFilename = defaultOutputDataDirectory + origImageCopyFilename;
                 imagetoadd.Save(origImageCopyFilename);
@@ -1788,7 +1774,13 @@ namespace SkyImagesAnalyzer
 
             string strtowrite3 = "Cloud cover 1 = " + Math.Round(classificator.CloudCover, 2).ToString() + Environment.NewLine;
 
-            GetEXIFs();
+
+
+            #region // private void GetEXIFs() - устарело, пока больше не применяется
+            //GetEXIFs();
+            #endregion // private void GetEXIFs() - устарело, пока больше не применяется
+
+
 
             timetotal = DateTime.Now - begintotal;
 
@@ -1883,7 +1875,7 @@ namespace SkyImagesAnalyzer
 
             FileInfo fInfo = new FileInfo(ImageFileName);
             //imagetoadd = Image.FromFile(fInfo.FullName);
-            imagetoadd = new Image<Bgr,byte>(fInfo.FullName);
+            imagetoadd = new Image<Bgr, byte>(fInfo.FullName);
             imagetoadd = ImageProcessing.ImageResizer(imagetoadd, Convert.ToInt32(defaultProperties["DefaultMaxImageSize"]));
 
             ImageProcessing imgP = new ImageProcessing(imagetoadd, true);
@@ -1898,7 +1890,7 @@ namespace SkyImagesAnalyzer
 
             string currentDirectory = (string)defaultProperties["DefaultDataFilesLocation"];
 
-            DenseMatrix dmGrixData = imgP.eval("grix+0", null);
+            DenseMatrix dmGrixData = imgP.eval("grix", null);
             dmGrixData = (DenseMatrix)dmGrixData.PointwiseMultiply(dmMaskCircled100);
             DenseVector dvGrixData = DataAnalysis.DataVectorizedWithCondition(dmGrixData, dval => ((dval > 0.0d) && (dval < 1.0d)));
 
@@ -1975,7 +1967,7 @@ namespace SkyImagesAnalyzer
 
             string currentDirectory = (string)defaultProperties["DefaultDataFilesLocation"];
 
-            string formulaString = "1 - sqrt((R*R+G*G+B*B)/3 - (R+G+B)*(R+G+B)/9) / Y";
+            string formulaString = "grix + 0";
             //string formulaString = "1.0 - (1.0 + ((B-R)/(B+R)))/2.0";
             DenseMatrix dmProcessingData = (DenseMatrix)imgP.eval(formulaString, dmRedChannel, dmGreenChannel, dmBlueChannel, null).Clone();
             DenseMatrix dmMask = ImageProcessing.DenseMatrixFromImage(maskImage);
@@ -2091,7 +2083,7 @@ namespace SkyImagesAnalyzer
         //    Image<Gray, Byte> maskImageCircled85 = imgP.imageSignificantMaskCircled(85.0d);
 
 
-        //    DenseMatrix dmSunburnData = imgP.eval("Y+0", null);
+        //    DenseMatrix dmSunburnData = imgP.eval("Y", null);
         //    DenseVector dvGrIxDataEqualsOne = DataAnalysis.DataVectorizedWithCondition(dmSunburnData, dval => dval >= 254.0d);
         //    if (dvGrIxDataEqualsOne == null)
         //    {
@@ -2443,14 +2435,14 @@ namespace SkyImagesAnalyzer
                 //        Convert.ToInt32(10.0d +
                 //                        (double) currentBgwID*System.Windows.SystemParameters.PrimaryScreenWidth/
                 //                        (double) bgwFinished.Count), 10);
-                
+
                 //SimpleShowImageForm1.Show();
                 //System.Windows.Forms.Application.DoEvents();
                 //Thread.Sleep(500);
                 //SimpleShowImageForm1.Close();
                 //SimpleShowImageForm1.Dispose();
 
-                args.Result = new object[] {currentBgwID};
+                args.Result = new object[] { currentBgwID };
             };
 
 
@@ -2526,9 +2518,9 @@ namespace SkyImagesAnalyzer
 
             DirectoryInfo dir = new DirectoryInfo(path2process);
 
-            if (backgroundWorker2.IsBusy)
+            if (bgwProcessDirectoryOfImages.IsBusy)
             {
-                backgroundWorker2.CancelAsync();
+                bgwProcessDirectoryOfImages.CancelAsync();
             }
             else
             {
@@ -2571,7 +2563,7 @@ namespace SkyImagesAnalyzer
 
                 ThreadSafeOperations.ToggleButtonState(button1, true, "Прекратить обработку", true);
 
-                backgroundWorker2.RunWorkerAsync(BGWorker2Args);
+                bgwProcessDirectoryOfImages.RunWorkerAsync(BGWorker2Args);
             }
         }
 
@@ -2597,7 +2589,7 @@ namespace SkyImagesAnalyzer
                 imgSizeUnderExistingRoundData = ((RoundDataWithUnderlyingImgSize)existingRoundDataObj).imgSize;
             }
 
-            double currScale = (double)imagetoadd.Width/(double)imgSizeUnderExistingRoundData.Width;
+            double currScale = (double)imagetoadd.Width / (double)imgSizeUnderExistingRoundData.Width;
             if (currScale != 1.0d)
             {
                 existingRoundData.DCenterX *= currScale;
@@ -2663,6 +2655,16 @@ namespace SkyImagesAnalyzer
             #endregion //конвертировали .dat в .xml для упрощенной обработки
 
             string strStatsDataFilename = ((string)defaultProperties["DefaultDataFilesLocation"]) + "statsWithFNames.xml";
+            if (!File.Exists(strStatsDataFilename))
+            {
+                strStatsDataFilename = ((string)defaultProperties["DefaultMedianPerc5StatsXMLFile"]);
+            }
+            if (!File.Exists(strStatsDataFilename))
+            {
+                return;
+            }
+
+
             List<SkyImageMedianPerc5Data> lStatsData =
                 (List<SkyImageMedianPerc5Data>)
                     ServiceTools.ReadObjectFromXML(strStatsDataFilename, typeof(List<SkyImageMedianPerc5Data>));
@@ -2695,7 +2697,7 @@ namespace SkyImagesAnalyzer
 
             DenseMatrix dmMaskCircled100 = ImageProcessing.DenseMatrixFromImage(maskImageCircled);
 
-            DenseMatrix dmGrixData = imgP.eval("grix+0", null);
+            DenseMatrix dmGrixData = imgP.eval("grix", null);
             dmGrixData = (DenseMatrix)dmGrixData.PointwiseMultiply(dmMaskCircled100);
             DenseVector dvGrixData = DataAnalysis.DataVectorizedWithCondition(dmGrixData, dval => ((dval > 0.0d) && (dval < 1.0d)));
             DescriptiveStatistics stats = new DescriptiveStatistics(dvGrixData, true);
@@ -2728,7 +2730,7 @@ namespace SkyImagesAnalyzer
             List<SkyImageMedianPerc5Data> lStatsData =
                 (List<SkyImageMedianPerc5Data>)
                     ServiceTools.ReadObjectFromXML(strStatsDataFilename, typeof(List<SkyImageMedianPerc5Data>));
-            
+
             List<PointD> lPointsList = lStatsData.ConvertAll<PointD>(statsDatum => new PointD(statsDatum.GrIxStatsMedian, statsDatum.GrIxStatsPerc5));
             EventsDensityAnalysisForm Form1 = new EventsDensityAnalysisForm(lPointsList, defaultProperties, 512);
         }
