@@ -1,9 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using MathNet.Numerics.LinearAlgebra;
 using MathNet.Numerics.LinearAlgebra.Double;
-//using MathNet.Numerics.LinearAlgebra.Generic;
-using MathNet.Numerics.LinearAlgebra.Generic;
 
 
 namespace SkyImagesAnalyzerLibraries
@@ -320,7 +319,7 @@ namespace SkyImagesAnalyzerLibraries
 
             List<accelerometerData> listRetAccData = new List<accelerometerData>();
 
-            foreach (Tuple<int, Vector<double>> tplRow in dmSource.RowEnumerator())
+            foreach (Tuple<int, Vector<double>> tplRow in dmSource.EnumerateRowsIndexed())
             {
                 accelerometerData newAccDatum = new accelerometerData(tplRow.Item2);
                 if (newAccDatum != null)
@@ -1433,7 +1432,7 @@ namespace SkyImagesAnalyzerLibraries
 
             List<GPSdata> listRetGPSdata = new List<GPSdata>();
 
-            foreach (Tuple<int, Vector<double>> tplRow in dmSource.RowEnumerator())
+            foreach (Tuple<int, Vector<double>> tplRow in dmSource.EnumerateRowsIndexed())
             {
                 GPSdata newgpsDatum = new GPSdata(tplRow.Item2);
                 if (newgpsDatum != null)

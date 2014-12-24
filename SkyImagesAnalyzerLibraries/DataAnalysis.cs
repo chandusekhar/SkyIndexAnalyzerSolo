@@ -175,7 +175,7 @@ namespace SkyImagesAnalyzerLibraries
             if (dvFixedValues != null)
             {
                 int conditionIndex = 0;
-                foreach (Tuple<int, double> fixedValueTuple in dvFixedValues.GetIndexedEnumerator())
+                foreach (Tuple<int, double> fixedValueTuple in dvFixedValues.EnumerateIndexed())
                 {
                     int fixedValueIndex = fixedValueTuple.Item1;
                     double fixedValue = fixedValueTuple.Item2;
@@ -230,13 +230,15 @@ namespace SkyImagesAnalyzerLibraries
 
 
 
-        public static DescriptiveStatistics StatsOfDataExcludingValues(DenseMatrix dmData, double markerExcludingValue = 0.0d)
+        public static DescriptiveStatistics StatsOfDataExcludingValues(DenseMatrix dmData, double markerExcludingValue, out double median)
         {
             DenseVector listOfData = DataVectorizedExcludingValues(dmData, markerExcludingValue);
             if (listOfData == null)
             {
+                median = double.NaN;
                 return null;
             }
+            median = Statistics.Median(listOfData.Values);
             return new DescriptiveStatistics(listOfData.Values);
         }
 
@@ -591,7 +593,7 @@ namespace SkyImagesAnalyzerLibraries
 
 
             //сгладим
-            foreach (Tuple<int, MathNet.Numerics.LinearAlgebra.Generic.Vector<double>> tplRowVectorAndIndex in dmOutData.RowEnumerator())
+            foreach (Tuple<int, MathNet.Numerics.LinearAlgebra.Vector<double>> tplRowVectorAndIndex in dmOutData.EnumerateRowsIndexed())
             {
                 DenseVector currVector = (DenseVector)tplRowVectorAndIndex.Item2;
                 currVector = ExponentialMovingAverage(currVector, 3, 0.4d);
@@ -864,7 +866,8 @@ namespace SkyImagesAnalyzerLibraries
 
             for (int n = -nLeft; n <= nRight; n++)
             {
-                DenseVector dvCurrKoeffSummingVect = new DenseVector(dvDesignMatrix0thRow);
+                DenseVector dvCurrKoeffSummingVect = new DenseVector(dvDesignMatrix0thRow.Count);
+                dvDesignMatrix0thRow.CopyTo(dvCurrKoeffSummingVect);
                 dvCurrKoeffSummingVect.MapIndexedInplace((idx, dVal) =>
                 {
                     return dVal * Math.Pow((double)n, (double)idx);

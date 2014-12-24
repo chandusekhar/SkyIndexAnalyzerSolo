@@ -1,12 +1,19 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using Emgu.CV;
+using Emgu.CV.Structure;
+using ILNumerics;
+using ILNumerics.Drawing;
+using ILNumerics.Drawing.Plotting;
 using MathNet.Numerics.LinearAlgebra.Double;
 using SkyImagesAnalyzerLibraries;
 
@@ -14,6 +21,10 @@ namespace SkyImagesAnalyzer
 {
     public partial class EventsDensityAnalysisForm : Form
     {
+        //output
+        private LogWindow theLogWindow = null;
+        private string strOutputDirectory = "";
+
         private Dictionary<string, object> defaultProperties = null;
 
         public List<PointD> lPointsArray = new List<PointD>();
@@ -21,6 +32,7 @@ namespace SkyImagesAnalyzer
         public DenseMatrix dmDensityMesh = null;
         public DenseMatrix dmDensityMeshXcoord = null;
         public DenseMatrix dmDensityMeshYcoord = null;
+        public int kernelHalfLength = 10;
 
         public double minXval;
         public double maxXval;
@@ -31,7 +43,7 @@ namespace SkyImagesAnalyzer
 
         private imageConditionAndData currHeatMapData = null;
 
-
+        private ILPlotCube currSurfPlotCube = null;
 
 
         public EventsDensityAnalysisForm(List<PointD> lInPoints, Dictionary<string, object> properties, int inSpaceDiscretization = 512)
@@ -39,6 +51,12 @@ namespace SkyImagesAnalyzer
             InitializeComponent();
 
             defaultProperties = properties;
+            strOutputDirectory = (string)defaultProperties["DefaultDataFilesLocation"];
+            if (!ServiceTools.CheckIfDirectoryExists(strOutputDirectory))
+            {
+                strOutputDirectory = "";
+            }
+
             lPointsArray = new List<PointD>(lInPoints);
             spaceDiscretization = inSpaceDiscretization;
             minXval = lPointsArray.Min(pt => pt.X);
@@ -53,10 +71,74 @@ namespace SkyImagesAnalyzer
             CalculateDensityMesh();
 
             // сгладить гауссом или косинусом
-            // отфильтровать малые значения
+            double maxL = ((double)kernelHalfLength) * Math.Sqrt(2.0d);
+            DenseMatrix dmKernel = DenseMatrix.Create(2 * kernelHalfLength + 1, 2 * kernelHalfLength + 1, (r, c) =>
+            {
+                double curDist =
+                    (new PointD(r - (double)kernelHalfLength, c - (double)kernelHalfLength)).Distance(new PointD(0.0d, 0.0d));
+                return Math.Cos(curDist * Math.PI / (2.0d * maxL));
+            });
+
+            DenseMatrix dmSmoothed = dmDensityMesh.Conv2(dmKernel);
+
+            //imageConditionAndData imgdt1 = new imageConditionAndData(dmSmoothed, null);
+            //imgdt1.currentColorScheme = new ColorScheme("");
+            //imgdt1.currentColorSchemeRuler = new ColorSchemeRuler(imgdt1.currentColorScheme);
+            //imgdt1.currentColorSchemeRuler.imgToRule = imgdt1;
+            //imgdt1.currentColorSchemeRuler.IsMarginsFixed = false;
+            //imgdt1.UpdateColorSchemeRuler();
+            //ImageConditionAndDataRepresentingForm f1 = new ImageConditionAndDataRepresentingForm(imgdt1);
+            //f1.Show();
+
+
+            //if (ServiceTools.CheckIfDirectoryExists(strOutputDirectory + "dmDensityMeshDataSmoothed.nc"))
+            //{
+            //    dmSmoothed.SaveNetCDFdataMatrix(strOutputDirectory + "dmDensityMeshData.nc");
+            //}
+
+
+            ILScene scene = new ILScene();
+            //ILGroup ilgr1 = new ILGroup(translate: new Vector3(.6f, 0, 0), scale: new Vector3(.6f, .8f, .8f),
+            //    rotateAxis: new Vector3(1, 1, 0), angle: .1);
+            //ilgr1.Children.Add(Shapes.Gear15);
+            //ilgr1.Children.Add(Shapes.Gear15Wireframe);
+            //ilgr1.Alpha = 0.08f;
+            //scene.Add(ilgr1);
+
+            currSurfPlotCube = new ILPlotCube();
+            currSurfPlotCube.TwoDMode = false;
+
+            ILInArray<double> ilaDataMeshToShow = dmSmoothed.ToArray();
+            ILInArray<double> ilaXvalues = dmDensityMeshXcoord.Row(0).ToArray();
+            ILInArray<double> ilaYvalues = dmDensityMeshYcoord.Column(0).ToArray();
+
+            ILSurface surf = new ILSurface(ilaDataMeshToShow, ilaXvalues, ilaYvalues);
+            surf.UseLighting = true;
+            surf.Colormap = Colormaps.ILNumerics;
+            surf.Children.Add(new ILColorbar());
+
+            currSurfPlotCube.Children.Add(surf);
+            currSurfPlotCube.Rotation = Matrix4.Rotation(new Vector3(1, 0, 0), 1.2f) *
+                                Matrix4.Rotation(new Vector3(0, 0, 1), Math.PI);
+            currSurfPlotCube.Projection = Projection.Perspective;
+
+            scene.Add(currSurfPlotCube);
+
+            ilPanel1.Scene = scene;
+
+
+
+
+
+            // отфильтровать малые значения - ?
+
             // выделить классы
+
+
+
+
             // записать данные по классам
-            
+
         }
 
 
@@ -89,9 +171,10 @@ namespace SkyImagesAnalyzer
             }
 
             dmDensityMesh = (DenseMatrix)dmDensityMesh.Divide(dmDensityMesh.Values.Sum());
+
         }
 
-        
+
 
         private void EventsDensityAnalysisForm_KeyPress(object sender, KeyPressEventArgs e)
         {

@@ -17,7 +17,7 @@ using Emgu.CV.Structure;
 using MathNet.Numerics.LinearAlgebra.Double;
 //using MathNet.Numerics.LinearAlgebra.Generic;
 using System.Data;
-using MathNet.Numerics.LinearAlgebra.Generic;
+using MathNet.Numerics.LinearAlgebra;
 
 namespace SkyImagesAnalyzerLibraries
 {
@@ -420,7 +420,7 @@ namespace SkyImagesAnalyzerLibraries
 
             List<Tuple<int, double>> rowMinValues = new List<Tuple<int, double>>();
 
-            var rowEnum = dm.RowEnumerator();
+            var rowEnum = dm.EnumerateRowsIndexed();
             foreach (Tuple<int, Vector<double>> curRow in rowEnum)
             {
                 DenseVector curDV = (DenseVector)curRow.Item2;
@@ -444,7 +444,7 @@ namespace SkyImagesAnalyzerLibraries
 
             List<Tuple<int, double>> rowMaxValues = new List<Tuple<int, double>>();
 
-            var rowEnum = dm.RowEnumerator();
+            var rowEnum = dm.EnumerateRowsIndexed();
             foreach (Tuple<int, Vector<double>> curRow in rowEnum)
             {
                 DenseVector curDV = (DenseVector)curRow.Item2;

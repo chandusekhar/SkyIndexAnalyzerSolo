@@ -87,7 +87,40 @@ namespace SkyImagesAnalyzerLibraries
             return new DictionaryBindingList<TKey, TValue>(data);
         }
 
+
+
+
+        public static DenseMatrix Conv2(this DenseMatrix dmSource, DenseMatrix dmKernel)
+        {
+            int kernelHalfSizeRows = (dmKernel.RowCount - 1)/2;
+            int kernelHalfSizeCols = (dmKernel.ColumnCount - 1)/2;
+            DenseMatrix dmRes = DenseMatrix.Create(dmSource.RowCount, dmSource.ColumnCount, (r, c) =>
+            {
+                int startRow = r - kernelHalfSizeRows;
+                int dmSourceStartRow = Math.Max(startRow, 0);
+                int kernelStartRow = (startRow >= 0) ? (0) : (-startRow);
+                int endRow = r + kernelHalfSizeRows;
+                int dmSourceEndRow = Math.Min(endRow, dmSource.RowCount - 1);
+                int rowCount = dmSourceEndRow - dmSourceStartRow + 1;
+                int startCol = c - kernelHalfSizeCols;
+                int dmSourceStartCol = Math.Max(startCol, 0);
+                int kernelStartCol = (startCol >= 0) ? (0) : (-startCol);
+                int endCol = c + kernelHalfSizeCols;
+                int dmSourceEndCol = Math.Min(endCol, dmSource.ColumnCount - 1);
+                int colCount = dmSourceEndCol - dmSourceStartCol + 1;
+
+                DenseMatrix dmSourceSubmatrix = (DenseMatrix)dmSource.SubMatrix(dmSourceStartRow, rowCount, dmSourceStartCol, colCount);
+                DenseMatrix dmKernelSubMatrix =
+                    (DenseMatrix) dmKernel.SubMatrix(kernelStartRow, rowCount, kernelStartCol, colCount);
+                DenseMatrix sumMatrix = (DenseMatrix)(dmSourceSubmatrix.PointwiseMultiply(dmKernelSubMatrix));
+                return sumMatrix.Values.Sum();
+            });
+            return dmRes;
+        }
+
     }
+
+
 
 
     public class DictionaryBindingList<TKey, TValue>
@@ -118,6 +151,9 @@ namespace SkyImagesAnalyzerLibraries
             }
         }
     }
+
+
+
 
     public sealed class Pair<TKey, TValue>
     {

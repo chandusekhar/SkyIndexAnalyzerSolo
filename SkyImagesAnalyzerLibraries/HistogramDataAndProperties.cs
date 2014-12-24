@@ -46,6 +46,24 @@ namespace SkyImagesAnalyzerLibraries
             CalculateQuantiles();
         }
 
+
+        public double Median
+        {
+            get
+            {
+                if (dvData.Count > 1)
+                {
+                    return Statistics.Median(dvData);
+                }
+                else
+                {
+                    return dvData[0];
+                }
+                
+            }
+        }
+
+
         public int BinsCount
         {
             get { return binsCount; }

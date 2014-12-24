@@ -11,9 +11,9 @@ using Emgu.CV;
 using Emgu.CV.Structure;
 using MathNet.Numerics.LinearAlgebra.Double;
 //using MathNet.Numerics.LinearAlgebra.Generic;
-using MathNet.Numerics.LinearAlgebra.Generic;
 using MathNet.Numerics.Statistics;
 using System.Collections.Generic;
+using MathNet.Numerics.LinearAlgebra;
 
 
 namespace SkyImagesAnalyzerLibraries
@@ -578,12 +578,13 @@ namespace SkyImagesAnalyzerLibraries
 
                     DenseVector dvCurrentDataExcludingZero =
                         DataAnalysis.DataVectorizedExcludingValues(dmTemporaryProcessinfDataMatrix, 0.0d);
-                    DescriptiveStatistics statTempData = DataAnalysis.StatsOfDataExcludingValues(dmTemporaryProcessinfDataMatrix, 0.0d);
+                    double curMedian = 0.0d;
+                    DescriptiveStatistics statTempData = DataAnalysis.StatsOfDataExcludingValues(dmTemporaryProcessinfDataMatrix, 0.0d, out curMedian);
                     if (statTempData == null) continue;
 
 
                     double dataMean = statTempData.Mean;
-                    double dataMedian = statTempData.Median;
+                    //double dataMedian = statTempData.Median;
                     double dataPercentile10 = Statistics.Percentile(dvCurrentDataExcludingZero, 10);
                     double stdDev = statTempData.StandardDeviation;
                     //DenseVector listTempStatData =
@@ -710,7 +711,7 @@ namespace SkyImagesAnalyzerLibraries
 
                 if (verbosityLevel > 0)
                 {
-                    foreach (var dataValueTuple in dvSmoothedDistribution.GetIndexedEnumerator())
+                    foreach (var dataValueTuple in dvSmoothedDistribution.EnumerateIndexed())
                     {
                         string textToWrite = "" + dvDataSpace[dataValueTuple.Item1].ToString("e").Replace(",", ".") +
                                              ";";
@@ -774,7 +775,7 @@ namespace SkyImagesAnalyzerLibraries
                 List<double> phiMinimumsSpace = new List<double>();
                 List<double> rMinimumsSpace = new List<double>();
                 List<double> dataMinimumsList = new List<double>();
-                foreach (Tuple<int, Vector<double>> tuple in dmPolarMinimumsDistribution.RowEnumerator())
+                foreach (Tuple<int, Vector<double>> tuple in dmPolarMinimumsDistribution.EnumerateRowsIndexed())
                 {
                     List<double> angleRowVector = new List<double>(tuple.Item2);
 
@@ -1658,11 +1659,12 @@ namespace SkyImagesAnalyzerLibraries
 
             dmGradData.MapInplace(x => (double.IsNaN(x)) ? (0.0d) : (x));
 
-            DescriptiveStatistics stats = DataAnalysis.StatsOfDataExcludingValues(dmGradData, 0.0d);
+            double curMedian = 0.0d;
+            DescriptiveStatistics stats = DataAnalysis.StatsOfDataExcludingValues(dmGradData, 0.0d, out curMedian);
             if (stats == null) return RoundData.nullRoundData();
 
             double gradMean = stats.Mean;
-            double gradMedian = stats.Median;
+            double gradMedian = curMedian;
 
             dmFilteredData.MapIndexedInplace(new Func<int, int, double, double>((row, col, x) =>
             {
@@ -1673,7 +1675,7 @@ namespace SkyImagesAnalyzerLibraries
 
 
             List<PointD> arcPointsList = new List<PointD>();
-            foreach (Tuple<int, int, double> theElement in dmFilteredData.IndexedEnumerator())
+            foreach (Tuple<int, int, double> theElement in dmFilteredData.EnumerateIndexed())
             {
                 int curRow = theElement.Item1;
                 int curCol = theElement.Item2;
@@ -1720,7 +1722,7 @@ namespace SkyImagesAnalyzerLibraries
             dmSunburnMassSenterSearching.MapInplace(x => (x >= minSunburnGrIxValue) ? (1.0d) : (0.0d));
             double massCenterX = 0.0d;
             double massCenterY = 0.0d;
-            foreach (Tuple<int, int, double> theElement in dmSunburnMassSenterSearching.IndexedEnumerator())
+            foreach (Tuple<int, int, double> theElement in dmSunburnMassSenterSearching.EnumerateIndexed())
             {
                 if (theElement.Item3 < 1.0d) continue;
                 massCenterX += (double)theElement.Item2;
@@ -2679,14 +2681,14 @@ namespace SkyImagesAnalyzerLibraries
             //R+20-B > 0
             dm1stCondition = (DenseMatrix)dmRed.Add(dm20);
             dm1stCondition = (DenseMatrix)dm1stCondition.Subtract(dmBlue);
-            dm1stCondition.MapInplace(new Func<double, double>(val => (val >= 0.0d) ? (1.0d) : (0.0d)), true);
+            dm1stCondition.MapInplace(new Func<double, double>(val => (val >= 0.0d) ? (1.0d) : (0.0d)), Zeros.AllowSkip);
             //G+20-B > 0
             dm2ndCondition = (DenseMatrix)dmGreen.Add(dm20);
             dm2ndCondition = (DenseMatrix)dm2ndCondition.Subtract(dmBlue);
-            dm2ndCondition.MapInplace(new Func<double, double>(val => (val >= 0.0d) ? (1.0d) : (0.0d)), true);
+            dm2ndCondition.MapInplace(new Func<double, double>(val => (val >= 0.0d) ? (1.0d) : (0.0d)), Zeros.AllowSkip);
             //60 - B > 0
             dm3rdCondition = (DenseMatrix)dm60.Subtract(dmBlue);
-            dm3rdCondition.MapInplace(new Func<double, double>(val => (val >= 0.0d) ? (1.0d) : (0.0d)), true);
+            dm3rdCondition.MapInplace(new Func<double, double>(val => (val >= 0.0d) ? (1.0d) : (0.0d)), Zeros.AllowSkip);
 
             dm1stCondition = (DenseMatrix)dm1stCondition.PointwiseMultiply(dm2ndCondition);
             dm1stCondition = (DenseMatrix)dm1stCondition.PointwiseMultiply(dm3rdCondition);

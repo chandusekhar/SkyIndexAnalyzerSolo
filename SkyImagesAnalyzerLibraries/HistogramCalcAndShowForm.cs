@@ -249,7 +249,7 @@ namespace SkyImagesAnalyzerLibraries
 
             string str2Show = "[" + histToRepresent.description + "]" + Environment.NewLine;
             str2Show += "color: " + histToRepresent.color.ToString() + Environment.NewLine;
-            str2Show += "median = " + histToRepresent.stats.Median.ToString("e") + Environment.NewLine;
+            str2Show += "median = " + histToRepresent.Median.ToString("e") + Environment.NewLine;
             str2Show += "mean = " + histToRepresent.stats.Mean.ToString("e") + Environment.NewLine;
             str2Show += "stdDev = " + histToRepresent.stats.StandardDeviation.ToString("e") + Environment.NewLine;
             str2Show += "min value = " + histToRepresent.stats.Minimum.ToString("e") + Environment.NewLine;

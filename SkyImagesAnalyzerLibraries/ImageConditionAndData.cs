@@ -378,7 +378,7 @@ namespace SkyImagesAnalyzerLibraries
                 new Func<double, double>((x) =>
                 {
                     return (((x < minValue) || (x > maxValue)) ? 100.0d : 255.0d);
-                }), true);
+                }), MathNet.Numerics.LinearAlgebra.Zeros.AllowSkip);
 
             HighlightMask = ImageProcessing.grayscaleImageFromDenseMatrixWithFixedValuesBounds(tmpDM, 0.0d, 255.0d).Convert<Gray, double>();
             HighlightMask = HighlightMask.Mul(maskImageBinary.Convert<Gray, double>());

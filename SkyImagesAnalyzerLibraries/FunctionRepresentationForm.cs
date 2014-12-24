@@ -473,7 +473,7 @@ namespace SkyImagesAnalyzerLibraries
                     return xSpaceMin + ((double)i / (double)pointsCount) * (xSpaceMax - xSpaceMin);
                 }));
 
-                foreach (Tuple<int, double> tuple in xSpaceML.GetIndexedEnumerator())
+                foreach (Tuple<int, double> tuple in xSpaceML.EnumerateIndexed())
                 {
                     matlabScript += "xSpace(" + (tuple.Item1 + 1).ToString() + ") = " + tuple.Item2.ToString("e").Replace(",", ".") + ";" + Environment.NewLine;
                 }
@@ -486,7 +486,7 @@ namespace SkyImagesAnalyzerLibraries
 
                     DenseVector dvCurrFuncValues = DenseVector.Create(pointsCount,
                         new Func<int, double>(i => function(parametersVector, xSpaceML[i])));
-                    foreach (Tuple<int, double> tuple in dvCurrFuncValues.GetIndexedEnumerator())
+                    foreach (Tuple<int, double> tuple in dvCurrFuncValues.EnumerateIndexed())
                     {
                         matlabScript += "func" + funcIndex.ToString() + "(" + (tuple.Item1 + 1).ToString() + ") = " + tuple.Item2.ToString("e").Replace(",", ".") + ";" + Environment.NewLine;
                     }
@@ -506,13 +506,13 @@ namespace SkyImagesAnalyzerLibraries
 
             if ((dvScatterXSpace != null) && (dvScatterFuncValues != null))
             {
-                foreach (Tuple<int, double> tuple in dvScatterXSpace.GetIndexedEnumerator())
+                foreach (Tuple<int, double> tuple in dvScatterXSpace.EnumerateIndexed())
                 {
                     matlabScript += "scatterXSpace(" + (tuple.Item1 + 1).ToString() + ") = " + tuple.Item2.ToString("e").Replace(",", ".") + ";" + Environment.NewLine;
                 }
 
 
-                foreach (Tuple<int, double> tuple in dvScatterFuncValues.GetIndexedEnumerator())
+                foreach (Tuple<int, double> tuple in dvScatterFuncValues.EnumerateIndexed())
                 {
                     matlabScript += "scatterFuncVals(" + (tuple.Item1 + 1).ToString() + ") = " + tuple.Item2.ToString("e").Replace(",", ".") + ";" + Environment.NewLine;
                 }

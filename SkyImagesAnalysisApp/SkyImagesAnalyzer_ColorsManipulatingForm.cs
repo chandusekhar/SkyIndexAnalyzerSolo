@@ -8,7 +8,6 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using MathNet.Numerics.LinearAlgebra.Double;
-using MathNet.Numerics.LinearAlgebra.Generic;
 using SkyImagesAnalyzerLibraries;
 using System.IO;
 using MathNet.Numerics.LinearAlgebra;

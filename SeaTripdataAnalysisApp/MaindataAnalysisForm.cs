@@ -16,7 +16,6 @@ using Emgu.CV.Structure;
 using MathNet.Numerics;
 using MathNet.Numerics.IntegralTransforms;
 using MathNet.Numerics.LinearAlgebra.Double;
-using MathNet.Numerics.LinearAlgebra.Generic;
 using MathNet.Numerics.Statistics;
 using SkyImagesAnalyzerLibraries;
 
@@ -380,7 +379,8 @@ namespace SeaTripdataAnalysisApp
 
                         //обработать и оценить наличие выраженных периодов
                         Complex[] sourceSignalArray = currTimeSeria.DataRealValuesComplexArray();
-                        Transform.FourierForward(sourceSignalArray);
+                        Fourier.Forward(sourceSignalArray);
+                        //Transform.FourierForward(sourceSignalArray);
                         List<Complex> FourierTransformedSignal = new List<Complex>(sourceSignalArray);
                         List<double> FourierTransformedSignalAmplitudes =
                             FourierTransformedSignal.ConvertAll<double>(

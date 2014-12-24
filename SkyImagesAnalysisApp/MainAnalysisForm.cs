@@ -2410,7 +2410,8 @@ namespace SkyImagesAnalyzer
                 dmGrixData = (DenseMatrix)dmGrixData.PointwiseMultiply(dmMaskCircled100);
                 DenseVector dvGrixData = DataAnalysis.DataVectorizedWithCondition(dmGrixData, dval => ((dval > 0.0d) && (dval < 1.0d)));
                 DescriptiveStatistics stats = new DescriptiveStatistics(dvGrixData, true);
-                double median = stats.Median;
+                double median = Statistics.Median(dvGrixData);
+                //double median = stats.Median;
                 double perc5 = Statistics.Percentile(dvGrixData, 5);
 
                 bool success = false;
@@ -2701,7 +2702,8 @@ namespace SkyImagesAnalyzer
             dmGrixData = (DenseMatrix)dmGrixData.PointwiseMultiply(dmMaskCircled100);
             DenseVector dvGrixData = DataAnalysis.DataVectorizedWithCondition(dmGrixData, dval => ((dval > 0.0d) && (dval < 1.0d)));
             DescriptiveStatistics stats = new DescriptiveStatistics(dvGrixData, true);
-            double median = stats.Median;
+            double median = Statistics.Median(dvGrixData);
+            //double median = stats.Median;
             double perc5 = Statistics.Percentile(dvGrixData, 5);
 
             hm.lPtdMarks.Add(new PointD(median, perc5));
@@ -2727,12 +2729,22 @@ namespace SkyImagesAnalyzer
         private void btnDensityProcessing_Click(object sender, EventArgs e)
         {
             string strStatsDataFilename = ((string)defaultProperties["DefaultDataFilesLocation"]) + "statsWithFNames.xml";
+            if (!File.Exists(strStatsDataFilename))
+            {
+                strStatsDataFilename = ((string)defaultProperties["DefaultMedianPerc5StatsXMLFile"]);
+            }
+            if (!File.Exists(strStatsDataFilename))
+            {
+                return;
+            }
+
             List<SkyImageMedianPerc5Data> lStatsData =
                 (List<SkyImageMedianPerc5Data>)
                     ServiceTools.ReadObjectFromXML(strStatsDataFilename, typeof(List<SkyImageMedianPerc5Data>));
 
             List<PointD> lPointsList = lStatsData.ConvertAll<PointD>(statsDatum => new PointD(statsDatum.GrIxStatsMedian, statsDatum.GrIxStatsPerc5));
             EventsDensityAnalysisForm Form1 = new EventsDensityAnalysisForm(lPointsList, defaultProperties, 512);
+            Form1.Show();
         }
 
 

@@ -703,7 +703,9 @@ namespace SkyImagesAnalyzerLibraries
             double cutItemsValue = 0.0d
             )
         {
-            dmImageToProcess.MapInplace(new Func<double, double>((x) => { return (x > thresholdValue) ? cutItemsValue : x; }), true);
+            dmImageToProcess.MapInplace(
+                new Func<double, double>((x) => { return (x > thresholdValue) ? cutItemsValue : x; }),
+                MathNet.Numerics.LinearAlgebra.Zeros.AllowSkip);
             dmImageToProcess.PointwiseMultiply(DenseMatrixFromImage(maskImageBinary));
         }
 
@@ -717,7 +719,9 @@ namespace SkyImagesAnalyzerLibraries
             double cutItemsValue = 0.0d
             )
         {
-            dmImageToProcess.MapInplace(new Func<double, double>((x) => { return (x < thresholdValue) ? cutItemsValue : x; }), true);
+            dmImageToProcess.MapInplace(
+                new Func<double, double>((x) => { return (x < thresholdValue) ? cutItemsValue : x; }),
+                MathNet.Numerics.LinearAlgebra.Zeros.AllowSkip);
             dmImageToProcess.PointwiseMultiply(DenseMatrixFromImage(maskImageBinary));
         }
 
@@ -844,7 +848,10 @@ namespace SkyImagesAnalyzerLibraries
             Image<Gray, Byte> imgRch, imgGch, imgBch;
 
             dmColCh = (DenseMatrix)dmMatrixToColor.Clone();
-            dmColCh.MapInplace(new Func<double, double>((dValue) => { return usedColorScheme.GetColorByValueAndRange(dValue, minValue, maxValue).Red; }), true);
+            dmColCh.MapInplace(
+                new Func<double, double>(
+                    (dValue) => { return usedColorScheme.GetColorByValueAndRange(dValue, minValue, maxValue).Red; }),
+                MathNet.Numerics.LinearAlgebra.Zeros.AllowSkip);
             //dmColCh = (MathNet.Numerics.LinearAlgebra.Double.DenseMatrix)dmColCh.PointwiseMultiply(dmMask);
 
             double[,] doubleArrDmTmp = dmColCh.ToArray();
@@ -862,7 +869,10 @@ namespace SkyImagesAnalyzerLibraries
 
 
             dmColCh = (DenseMatrix)dmMatrixToColor.Clone();
-            dmColCh.MapInplace(new Func<double, double>((dValue) => { return usedColorScheme.GetColorByValueAndRange(dValue, minValue, maxValue).Green; }), true);
+            dmColCh.MapInplace(
+                new Func<double, double>(
+                    (dValue) => { return usedColorScheme.GetColorByValueAndRange(dValue, minValue, maxValue).Green; }),
+                MathNet.Numerics.LinearAlgebra.Zeros.AllowSkip);
             //dmColCh = (MathNet.Numerics.LinearAlgebra.Double.DenseMatrix)dmColCh.PointwiseMultiply(dmMask);
 
             doubleArrDmTmp = dmColCh.ToArray();
@@ -881,7 +891,10 @@ namespace SkyImagesAnalyzerLibraries
 
 
             dmColCh = (DenseMatrix)dmMatrixToColor.Clone();
-            dmColCh.MapInplace(new Func<double, double>((dValue) => { return usedColorScheme.GetColorByValueAndRange(dValue, minValue, maxValue).Blue; }), true);
+            dmColCh.MapInplace(
+                new Func<double, double>(
+                    (dValue) => { return usedColorScheme.GetColorByValueAndRange(dValue, minValue, maxValue).Blue; }),
+                MathNet.Numerics.LinearAlgebra.Zeros.AllowSkip);
             //dmColCh = (MathNet.Numerics.LinearAlgebra.Double.DenseMatrix)dmColCh.PointwiseMultiply(dmMask);
 
             doubleArrDmTmp = dmColCh.ToArray();
@@ -925,7 +938,10 @@ namespace SkyImagesAnalyzerLibraries
             Image<Gray, Byte> imgRch, imgGch, imgBch;
 
             dmColCh = (DenseMatrix)dmMatrixToColor.Clone();
-            dmColCh.MapInplace(new Func<double, double>((dValue) => { return usedColorScheme.GetColorByValueAndRange(dValue, minValue, maxValue).Red; }), true);
+            dmColCh.MapInplace(
+                new Func<double, double>(
+                    (dValue) => { return usedColorScheme.GetColorByValueAndRange(dValue, minValue, maxValue).Red; }),
+                MathNet.Numerics.LinearAlgebra.Zeros.AllowSkip);
             //dmColCh = (MathNet.Numerics.LinearAlgebra.Double.DenseMatrix)dmColCh.PointwiseMultiply(dmMask);
 
             double[,] doubleArrDmTmp = dmColCh.ToArray();
@@ -943,7 +959,10 @@ namespace SkyImagesAnalyzerLibraries
 
 
             dmColCh = (DenseMatrix)dmMatrixToColor.Clone();
-            dmColCh.MapInplace(new Func<double, double>((dValue) => { return usedColorScheme.GetColorByValueAndRange(dValue, minValue, maxValue).Green; }), true);
+            dmColCh.MapInplace(
+                new Func<double, double>(
+                    (dValue) => { return usedColorScheme.GetColorByValueAndRange(dValue, minValue, maxValue).Green; }),
+                MathNet.Numerics.LinearAlgebra.Zeros.AllowSkip);
             //dmColCh = (MathNet.Numerics.LinearAlgebra.Double.DenseMatrix)dmColCh.PointwiseMultiply(dmMask);
 
             doubleArrDmTmp = dmColCh.ToArray();
@@ -962,7 +981,10 @@ namespace SkyImagesAnalyzerLibraries
 
 
             dmColCh = (DenseMatrix)dmMatrixToColor.Clone();
-            dmColCh.MapInplace(new Func<double, double>((dValue) => { return usedColorScheme.GetColorByValueAndRange(dValue, minValue, maxValue).Blue; }), true);
+            dmColCh.MapInplace(
+                new Func<double, double>(
+                    (dValue) => { return usedColorScheme.GetColorByValueAndRange(dValue, minValue, maxValue).Blue; }),
+                MathNet.Numerics.LinearAlgebra.Zeros.AllowSkip);
             //dmColCh = (MathNet.Numerics.LinearAlgebra.Double.DenseMatrix)dmColCh.PointwiseMultiply(dmMask);
 
             doubleArrDmTmp = dmColCh.ToArray();
@@ -1010,19 +1032,20 @@ namespace SkyImagesAnalyzerLibraries
             dmColCh = (DenseMatrix)dm2Convert.Clone();
             double valuesRange = maxVal - minVal;
             //dmColCh.MapInplace(new Func<double, double>((dValue) => { return usedColorScheme.getColorByValueAndRange(dValue, minValue, maxValue).Red; }), true);
-            if (!invertScale) dmColCh.MapInplace(new Func<double, double>((dValue) => { return 255.0d * ((dValue - minVal) / valuesRange); }), true);
-            else dmColCh.MapInplace(new Func<double, double>((dValue) => { return 255.0d * ((maxVal - dValue) / valuesRange); }), true);
+            if (!invertScale)
+                dmColCh.MapInplace(
+                    new Func<double, double>((dValue) => { return 255.0d*((dValue - minVal)/valuesRange); }),
+                    MathNet.Numerics.LinearAlgebra.Zeros.AllowSkip);
+            else
+                dmColCh.MapInplace(
+                    new Func<double, double>((dValue) => { return 255.0d*((maxVal - dValue)/valuesRange); }),
+                    MathNet.Numerics.LinearAlgebra.Zeros.AllowSkip);
             //dmColCh = (MathNet.Numerics.LinearAlgebra.Double.DenseMatrix)dmColCh.PointwiseMultiply(dmMask);
 
             double[,] doubleArrDmTmp = dmColCh.ToArray();
             byte[,] byteArrDmTmp = ServiceTools.DoubleToByteDepth(doubleArrDmTmp);
             byte[, ,] byte2DArrDmTmp = ServiceTools.AddedThirdIndexArray3DFrom2D(byteArrDmTmp);
             imgRch = new Image<Gray, byte>(byte2DArrDmTmp);
-            //imgRch = imgRch.Mul(maskImage) / 255;
-            //imgRch = imgRch.Mul(imageProcessingMaster.significantMaskImageBinary);
-            //dmColCh = null;
-            //doubleArrDmTmp = null;
-            //byte2DArrDmTmp = null;
             ServiceTools.FlushMemory(null, "");
             return imgRch;
         }
@@ -1039,8 +1062,14 @@ namespace SkyImagesAnalyzerLibraries
             dmColCh = (DenseMatrix)dm2Convert.Clone();
             //dmColCh.MapInplace(new Func<double, double>((dValue) => { return usedColorScheme.getColorByValueAndRange(dValue, minValue, maxValue).Red; }), true);
             double valuesRange = maxVal - minVal;
-            if (!invertScale) dmColCh.MapInplace(new Func<double, double>((dValue) => { return 255.0d * ((dValue - minVal) / valuesRange); }), true);
-            else dmColCh.MapInplace(new Func<double, double>((dValue) => { return 255.0d * ((maxVal - dValue) / valuesRange); }), true);
+            if (!invertScale)
+                dmColCh.MapInplace(
+                    new Func<double, double>((dValue) => { return 255.0d*((dValue - minVal)/valuesRange); }),
+                    MathNet.Numerics.LinearAlgebra.Zeros.AllowSkip);
+            else
+                dmColCh.MapInplace(
+                    new Func<double, double>((dValue) => { return 255.0d*((maxVal - dValue)/valuesRange); }),
+                    MathNet.Numerics.LinearAlgebra.Zeros.AllowSkip);
 
             //dmColCh = (MathNet.Numerics.LinearAlgebra.Double.DenseMatrix)dmColCh.PointwiseMultiply(dmMask);
 

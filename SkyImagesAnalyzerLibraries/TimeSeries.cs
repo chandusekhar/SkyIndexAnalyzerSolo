@@ -332,7 +332,7 @@ namespace SkyImagesAnalyzerLibraries
             IInterpolation method;
             try
             {
-                method = Interpolate.LinearBetweenPoints(currentDatetimeList, dataDoubleValues);
+                method = Interpolate.Linear(currentDatetimeList, dataDoubleValues);
             }
             catch (Exception)
             {

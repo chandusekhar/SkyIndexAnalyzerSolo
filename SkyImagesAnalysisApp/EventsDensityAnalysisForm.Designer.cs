@@ -28,13 +28,31 @@
         /// </summary>
         private void InitializeComponent()
         {
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(EventsDensityAnalysisForm));
+            this.ilPanel1 = new ILNumerics.Drawing.ILPanel();
             this.SuspendLayout();
+            // 
+            // ilPanel1
+            // 
+            this.ilPanel1.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.ilPanel1.Driver = ILNumerics.Drawing.RendererTypes.OpenGL;
+            this.ilPanel1.Editor = null;
+            this.ilPanel1.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.ilPanel1.Location = new System.Drawing.Point(0, 0);
+            this.ilPanel1.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.ilPanel1.Name = "ilPanel1";
+            this.ilPanel1.Rectangle = ((System.Drawing.RectangleF)(resources.GetObject("ilPanel1.Rectangle")));
+            this.ilPanel1.ShowUIControls = false;
+            this.ilPanel1.Size = new System.Drawing.Size(988, 727);
+            this.ilPanel1.TabIndex = 0;
+            this.ilPanel1.Timeout = ((uint)(0u));
             // 
             // EventsDensityAnalysisForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1025, 700);
+            this.ClientSize = new System.Drawing.Size(988, 727);
+            this.Controls.Add(this.ilPanel1);
             this.KeyPreview = true;
             this.Name = "EventsDensityAnalysisForm";
             this.Text = "EventsDensityAnalysisForm";
@@ -44,5 +62,7 @@
         }
 
         #endregion
+
+        private ILNumerics.Drawing.ILPanel ilPanel1;
     }
 }
