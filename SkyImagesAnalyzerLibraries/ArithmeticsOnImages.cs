@@ -13,6 +13,15 @@ using MathNet.Numerics.IntegralTransforms;
 
 namespace SkyImagesAnalyzerLibraries
 {
+    enum OperandTypes
+    {
+        DoubleValue,
+        DenseMatrix,
+        ListOfDensematrices
+    }
+
+
+
     public class ArithmeticsOnImages : IDisposable
     {
         public Image<Gray, Byte> imgR, imgG, imgB;
@@ -37,6 +46,7 @@ namespace SkyImagesAnalyzerLibraries
         public DenseMatrix dmR = null;
         public DenseMatrix dmG = null;
         public DenseMatrix dmB = null;
+        public List<DenseMatrix> lDMRes = null;
         public DenseMatrix dmRes = null;
         public double resValue = 0.0d;
         public DenseMatrix dmY = null;
@@ -46,25 +56,50 @@ namespace SkyImagesAnalyzerLibraries
 
         private class ImageOperationalValue
         {
-
             public DenseMatrix dmImageComponent;
+            public List<DenseMatrix> lDMOtherComponents = null;
             public double dNumber;
 
             public ImageOperationalValue()
             {
                 dNumber = 0.0d;
                 dmImageComponent = null;
+                lDMOtherComponents = null;
+            }
+
+            public DenseMatrix DmImageComponent
+            {
+                get
+                {
+                    if (dmImageComponent != null) return dmImageComponent;
+                    else if (lDMOtherComponents != null)
+                    {
+                        return lDMOtherComponents[0];
+                    }
+                    else return null;
+                }
+                set { dmImageComponent = value; }
             }
 
 
             //true - denseMatrix
             //false - number
-            public bool operandType()
+            public OperandTypes operandType()
             {
-                if (dmImageComponent != null) return true;
-                else return false;
+                if (dmImageComponent != null) return OperandTypes.DenseMatrix;
+                if (lDMOtherComponents != null) return OperandTypes.ListOfDensematrices;
+                return OperandTypes.DoubleValue;
             }
         }
+
+
+
+
+
+
+
+
+
 
         public string ExprString
         {
@@ -269,6 +304,13 @@ namespace SkyImagesAnalyzerLibraries
                                     ServiceTools.FlushMemory(tbLog, "");
                                     break;
                                 }
+                            case "grad5p":
+                                {
+                                    ImageOperationalValue a = stack.Pop();
+                                    summ = ImageOperationalValueGrad5p(a);// grad 5-point(a)
+                                    ServiceTools.FlushMemory(tbLog, "");
+                                    break;
+                                }
                             case "ddx":
                                 {
                                     ImageOperationalValue a = stack.Pop();
@@ -335,8 +377,10 @@ namespace SkyImagesAnalyzerLibraries
             }
             //return Convert.ToDecimal(stack.Pop());
             ImageOperationalValue theResult = stack.Pop();
-            dmRes = theResult.dmImageComponent;
+            dmRes = theResult.DmImageComponent;
             resValue = theResult.dNumber;
+            lDMRes = theResult.lDMOtherComponents;
+
             if (dmRes != null)
             {
                 minValue = dmRes.Values.Min();
@@ -362,18 +406,18 @@ namespace SkyImagesAnalyzerLibraries
         {
             ImageOperationalValue summ = new ImageOperationalValue();
 
-            if (a.operandType() && b.operandType())
+            if ((a.operandType() == OperandTypes.DenseMatrix) && (b.operandType() == OperandTypes.DenseMatrix))
             {
-                summ.dmImageComponent = b.dmImageComponent - a.dmImageComponent;
+                summ.DmImageComponent = b.DmImageComponent - a.DmImageComponent;
             }
-            else if (a.operandType() && !b.operandType())
+            else if ((a.operandType() == OperandTypes.DenseMatrix) && (b.operandType() == OperandTypes.DoubleValue))
             {
 
-                summ.dmImageComponent = matrixWithValue(a.dmImageComponent, b.dNumber) - a.dmImageComponent;
+                summ.DmImageComponent = matrixWithValue(a.DmImageComponent, b.dNumber) - a.DmImageComponent;
             }
-            else if (b.operandType() && !a.operandType())
+            else if ((b.operandType() == OperandTypes.DenseMatrix) && (a.operandType() == OperandTypes.DoubleValue))
             {
-                summ.dmImageComponent = b.dmImageComponent - matrixWithValue(b.dmImageComponent, a.dNumber);
+                summ.DmImageComponent = b.DmImageComponent - matrixWithValue(b.DmImageComponent, a.dNumber);
             }
 
 
@@ -386,17 +430,17 @@ namespace SkyImagesAnalyzerLibraries
         {
             ImageOperationalValue summ = new ImageOperationalValue();
 
-            if (a.operandType() && b.operandType())
+            if ((a.operandType() == OperandTypes.DenseMatrix) && (b.operandType() == OperandTypes.DenseMatrix))
             {
-                summ.dmImageComponent = (DenseMatrix)b.dmImageComponent.PointwiseMultiply(a.dmImageComponent);
+                summ.DmImageComponent = (DenseMatrix)b.DmImageComponent.PointwiseMultiply(a.DmImageComponent);
             }
-            else if (a.operandType() && !b.operandType())
+            else if ((a.operandType() == OperandTypes.DenseMatrix) && (b.operandType() == OperandTypes.DoubleValue))
             {
-                summ.dmImageComponent = (DenseMatrix)a.dmImageComponent.PointwiseMultiply(matrixWithValue(a.dmImageComponent, b.dNumber));
+                summ.DmImageComponent = (DenseMatrix)a.DmImageComponent.PointwiseMultiply(matrixWithValue(a.DmImageComponent, b.dNumber));
             }
-            else if (b.operandType() && !a.operandType())
+            else if ((b.operandType() == OperandTypes.DenseMatrix) && (a.operandType() == OperandTypes.DoubleValue))
             {
-                summ.dmImageComponent = (DenseMatrix)b.dmImageComponent.PointwiseMultiply(matrixWithValue(b.dmImageComponent, a.dNumber));
+                summ.DmImageComponent = (DenseMatrix)b.DmImageComponent.PointwiseMultiply(matrixWithValue(b.DmImageComponent, a.dNumber));
             }
 
 
@@ -409,23 +453,23 @@ namespace SkyImagesAnalyzerLibraries
         {
             ImageOperationalValue summ = new ImageOperationalValue();
 
-            if (a.operandType() && b.operandType())
+            if ((a.operandType() == OperandTypes.DenseMatrix) && (b.operandType() == OperandTypes.DenseMatrix))
             {
-                DenseMatrix dmTmpMatrix = (DenseMatrix)a.dmImageComponent.Clone();
+                DenseMatrix dmTmpMatrix = (DenseMatrix)a.DmImageComponent.Clone();
                 dmTmpMatrix.MapInplace(new Func<double, double>((val) => { return (val == 0.0) ? (1.0) : (val); }));
-                summ.dmImageComponent = (DenseMatrix)b.dmImageComponent.PointwiseDivide(dmTmpMatrix);
+                summ.DmImageComponent = (DenseMatrix)b.DmImageComponent.PointwiseDivide(dmTmpMatrix);
             }
-            else if (a.operandType() && !b.operandType())
+            else if ((a.operandType() == OperandTypes.DenseMatrix) && (b.operandType() == OperandTypes.DoubleValue))
             {
-                DenseMatrix dmTmpMatrix = (DenseMatrix)a.dmImageComponent.Clone();
+                DenseMatrix dmTmpMatrix = (DenseMatrix)a.DmImageComponent.Clone();
                 dmTmpMatrix.MapInplace(new Func<double, double>((val) => { return (val == 0.0) ? (1.0) : (val); }));
-                summ.dmImageComponent = (DenseMatrix)matrixWithValue(a.dmImageComponent, b.dNumber).PointwiseDivide(dmTmpMatrix);
+                summ.DmImageComponent = (DenseMatrix)matrixWithValue(a.DmImageComponent, b.dNumber).PointwiseDivide(dmTmpMatrix);
             }
-            else if (b.operandType() && !a.operandType())
+            else if ((b.operandType() == OperandTypes.DenseMatrix) && (a.operandType() == OperandTypes.DoubleValue))
             {
-                DenseMatrix dmTmpMatrix = (DenseMatrix)matrixWithValue(b.dmImageComponent, a.dNumber);
+                DenseMatrix dmTmpMatrix = (DenseMatrix)matrixWithValue(b.DmImageComponent, a.dNumber);
                 dmTmpMatrix.MapInplace(new Func<double, double>((val) => { return (val == 0.0) ? (1.0) : (val); }));
-                summ.dmImageComponent = (DenseMatrix)b.dmImageComponent.PointwiseDivide(dmTmpMatrix);
+                summ.DmImageComponent = (DenseMatrix)b.DmImageComponent.PointwiseDivide(dmTmpMatrix);
             }
 
 
@@ -438,17 +482,17 @@ namespace SkyImagesAnalyzerLibraries
         {
             ImageOperationalValue summ = new ImageOperationalValue();
 
-            if (a.operandType() && b.operandType())
+            if ((a.operandType() == OperandTypes.DenseMatrix) && (b.operandType() == OperandTypes.DenseMatrix))
             {
-                summ.dmImageComponent = a.dmImageComponent + b.dmImageComponent;
+                summ.DmImageComponent = a.DmImageComponent + b.DmImageComponent;
             }
-            else if (a.operandType() && !b.operandType())
+            else if ((a.operandType() == OperandTypes.DenseMatrix) && (b.operandType() == OperandTypes.DoubleValue))
             {
-                summ.dmImageComponent = a.dmImageComponent + matrixWithValue(a.dmImageComponent, b.dNumber);
+                summ.DmImageComponent = a.DmImageComponent + matrixWithValue(a.DmImageComponent, b.dNumber);
             }
-            else if (b.operandType() && !a.operandType())
+            else if ((b.operandType() == OperandTypes.DenseMatrix) && (a.operandType() == OperandTypes.DoubleValue))
             {
-                summ.dmImageComponent = b.dmImageComponent + matrixWithValue(b.dmImageComponent, a.dNumber);
+                summ.DmImageComponent = b.DmImageComponent + matrixWithValue(b.DmImageComponent, a.dNumber);
             }
 
 
@@ -461,11 +505,11 @@ namespace SkyImagesAnalyzerLibraries
         {
             ImageOperationalValue res = new ImageOperationalValue();
 
-            if (a.operandType())
+            if (a.operandType() == OperandTypes.DenseMatrix)
             {
-                DenseMatrix dmRes = (DenseMatrix)a.dmImageComponent.Clone();
+                DenseMatrix dmRes = (DenseMatrix)a.DmImageComponent.Clone();
                 dmRes.MapInplace(new Func<double, double>((x) => { return Math.Pow(x, powerExponent); }));
-                res.dmImageComponent = dmRes;
+                res.DmImageComponent = dmRes;
             }
             else
             {
@@ -486,12 +530,12 @@ namespace SkyImagesAnalyzerLibraries
             ImageOperationalValue res = new ImageOperationalValue();
             
 
-            if (a.operandType())
+            if (a.operandType() == OperandTypes.DenseMatrix)
             {
-                DenseMatrix dmRes = (DenseMatrix)a.dmImageComponent.Clone();
+                DenseMatrix dmRes = (DenseMatrix)a.DmImageComponent.Clone();
 
                 //determining the new mean value
-                DenseMatrix dmTmp = (DenseMatrix)a.dmImageComponent.Clone();
+                DenseMatrix dmTmp = (DenseMatrix)a.DmImageComponent.Clone();
                 DescriptiveStatistics stats = new DescriptiveStatistics(dmTmp.Values);
                 double dataMeanTmp = stats.Mean;
                 double standDevTmp = stats.StandardDeviation;
@@ -523,7 +567,7 @@ namespace SkyImagesAnalyzerLibraries
                     else return dVal;
                 }));
 
-                res.dmImageComponent = dmRes;
+                res.DmImageComponent = dmRes;
             }
             else
             {
@@ -540,10 +584,10 @@ namespace SkyImagesAnalyzerLibraries
         {
             ImageOperationalValue res = new ImageOperationalValue();
 
-            if (a.operandType())
+            if (a.operandType() == OperandTypes.DenseMatrix)
             {
-                DenseMatrix dmOrig = (DenseMatrix)a.dmImageComponent.Clone();
-                DenseMatrix dmyPlus1 = (DenseMatrix)a.dmImageComponent.Clone();
+                DenseMatrix dmOrig = (DenseMatrix)a.DmImageComponent.Clone();
+                DenseMatrix dmyPlus1 = (DenseMatrix)a.DmImageComponent.Clone();
                 dmyPlus1.MapIndexedInplace(new Func<int, int, double, double>((row, column, val) =>
                 {
                     if (row < dmyPlus1.RowCount - 1)
@@ -554,7 +598,7 @@ namespace SkyImagesAnalyzerLibraries
                     
                 }));
 
-                DenseMatrix dmyMinus1 = (DenseMatrix)a.dmImageComponent.Clone();
+                DenseMatrix dmyMinus1 = (DenseMatrix)a.DmImageComponent.Clone();
                 dmyMinus1.MapIndexedInplace(new Func<int, int, double, double>((row, column, val) =>
                 {
                     if (row > 1)
@@ -576,7 +620,7 @@ namespace SkyImagesAnalyzerLibraries
                 //dmyMinus1 = null;
                 ServiceTools.FlushMemory();
 
-                DenseMatrix dmxPlus1 = (DenseMatrix)a.dmImageComponent.Clone();
+                DenseMatrix dmxPlus1 = (DenseMatrix)a.DmImageComponent.Clone();
                 dmxPlus1.MapIndexedInplace(new Func<int, int, double, double>((row, column, val) =>
                 {
                     if (column < dmxPlus1.ColumnCount - 1)
@@ -587,7 +631,7 @@ namespace SkyImagesAnalyzerLibraries
 
                 }));
 
-                DenseMatrix dmxMinus1 = (DenseMatrix)a.dmImageComponent.Clone();
+                DenseMatrix dmxMinus1 = (DenseMatrix)a.DmImageComponent.Clone();
                 dmxMinus1.MapIndexedInplace(new Func<int, int, double, double>((row, column, val) =>
                 {
                     if (column > 1)
@@ -611,7 +655,7 @@ namespace SkyImagesAnalyzerLibraries
                 DenseMatrix dmRes = dmGradX + dmGradY;
                 dmRes.MapInplace(new Func<double, double>(val => Math.Sqrt(val)));
                 //dmRes.MapIndexedInplace(new Func<int,int,double,double>((x, y, val) => { return x+y; }));
-                res.dmImageComponent = dmRes;
+                res.DmImageComponent = dmRes;
                 dmGradY = null;
                 dmGradX = null;
                 ServiceTools.FlushMemory();
@@ -627,15 +671,142 @@ namespace SkyImagesAnalyzerLibraries
 
 
 
+
+        private ImageOperationalValue ImageOperationalValueGrad5p(ImageOperationalValue a)
+        {
+            ImageOperationalValue res = new ImageOperationalValue();
+
+            if (a.operandType() == OperandTypes.DenseMatrix)
+            {
+                DenseMatrix dmOrig = a.DmImageComponent.Copy();
+                DenseMatrix dmyPlus1 = a.DmImageComponent.Copy();
+                dmyPlus1.MapIndexedInplace(new Func<int, int, double, double>((row, column, val) =>
+                {
+                    if (row < dmyPlus1.RowCount - 1)
+                    {
+                        return dmOrig[row + 1, column];
+                    }
+                    else return val;
+
+                }));
+                DenseMatrix dmyPlus2 = a.DmImageComponent.Copy();
+                dmyPlus2.MapIndexedInplace(new Func<int, int, double, double>((row, column, val) =>
+                {
+                    if (row < dmyPlus2.RowCount - 2)
+                    {
+                        return dmOrig[row + 2, column];
+                    }
+                    else return val;
+
+                }));
+
+                DenseMatrix dmyMinus1 = a.DmImageComponent.Copy();
+                dmyMinus1.MapIndexedInplace(new Func<int, int, double, double>((row, column, val) =>
+                {
+                    if (row > 1)
+                    {
+                        return dmOrig[row - 1, column];
+                    }
+                    else return val;
+
+                }));
+                DenseMatrix dmyMinus2 = a.DmImageComponent.Copy();
+                dmyMinus2.MapIndexedInplace(new Func<int, int, double, double>((row, column, val) =>
+                {
+                    if (row > 2)
+                    {
+                        return dmOrig[row - 2, column];
+                    }
+                    else return val;
+
+                }));
+
+
+                DenseMatrix dmGradY = dmyMinus2 - 8.0d*dmyMinus1 + 8.0d*dmyPlus1 - dmyPlus2;
+                dmGradY.MapInplace(x => x / 12.0d);
+
+                dmyPlus1 = null;
+                dmyMinus1 = null;
+                dmyPlus2 = null;
+                dmyMinus2 = null;
+                ServiceTools.FlushMemory();
+
+                DenseMatrix dmxPlus1 = a.DmImageComponent.Copy();
+                dmxPlus1.MapIndexedInplace(new Func<int, int, double, double>((row, column, val) =>
+                {
+                    if (column < dmxPlus1.ColumnCount - 1)
+                    {
+                        return dmOrig[row, column + 1];
+                    }
+                    else return val;
+
+                }));
+
+                DenseMatrix dmxPlus2 = a.DmImageComponent.Copy();
+                dmxPlus2.MapIndexedInplace(new Func<int, int, double, double>((row, column, val) =>
+                {
+                    if (column < dmxPlus2.ColumnCount - 2)
+                    {
+                        return dmOrig[row, column + 2];
+                    }
+                    else return val;
+                }));
+
+                DenseMatrix dmxMinus1 = a.DmImageComponent.Copy();
+                dmxMinus1.MapIndexedInplace(new Func<int, int, double, double>((row, column, val) =>
+                {
+                    if (column > 1)
+                    {
+                        return dmOrig[row, column - 1];
+                    }
+                    else return val;
+
+                }));
+
+                DenseMatrix dmxMinus2 = a.DmImageComponent.Copy();
+                dmxMinus2.MapIndexedInplace(new Func<int, int, double, double>((row, column, val) =>
+                {
+                    if (column > 2)
+                    {
+                        return dmOrig[row, column - 2];
+                    }
+                    else return val;
+
+                }));
+
+                DenseMatrix dmGradX = dmxMinus2 - 8.0d*dmxMinus1 + 8.0d*dmxPlus1 - dmxPlus2;
+                dmGradX.MapInplace(x => x / 12.0d);
+
+                dmxPlus1 = null;
+                dmxMinus1 = null;
+                dmxMinus2 = null;
+                dmxPlus2 = null;
+                ServiceTools.FlushMemory();
+
+                res.lDMOtherComponents = new List<DenseMatrix>() { dmGradX, dmGradY };
+                ServiceTools.FlushMemory();
+            }
+            else
+            {
+                res.dNumber = 0.0d;
+            }
+
+            return res;
+        }
+
+
+
+
+
         private ImageOperationalValue ImageOperationalValueDDX(ImageOperationalValue a)
         {
             ImageOperationalValue res = new ImageOperationalValue();
 
-            if (a.operandType())
+            if (a.operandType() == OperandTypes.DenseMatrix)
             {
-                DenseMatrix dmOrig = (DenseMatrix)a.dmImageComponent.Clone();
-                DenseMatrix dmxPlus1 = (DenseMatrix)a.dmImageComponent.Clone();
-                DenseMatrix dmxMinus1 = (DenseMatrix)a.dmImageComponent.Clone();
+                DenseMatrix dmOrig = (DenseMatrix)a.DmImageComponent.Clone();
+                DenseMatrix dmxPlus1 = (DenseMatrix)a.DmImageComponent.Clone();
+                DenseMatrix dmxMinus1 = (DenseMatrix)a.DmImageComponent.Clone();
                 dmxPlus1.MapIndexedInplace(new Func<int, int, double, double>((row, column, val) =>
                 {
                     if (column < dmxPlus1.ColumnCount - 1)
@@ -661,7 +832,7 @@ namespace SkyImagesAnalyzerLibraries
                 dmxPlus1 = null;
                 ServiceTools.FlushMemory();
 
-                res.dmImageComponent = dmGradX;
+                res.DmImageComponent = dmGradX;
                 dmGradX = null;
                 ServiceTools.FlushMemory();
             }
@@ -680,10 +851,10 @@ namespace SkyImagesAnalyzerLibraries
         {
             ImageOperationalValue res = new ImageOperationalValue();
 
-            if (a.operandType())
+            if (a.operandType() == OperandTypes.DenseMatrix)
             {
-                DenseMatrix dmOrig = (DenseMatrix)a.dmImageComponent.Clone();
-                DenseMatrix dmyPlus1 = (DenseMatrix)a.dmImageComponent.Clone();
+                DenseMatrix dmOrig = (DenseMatrix)a.DmImageComponent.Clone();
+                DenseMatrix dmyPlus1 = (DenseMatrix)a.DmImageComponent.Clone();
                 dmyPlus1.MapIndexedInplace(new Func<int, int, double, double>((row, column, val) =>
                 {
                     if (row < dmyPlus1.RowCount - 1)
@@ -694,7 +865,7 @@ namespace SkyImagesAnalyzerLibraries
 
                 }));
 
-                DenseMatrix dmyMinus1 = (DenseMatrix)a.dmImageComponent.Clone();
+                DenseMatrix dmyMinus1 = (DenseMatrix)a.DmImageComponent.Clone();
                 dmyMinus1.MapIndexedInplace(new Func<int, int, double, double>((row, column, val) =>
                 {
                     if (row > 0)
@@ -712,7 +883,7 @@ namespace SkyImagesAnalyzerLibraries
                 dmyPlus1 = null;
                 ServiceTools.FlushMemory();
 
-                res.dmImageComponent = dmGradY;
+                res.DmImageComponent = dmGradY;
                 dmGradY = null;
                 ServiceTools.FlushMemory();
             }
@@ -731,11 +902,11 @@ namespace SkyImagesAnalyzerLibraries
         {
             ImageOperationalValue res = new ImageOperationalValue();
 
-            if (a.operandType())
+            if (a.operandType() == OperandTypes.DenseMatrix)
             {
-                DenseMatrix dmResLocal = (DenseMatrix)a.dmImageComponent.Clone();
+                DenseMatrix dmResLocal = (DenseMatrix)a.DmImageComponent.Clone();
                 dmResLocal.MapInplace(new Func<double, double>((val) => Math.Pow(val, 0.5d)));
-                res.dmImageComponent = dmResLocal;
+                res.DmImageComponent = dmResLocal;
                 ServiceTools.FlushMemory();
             }
             else
@@ -751,9 +922,9 @@ namespace SkyImagesAnalyzerLibraries
         {
             ImageOperationalValue res = new ImageOperationalValue();
 
-            if (a.operandType())
+            if (a.operandType() == OperandTypes.DenseMatrix)
             {
-                DenseMatrix dmResLocal = (DenseMatrix)a.dmImageComponent.Clone();
+                DenseMatrix dmResLocal = (DenseMatrix)a.DmImageComponent.Clone();
                 DescriptiveStatistics stat = new DescriptiveStatistics(dmResLocal.Values);
                 res.dNumber = stat.Mean;
                 ServiceTools.FlushMemory();
@@ -773,9 +944,9 @@ namespace SkyImagesAnalyzerLibraries
         {
             ImageOperationalValue res = new ImageOperationalValue();
 
-            if (a.operandType())
+            if (a.operandType() == OperandTypes.DenseMatrix)
             {
-                DenseMatrix dmResLocal = (DenseMatrix)a.dmImageComponent.Clone();
+                DenseMatrix dmResLocal = (DenseMatrix)a.DmImageComponent.Clone();
                 DescriptiveStatistics stat = new DescriptiveStatistics(dmResLocal.Values);
                 res.dNumber = stat.StandardDeviation;
                 ServiceTools.FlushMemory();
@@ -794,11 +965,11 @@ namespace SkyImagesAnalyzerLibraries
         {
             ImageOperationalValue res = new ImageOperationalValue();
 
-            if (a.operandType())
+            if (a.operandType() == OperandTypes.DenseMatrix)
             {
-                DenseMatrix dmResLocal = (DenseMatrix)a.dmImageComponent.Clone();
+                DenseMatrix dmResLocal = (DenseMatrix)a.DmImageComponent.Clone();
                 dmResLocal.MapInplace(new Func<double, double>((val) => Math.Abs(val)));
-                res.dmImageComponent = dmResLocal;
+                res.DmImageComponent = dmResLocal;
                 ServiceTools.FlushMemory();
             }
             else
@@ -819,16 +990,16 @@ namespace SkyImagesAnalyzerLibraries
             switch (inStr)
             {
                 case "R":
-                    imgIOV.dmImageComponent = dmR;
+                    imgIOV.DmImageComponent = dmR;
                     break;
                 case "G":
-                    imgIOV.dmImageComponent = dmG;
+                    imgIOV.DmImageComponent = dmG;
                     break;
                 case "B":
-                    imgIOV.dmImageComponent = dmB;
+                    imgIOV.DmImageComponent = dmB;
                     break;
                 case "Y":
-                    imgIOV.dmImageComponent = dmY;
+                    imgIOV.DmImageComponent = dmY;
                     break;
                 default:
                     {

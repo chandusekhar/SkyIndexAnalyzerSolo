@@ -14,7 +14,7 @@ namespace SkyImagesAnalyzerLibraries
         }
         public List<string> operators;
         private List<string> standart_operators =
-            new List<string>(new string[] { "(", ")", "+", "-", "*", "/", "^", "%", "grad", "sqrt", "mean", "stddev", "abs", "ddx", "ddy" });
+            new List<string>(new string[] { "(", ")", "+", "-", "*", "/", "^", "%", "grad", "sqrt", "mean", "stddev", "abs", "ddx", "ddy", "grad5p" });
  
         private IEnumerable<string> Separate(string input)
         {
@@ -64,6 +64,7 @@ namespace SkyImagesAnalyzerLibraries
                 case "ddx":
                 case "ddy":
                 case "abs":
+                case "grad5p":
                     return 7;
                 default:
                     return 8;
@@ -110,82 +111,5 @@ namespace SkyImagesAnalyzerLibraries
  
             return outputSeparated.ToArray();
         }
-        
-        
-/*
-        public decimal result(string input)
-        {
-            Stack<string> stack = new Stack<string>();
-            Queue<string> queue = new Queue<string>(ConvertToPostfixNotation(input));
-            string str = queue.Dequeue();
-            while (queue.Count >= 0)
-            {
-                if (!operators.Contains(str))
-                {
-                    stack.Push(str);
-                    str = queue.Dequeue();
-                }
-                else
-                {
-                    decimal summ = 0;
-                    try
-                    {
- 
-                        switch (str)
-                        {
- 
-                            case "+":
-                                {
-                                    decimal a = Convert.ToDecimal(stack.Pop());
-                                    decimal b = Convert.ToDecimal(stack.Pop());
-                                    summ = a + b;
-                                    break;
-                                }
-                            case "-":
-                                {
-                                    decimal a = Convert.ToDecimal(stack.Pop());
-                                    decimal b = Convert.ToDecimal(stack.Pop());
-                                    summ=b-a;
-                                    break;
-                                }
-                            case "*":
-                                {
-                                    decimal a = Convert.ToDecimal(stack.Pop());
-                                    decimal b = Convert.ToDecimal(stack.Pop());
-                                    summ = b * a;
-                                    break;
-                                }
-                            case "/":
-                                {
-                                    decimal a = Convert.ToDecimal(stack.Pop());
-                                    decimal b = Convert.ToDecimal(stack.Pop());
-                                    summ = b / a;
-                                    break;
-                                }
-                            case "^":
-                                {
-                                    decimal a = Convert.ToDecimal(stack.Pop());
-                                    decimal b = Convert.ToDecimal(stack.Pop());
-                                    summ = Convert.ToDecimal(Math.Pow(Convert.ToDouble(b), Convert.ToDouble(a)));
-                                    break;
-                                }
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        MessageBox.Show(ex.Message);
-                    }
-                    stack.Push(summ.ToString());
-                    if (queue.Count > 0)
-                        str = queue.Dequeue();
-                    else
-                        break;
-                }
- 
-            }
-            return Convert.ToDecimal(stack.Pop());
-        }
-*/
-
     }
 }

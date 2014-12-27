@@ -83,6 +83,11 @@ namespace SkyImagesAnalyzer
 
             DenseMatrix dmSmoothed = dmDensityMesh.Conv2(dmKernel);
             dmDensityMesh = dmSmoothed.Copy();
+            ArithmeticsOnImages aoi = new ArithmeticsOnImages();
+            aoi.dmY = dmDensityMesh;
+            aoi.ExprString = "grad5p(Y)";
+            aoi.RPNeval(true);
+            List<DenseMatrix> lDMGradField = aoi.lDMRes;
 
             //imageConditionAndData imgdt1 = new imageConditionAndData(dmSmoothed, null);
             //imgdt1.currentColorScheme = new ColorScheme("");
@@ -232,7 +237,7 @@ namespace SkyImagesAnalyzer
                             foreach (Point currPtToClassify in lPointsToClassify)
                             {
                                 AttachPointToOneOfConcurrentContours(currGroup.ElementAt(0).Item1,
-                                    currGroup.ElementAt(0).Item2, currPtToClassify);
+                                    currGroup.ElementAt(0).Item2, currPtToClassify, lDMGradField);
 
                             }
                         }
@@ -306,11 +311,56 @@ namespace SkyImagesAnalyzer
 
 
 
-        private void AttachPointToOneOfConcurrentContours(Contour<Point> c1, Contour<Point> c2, Point pt)
+        private void AttachPointToOneOfConcurrentContours(Contour<Point> c1, Contour<Point> c2, Point pt, List<DenseMatrix> dmGradField)
         {
             // density field should be defined
             if (dmDensityMesh == null) return;
+            PointD ptdMassCenter1 = c1.MassCenter();
+            PointD ptdMassCenter2 = c2.MassCenter();
 
+            DenseVector lineConnectingMassCentersDirection = DenseVector.Create(2, i =>
+            {
+                if (i == 0)// x
+                    return
+                        (ptdMassCenter2.X - ptdMassCenter1.X)/PointD.Distance(ptdMassCenter1, ptdMassCenter2);
+                else if (i == 1)
+                    return
+                        (ptdMassCenter2.Y - ptdMassCenter1.Y)/PointD.Distance(ptdMassCenter1, ptdMassCenter2);
+                else return 0.0d;
+            });
+            DenseVector lineConnectingMassCentersDirectionOrthogonal = DenseVector.Create(2,
+                i => (i == 0) ? (lineConnectingMassCentersDirection[1]) : (-lineConnectingMassCentersDirection[0]));
+
+            LineDescription lineConnectingMassCenters = new LineDescription(ptdMassCenter1,
+                lineConnectingMassCentersDirection);
+            LineDescription lineOrthogonalThroughSamplePt = new LineDescription(new PointD(pt),
+                lineConnectingMassCentersDirectionOrthogonal);
+            SectionDescription sect = new SectionDescription(new PointD(pt),
+                LineDescription.CrossPoint(lineConnectingMassCenters, lineOrthogonalThroughSamplePt), true);
+            sect = sect.TransformTillMargins(new Rectangle(0, 0, dmGradField[0].ColumnCount, dmGradField[0].RowCount));
+            PointD pCross1 = sect.p1;
+            PointD pCross2 = sect.p2;
+
+            Contour<Point> wholeImageContour = new Contour<Point>(new MemStorage());
+            
+            wholeImageContour.Push(new Point(0, 0));
+            if (sect.p1.Y == 0.0d) wholeImageContour.Push(sect.p1.Point());
+            if (sect.p2.Y == 0.0d) wholeImageContour.Push(sect.p2.Point());
+
+            wholeImageContour.Push(new Point(dmGradField[0].RowCount, 0));
+            if (sect.p1.X == (double)dmGradField[0].ColumnCount) wholeImageContour.Push(sect.p1.Point());
+            if (sect.p2.X == (double)dmGradField[0].ColumnCount) wholeImageContour.Push(sect.p2.Point());
+
+            wholeImageContour.Push(new Point(dmGradField[0].RowCount, dmGradField[0].ColumnCount));
+            if (sect.p1.Y == (double)dmGradField[0].RowCount) wholeImageContour.Push(sect.p1.Point());
+            if (sect.p2.Y == (double)dmGradField[0].RowCount) wholeImageContour.Push(sect.p2.Point());
+
+            wholeImageContour.Push(new Point(0, dmGradField[0].ColumnCount));
+            if (sect.p1.X == 0.0d) wholeImageContour.Push(sect.p1.Point());
+            if (sect.p2.X == 0.0d) wholeImageContour.Push(sect.p2.Point());
+
+            MCvSlice theSlice = new MCvSlice(????????);
+            //wholeImageContour.Slice()
 
 
         }

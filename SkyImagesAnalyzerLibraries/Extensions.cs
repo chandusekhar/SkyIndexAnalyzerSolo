@@ -15,6 +15,7 @@ namespace SkyImagesAnalyzerLibraries
 {
     public static class Extensions
     {
+        public static Gray white = new Gray(255);
         /// <summary>
         /// Determines whether the testing point is inside the circle.
         /// </summary>
@@ -199,6 +200,20 @@ namespace SkyImagesAnalyzerLibraries
             Contour<Point> copyContour = new Contour<Point>(new MemStorage());
             copyContour.PushMulti(sourceContour.ToArray(), Emgu.CV.CvEnum.BACK_OR_FRONT.BACK);
             return copyContour;
+        }
+
+
+
+
+        public static PointD MassCenter(this Contour<Point> theContour)
+        {
+            Image<Gray, byte> tmpImg = new Image<Gray, byte>(theContour.BoundingRectangle.Right,
+                theContour.BoundingRectangle.Bottom);
+            tmpImg.Draw(theContour, white, 0);
+            MCvMoments moments = tmpImg.GetMoments(true);
+            double cx = moments.m10/moments.m00;
+            double cy = moments.m01/moments.m00;
+            return new PointD(cx, cy);
         }
 
     }
