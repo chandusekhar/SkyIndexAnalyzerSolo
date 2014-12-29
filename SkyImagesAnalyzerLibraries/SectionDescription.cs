@@ -45,6 +45,19 @@ namespace SkyImagesAnalyzerLibraries
         }
 
 
+
+
+
+        public SectionDescription(PointD in_p0, DenseVector in_direction, bool in_fromMarginToMargin)
+        {
+            fromMarginToMargin = in_fromMarginToMargin;
+            p0 = in_p0;
+            direction = in_direction;
+        }
+
+
+
+
         public SectionDescription TransformTillMargins(Rectangle imageMarginsRect)
         {
             LineDescription lDesc = new LineDescription(p0, direction);

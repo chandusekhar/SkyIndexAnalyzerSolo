@@ -133,29 +133,13 @@ namespace SkyImagesAnalyzerLibraries
 
         public static bool ContainsContourInside(this Contour<Point> testingContour, Contour<Point> sampleContour)
         {
-            Rectangle rTestingRect = testingContour.BoundingRectangle;
-            Rectangle rSampleRect = sampleContour.BoundingRectangle;
-            Point pMin = new Point(Math.Min(rTestingRect.Location.X, rSampleRect.Location.X),
-                Math.Min(rTestingRect.Location.Y, rSampleRect.Location.Y));
-            int xMax = Math.Max(rTestingRect.Right, rSampleRect.Right);
-            int yMax = Math.Max(rTestingRect.Bottom, rSampleRect.Bottom);
-            Size theSize = new Size(xMax - pMin.X, yMax - pMin.Y);
-            Rectangle minContainingRect = new Rectangle(pMin, theSize);
+            List<Point> lpointsOfSampleContour = new List<Point>(sampleContour.ToArray());
+            return lpointsOfSampleContour.TrueForAll(pt => (testingContour.InContour(new PointF(pt.X, pt.Y)) >= 0.0d));
 
-            Image<Gray, byte> testImg = new Image<Gray, byte>(theSize);
-            Contour<Point> testingContourShifted = testingContour.CopyWithTransform(pt =>
-            {
-                return pt - new Size(pMin);
-            });
-            Contour<Point> sampleContourShifted = sampleContour.CopyWithTransform(pt =>
-            {
-                return pt - new Size(pMin);
-            });
-
-            Contour<Point> intersectionContour = testingContourShifted.Intersection(sampleContourShifted);
-            if (intersectionContour == null) return false;
-            if (intersectionContour.Area < sampleContourShifted.Area) return false;
-            return true;
+            //Contour<Point> intersectionContour = testingContour.Intersection(sampleContour);
+            //if (intersectionContour == null) return false;
+            //if (intersectionContour.Area < sampleContour.Area) return false;
+            //return true;
         }
 
 
@@ -168,10 +152,12 @@ namespace SkyImagesAnalyzerLibraries
             int right = Math.Max(c1Rect.Right, c2Rect.Right);
             int bttm = Math.Max(c1Rect.Bottom, c2Rect.Bottom);
             Image<Gray, byte> img1 = new Image<Gray, byte>(new Size(right, bttm));
-            img1.Draw(c1, new Gray(255), 0);
+            img1.Draw(c1, white, -1);
             Image<Gray, byte> img2 = new Image<Gray, byte>(new Size(right, bttm));
-            img2.Draw(c2, new Gray(255), 0);
+            img2.Draw(c2, white, -1);
             img1 = img1.And(img2);
+            //img1 = img1.ThresholdBinary(new Gray(150), white);
+
 
             Contour<Point> contoursDetected =
                 img1.FindContours(Emgu.CV.CvEnum.CHAIN_APPROX_METHOD.CV_CHAIN_APPROX_SIMPLE,
@@ -182,25 +168,25 @@ namespace SkyImagesAnalyzerLibraries
 
 
 
-        public static Contour<Point> CopyWithTransform(this Contour<Point> sourceContour, Func<Point, Point> transform)
-        {
-            Contour<Point> copyContourTransformed = new Contour<Point>(new MemStorage());
-            foreach (Point pt in sourceContour)
-            {
-                Point ptTransformed = transform(pt);
-                copyContourTransformed.Push(ptTransformed);
-            }
-            return copyContourTransformed;
-        }
+        //public static Contour<Point> CopyWithTransform(this Contour<Point> sourceContour, Func<Point, Point> transform)
+        //{
+        //    MemStorage stor = new MemStorage();
+        //    Contour<Point> cpContour = new Contour<Point>(stor);
+        //    List<Point> lPointsToPush = new List<Point>();
+        //    foreach (Point pt in sourceContour) lPointsToPush.Add(transform(pt));
+        //    cpContour.PushMulti(lPointsToPush.ToArray(), Emgu.CV.CvEnum.BACK_OR_FRONT.BACK);
+        //    Contour<Point> copyContourTransformed = new Contour<Point>(0, stor);
+        //    return copyContourTransformed;
+        //}
 
 
 
-        public static Contour<Point> Copy(this Contour<Point> sourceContour)
-        {
-            Contour<Point> copyContour = new Contour<Point>(new MemStorage());
-            copyContour.PushMulti(sourceContour.ToArray(), Emgu.CV.CvEnum.BACK_OR_FRONT.BACK);
-            return copyContour;
-        }
+        //public static Contour<Point> Copy(this Contour<Point> sourceContour)
+        //{
+        //    Contour<Point> copyContour = new Contour<Point>(new MemStorage());
+        //    copyContour.PushMulti(sourceContour.ToArray(), Emgu.CV.CvEnum.BACK_OR_FRONT.BACK);
+        //    return copyContour;
+        //}
 
 
 

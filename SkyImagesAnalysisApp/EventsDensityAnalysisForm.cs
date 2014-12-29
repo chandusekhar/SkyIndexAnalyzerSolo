@@ -10,7 +10,9 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using Emgu.CV;
+using Emgu.CV.CvEnum;
 using Emgu.CV.Structure;
+using Emgu.CV.Util;
 using ILNumerics;
 using ILNumerics.Drawing;
 using ILNumerics.Drawing.Plotting;
@@ -35,6 +37,7 @@ namespace SkyImagesAnalyzer
         public DenseMatrix dmDensityMeshXcoord = null;
         public DenseMatrix dmDensityMeshYcoord = null;
         public int kernelHalfLength = 10;
+        public int maxClustersCount = 4;
 
         public double minXval;
         public double maxXval;
@@ -72,51 +75,14 @@ namespace SkyImagesAnalyzer
             maxYval = maxXval;
             CalculateDensityMesh();
 
-            // сгладить гауссом или косинусом
-            double maxL = ((double)kernelHalfLength) * Math.Sqrt(2.0d);
-            DenseMatrix dmKernel = DenseMatrix.Create(2 * kernelHalfLength + 1, 2 * kernelHalfLength + 1, (r, c) =>
-            {
-                double curDist =
-                    (new PointD(r - (double)kernelHalfLength, c - (double)kernelHalfLength)).Distance(new PointD(0.0d, 0.0d));
-                return Math.Cos(curDist * Math.PI / (2.0d * maxL));
-            });
-
-            DenseMatrix dmSmoothed = dmDensityMesh.Conv2(dmKernel);
-            dmDensityMesh = dmSmoothed.Copy();
-            ArithmeticsOnImages aoi = new ArithmeticsOnImages();
-            aoi.dmY = dmDensityMesh;
-            aoi.ExprString = "grad5p(Y)";
-            aoi.RPNeval(true);
-            List<DenseMatrix> lDMGradField = aoi.lDMRes;
-
-            //imageConditionAndData imgdt1 = new imageConditionAndData(dmSmoothed, null);
-            //imgdt1.currentColorScheme = new ColorScheme("");
-            //imgdt1.currentColorSchemeRuler = new ColorSchemeRuler(imgdt1.currentColorScheme);
-            //imgdt1.currentColorSchemeRuler.imgToRule = imgdt1;
-            //imgdt1.currentColorSchemeRuler.IsMarginsFixed = false;
-            //imgdt1.UpdateColorSchemeRuler();
-            //ImageConditionAndDataRepresentingForm f1 = new ImageConditionAndDataRepresentingForm(imgdt1);
-            //f1.Show();
-
-
-            //if (ServiceTools.CheckIfDirectoryExists(strOutputDirectory + "dmDensityMeshDataSmoothed.nc"))
-            //{
-            //    dmSmoothed.SaveNetCDFdataMatrix(strOutputDirectory + "dmDensityMeshData.nc");
-            //}
-
+            
+            
 
             ILScene scene = new ILScene();
-            //ILGroup ilgr1 = new ILGroup(translate: new Vector3(.6f, 0, 0), scale: new Vector3(.6f, .8f, .8f),
-            //    rotateAxis: new Vector3(1, 1, 0), angle: .1);
-            //ilgr1.Children.Add(Shapes.Gear15);
-            //ilgr1.Children.Add(Shapes.Gear15Wireframe);
-            //ilgr1.Alpha = 0.08f;
-            //scene.Add(ilgr1);
-
             currSurfPlotCube = new ILPlotCube();
             currSurfPlotCube.TwoDMode = false;
 
-            ILInArray<double> ilaDataMeshToShow = dmSmoothed.ToArray();
+            ILInArray<double> ilaDataMeshToShow = dmDensityMesh.ToArray();
             ILInArray<double> ilaXvalues = dmDensityMeshXcoord.Row(0).ToArray();
             ILInArray<double> ilaYvalues = dmDensityMeshYcoord.Column(0).ToArray();
 
@@ -125,16 +91,7 @@ namespace SkyImagesAnalyzer
             surf.Colormap = Colormaps.ILNumerics;
             surf.Children.Add(new ILColorbar());
 
-            //DenseMatrix dmplaneData = DenseMatrix.Create(dmSmoothed.RowCount, dmSmoothed.ColumnCount,
-            //    (dmSmoothed.Values.Max() + dmSmoothed.Values.Min())/2.0d);
-            //ILInArray<double> ilArrPlaneData = dmplaneData.ToArray();
-            //ilaXvalues = dmDensityMeshXcoord.Row(0).ToArray();
-            //ilaYvalues = dmDensityMeshYcoord.Column(0).ToArray();
-            //ILSurface plane = new ILSurface(ilArrPlaneData, ilaXvalues, ilaYvalues);
-
-
             currSurfPlotCube.Children.Add(surf);
-            //currSurfPlotCube.Children.Add(plane);
             currSurfPlotCube.Rotation = Matrix4.Rotation(new Vector3(1, 0, 0), 1.2f) *
                                 Matrix4.Rotation(new Vector3(0, 0, 1), Math.PI);
             currSurfPlotCube.Projection = Projection.Perspective;
@@ -143,124 +100,9 @@ namespace SkyImagesAnalyzer
 
             ilPanel1.Scene = scene;
 
-
-
-
-
-            // отфильтровать малые значения - ?
-
-            // выделить классы
-
-            List<ConnectedObjectsAtASlice> lSlicesData = new List<ConnectedObjectsAtASlice>();
-            double dthresholdingMaxValue = dmSmoothed.Values.Max();
-            double dthresholdingMinValue = dmSmoothed.Values.Min();
-            double dthresholdingDiscrete = (dthresholdingMaxValue - dthresholdingMinValue) / 20.0d;
-            for (double dThresholding = dthresholdingMaxValue; dThresholding >= dthresholdingMinValue; dThresholding -= dthresholdingDiscrete)
-            {
-                ConnectedObjectsAtASlice corrSliceObj = new ConnectedObjectsAtASlice(dmSmoothed, dmDensityMeshXcoord,
-                    dmDensityMeshYcoord, dThresholding);
-                corrSliceObj.DetectConnectedObjects();
-                //ServiceTools.ShowPicture(corrSliceObj.previewImage,
-                //    "thresholding value = " + dThresholding.ToString("e"));
-                lSlicesData.Add(corrSliceObj);
-            }
-
-            List<Contour<Point>> foundClassesContours = new List<Contour<Point>>();
-            ConnectedObjectsAtASlice prevSlice = lSlicesData[0];
-            foundClassesContours.AddRange(prevSlice.edgeContoursList);
-            foreach (ConnectedObjectsAtASlice currSlice in lSlicesData)
-            {
-                if (lSlicesData.IndexOf(currSlice) == 0) continue; // самый верхний пропускаем
-
-                List<Tuple<Contour<Point>, Contour<Point>>> currSliceCoveringContours =
-                    new List<Tuple<Contour<Point>, Contour<Point>>>();
-                //item1 - внутренний, из предыдущего слайса
-                //item2 - внешний, из текущего слайса
-
-                foreach (Contour<Point> caughtCont in foundClassesContours)
-                {
-                    Contour<Point> coveringCaughtCont = currSlice.FindContourContainingSample(caughtCont);
-                    currSliceCoveringContours.Add(new Tuple<Contour<Point>, Contour<Point>>(caughtCont,
-                        coveringCaughtCont));
-                }
-
-                // что делать, если какой-нибудь новый контур покрывает больше одного предыдущего
-                List<IGrouping<Contour<Point>, Tuple<Contour<Point>, Contour<Point>>>> groups =
-                    new List<IGrouping<Contour<Point>, Tuple<Contour<Point>, Contour<Point>>>>
-                        (currSliceCoveringContours.GroupBy(tpl => tpl.Item2));
-                if (groups.Count(grp => (grp.Count() > 1)) > 0)
-                {
-                    // есть контуры текущего среза, которые содержат более одного контура предыдущего среза
-                    foreach (IGrouping<Contour<Point>, Tuple<Contour<Point>, Contour<Point>>> currGroup in groups)
-                    {
-                        if (currGroup.Count() == 1)
-                        {
-                            Tuple<Contour<Point>, Contour<Point>> contourTuple = currGroup.First();
-                            foundClassesContours.Remove(contourTuple.Item1);
-                            foundClassesContours.Add(contourTuple.Item2);
-                        }
-                        else
-                        {
-                            // currGroup - группа кортежей контуров, где
-                            //              item1 - внутренний, из предыдущего слайса
-                            //              item2 - внешний, из текущего слайса
-                            // надо точки, которые лежат вне контуров предыдущего слайса отнести к "своим" контурам
-                            // попробуем по направлению градиента - относить точку к тому контуру, на который укажет вектор градиента
-                            Contour<Point> currCoveringContour = currGroup.Key; // item2 - внешний, из текущего слайса - см.строку группировки
-
-                            Image<Gray, byte> tmpImg1 =
-                                new Image<Gray, byte>(new Size(currCoveringContour.BoundingRectangle.Right,
-                                    currCoveringContour.BoundingRectangle.Bottom));
-                            tmpImg1.Draw(currCoveringContour, white, 0);
-                            foreach (Tuple<Contour<Point>, Contour<Point>> tpl in currGroup)
-                            {
-                                Contour<Point> excludingCntr = tpl.Item1;
-                                Image<Gray, byte> tmpExcl = tmpImg1.CopyBlank();
-                                tmpExcl.Draw(excludingCntr, white, 0);
-                                tmpImg1 = tmpImg1 - tmpExcl;
-                            }
-                            // в картинке tmpImg1 закрашенными остались только точки, которые надо классифицировать
-                            List<Point> lPointsToClassify = new List<Point>();
-                            
-                            for (int x = 0; x < tmpImg1.Width; x++)
-                            {
-                                for (int y = 0; y < tmpImg1.Height; y++)
-                                {
-                                    Point currPt = new Point(x, y);
-                                    if (tmpImg1[currPt].Equals(white))
-                                    {
-                                        lPointsToClassify.Add(currPt);
-                                    }
-                                }
-                            }
-
-                            foreach (Point currPtToClassify in lPointsToClassify)
-                            {
-                                AttachPointToOneOfConcurrentContours(currGroup.ElementAt(0).Item1,
-                                    currGroup.ElementAt(0).Item2, currPtToClassify, lDMGradField);
-
-                            }
-                        }
-                    }
-                }
-                else
-                {
-                    foreach (Tuple<Contour<Point>, Contour<Point>> contourTuple in currSliceCoveringContours)
-                    {
-                        foundClassesContours.Remove(contourTuple.Item1);
-                        foundClassesContours.Add(contourTuple.Item2);
-                    }
-                }
-            }
-
-
-
-
-            // записать данные по классам
-
+            
+            Clusterize();
         }
-
-
 
 
 
@@ -291,7 +133,235 @@ namespace SkyImagesAnalyzer
 
             dmDensityMesh = (DenseMatrix)dmDensityMesh.Divide(dmDensityMesh.Values.Sum());
 
+
+            // сгладить гауссом или косинусом
+            double maxL = ((double)kernelHalfLength) * Math.Sqrt(2.0d);
+            DenseMatrix dmKernel = DenseMatrix.Create(2 * kernelHalfLength + 1, 2 * kernelHalfLength + 1, (r, c) =>
+            {
+                double curDist =
+                    (new PointD(r - (double)kernelHalfLength, c - (double)kernelHalfLength)).Distance(new PointD(0.0d, 0.0d));
+                return Math.Cos(curDist * Math.PI / (2.0d * maxL));
+            });
+
+
+            DenseMatrix dmSmoothed = dmDensityMesh.Conv2(dmKernel);
+            dmDensityMesh = dmSmoothed.Copy();
         }
+
+
+
+
+
+
+        public void Clusterize()
+        {
+            ArithmeticsOnImages aoi = new ArithmeticsOnImages();
+            aoi.dmY = dmDensityMesh;
+            aoi.ExprString = "grad5p(Y)";
+            aoi.RPNeval(true);
+            List<DenseMatrix> lDMGradField = aoi.lDMRes;
+
+
+            DenseMatrix dmMask = dmDensityMesh.Copy();
+            dmMask.MapIndexedInplace((r, c, dVal) =>
+            {
+                // r = y - perc5
+                // c = x - median
+                if (r > c) return 0.0d;
+                else return 1.0d;
+            });
+            Image<Gray, Byte> imgMask = ImageProcessing.grayscaleImageFromDenseMatrixWithFixedValuesBounds(dmMask, 0.0d, 1.0d);
+            imgMask = imgMask.Flip(FLIP.VERTICAL);
+
+
+
+            // отфильтровать малые значения - ?
+
+            // выделить классы
+
+            List<ConnectedObjectsAtASlice> lSlicesData = new List<ConnectedObjectsAtASlice>();
+            double dthresholdingMaxValue = dmDensityMesh.Values.Max();
+            //double dthresholdingMinValue = dmSmoothed.Values.Min();
+            double dthresholdingMinValue = 0.0d;
+            double dthresholdingDiscrete = (dthresholdingMaxValue - dthresholdingMinValue) / 30.0d;
+            for (double dThresholding = dthresholdingMaxValue; dThresholding > dthresholdingMinValue - dthresholdingDiscrete; dThresholding -= dthresholdingDiscrete)
+            {
+                ConnectedObjectsAtASlice corrSliceObj = new ConnectedObjectsAtASlice(dmDensityMesh, dmDensityMeshXcoord,
+                    dmDensityMeshYcoord, dThresholding);
+                corrSliceObj.DetectConnectedObjects();
+                //ServiceTools.ShowPicture(corrSliceObj.previewImage, "thresholding value = " + dThresholding.ToString("e"));
+                lSlicesData.Add(corrSliceObj);
+            }
+
+            List<Contour<Point>> foundClassesContours = new List<Contour<Point>>();
+            ConnectedObjectsAtASlice prevSlice = lSlicesData[0];
+            foundClassesContours.AddRange(prevSlice.edgeContoursList);
+
+            foreach (ConnectedObjectsAtASlice currSlice in lSlicesData)
+            {
+                if (lSlicesData.IndexOf(currSlice) == 0) continue; // самый верхний пропускаем
+                
+                List<Tuple<Contour<Point>, Contour<Point>>> currSliceCoveringContours =
+                    new List<Tuple<Contour<Point>, Contour<Point>>>();
+                //item1 - внутренний, из предыдущего слайса
+                //item2 - внешний, из текущего слайса
+
+                foreach (Contour<Point> caughtCont in foundClassesContours)
+                {
+                    Contour<Point> coveringCaughtCont = currSlice.FindContourContainingSample(caughtCont);
+                    currSliceCoveringContours.Add(new Tuple<Contour<Point>, Contour<Point>>(caughtCont,
+                        coveringCaughtCont));
+                }
+
+                // добавим контуры, которые только что появились и раньше не были видны на срезах
+                // но только если количество допустимых клатеров еще позволяет
+                // Иначе - будем ждать, когда они вольются в в какой-нибудь из вновь расширившихся контуров
+                foreach (Contour<Point> newContour in currSlice.edgeContoursList)
+                {
+                    if ((currSliceCoveringContours.Find(tpl => (tpl.Item2 == newContour)) == null) && (currSliceCoveringContours.Count() < maxClustersCount))
+                    {
+                        currSliceCoveringContours.Add(new Tuple<Contour<Point>, Contour<Point>>(newContour, newContour));
+                    }
+                }
+
+                // что делать, если какой-нибудь новый контур покрывает больше одного предыдущего
+                List<IGrouping<Contour<Point>, Tuple<Contour<Point>, Contour<Point>>>> groups =
+                    new List<IGrouping<Contour<Point>, Tuple<Contour<Point>, Contour<Point>>>>
+                        (currSliceCoveringContours.GroupBy(tpl => tpl.Item2));
+                if (groups.Count(grp => (grp.Count() > 1)) > 0)
+                {
+                    // есть контуры текущего среза, которые содержат более одного контура предыдущего среза
+                    foreach (IGrouping<Contour<Point>, Tuple<Contour<Point>, Contour<Point>>> currGroup in groups)
+                    {
+                        if (currGroup.Count() == 1)
+                        {
+                            Tuple<Contour<Point>, Contour<Point>> contourTuple = currGroup.First();
+                            foundClassesContours.Remove(contourTuple.Item1);
+                            foundClassesContours.Add(contourTuple.Item2);
+                        }
+                        else
+                        {
+                            // currGroup - группа кортежей контуров, где
+                            //              item1 - внутренний, из предыдущего слайса
+                            //              item2 - внешний, из текущего слайса
+                            // надо точки, которые лежат вне контуров предыдущего слайса отнести к "своим" контурам
+                            // попробуем по направлению градиента - относить точку к тому контуру, на который укажет вектор градиента
+                            Contour<Point> currCoveringContour = currGroup.Key; // item2 - внешний, из текущего слайса - см.строку группировки
+
+                            Image<Gray, byte> tmpImg1 =
+                                new Image<Gray, byte>(new Size(currCoveringContour.BoundingRectangle.Right,
+                                    currCoveringContour.BoundingRectangle.Bottom));
+                            tmpImg1.Draw(currCoveringContour, white, -1);
+                            foreach (Tuple<Contour<Point>, Contour<Point>> tpl in currGroup)
+                            {
+                                Contour<Point> excludingCntr = tpl.Item1;
+                                Image<Gray, byte> tmpExcl = tmpImg1.CopyBlank();
+                                tmpExcl.Draw(excludingCntr, white, -1);
+                                tmpImg1 = tmpImg1 - tmpExcl;
+                            }
+                            // в картинке tmpImg1 закрашенными остались только точки, которые надо классифицировать
+                            List<Point> lPointsToClassify = new List<Point>();
+
+                            for (int x = 0; x < tmpImg1.Width; x++)
+                            {
+                                for (int y = 0; y < tmpImg1.Height; y++)
+                                {
+                                    Point currPt = new Point(x, y);
+                                    if (tmpImg1[currPt].Equals(white))
+                                    {
+                                        lPointsToClassify.Add(currPt);
+                                    }
+                                }
+                            }
+
+                            List<List<Point>> llArraysOfPointsAdding = new List<List<Point>>();
+                            foreach (Tuple<Contour<Point>, Contour<Point>> tpl in currGroup)
+                            {
+                                llArraysOfPointsAdding.Add(new List<Point>());
+                            }
+
+                            foreach (Point currPtToClassify in lPointsToClassify)
+                            {
+                                int cntrToAddPointTo = AttachPointToOneOfConcurrentContours(
+                                    (new List<Tuple<Contour<Point>, Contour<Point>>>(currGroup.ToArray())).ConvertAll(
+                                        tpl => tpl.Item1), currPtToClassify, lDMGradField);
+                                if (cntrToAddPointTo == -1) continue;
+                                else
+                                {
+                                    llArraysOfPointsAdding[cntrToAddPointTo].Add(currPtToClassify);
+                                }
+                            }
+                            // распределили. теперь надо сформировать новые контуры - с учетом добавленных точек.
+                            List<Image<Gray, byte>> lImagesToDetectNewContours = new List<Image<Gray, byte>>();
+                            foreach (Tuple<Contour<Point>, Contour<Point>> tpl in currGroup)
+                            {
+                                Image<Gray, byte> tmpImgCurrCont = tmpImg1.CopyBlank();
+                                tmpImgCurrCont.Draw(tpl.Item1, white, -1);
+                                lImagesToDetectNewContours.Add(tmpImgCurrCont);
+                            }
+                            for (int cntIdx = 0; cntIdx < currGroup.Count(); cntIdx++)
+                            {
+                                foreach (Point pt in llArraysOfPointsAdding[cntIdx])
+                                {
+                                    lImagesToDetectNewContours[cntIdx][pt.Y, pt.X] = white;
+                                }
+                                Contour<Point> cnt1 =
+                                    lImagesToDetectNewContours[cntIdx].FindContours(
+                                        Emgu.CV.CvEnum.CHAIN_APPROX_METHOD.CV_CHAIN_APPROX_SIMPLE,
+                                        Emgu.CV.CvEnum.RETR_TYPE.CV_RETR_LIST);
+                                //найдем наибольший из получившихся контуров
+                                List<Contour<Point>> lTmpCtrs = new List<Contour<Point>>();
+                                while (true)
+                                {
+                                    lTmpCtrs.Add(cnt1);
+                                    cnt1 = cnt1.HNext;
+                                    if (cnt1 == null)
+                                        break;
+                                }
+
+                                foundClassesContours.Remove(currGroup.ElementAt(cntIdx).Item1);
+                                double maxArea = lTmpCtrs.Max(cntr => cntr.Area);
+                                int idxOfMaxAreaContour = lTmpCtrs.FindIndex(cntr => cntr.Area == maxArea);
+                                foundClassesContours.Add(lTmpCtrs[idxOfMaxAreaContour]);
+                            }
+                        }
+                    }
+                }
+                else
+                {
+                    foreach (Tuple<Contour<Point>, Contour<Point>> contourTuple in currSliceCoveringContours)
+                    {
+                        foundClassesContours.Remove(contourTuple.Item1);
+                        foundClassesContours.Add(contourTuple.Item2);
+                    }
+                }
+                theLogWindow = ServiceTools.LogAText(theLogWindow,
+                    "processing thresholding value = " + currSlice.slicingThresholdingValue, true);
+            }
+
+
+            theLogWindow = ServiceTools.LogAText(theLogWindow,
+                    Environment.NewLine +
+                    "========" + Environment.NewLine +
+                    "FINISHED" + Environment.NewLine +
+                    "========" + Environment.NewLine, true);
+
+            Image<Gray, Byte> imgDataBinary = ImageProcessing.grayscaleImageFromDenseMatrixWithFixedValuesBounds(dmDensityMesh, 0.0d, 1.0d);
+            Image<Bgr, byte> previewImage = imgDataBinary.CopyBlank().Convert<Bgr, Byte>();
+            var colorGen = new RandomPastelColorGenerator();
+            foreach (Contour<Point> currCntr in foundClassesContours)
+            {
+                Color currentColor = colorGen.GetNext();
+                var currentColorBgr = new Bgr(currentColor);
+                previewImage.Draw(currCntr, currentColorBgr, -1);
+            }
+            previewImage = previewImage.And(imgMask.Convert<Bgr, byte>());
+            ServiceTools.ShowPicture(previewImage, "");
+
+
+            // записать данные по классам
+        }
+
 
 
 
@@ -311,59 +381,138 @@ namespace SkyImagesAnalyzer
 
 
 
-        private void AttachPointToOneOfConcurrentContours(Contour<Point> c1, Contour<Point> c2, Point pt, List<DenseMatrix> dmGradField)
+        private int AttachPointToOneOfConcurrentContours(List<Contour<Point>> contours, Point thePoint, List<DenseMatrix> dmGradField)
         {
             // density field should be defined
-            if (dmDensityMesh == null) return;
-            PointD ptdMassCenter1 = c1.MassCenter();
-            PointD ptdMassCenter2 = c2.MassCenter();
+            if (dmDensityMesh == null) return -1;
 
-            DenseVector lineConnectingMassCentersDirection = DenseVector.Create(2, i =>
-            {
-                if (i == 0)// x
-                    return
-                        (ptdMassCenter2.X - ptdMassCenter1.X)/PointD.Distance(ptdMassCenter1, ptdMassCenter2);
-                else if (i == 1)
-                    return
-                        (ptdMassCenter2.Y - ptdMassCenter1.Y)/PointD.Distance(ptdMassCenter1, ptdMassCenter2);
-                else return 0.0d;
-            });
-            DenseVector lineConnectingMassCentersDirectionOrthogonal = DenseVector.Create(2,
-                i => (i == 0) ? (lineConnectingMassCentersDirection[1]) : (-lineConnectingMassCentersDirection[0]));
+            PointD thePointD = new PointD(thePoint);
 
-            LineDescription lineConnectingMassCenters = new LineDescription(ptdMassCenter1,
-                lineConnectingMassCentersDirection);
-            LineDescription lineOrthogonalThroughSamplePt = new LineDescription(new PointD(pt),
-                lineConnectingMassCentersDirectionOrthogonal);
-            SectionDescription sect = new SectionDescription(new PointD(pt),
-                LineDescription.CrossPoint(lineConnectingMassCenters, lineOrthogonalThroughSamplePt), true);
-            sect = sect.TransformTillMargins(new Rectangle(0, 0, dmGradField[0].ColumnCount, dmGradField[0].RowCount));
-            PointD pCross1 = sect.p1;
-            PointD pCross2 = sect.p2;
+            // если точка внутри многоугольника, составленного центрами масс уже имеющихся кластеров - посмотрим, куда смотрит градиент.
+            DenseVector dvGradVect = DenseVector.Create(2, i => dmGradField[i][thePoint.Y, thePoint.X]);
+            List<PointD> lPtdMassCenters = contours.ConvertAll(cntr => cntr.MassCenter());
+            Contour<Point> themassCentersPolygon = new Contour<Point>(new MemStorage());
+            themassCentersPolygon.PushMulti(lPtdMassCenters.ConvertAll<Point>(ptd => ptd.Point()).ToArray(),
+                BACK_OR_FRONT.BACK);
+            //if (contours.Count == 2)
+            //{
+            //    // return AttachPointToOneOf_TWO_ConcurrentContours(contours, thePoint, dmGradField);
+            //    List<double> lDistances = contours.ConvertAll(cntr =>
+            //    {
+            //        return -cntr.Distance(thePointD.PointF());
+            //    });
+            //    int minIdx = lDistances.IndexOf(lDistances.Min());
+            //    return minIdx;
+            //}
+            //else if (themassCentersPolygon.InContour(thePointD.PointF()) >= 0.0d)
+            //{
+            //    List<DenseVector> lDvDirectionVectorsToMassCenters = lPtdMassCenters.ConvertAll(ptdMassCenter =>
+            //    {
+            //        DenseVector dvDirection = DenseVector.Create(2, i =>
+            //        {
+            //            if (i == 0) return ptdMassCenter.X - thePointD.X;
+            //            if (i == 1) return ptdMassCenter.Y - thePointD.Y;
+            //            return 0.0d;
+            //        });
+            //        double dValue = Math.Sqrt(dvDirection[0] * dvDirection[0] + dvDirection[1] * dvDirection[1]);
+            //        dvDirection.MapInplace(d => d / dValue);
+            //        return dvDirection;
+            //    });
 
-            Contour<Point> wholeImageContour = new Contour<Point>(new MemStorage());
-            
-            wholeImageContour.Push(new Point(0, 0));
-            if (sect.p1.Y == 0.0d) wholeImageContour.Push(sect.p1.Point());
-            if (sect.p2.Y == 0.0d) wholeImageContour.Push(sect.p2.Point());
+            //    List<double> lDirectionsMostCloseCosValue =
+            //        lDvDirectionVectorsToMassCenters.ConvertAll(dvDirection => dvDirection * dvGradVect);
+            //    // максимальное значение соответствует минимальному углу - то, что надо
+            //    // только надо еще обработать ситуацию, когда два кластера примерно в одном направлении, - один за другим на линии градиента
+            //    int maxIdx = lDirectionsMostCloseCosValue.IndexOf(lDirectionsMostCloseCosValue.Max());
 
-            wholeImageContour.Push(new Point(dmGradField[0].RowCount, 0));
-            if (sect.p1.X == (double)dmGradField[0].ColumnCount) wholeImageContour.Push(sect.p1.Point());
-            if (sect.p2.X == (double)dmGradField[0].ColumnCount) wholeImageContour.Push(sect.p2.Point());
-
-            wholeImageContour.Push(new Point(dmGradField[0].RowCount, dmGradField[0].ColumnCount));
-            if (sect.p1.Y == (double)dmGradField[0].RowCount) wholeImageContour.Push(sect.p1.Point());
-            if (sect.p2.Y == (double)dmGradField[0].RowCount) wholeImageContour.Push(sect.p2.Point());
-
-            wholeImageContour.Push(new Point(0, dmGradField[0].ColumnCount));
-            if (sect.p1.X == 0.0d) wholeImageContour.Push(sect.p1.Point());
-            if (sect.p2.X == 0.0d) wholeImageContour.Push(sect.p2.Point());
-
-            MCvSlice theSlice = new MCvSlice(????????);
-            //wholeImageContour.Slice()
-
-
+            //    return maxIdx;
+            //}
+            //else
+            //{
+                // посчитаем расстояние до границ каждого из контуров. Для минимального - к нему и отнесем.
+                List<double> lDistances = contours.ConvertAll(cntr =>
+                {
+                    return -cntr.Distance(thePointD.PointF());
+                });
+                int minIdx = lDistances.IndexOf(lDistances.Min());
+                return minIdx;
+            //}
         }
+
+
+
+
+
+
+        //private int AttachPointToOneOf_TWO_ConcurrentContours(List<Contour<Point>> contours, Point thePoint, List<DenseMatrix> dmGradField)
+        //{
+        //    // density field should be defined
+        //    if (dmDensityMesh == null) return -1;
+        //    if (contours.Count != 2)
+        //    {
+        //        // этот метод не для таких ситуаций
+        //        throw new NotImplementedException();
+        //    }
+
+
+
+        //    PointD thePointD = new PointD(thePoint);
+        //    List<PointD> lPtdMassCenters = contours.ConvertAll(cntr => cntr.MassCenter());
+        //    DenseVector dvGradVect = DenseVector.Create(2, i => dmGradField[i][thePoint.Y, thePoint.X]);
+        //    // три варианта:
+        //    // 1,2. точка с одной из внешних сторон пары центров масс уже имеющихся кластеров
+        //    // 3. Точка между ними
+        //    DenseVector dvMassCentersConnectingLineVector = DenseVector.Create(2, i =>
+        //    {
+        //        if (i == 0) return (lPtdMassCenters[1].X - lPtdMassCenters[0].X);
+        //        if (i == 1) return (lPtdMassCenters[1].Y - lPtdMassCenters[0].Y);
+        //        else return 0.0d;
+        //    });
+        //    DenseVector dvMassCentersConnectingOrthogonal = DenseVector.Create(2,
+        //        i => (i == 0) ? (dvMassCentersConnectingLineVector[1]) : (-dvMassCentersConnectingLineVector[0]));
+
+
+        //    // если точка внутри многоугольника, составленного центрами масс уже имеющихся кластеров - посмотрим, куда смотрит градиент.
+            
+            
+        //    Contour<Point> themassCentersPolygon = new Contour<Point>(new MemStorage());
+        //    themassCentersPolygon.PushMulti(lPtdMassCenters.ConvertAll<Point>(ptd => ptd.Point()).ToArray(),
+        //        BACK_OR_FRONT.BACK);
+            
+        //    else if (themassCentersPolygon.InContour(thePointD.PointF()) >= 0.0d)
+        //    {
+        //        List<DenseVector> lDvDirectionVectorsToMassCenters = lPtdMassCenters.ConvertAll(ptdMassCenter =>
+        //        {
+        //            DenseVector dvDirection = DenseVector.Create(2, i =>
+        //            {
+        //                if (i == 0) return ptdMassCenter.X - thePointD.X;
+        //                if (i == 1) return ptdMassCenter.Y - thePointD.Y;
+        //                return 0.0d;
+        //            });
+        //            double dValue = Math.Sqrt(dvDirection[0] * dvDirection[0] + dvDirection[1] * dvDirection[1]);
+        //            dvDirection.MapInplace(d => d / dValue);
+        //            return dvDirection;
+        //        });
+
+        //        List<double> lDirectionsMostCloseCosValue =
+        //            lDvDirectionVectorsToMassCenters.ConvertAll(dvDirection => dvDirection * dvGradVect);
+        //        // максимальное значение соответствует минимальному углу - то, что надо
+        //        // только надо еще обработать ситуацию, когда два кластера примерно в одном направлении, - один за другим на линии градиента
+        //        int maxIdx = lDirectionsMostCloseCosValue.IndexOf(lDirectionsMostCloseCosValue.Max());
+
+        //        return maxIdx;
+        //    }
+        //    else
+        //    {
+        //        // посчитаем расстояние до границ каждого из контуров. Для минимального - к нему и отнесем.
+        //        List<double> lDistances = contours.ConvertAll(cntr =>
+        //        {
+        //            return -cntr.Distance(thePointD.PointF());
+        //        });
+        //        int minIdx = lDistances.IndexOf(lDistances.Min());
+        //        return minIdx;
+        //    }
+        //}
 
 
     }
@@ -428,19 +577,8 @@ namespace SkyImagesAnalyzer
 
         public Contour<Point> FindContourContainingSample(Contour<Point> sampleContour)
         {
-            foreach (Contour<Point> contour in edgeContoursList)
-            {
-                if (contour.ContainsContourInside(sampleContour))
-                {
-                    return contour;
-                }
-            }
-            return null;
+            return edgeContoursList.FirstOrDefault(contour => contour.ContainsContourInside(sampleContour));
         }
-
-
-
-
 
 
         private PointD CellPositionToPointD(int row, int column)
