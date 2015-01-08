@@ -438,7 +438,7 @@ namespace SkyImagesAnalyzerLibraries
                     {
                         foreach (PointD ptd in lPtdMarks)
                         {
-                            imgBgr.Draw(new CircleF(ptd.PointF(), 2.0f), new Bgr(Color.Red), 0);
+                            imgBgr.Draw(new CircleF(ptd.PointF(), 3.0f), new Bgr(Color.Magenta), 0);
                         }
                     }
 

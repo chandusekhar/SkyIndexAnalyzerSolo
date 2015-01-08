@@ -14,7 +14,7 @@
   </table>
   <table>
     <key>BatchProcessingDirectory</key>
-    <value>D:\_gulevlab\SkyIndexAnalyzerSolo_appData\images_complete\2007-polarstern\CanonA640\</value>
+    <value>D:\_gulevlab\SkyIndexAnalyzerSolo_appData\AI45-total\ID1\</value>
   </table>
   <table>
     <key>GermanCloudSkySeparationValue</key>
@@ -62,7 +62,7 @@
   </table>
   <table>
     <key>DefaultDataFilesLocation</key>
-    <value>D:\_gulevlab\SkyIndexAnalyzerSolo_appData\clustering-tests\images_complete-2007-polarstern-CanonA640\sorting\</value>
+    <value>D:\_gulevlab\SkyIndexAnalyzerSolo_appData\AI45-total\ID1\stats\</value>
   </table>
   <table>
     <key>GrIxDefaultSkyCloudMarginWithoutSun</key>
@@ -74,6 +74,6 @@
   </table>
   <table>
     <key>DefaultMedianPerc5StatsXMLFile</key>
-    <value>D:\_gulevlab\SkyIndexAnalyzerSolo_appData\clustering-tests\images_complete-2007-polarstern-CanonA640\median-perc5-stats.xml</value>
+    <value>D:\_gulevlab\SkyIndexAnalyzerSolo_appData\AI45-total\ID1\stats\statsWithFNames.xml</value>
   </table>
 </DataSet>

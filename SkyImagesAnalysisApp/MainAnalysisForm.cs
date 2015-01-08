@@ -2741,6 +2741,7 @@ namespace SkyImagesAnalyzer
             List<PointD> lPointsList = lStatsData.ConvertAll<PointD>(statsDatum => new PointD(statsDatum.GrIxStatsMedian, statsDatum.GrIxStatsPerc5));
             HeatMap hm = new HeatMap(lPointsList, 500);
             hm.SetEqualMeasures();
+            hm.SmoothDensityField(StandardConvolutionKernels.gauss);
             //hm.RepresentHeatMap();
 
 

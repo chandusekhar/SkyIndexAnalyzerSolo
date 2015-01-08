@@ -94,6 +94,16 @@ namespace SkyImagesAnalyzerLibraries
 
 
 
+
+        public void SmoothDensityField(StandardConvolutionKernels kernelType, int kernelHalfWidth = 10)
+        {
+            dmDensityMesh = dmDensityMesh.Conv2(kernelType, kernelHalfWidth);
+        }
+
+
+
+
+
         public void RepresentHeatMap()
         {
             if (currHeatMapData == null)
