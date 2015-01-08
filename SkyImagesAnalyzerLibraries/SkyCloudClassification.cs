@@ -371,7 +371,7 @@ namespace SkyImagesAnalyzerLibraries
 
 
 
-            string formulaString = "1 - sqrt((R*R+G*G+B*B)/3 - (R+G+B)*(R+G+B)/9) / Y";
+            string formulaString = "grix";
             //string formulaString = "1.0 - (1.0 + ((B-R)/(B+R)))/2.0";
             DenseMatrix dmProcessingData = (DenseMatrix)imgP.eval(formulaString, dmRedChannel, dmGreenChannel, dmBlueChannel, null).Clone();
             DenseMatrix dmMask = ImageProcessing.DenseMatrixFromImage(maskImage);
@@ -380,8 +380,8 @@ namespace SkyImagesAnalyzerLibraries
             //ImageConditionAndDataRepresentingForm originalDataForm = ServiceTools.RepresentDataFromDenseMatrix(dmProcessingData, "original 1-sigma/Y data");
 
 
-            #region
-            //надо отобразить положение снимка в пространстве 5perc-median. Исходную картинку с распределением - брать готовую или генерировать?..
+            #region надо отобразить положение снимка в пространстве 5perc-median. Исходную картинку с распределением - брать готовую или генерировать?..
+
             #endregion
 
 
@@ -459,7 +459,7 @@ namespace SkyImagesAnalyzerLibraries
 
             BGWorkerReport("закончен поиск солнечного диска. применимость подавления засветки: " + theSunSuppressionSchemeApplicable.ToString());
 
-        //Mark1:
+        
             while (theSunSuppressionSchemeApplicable)
             {
                 BGWorkerReport("расположение солнечного диска: " + Environment.NewLine + sunRoundData.ToString());
@@ -700,7 +700,8 @@ namespace SkyImagesAnalyzerLibraries
 
                 //smoothe the distribution
                 DenseVector dvDataValues = DenseVector.OfEnumerable(distributionData);
-                DenseVector dvSmoothedDistribution = DataAnalysis.ExponentialMovingAverage(dvDataValues, 10, 0.4d);
+                //DenseVector dvSmoothedDistribution = DataAnalysis.ExponentialMovingAverage(dvDataValues, 10, 0.4d);
+                DenseVector dvSmoothedDistribution = dvDataValues.Conv(StandardConvolutionKernels.gauss, 10);
 
 
 
@@ -726,7 +727,8 @@ namespace SkyImagesAnalyzerLibraries
 
                 BGWorkerReport("аппроксимируем полученное распределение полиномом, МНК");
 
-                int polynomeOrder = 10;
+                // int polynomeOrder = 10;
+                int polynomeOrder = 6;
 
                 //DenseVector dvFixedPoints = DenseVector.Create(dvDataSpace.Count,
                 //    new Func<int, double>(i => (i == 0) ? (1.0d) : (double.NaN)));
@@ -793,7 +795,7 @@ namespace SkyImagesAnalyzerLibraries
                 }
 
 
-                //#region unconditional jump !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+                
                 if (dataMinimumsList.Count < 5)
                 {
                     theSunSuppressionSchemeApplicable = false;
@@ -803,10 +805,10 @@ namespace SkyImagesAnalyzerLibraries
                                               "Слишком нестабильный результат с подавлением засветки. Используем алгоритм без подавления. Case 01" +
                                               Environment.NewLine + "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
                     
-                    //goto Mark1;
+                    
                     break;
                 }
-                //#endregion unconditional jump !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+                
 
                 Func<DenseVector, double, double> theApproximatinFunction = new Func<DenseVector, double, double>(
                     (dvParameters, phi) =>
@@ -1567,7 +1569,7 @@ namespace SkyImagesAnalyzerLibraries
                 dmSkyIndexData = dmReversed;
                 localPreviewBitmap = previewImage.Bitmap;
 
-                //#region unconditional jump !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+                
                 if (Math.Abs(CloudCover - CloudCoverWithoutSunSuppression) > 0.7d)
                 //как-то очень неправильно определилось солнце и засветка - пересчитаем без подавления
                 {
@@ -1580,10 +1582,10 @@ namespace SkyImagesAnalyzerLibraries
                                               Environment.NewLine + "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
 
 
-                    //goto Mark1;
+                    
                     break;
                 }
-                //#endregion unconditional jump !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+                
                 break;
             }
 

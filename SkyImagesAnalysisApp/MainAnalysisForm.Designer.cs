@@ -59,14 +59,15 @@
             this.button2 = new System.Windows.Forms.Button();
             this.btnProperties = new System.Windows.Forms.Button();
             this.button3 = new System.Windows.Forms.Button();
-            this.btnTestMarginWithoutSun = new System.Windows.Forms.Button();
             this.btnAbout = new System.Windows.Forms.Button();
             this.btnTest1 = new System.Windows.Forms.Button();
             this.btnProcessDirectorySI = new System.Windows.Forms.Button();
             this.btnShowMedianPerc5Diagram = new System.Windows.Forms.Button();
             this.btnDensityProcessing = new System.Windows.Forms.Button();
+            this.btnSortImagesByClasses = new System.Windows.Forms.Button();
             this.bgwProcessDirectoryOfImages = new System.ComponentModel.BackgroundWorker();
             this.bgwSunDetectionOnly = new System.ComponentModel.BackgroundWorker();
+            this.btnTestSunDetection2015 = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.trackBar1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
@@ -288,12 +289,13 @@
             this.tableLayoutPanel1.Controls.Add(this.button2, 10, 0);
             this.tableLayoutPanel1.Controls.Add(this.btnProperties, 13, 0);
             this.tableLayoutPanel1.Controls.Add(this.button3, 10, 1);
-            this.tableLayoutPanel1.Controls.Add(this.btnTestMarginWithoutSun, 8, 0);
             this.tableLayoutPanel1.Controls.Add(this.btnAbout, 14, 0);
             this.tableLayoutPanel1.Controls.Add(this.btnTest1, 4, 19);
             this.tableLayoutPanel1.Controls.Add(this.btnProcessDirectorySI, 10, 19);
             this.tableLayoutPanel1.Controls.Add(this.btnShowMedianPerc5Diagram, 10, 3);
             this.tableLayoutPanel1.Controls.Add(this.btnDensityProcessing, 10, 5);
+            this.tableLayoutPanel1.Controls.Add(this.btnSortImagesByClasses, 4, 21);
+            this.tableLayoutPanel1.Controls.Add(this.btnTestSunDetection2015, 10, 9);
             this.tableLayoutPanel1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tableLayoutPanel1.Location = new System.Drawing.Point(0, 0);
             this.tableLayoutPanel1.Margin = new System.Windows.Forms.Padding(0);
@@ -518,21 +520,6 @@
             this.button3.UseVisualStyleBackColor = true;
             this.button3.Click += new System.EventHandler(this.button3_Click_1);
             // 
-            // btnTestMarginWithoutSun
-            // 
-            this.tableLayoutPanel1.SetColumnSpan(this.btnTestMarginWithoutSun, 2);
-            this.btnTestMarginWithoutSun.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.btnTestMarginWithoutSun.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnTestMarginWithoutSun.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnTestMarginWithoutSun.Location = new System.Drawing.Point(748, 4);
-            this.btnTestMarginWithoutSun.Margin = new System.Windows.Forms.Padding(4);
-            this.btnTestMarginWithoutSun.Name = "btnTestMarginWithoutSun";
-            this.btnTestMarginWithoutSun.Size = new System.Drawing.Size(178, 72);
-            this.btnTestMarginWithoutSun.TabIndex = 54;
-            this.btnTestMarginWithoutSun.Text = "Отладка без солнца";
-            this.btnTestMarginWithoutSun.UseVisualStyleBackColor = true;
-            this.btnTestMarginWithoutSun.Click += new System.EventHandler(this.btnTestMarginWithoutSun_Click);
-            // 
             // btnAbout
             // 
             this.btnAbout.Dock = System.Windows.Forms.DockStyle.Fill;
@@ -555,8 +542,8 @@
             this.btnTest1.Location = new System.Drawing.Point(372, 715);
             this.btnTest1.Margin = new System.Windows.Forms.Padding(0);
             this.btnTest1.Name = "btnTest1";
-            this.tableLayoutPanel1.SetRowSpan(this.btnTest1, 3);
-            this.btnTest1.Size = new System.Drawing.Size(558, 111);
+            this.tableLayoutPanel1.SetRowSpan(this.btnTest1, 2);
+            this.btnTest1.Size = new System.Drawing.Size(558, 66);
             this.btnTest1.TabIndex = 59;
             this.btnTest1.Text = "Collect statistics (5perc and Median valus over images set)";
             this.btnTest1.UseVisualStyleBackColor = true;
@@ -608,6 +595,20 @@
             this.btnDensityProcessing.UseVisualStyleBackColor = true;
             this.btnDensityProcessing.Click += new System.EventHandler(this.btnDensityProcessing_Click);
             // 
+            // btnSortImagesByClasses
+            // 
+            this.tableLayoutPanel1.SetColumnSpan(this.btnSortImagesByClasses, 6);
+            this.btnSortImagesByClasses.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.btnSortImagesByClasses.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnSortImagesByClasses.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.btnSortImagesByClasses.Location = new System.Drawing.Point(375, 784);
+            this.btnSortImagesByClasses.Name = "btnSortImagesByClasses";
+            this.btnSortImagesByClasses.Size = new System.Drawing.Size(552, 39);
+            this.btnSortImagesByClasses.TabIndex = 63;
+            this.btnSortImagesByClasses.Text = "Sort images by classes";
+            this.btnSortImagesByClasses.UseVisualStyleBackColor = true;
+            this.btnSortImagesByClasses.Click += new System.EventHandler(this.btnSortImagesByClasses_Click);
+            // 
             // bgwProcessDirectoryOfImages
             // 
             this.bgwProcessDirectoryOfImages.WorkerReportsProgress = true;
@@ -615,6 +616,21 @@
             this.bgwProcessDirectoryOfImages.DoWork += new System.ComponentModel.DoWorkEventHandler(this.backgroundWorker2_DoWork);
             this.bgwProcessDirectoryOfImages.ProgressChanged += new System.ComponentModel.ProgressChangedEventHandler(this.backgroundWorker2_ProgressChanged);
             this.bgwProcessDirectoryOfImages.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(this.backgroundWorker2_RunWorkerCompleted);
+            // 
+            // btnTestSunDetection2015
+            // 
+            this.tableLayoutPanel1.SetColumnSpan(this.btnTestSunDetection2015, 5);
+            this.btnTestSunDetection2015.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.btnTestSunDetection2015.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnTestSunDetection2015.Font = new System.Drawing.Font("Microsoft Sans Serif", 13.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.btnTestSunDetection2015.Location = new System.Drawing.Point(933, 347);
+            this.btnTestSunDetection2015.Name = "btnTestSunDetection2015";
+            this.tableLayoutPanel1.SetRowSpan(this.btnTestSunDetection2015, 2);
+            this.btnTestSunDetection2015.Size = new System.Drawing.Size(472, 60);
+            this.btnTestSunDetection2015.TabIndex = 64;
+            this.btnTestSunDetection2015.Text = "sun detection jan`2015";
+            this.btnTestSunDetection2015.UseVisualStyleBackColor = true;
+            this.btnTestSunDetection2015.Click += new System.EventHandler(this.btnTestSunDetection2015_Click);
             // 
             // MainAnalysisForm
             // 
@@ -678,13 +694,14 @@
         public System.Windows.Forms.RadioButton rbtnClassMethodGrIx;
         private System.Windows.Forms.Button btnProperties;
         private System.Windows.Forms.Button button3;
-        private System.Windows.Forms.Button btnTestMarginWithoutSun;
         private System.Windows.Forms.Button btnAbout;
         private System.ComponentModel.BackgroundWorker bgwSunDetectionOnly;
         private System.Windows.Forms.Button btnTest1;
         private System.Windows.Forms.Button btnProcessDirectorySI;
         private System.Windows.Forms.Button btnShowMedianPerc5Diagram;
         private System.Windows.Forms.Button btnDensityProcessing;
+        private System.Windows.Forms.Button btnSortImagesByClasses;
+        private System.Windows.Forms.Button btnTestSunDetection2015;
     }
 }
 

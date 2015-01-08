@@ -202,6 +202,18 @@ namespace SkyImagesAnalyzerLibraries
                     Point ptBottom = new Point(xCoordinateBinCenter, serviceSpaceGap);
                     theImage.Draw(new LineSegment2D(ptTop, ptBottom), colorGreen, 2);
                 }
+
+                double medianCenter = histToRepresent.Median;
+                int xCoordinateMedianCenter = Convert.ToInt32(serviceSpaceGap + (medianCenter - xSpaceMin) * koeffX);
+                Point ptMedianTop = new Point(xCoordinateMedianCenter, pictureHeight - serviceSpaceGap);
+                Point ptMedianBottom = new Point(xCoordinateMedianCenter, serviceSpaceGap);
+                theImage.Draw(new LineSegment2D(ptMedianTop, ptMedianBottom), colorRed, 2);
+
+                double perc5Center = histToRepresent.Perc5;
+                int xCoordinateperc5Center = Convert.ToInt32(serviceSpaceGap + (perc5Center - xSpaceMin) * koeffX);
+                Point ptPerc5Top = new Point(xCoordinateperc5Center, pictureHeight - serviceSpaceGap);
+                Point ptPerc5Bottom = new Point(xCoordinateperc5Center, serviceSpaceGap);
+                theImage.Draw(new LineSegment2D(ptPerc5Top, ptPerc5Bottom), colorRed, 2);
             }
             #endregion проставляем квантили, если надо
 
@@ -248,7 +260,8 @@ namespace SkyImagesAnalyzerLibraries
             }
 
             string str2Show = "[" + histToRepresent.description + "]" + Environment.NewLine;
-            str2Show += "color: " + histToRepresent.color.ToString() + Environment.NewLine;
+            //str2Show += "color: " + histToRepresent.color.ToString() + Environment.NewLine;
+            str2Show += "perc5 = " + histToRepresent.Perc5.ToString("e") + Environment.NewLine;
             str2Show += "median = " + histToRepresent.Median.ToString("e") + Environment.NewLine;
             str2Show += "mean = " + histToRepresent.stats.Mean.ToString("e") + Environment.NewLine;
             str2Show += "stdDev = " + histToRepresent.stats.StandardDeviation.ToString("e") + Environment.NewLine;

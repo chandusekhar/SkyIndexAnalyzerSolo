@@ -67,7 +67,7 @@
             this.tableLayoutPanel1.Controls.Add(this.btnSaveDataToFile, 2, 9);
             this.tableLayoutPanel1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tableLayoutPanel1.Location = new System.Drawing.Point(0, 0);
-            this.tableLayoutPanel1.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.tableLayoutPanel1.Margin = new System.Windows.Forms.Padding(4);
             this.tableLayoutPanel1.Name = "tableLayoutPanel1";
             this.tableLayoutPanel1.RowCount = 10;
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 16.66667F));
@@ -89,7 +89,7 @@
             this.tableLayoutPanel1.SetColumnSpan(this.pbHistRepresentation, 2);
             this.pbHistRepresentation.Dock = System.Windows.Forms.DockStyle.Fill;
             this.pbHistRepresentation.Location = new System.Drawing.Point(4, 105);
-            this.pbHistRepresentation.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.pbHistRepresentation.Margin = new System.Windows.Forms.Padding(4);
             this.pbHistRepresentation.Name = "pbHistRepresentation";
             this.tableLayoutPanel1.SetRowSpan(this.pbHistRepresentation, 9);
             this.pbHistRepresentation.Size = new System.Drawing.Size(910, 648);
@@ -126,7 +126,7 @@
             // 
             this.tbBinsCount.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tbBinsCount.Location = new System.Drawing.Point(1055, 105);
-            this.tbBinsCount.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.tbBinsCount.Margin = new System.Windows.Forms.Padding(4);
             this.tbBinsCount.Name = "tbBinsCount";
             this.tbBinsCount.Size = new System.Drawing.Size(125, 22);
             this.tbBinsCount.TabIndex = 3;
@@ -140,7 +140,7 @@
             this.tbStats.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tbStats.Font = new System.Drawing.Font("Microsoft Sans Serif", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this.tbStats.Location = new System.Drawing.Point(922, 354);
-            this.tbStats.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.tbStats.Margin = new System.Windows.Forms.Padding(4);
             this.tbStats.Multiline = true;
             this.tbStats.Name = "tbStats";
             this.tableLayoutPanel1.SetRowSpan(this.tbStats, 2);
@@ -155,7 +155,7 @@
             this.cbShowQuantiles.Dock = System.Windows.Forms.DockStyle.Fill;
             this.cbShowQuantiles.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this.cbShowQuantiles.Location = new System.Drawing.Point(922, 142);
-            this.cbShowQuantiles.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.cbShowQuantiles.Margin = new System.Windows.Forms.Padding(4);
             this.cbShowQuantiles.Name = "cbShowQuantiles";
             this.cbShowQuantiles.Size = new System.Drawing.Size(258, 29);
             this.cbShowQuantiles.TabIndex = 5;
@@ -180,7 +180,7 @@
             // 
             this.tbQuantilesCount.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tbQuantilesCount.Location = new System.Drawing.Point(1055, 179);
-            this.tbQuantilesCount.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.tbQuantilesCount.Margin = new System.Windows.Forms.Padding(4);
             this.tbQuantilesCount.Name = "tbQuantilesCount";
             this.tbQuantilesCount.Size = new System.Drawing.Size(125, 22);
             this.tbQuantilesCount.TabIndex = 7;
@@ -193,7 +193,7 @@
             this.panel1.Controls.Add(this.rbtnShowAsDots);
             this.panel1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.panel1.Location = new System.Drawing.Point(922, 4);
-            this.panel1.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.panel1.Margin = new System.Windows.Forms.Padding(4);
             this.panel1.Name = "panel1";
             this.panel1.Size = new System.Drawing.Size(258, 93);
             this.panel1.TabIndex = 10;
@@ -204,7 +204,7 @@
             this.rbtnShowAsBars.Checked = true;
             this.rbtnShowAsBars.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this.rbtnShowAsBars.Location = new System.Drawing.Point(5, 11);
-            this.rbtnShowAsBars.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.rbtnShowAsBars.Margin = new System.Windows.Forms.Padding(4);
             this.rbtnShowAsBars.Name = "rbtnShowAsBars";
             this.rbtnShowAsBars.Size = new System.Drawing.Size(180, 29);
             this.rbtnShowAsBars.TabIndex = 9;
@@ -218,7 +218,7 @@
             this.rbtnShowAsDots.AutoSize = true;
             this.rbtnShowAsDots.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this.rbtnShowAsDots.Location = new System.Drawing.Point(5, 48);
-            this.rbtnShowAsDots.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.rbtnShowAsDots.Margin = new System.Windows.Forms.Padding(4);
             this.rbtnShowAsDots.Name = "rbtnShowAsDots";
             this.rbtnShowAsDots.Size = new System.Drawing.Size(183, 29);
             this.rbtnShowAsDots.TabIndex = 8;
@@ -262,7 +262,7 @@
             this.ClientSize = new System.Drawing.Size(1184, 757);
             this.Controls.Add(this.tableLayoutPanel1);
             this.KeyPreview = true;
-            this.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.Margin = new System.Windows.Forms.Padding(4);
             this.Name = "HistogramCalcAndShowForm";
             this.Text = "HistogramCalcAndShowForm";
             this.Load += new System.EventHandler(this.HistogramCalcAndShowForm_Load);

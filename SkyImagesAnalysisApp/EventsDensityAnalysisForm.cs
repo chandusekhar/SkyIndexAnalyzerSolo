@@ -9,6 +9,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Xml.Serialization;
 using Emgu.CV;
 using Emgu.CV.CvEnum;
 using Emgu.CV.Structure;
@@ -44,11 +45,22 @@ namespace SkyImagesAnalyzer
         public double minYval;
         public double maxYval;
 
-        public List<PointD> lPtdMarks = new List<PointD>();
-
-        private imageConditionAndData currHeatMapData = null;
-
+        // public List<PointD> lPtdMarks = new List<PointD>();
+        // private imageConditionAndData currHeatMapData = null;
         private ILPlotCube currSurfPlotCube = null;
+        public Predicate<Point> conditionOnPoints = new Predicate<Point>(pt =>
+        {
+            return (pt.Y > pt.X) ? (false) : (true);
+        });
+        public List<Contour<Point>> foundClassesContours = new List<Contour<Point>>();
+
+
+
+        public EventsDensityAnalysisForm()
+        {
+            InitializeComponent();
+        }
+
 
 
         public EventsDensityAnalysisForm(List<PointD> lInPoints, Dictionary<string, object> properties, int inSpaceDiscretization = 512)
@@ -74,10 +86,14 @@ namespace SkyImagesAnalyzer
             maxXval = Math.Max(maxXval, maxYval);
             maxYval = maxXval;
             CalculateDensityMesh();
+        }
 
-            
-            
 
+
+
+
+        public void RepresentDensityField3D()
+        {
             ILScene scene = new ILScene();
             currSurfPlotCube = new ILPlotCube();
             currSurfPlotCube.TwoDMode = false;
@@ -89,7 +105,7 @@ namespace SkyImagesAnalyzer
             ILSurface surf = new ILSurface(ilaDataMeshToShow, ilaXvalues, ilaYvalues);
             surf.UseLighting = true;
             surf.Colormap = Colormaps.ILNumerics;
-            surf.Children.Add(new ILColorbar());
+            //surf.Children.Add(new ILColorbar());
 
             currSurfPlotCube.Children.Add(surf);
             currSurfPlotCube.Rotation = Matrix4.Rotation(new Vector3(1, 0, 0), 1.2f) *
@@ -99,10 +115,9 @@ namespace SkyImagesAnalyzer
             scene.Add(currSurfPlotCube);
 
             ilPanel1.Scene = scene;
-
-            
-            Clusterize();
         }
+
+
 
 
 
@@ -135,16 +150,16 @@ namespace SkyImagesAnalyzer
 
 
             // сгладить гауссом или косинусом
-            double maxL = ((double)kernelHalfLength) * Math.Sqrt(2.0d);
-            DenseMatrix dmKernel = DenseMatrix.Create(2 * kernelHalfLength + 1, 2 * kernelHalfLength + 1, (r, c) =>
-            {
-                double curDist =
-                    (new PointD(r - (double)kernelHalfLength, c - (double)kernelHalfLength)).Distance(new PointD(0.0d, 0.0d));
-                return Math.Cos(curDist * Math.PI / (2.0d * maxL));
-            });
+            //double maxL = ((double)kernelHalfLength) * Math.Sqrt(2.0d);
+            //DenseMatrix dmKernel = DenseMatrix.Create(2 * kernelHalfLength + 1, 2 * kernelHalfLength + 1, (r, c) =>
+            //{
+            //    double curDist =
+            //        (new PointD(r - (double)kernelHalfLength, c - (double)kernelHalfLength)).Distance(new PointD(0.0d, 0.0d));
+            //    return Math.Cos(curDist * Math.PI / (2.0d * maxL));
+            //});
 
 
-            DenseMatrix dmSmoothed = dmDensityMesh.Conv2(dmKernel);
+            DenseMatrix dmSmoothed = dmDensityMesh.Conv2(StandardConvolutionKernels.cos, kernelHalfLength);
             dmDensityMesh = dmSmoothed.Copy();
         }
 
@@ -167,8 +182,10 @@ namespace SkyImagesAnalyzer
             {
                 // r = y - perc5
                 // c = x - median
-                if (r > c) return 0.0d;
-                else return 1.0d;
+                Point currPt = new Point(c, r);
+                return (conditionOnPoints(currPt)) ? (1.0d) : (0.0d);
+                //if (r > c) return 0.0d;
+                //else return 1.0d;
             });
             Image<Gray, Byte> imgMask = ImageProcessing.grayscaleImageFromDenseMatrixWithFixedValuesBounds(dmMask, 0.0d, 1.0d);
             imgMask = imgMask.Flip(FLIP.VERTICAL);
@@ -193,7 +210,7 @@ namespace SkyImagesAnalyzer
                 lSlicesData.Add(corrSliceObj);
             }
 
-            List<Contour<Point>> foundClassesContours = new List<Contour<Point>>();
+            
             ConnectedObjectsAtASlice prevSlice = lSlicesData[0];
             foundClassesContours.AddRange(prevSlice.edgeContoursList);
 
@@ -280,11 +297,28 @@ namespace SkyImagesAnalyzer
                                 llArraysOfPointsAdding.Add(new List<Point>());
                             }
 
+                            List<Contour<Point>> lContoursOfTheCurrGroup =
+                                (new List<Tuple<Contour<Point>, Contour<Point>>>(currGroup.ToArray())).ConvertAll(
+                                    tpl => tpl.Item1);
+                            List<PointD> lPtdMassCenters = lContoursOfTheCurrGroup.ConvertAll(cntr => cntr.MassCenter());
+                            Contour<Point> themassCentersPolygon = new Contour<Point>(new MemStorage());
+                            themassCentersPolygon.PushMulti(lPtdMassCenters.ConvertAll<Point>(ptd => ptd.Point()).ToArray(),
+                                BACK_OR_FRONT.BACK);
+                            Image<Gray, byte> tmpImg = imgMask.CopyBlank();
+                            tmpImg.Draw(themassCentersPolygon, white, -1);
+                            themassCentersPolygon = tmpImg.FindContours(CHAIN_APPROX_METHOD.CV_CHAIN_APPROX_SIMPLE,
+                                RETR_TYPE.CV_RETR_LIST);
+
+
+
                             foreach (Point currPtToClassify in lPointsToClassify)
                             {
                                 int cntrToAddPointTo = AttachPointToOneOfConcurrentContours(
-                                    (new List<Tuple<Contour<Point>, Contour<Point>>>(currGroup.ToArray())).ConvertAll(
-                                        tpl => tpl.Item1), currPtToClassify, lDMGradField);
+                                    lContoursOfTheCurrGroup,
+                                    lPtdMassCenters,
+                                    themassCentersPolygon,
+                                    currPtToClassify,
+                                    lDMGradField);
                                 if (cntrToAddPointTo == -1) continue;
                                 else
                                 {
@@ -335,16 +369,16 @@ namespace SkyImagesAnalyzer
                         foundClassesContours.Add(contourTuple.Item2);
                     }
                 }
-                theLogWindow = ServiceTools.LogAText(theLogWindow,
-                    "processing thresholding value = " + currSlice.slicingThresholdingValue, true);
+                //theLogWindow = ServiceTools.LogAText(theLogWindow,
+                //    "processing thresholding value = " + currSlice.slicingThresholdingValue, true);
             }
 
 
-            theLogWindow = ServiceTools.LogAText(theLogWindow,
-                    Environment.NewLine +
-                    "========" + Environment.NewLine +
-                    "FINISHED" + Environment.NewLine +
-                    "========" + Environment.NewLine, true);
+            //theLogWindow = ServiceTools.LogAText(theLogWindow,
+            //        Environment.NewLine +
+            //        "========" + Environment.NewLine +
+            //        "FINISHED" + Environment.NewLine +
+            //        "========" + Environment.NewLine, true);
 
             Image<Gray, Byte> imgDataBinary = ImageProcessing.grayscaleImageFromDenseMatrixWithFixedValuesBounds(dmDensityMesh, 0.0d, 1.0d);
             Image<Bgr, byte> previewImage = imgDataBinary.CopyBlank().Convert<Bgr, Byte>();
@@ -357,9 +391,6 @@ namespace SkyImagesAnalyzer
             }
             previewImage = previewImage.And(imgMask.Convert<Bgr, byte>());
             ServiceTools.ShowPicture(previewImage, "");
-
-
-            // записать данные по классам
         }
 
 
@@ -381,54 +412,46 @@ namespace SkyImagesAnalyzer
 
 
 
-        private int AttachPointToOneOfConcurrentContours(List<Contour<Point>> contours, Point thePoint, List<DenseMatrix> dmGradField)
+        private int AttachPointToOneOfConcurrentContours(List<Contour<Point>> contours, List<PointD> lPtdMassCenters,
+            Contour<Point> themassCentersPolygon, Point thePoint, List<DenseMatrix> dmGradField)
         {
             // density field should be defined
             if (dmDensityMesh == null) return -1;
 
             PointD thePointD = new PointD(thePoint);
-
             // если точка внутри многоугольника, составленного центрами масс уже имеющихся кластеров - посмотрим, куда смотрит градиент.
+            
             DenseVector dvGradVect = DenseVector.Create(2, i => dmGradField[i][thePoint.Y, thePoint.X]);
-            List<PointD> lPtdMassCenters = contours.ConvertAll(cntr => cntr.MassCenter());
-            Contour<Point> themassCentersPolygon = new Contour<Point>(new MemStorage());
-            themassCentersPolygon.PushMulti(lPtdMassCenters.ConvertAll<Point>(ptd => ptd.Point()).ToArray(),
-                BACK_OR_FRONT.BACK);
-            //if (contours.Count == 2)
-            //{
-            //    // return AttachPointToOneOf_TWO_ConcurrentContours(contours, thePoint, dmGradField);
-            //    List<double> lDistances = contours.ConvertAll(cntr =>
-            //    {
-            //        return -cntr.Distance(thePointD.PointF());
-            //    });
-            //    int minIdx = lDistances.IndexOf(lDistances.Min());
-            //    return minIdx;
-            //}
-            //else if (themassCentersPolygon.InContour(thePointD.PointF()) >= 0.0d)
-            //{
-            //    List<DenseVector> lDvDirectionVectorsToMassCenters = lPtdMassCenters.ConvertAll(ptdMassCenter =>
-            //    {
-            //        DenseVector dvDirection = DenseVector.Create(2, i =>
-            //        {
-            //            if (i == 0) return ptdMassCenter.X - thePointD.X;
-            //            if (i == 1) return ptdMassCenter.Y - thePointD.Y;
-            //            return 0.0d;
-            //        });
-            //        double dValue = Math.Sqrt(dvDirection[0] * dvDirection[0] + dvDirection[1] * dvDirection[1]);
-            //        dvDirection.MapInplace(d => d / dValue);
-            //        return dvDirection;
-            //    });
+            
+            if (contours.Count == 2)
+            {
+                return AttachPointToOneOf_TWO_ConcurrentContours(contours, lPtdMassCenters, thePoint, dmGradField);
+            }
+            else if (themassCentersPolygon.InContour(thePointD.PointF()) >= 0.0d)
+            {
+                List<DenseVector> lDvDirectionVectorsToMassCenters = lPtdMassCenters.ConvertAll(ptdMassCenter =>
+                {
+                    DenseVector dvDirection = DenseVector.Create(2, i =>
+                    {
+                        if (i == 0) return ptdMassCenter.X - thePointD.X;
+                        if (i == 1) return ptdMassCenter.Y - thePointD.Y;
+                        return 0.0d;
+                    });
+                    double dValue = Math.Sqrt(dvDirection[0] * dvDirection[0] + dvDirection[1] * dvDirection[1]);
+                    dvDirection.MapInplace(d => d / dValue);
+                    return dvDirection;
+                });
 
-            //    List<double> lDirectionsMostCloseCosValue =
-            //        lDvDirectionVectorsToMassCenters.ConvertAll(dvDirection => dvDirection * dvGradVect);
-            //    // максимальное значение соответствует минимальному углу - то, что надо
-            //    // только надо еще обработать ситуацию, когда два кластера примерно в одном направлении, - один за другим на линии градиента
-            //    int maxIdx = lDirectionsMostCloseCosValue.IndexOf(lDirectionsMostCloseCosValue.Max());
+                List<double> lDirectionsMostCloseCosValue =
+                    lDvDirectionVectorsToMassCenters.ConvertAll(dvDirection => dvDirection * dvGradVect);
+                // максимальное значение соответствует минимальному углу - то, что надо
+                // только надо еще обработать ситуацию, когда два кластера примерно в одном направлении, - один за другим на линии градиента
+                int maxIdx = lDirectionsMostCloseCosValue.IndexOf(lDirectionsMostCloseCosValue.Max());
 
-            //    return maxIdx;
-            //}
-            //else
-            //{
+                return maxIdx;
+            }
+            else
+            {
                 // посчитаем расстояние до границ каждого из контуров. Для минимального - к нему и отнесем.
                 List<double> lDistances = contours.ConvertAll(cntr =>
                 {
@@ -436,7 +459,7 @@ namespace SkyImagesAnalyzer
                 });
                 int minIdx = lDistances.IndexOf(lDistances.Min());
                 return minIdx;
-            //}
+            }
         }
 
 
@@ -444,75 +467,112 @@ namespace SkyImagesAnalyzer
 
 
 
-        //private int AttachPointToOneOf_TWO_ConcurrentContours(List<Contour<Point>> contours, Point thePoint, List<DenseMatrix> dmGradField)
-        //{
-        //    // density field should be defined
-        //    if (dmDensityMesh == null) return -1;
-        //    if (contours.Count != 2)
-        //    {
-        //        // этот метод не для таких ситуаций
-        //        throw new NotImplementedException();
-        //    }
+        private int AttachPointToOneOf_TWO_ConcurrentContours(List<Contour<Point>> contours, List<PointD> lPtdMassCenters, Point thePoint, List<DenseMatrix> dmGradField)
+        {
+            // density field should be defined
+            if (dmDensityMesh == null) return -1;
+            if (contours.Count != 2)
+            {
+                // этот метод не для таких ситуаций
+                throw new NotImplementedException();
+            }
+
+
+            PointD thePointD = new PointD(thePoint);
+            DenseVector dvGradVect = DenseVector.Create(2, i => dmGradField[i][thePoint.Y, thePoint.X]);
+            // три варианта:
+            // 1,2. точка с одной из внешних сторон пары центров масс уже имеющихся кластеров
+            // 3. Точка между ними
+            DenseVector dvMassCentersConnectingLineVector = DenseVector.Create(2, i =>
+            {
+                if (i == 0) return (lPtdMassCenters[1].X - lPtdMassCenters[0].X);
+                if (i == 1) return (lPtdMassCenters[1].Y - lPtdMassCenters[0].Y);
+                else return 0.0d;
+            });
+            //DenseVector dvMassCentersConnectingOrthogonal = DenseVector.Create(2,
+            //    i => (i == 0) ? (dvMassCentersConnectingLineVector[1]) : (-dvMassCentersConnectingLineVector[0]));
+            List<DenseVector> listDVdirectionsPtTomassCenters = lPtdMassCenters.ConvertAll<DenseVector>(
+                ptdMassCenter =>
+                {
+                    DenseVector dvDir = DenseVector.Create(2, i =>
+                    {
+                        if (i == 0) return ptdMassCenter.X - thePointD.X;
+                        if (i == 1) return ptdMassCenter.Y - thePointD.Y;
+                        return 0.0d;
+                    });
+                    double dValue = Math.Sqrt(dvDir[0] * dvDir[0] + dvDir[1] * dvDir[1]);
+                    dvDir.MapInplace(d => d / dValue);
+                    return dvDir;
+                });
+            double dOverallProductOfScalarProducts = 1.0d;
+            foreach (DenseVector dvPtTomassCenter in listDVdirectionsPtTomassCenters)
+            {
+                dOverallProductOfScalarProducts *= dvPtTomassCenter*dvMassCentersConnectingLineVector;
+            }
+
+            // случай 1,2 - когда dOverallProductOfScalarProducts >= 0.0d - то есть, углы между dvMassCentersConnectingLineVector и векторами направления
+            // от точки на центры масс - либо оба острые (cos > 0 для обоих), либо оба тупые (cos < 0 для обоих)
+            // случай 3 - когда dOverallProductOfScalarProducts < 0.0d
+
+            if (dOverallProductOfScalarProducts < 0.0d)
+            {
+                // точка между центрами масс - смотрим, куда скатывается градиент
+                List<double> lDirectionsMostCloseCosValue =
+                    listDVdirectionsPtTomassCenters.ConvertAll(dvDirection => dvDirection * dvGradVect);
+                // максимальное значение cos соответствует минимальному углу - то, что надо
+                int maxIdx = lDirectionsMostCloseCosValue.IndexOf(lDirectionsMostCloseCosValue.Max());
+                return maxIdx;
+            }
+            else
+            {
+                // точка снаружи пары - берем ближайшую
+                List<double> lDistances = contours.ConvertAll(cntr =>
+                {
+                    return -cntr.Distance(thePointD.PointF());
+                });
+                int minIdx = lDistances.IndexOf(lDistances.Min());
+                return minIdx;
+            }
+        }
 
 
 
-        //    PointD thePointD = new PointD(thePoint);
-        //    List<PointD> lPtdMassCenters = contours.ConvertAll(cntr => cntr.MassCenter());
-        //    DenseVector dvGradVect = DenseVector.Create(2, i => dmGradField[i][thePoint.Y, thePoint.X]);
-        //    // три варианта:
-        //    // 1,2. точка с одной из внешних сторон пары центров масс уже имеющихся кластеров
-        //    // 3. Точка между ними
-        //    DenseVector dvMassCentersConnectingLineVector = DenseVector.Create(2, i =>
-        //    {
-        //        if (i == 0) return (lPtdMassCenters[1].X - lPtdMassCenters[0].X);
-        //        if (i == 1) return (lPtdMassCenters[1].Y - lPtdMassCenters[0].Y);
-        //        else return 0.0d;
-        //    });
-        //    DenseVector dvMassCentersConnectingOrthogonal = DenseVector.Create(2,
-        //        i => (i == 0) ? (dvMassCentersConnectingLineVector[1]) : (-dvMassCentersConnectingLineVector[0]));
 
 
-        //    // если точка внутри многоугольника, составленного центрами масс уже имеющихся кластеров - посмотрим, куда смотрит градиент.
+        public void SaveClusteringData(string filenameTemplate)
+        {
+            FileInfo fInfo = new FileInfo(filenameTemplate);
+            string dir = fInfo.DirectoryName;
+            if (!ServiceTools.CheckIfDirectoryExists(dir))
+            {
+                return;
+            }
+            if (fInfo.Exists)
+            {
+                // не трогаем уже существующий файл
+                return;
+            }
+            if (foundClassesContours.Count == 0)
+            {
+                return;
+            }
+
+            Rectangle gridRect = new Rectangle(0, 0, dmDensityMesh.ColumnCount, dmDensityMesh.RowCount);
+            RectangleF realDataRect = new RectangleF((float) minXval, (float) minYval, (float) (maxXval - minXval),
+                (float) (maxYval - minYval));
+
+            foreach (Contour<Point> foundClassContour in foundClassesContours)
+            {
+
+                ClusteringData currClusteringData = new ClusteringData(foundClassContour, gridRect, realDataRect);
+                string currClassFName = filenameTemplate +
+                                        "-X" + currClusteringData.ptdClusterMassCenter.X.ToString("e").Replace(",", "_") +
+                                        "-Y" + currClusteringData.ptdClusterMassCenter.Y.ToString("e").Replace(",", "_") + ".xml";
+                ServiceTools.WriteObjectToXML(currClusteringData, currClassFName);
+            }
+
             
-            
-        //    Contour<Point> themassCentersPolygon = new Contour<Point>(new MemStorage());
-        //    themassCentersPolygon.PushMulti(lPtdMassCenters.ConvertAll<Point>(ptd => ptd.Point()).ToArray(),
-        //        BACK_OR_FRONT.BACK);
-            
-        //    else if (themassCentersPolygon.InContour(thePointD.PointF()) >= 0.0d)
-        //    {
-        //        List<DenseVector> lDvDirectionVectorsToMassCenters = lPtdMassCenters.ConvertAll(ptdMassCenter =>
-        //        {
-        //            DenseVector dvDirection = DenseVector.Create(2, i =>
-        //            {
-        //                if (i == 0) return ptdMassCenter.X - thePointD.X;
-        //                if (i == 1) return ptdMassCenter.Y - thePointD.Y;
-        //                return 0.0d;
-        //            });
-        //            double dValue = Math.Sqrt(dvDirection[0] * dvDirection[0] + dvDirection[1] * dvDirection[1]);
-        //            dvDirection.MapInplace(d => d / dValue);
-        //            return dvDirection;
-        //        });
-
-        //        List<double> lDirectionsMostCloseCosValue =
-        //            lDvDirectionVectorsToMassCenters.ConvertAll(dvDirection => dvDirection * dvGradVect);
-        //        // максимальное значение соответствует минимальному углу - то, что надо
-        //        // только надо еще обработать ситуацию, когда два кластера примерно в одном направлении, - один за другим на линии градиента
-        //        int maxIdx = lDirectionsMostCloseCosValue.IndexOf(lDirectionsMostCloseCosValue.Max());
-
-        //        return maxIdx;
-        //    }
-        //    else
-        //    {
-        //        // посчитаем расстояние до границ каждого из контуров. Для минимального - к нему и отнесем.
-        //        List<double> lDistances = contours.ConvertAll(cntr =>
-        //        {
-        //            return -cntr.Distance(thePointD.PointF());
-        //        });
-        //        int minIdx = lDistances.IndexOf(lDistances.Min());
-        //        return minIdx;
-        //    }
-        //}
+        }
 
 
     }
@@ -586,4 +646,59 @@ namespace SkyImagesAnalyzer
             return new PointD(dmXvalues[row, column], dmYvalues[row, column]);
         }
     }
+
+
+
+
+    [Serializable]
+    public class ClusteringData
+    {
+        private Gray white = new Gray(255);
+
+        [XmlElement("ClusterMassCenter")]
+        public PointD ptdClusterMassCenter;
+
+        [XmlElement("RealOperationalArea")]
+        public RectangleF rctRealOperationalArea;
+
+        [XmlElement("OperationalAreaOnGrid")]
+        public Rectangle rctOperationalAreaOnGrid;
+
+        [XmlElement("OverallPoints")]
+        public List<Point> lOverallPoints;
+
+
+        public ClusteringData()
+        {
+            lOverallPoints = new List<Point>();
+        }
+
+
+
+        public ClusteringData(Contour<Point> foundClusterContour, Rectangle gridSpaceRect, RectangleF realSpaceRect)
+        {
+            rctRealOperationalArea = realSpaceRect;
+            rctOperationalAreaOnGrid = gridSpaceRect;
+            ptdClusterMassCenter = foundClusterContour.MassCenter();
+
+            Image<Gray, byte> tmpImg = new Image<Gray, byte>(gridSpaceRect.Width, gridSpaceRect.Height);
+            tmpImg.Draw(foundClusterContour, white, -1);
+
+            lOverallPoints = new List<Point>();
+
+            for (int x = 0; x < gridSpaceRect.Width; x++)
+            {
+                for (int y = 0; y < gridSpaceRect.Height; y++)
+                {
+                    if (tmpImg[y,x].Equals(white))
+                    {
+                        lOverallPoints.Add(new Point(x, y));
+                    }
+                }
+            }
+
+        }
+    }
+
+
 }

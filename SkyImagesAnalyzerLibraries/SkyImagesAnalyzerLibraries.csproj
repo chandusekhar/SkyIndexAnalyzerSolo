@@ -60,6 +60,7 @@
     <DebugSymbols>true</DebugSymbols>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="ILNumerics, Version=4.5.5459.40319, Culture=neutral, PublicKeyToken=8d9bf50ef854734d, processorArchitecture=MSIL" />
     <Reference Include="MathNet.Numerics, Version=3.3.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\MathNet.Numerics.3.3.0\lib\net40\MathNet.Numerics.dll</HintPath>
@@ -70,7 +71,10 @@
       <HintPath>..\..\..\Program Files (x86)\Reference Assemblies\Microsoft\Research\Scientific DataSet 1.3\Microsoft.Research.Science.Data.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="OpenTK, Version=1.1.0.0, Culture=neutral, PublicKeyToken=bad199fe84eb3df4" />
+    <Reference Include="OpenTK.GLControl, Version=1.1.0.0, Culture=neutral, PublicKeyToken=bad199fe84eb3df4" />
     <Reference Include="System" />
+    <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
     <Reference Include="System.Drawing" />
     <Reference Include="System.Numerics" />
@@ -88,6 +92,12 @@
     <Compile Include="Constants.cs" />
     <Compile Include="ContourAnalysisBasics.cs" />
     <Compile Include="Extensions.cs" />
+    <Compile Include="Field3Drepresentation.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Field3Drepresentation.Designer.cs">
+      <DependentUpon>Field3Drepresentation.cs</DependentUpon>
+    </Compile>
     <Compile Include="GeoTrackRenderer.cs" />
     <Compile Include="Graph.cs" />
     <Compile Include="HeatMap.cs" />
@@ -194,6 +204,9 @@
     <Compile Include="UdpState.cs" />
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="Field3Drepresentation.resx">
+      <DependentUpon>Field3Drepresentation.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="HistogramCalcAndShowForm.resx">
       <DependentUpon>HistogramCalcAndShowForm.cs</DependentUpon>
     </EmbeddedResource>

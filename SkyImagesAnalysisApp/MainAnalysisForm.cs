@@ -47,12 +47,12 @@ namespace SkyImagesAnalyzer
         private TimeSpan timetotal;
         private DateTime begintotal;
         private string ImageFileName;
-        
+
         public double tunedSIMargin;
         private double tunedSIMarginDefault;
-        
+
         private delegate void DelegateOpenFile(String s);
-        
+
         private int FileCounter, filecounter_prev;
         private int SIClScMarginRangeLowerValue, SIClScMarginRangeHigherValue;
         private SkyCloudClassification classificator;
@@ -1382,7 +1382,7 @@ namespace SkyImagesAnalyzer
             SIValueRange_max = SIClScMarginRangeHigherValue;
             SIValueRange = SIValueRange_max - SIValueRange_min;
             FileCounter = 0; filecounter_prev = 0;
-            
+
             string path2process = (string)arguments[0];
             LogWindow theLogWindow = (LogWindow)arguments[1];
             simpleMultipleImagesShow imagesRepresentingForm = (simpleMultipleImagesShow)arguments[2];
@@ -1453,7 +1453,7 @@ namespace SkyImagesAnalyzer
 
 
 
-                
+
                 if (schemesToUse.FindIndex(clMethod => clMethod == ClassificationMethods.US) != -1)
                 {
                     classificator = new SkyCloudClassification(img2process, defaultProperties);
@@ -1478,7 +1478,7 @@ namespace SkyImagesAnalyzer
                     bmG = new Bitmap(bitmapSI);
                 }
 
-                
+
                 if (schemesToUse.FindIndex(clMethod => clMethod == ClassificationMethods.GrIx) != -1)
                 {
                     classificator = new SkyCloudClassification(img2process, defaultProperties);
@@ -1897,7 +1897,14 @@ namespace SkyImagesAnalyzer
             HistogramDataAndProperties theHist = new HistogramDataAndProperties(dvGrixData, 500);
             theHist.quantilesCount = 20;
             HistogramCalcAndShowForm theHistForm = new HistogramCalcAndShowForm(ImageFileName, defaultProperties);
-            theHistForm.defaultProperties.Add("CurrentFileName", ImageFileName);
+            if (theHistForm.defaultProperties.ContainsKey("CurrentFileName"))
+            {
+                theHistForm.defaultProperties["CurrentFileName"] = ImageFileName;
+            }
+            else
+            {
+                theHistForm.defaultProperties.Add("CurrentFileName", ImageFileName);
+            }
             theHistForm.HistToRepresent = theHist;
             theHistForm.Show();
             theHistForm.rbtnShowAsBars.Checked = false;
@@ -1926,84 +1933,87 @@ namespace SkyImagesAnalyzer
 
 
 
+        #region // тестовая обработка изображения - с форсированным отключением определения положения солнца и без подавления солнечной засветки
+        //private void btnTestMarginWithoutSun_Click(object sender, EventArgs e)
+        //{
+        //    DenseMatrix dmRedChannel;
+        //    DenseMatrix dmBlueChannel;
+        //    DenseMatrix dmGreenChannel;
+        //    //LogWindow theLogWindow = null;
 
-        private void btnTestMarginWithoutSun_Click(object sender, EventArgs e)
-        {
-            DenseMatrix dmRedChannel;
-            DenseMatrix dmBlueChannel;
-            DenseMatrix dmGreenChannel;
-            //LogWindow theLogWindow = null;
+        //    //Bitmap LocalProcessingBitmap = (Bitmap)imagetoadd.Clone();
 
-            //Bitmap LocalProcessingBitmap = (Bitmap)imagetoadd.Clone();
-
-            Image<Gray, Byte> imageBlueChannelByte = imagetoadd[0].Copy(); // new Image<Bgr, Byte>(LocalProcessingBitmap)[0];
-            Image<Gray, Byte> imageGreenChannelByte = imagetoadd[1].Copy(); // new Image<Bgr, Byte>(LocalProcessingBitmap)[1];
-            Image<Gray, Byte> imageRedChannelByte = imagetoadd[2].Copy(); // new Image<Bgr, Byte>(LocalProcessingBitmap)[2];
-
-
-
-            //Image<Gray, Byte> maskImage = ImageProcessing.getImageSignificantMask(LocalProcessingBitmap);
-            ImageProcessing imgP = new ImageProcessing(imagetoadd, true);
-            //imgP.getImageSignificantMask();
-            Image<Gray, Byte> maskImage = imgP.significantMaskImageBinary;
-            Image<Gray, Byte> maskImageCircled = imgP.imageSignificantMaskCircled(90.0d);
-            PointD imageCircleCenter = imgP.imageRD.pointDCircleCenter();
-            double imageCircleRadius = imgP.imageRD.DRadius;
-
-            imageBlueChannelByte = imageBlueChannelByte.Mul(maskImage);
-            imageRedChannelByte = imageRedChannelByte.Mul(maskImage);
-            imageGreenChannelByte = imageGreenChannelByte.Mul(maskImage);
-            dmRedChannel = ImageProcessing.DenseMatrixFromImage(imageRedChannelByte);
-            dmBlueChannel = ImageProcessing.DenseMatrixFromImage(imageBlueChannelByte);
-            dmGreenChannel = ImageProcessing.DenseMatrixFromImage(imageGreenChannelByte);
-            ServiceTools.FlushMemory();
+        //    Image<Gray, Byte> imageBlueChannelByte = imagetoadd[0].Copy(); // new Image<Bgr, Byte>(LocalProcessingBitmap)[0];
+        //    Image<Gray, Byte> imageGreenChannelByte = imagetoadd[1].Copy(); // new Image<Bgr, Byte>(LocalProcessingBitmap)[1];
+        //    Image<Gray, Byte> imageRedChannelByte = imagetoadd[2].Copy(); // new Image<Bgr, Byte>(LocalProcessingBitmap)[2];
 
 
 
+        //    //Image<Gray, Byte> maskImage = ImageProcessing.getImageSignificantMask(LocalProcessingBitmap);
+        //    ImageProcessing imgP = new ImageProcessing(imagetoadd, true);
+        //    //imgP.getImageSignificantMask();
+        //    Image<Gray, Byte> maskImage = imgP.significantMaskImageBinary;
+        //    Image<Gray, Byte> maskImageCircled = imgP.imageSignificantMaskCircled(90.0d);
+        //    PointD imageCircleCenter = imgP.imageRD.pointDCircleCenter();
+        //    double imageCircleRadius = imgP.imageRD.DRadius;
+
+        //    imageBlueChannelByte = imageBlueChannelByte.Mul(maskImage);
+        //    imageRedChannelByte = imageRedChannelByte.Mul(maskImage);
+        //    imageGreenChannelByte = imageGreenChannelByte.Mul(maskImage);
+        //    dmRedChannel = ImageProcessing.DenseMatrixFromImage(imageRedChannelByte);
+        //    dmBlueChannel = ImageProcessing.DenseMatrixFromImage(imageBlueChannelByte);
+        //    dmGreenChannel = ImageProcessing.DenseMatrixFromImage(imageGreenChannelByte);
+        //    ServiceTools.FlushMemory();
 
 
-            string randomFileName = "m" + System.IO.Path.GetRandomFileName().Replace(".", "");
 
 
-            string currentDirectory = (string)defaultProperties["DefaultDataFilesLocation"];
 
-            string formulaString = "grix + 0";
-            //string formulaString = "1.0 - (1.0 + ((B-R)/(B+R)))/2.0";
-            DenseMatrix dmProcessingData = (DenseMatrix)imgP.eval(formulaString, dmRedChannel, dmGreenChannel, dmBlueChannel, null).Clone();
-            DenseMatrix dmMask = ImageProcessing.DenseMatrixFromImage(maskImage);
-            DenseMatrix dmMaskCircled = ImageProcessing.DenseMatrixFromImage(maskImageCircled);
-            dmProcessingData = (DenseMatrix)dmProcessingData.PointwiseMultiply(dmMask);
+        //    string randomFileName = "m" + System.IO.Path.GetRandomFileName().Replace(".", "");
 
-            DenseMatrix dmReversed = (DenseMatrix)dmProcessingData.Clone();
-            //dmReversed.MapIndexedInplace(new Func<int, int, double, double>((row, column, val) =>
-            //{
-            //    if (dmMask[row, column] == 0) return 1.0d;
-            //    else if (val >= theStdDevMarginValueDefiningSkyCloudSeparation) return 1.0d;
-            //    else return 0.0d;
-            //}));
 
-            ImageConditionAndDataRepresentingForm restoredDataForm = ServiceTools.RepresentDataFromDenseMatrix(dmReversed,
-                "finally restored 1-sigma/Y data", true, false, 0.0d, 1.0d, true);
-            ImageConditionAndDataRepresentingForm originalDataForm = ServiceTools.RepresentDataFromDenseMatrix(dmProcessingData,
-                "original 1-sigm/Y data", true, false, 0.0d, 1.0d, true);
-            restoredDataForm.SaveData(randomFileName + "_res.nc");
-            originalDataForm.SaveData(randomFileName + "_orig.nc");
-            //originalDataForm.Close();
-            //originalDataForm.Dispose();
-            //restoredDataForm.Close();
-            //restoredDataForm.Dispose();
+        //    string currentDirectory = (string)defaultProperties["DefaultDataFilesLocation"];
 
-            double cloudSkySeparationValue = tunedSIMargin;
-            ColorScheme skyCloudColorScheme = ColorScheme.InversedBinaryCloudSkyColorScheme(cloudSkySeparationValue, 0.0d, 1.0d);
-            ColorSchemeRuler skyCloudRuler = new ColorSchemeRuler(skyCloudColorScheme, 0.0d, 1.0d);
-            Image<Bgr, Byte> previewImage = ImageProcessing.evalResultColoredWithFixedDataBounds(dmProcessingData, maskImage, skyCloudColorScheme, 0.0d, 1.0d);
-            int cloudCounter = previewImage.CountNonzero()[1];
-            int skyCounter = maskImage.CountNonzero()[0] - cloudCounter;
-            double CloudCover = (double)cloudCounter / (double)(skyCounter + cloudCounter);
+        //    string formulaString = "grix";
+        //    //string formulaString = "1.0 - (1.0 + ((B-R)/(B+R)))/2.0";
+        //    DenseMatrix dmProcessingData = (DenseMatrix)imgP.eval(formulaString, dmRedChannel, dmGreenChannel, dmBlueChannel, null).Clone();
+        //    DenseMatrix dmMask = ImageProcessing.DenseMatrixFromImage(maskImage);
+        //    DenseMatrix dmMaskCircled = ImageProcessing.DenseMatrixFromImage(maskImageCircled);
+        //    dmProcessingData = (DenseMatrix)dmProcessingData.PointwiseMultiply(dmMask);
 
-            //Bitmap localPreviewBitmap = previewImage.Bitmap;
+        //    DenseMatrix dmReversed = (DenseMatrix)dmProcessingData.Clone();
+        //    //dmReversed.MapIndexedInplace(new Func<int, int, double, double>((row, column, val) =>
+        //    //{
+        //    //    if (dmMask[row, column] == 0) return 1.0d;
+        //    //    else if (val >= theStdDevMarginValueDefiningSkyCloudSeparation) return 1.0d;
+        //    //    else return 0.0d;
+        //    //}));
 
-        }
+        //    //ImageConditionAndDataRepresentingForm restoredDataForm = ServiceTools.RepresentDataFromDenseMatrix(dmReversed,
+        //    //    "finally restored 1-sigma/Y data", true, false, 0.0d, 1.0d, true);
+        //    //ImageConditionAndDataRepresentingForm originalDataForm = ServiceTools.RepresentDataFromDenseMatrix(dmProcessingData,
+        //    //    "original 1-sigm/Y data", true, false, 0.0d, 1.0d, true);
+        //    dmReversed.SaveNetCDFdataMatrix(randomFileName + "_res.nc");
+        //    dmProcessingData.SaveNetCDFdataMatrix(randomFileName + "_orig.nc");
+        //    //restoredDataForm.SaveData(randomFileName + "_res.nc");
+        //    //originalDataForm.SaveData(randomFileName + "_orig.nc");
+        //    //originalDataForm.Close();
+        //    //originalDataForm.Dispose();
+        //    //restoredDataForm.Close();
+        //    //restoredDataForm.Dispose();
+
+        //    double cloudSkySeparationValue = tunedSIMargin;
+        //    ColorScheme skyCloudColorScheme = ColorScheme.InversedBinaryCloudSkyColorScheme(cloudSkySeparationValue, 0.0d, 1.0d);
+        //    ColorSchemeRuler skyCloudRuler = new ColorSchemeRuler(skyCloudColorScheme, 0.0d, 1.0d);
+        //    Image<Bgr, Byte> previewImage = ImageProcessing.evalResultColoredWithFixedDataBounds(dmProcessingData, maskImage, skyCloudColorScheme, 0.0d, 1.0d);
+        //    int cloudCounter = previewImage.CountNonzero()[1];
+        //    int skyCounter = maskImage.CountNonzero()[0] - cloudCounter;
+        //    double CloudCover = (double)cloudCounter / (double)(skyCounter + cloudCounter);
+
+        //    //Bitmap localPreviewBitmap = previewImage.Bitmap;
+
+        //}
+        #endregion // тестовая обработка изображения - с форсированным отключением определения положения солнца и без подавления солнечной засветки
 
 
 
@@ -2350,6 +2360,9 @@ namespace SkyImagesAnalyzer
                 return;
             }
 
+
+            string xmlStatsFileName = (string)defaultProperties["DefaultDataFilesLocation"] + "median-perc5-stats.xml";
+
             FileInfo[] fileList2Process = dir.GetFiles("*.jpg", SearchOption.AllDirectories);
             if (fileList2Process.Length == 0)
             {
@@ -2365,6 +2378,8 @@ namespace SkyImagesAnalyzer
                 bgwFinished.Add(true);
                 bgwList.Add(null);
             }
+
+            List<SkyImageMedianPerc5Data> lMedianPerc5Data = new List<SkyImageMedianPerc5Data>();
 
 
             DoWorkEventHandler thisWorkerDoWorkHandler = delegate(object currBGWsender, DoWorkEventArgs args)
@@ -2406,29 +2421,32 @@ namespace SkyImagesAnalyzer
                 DenseMatrix dmMaskCircled100 = ImageProcessing.DenseMatrixFromImage(maskImageCircled);
                 ServiceTools.FlushMemory();
 
-                DenseMatrix dmGrixData = imgP.eval("1 - sqrt((R*R+G*G+B*B)/3 - (R+G+B)*(R+G+B)/9) / Y", null);
+                DenseMatrix dmGrixData = imgP.eval("grix", null);
                 dmGrixData = (DenseMatrix)dmGrixData.PointwiseMultiply(dmMaskCircled100);
                 DenseVector dvGrixData = DataAnalysis.DataVectorizedWithCondition(dmGrixData, dval => ((dval > 0.0d) && (dval < 1.0d)));
                 DescriptiveStatistics stats = new DescriptiveStatistics(dvGrixData, true);
-                double median = Statistics.Median(dvGrixData);
+                double median = dvGrixData.Median();
                 //double median = stats.Median;
-                double perc5 = Statistics.Percentile(dvGrixData, 5);
+                double perc5 = dvGrixData.Percentile(5);
+                SkyImageMedianPerc5Data mp5dt = new SkyImageMedianPerc5Data(currentFullFileName, median, perc5);
 
-                bool success = false;
-                while (!success)
-                {
-                    try
-                    {
-                        ServiceTools.logToTextFile(outputStatsDirectory + "statsWithFNames.dat",
-                            fInfo.FullName + ";" + median.ToString("e").Replace(",", ".") + ";" +
-                            perc5.ToString("e").Replace(",", ".") + Environment.NewLine, true);
-                        success = true;
-                    }
-                    catch (Exception)
-                    {
-                        Thread.Sleep(100);
-                    }
-                }
+
+
+                //bool success = false;
+                //while (!success)
+                //{
+                //    try
+                //    {
+                //        ServiceTools.logToTextFile(outputStatsDirectory + "statsWithFNames.dat",
+                //            fInfo.FullName + ";" + median.ToString("e").Replace(",", ".") + ";" +
+                //            perc5.ToString("e").Replace(",", ".") + Environment.NewLine, true);
+                //        success = true;
+                //    }
+                //    catch (Exception)
+                //    {
+                //        Thread.Sleep(100);
+                //    }
+                //}
 
                 //SimpleShowImageForm SimpleShowImageForm1 = new SimpleShowImageForm(imgP.processingBitmap(), "");
                 //SimpleShowImageForm1.DesktopLocation =
@@ -2443,7 +2461,10 @@ namespace SkyImagesAnalyzer
                 //SimpleShowImageForm1.Close();
                 //SimpleShowImageForm1.Dispose();
 
-                args.Result = new object[] { currentBgwID };
+                args.Result = new object[]
+                {
+                    currentBgwID, mp5dt
+                };
             };
 
 
@@ -2452,6 +2473,9 @@ namespace SkyImagesAnalyzer
                 {
                     object[] currentBGWResults = (object[])args.Result;
                     int returningBGWthreadID = (int)currentBGWResults[0];
+                    SkyImageMedianPerc5Data res = (SkyImageMedianPerc5Data)currentBGWResults[1];
+
+                    lMedianPerc5Data.Add(res);
 
                     BackgroundWorker currBGW = currBGWCompletedSender as BackgroundWorker;
                     currBGW.Dispose();
@@ -2459,8 +2483,9 @@ namespace SkyImagesAnalyzer
                     bgwFinished[returningBGWthreadID] = true;
                     bgwList[returningBGWthreadID].Dispose();
                     bgwList[returningBGWthreadID] = null;
-                };
 
+                    theLogWindow = ServiceTools.LogAText(theLogWindow, "finished processing: " + res.FileName);
+                };
 
 
 
@@ -2483,8 +2508,7 @@ namespace SkyImagesAnalyzer
                 }
 
 
-                theLogWindow = ServiceTools.LogAText(theLogWindow,
-                Environment.NewLine + "starting: " + info.FullName);
+                theLogWindow = ServiceTools.LogAText(theLogWindow, Environment.NewLine + "starting: " + info.FullName);
 
 
 
@@ -2505,9 +2529,35 @@ namespace SkyImagesAnalyzer
                 Thread.Sleep(100);
             }
 
+
+
+            try
+            {
+                ServiceTools.WriteObjectToXML(lMedianPerc5Data, xmlStatsFileName);
+            }
+            catch (Exception exc)
+            {
+                theLogWindow = ServiceTools.LogAText(theLogWindow,
+                    Environment.NewLine +
+                    "couldn`t write stats data to a file:" + Environment.NewLine + xmlStatsFileName +
+                    Environment.NewLine);
+                theLogWindow = ServiceTools.LogAText(theLogWindow, Environment.NewLine + "cause: " + exc.Message + Environment.NewLine);
+            }
+
+
             theLogWindow = ServiceTools.LogAText(theLogWindow,
                 Environment.NewLine + "==========FINISHED==========" + Environment.NewLine);
         }
+
+
+
+
+
+
+
+
+
+
 
         private void btnProcessDirectorySI_Click(object sender, EventArgs e)
         {
@@ -2572,6 +2622,14 @@ namespace SkyImagesAnalyzer
 
 
 
+
+
+        /// <summary>
+        /// Handles the Click event of the pictureBox1 control.
+        /// Currently manages the ability of sun disk representing or (if not specified yet) manual specification
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         private void pictureBox1_Click(object sender, EventArgs e)
         {
             if (imagetoadd == null) return;
@@ -2618,8 +2676,15 @@ namespace SkyImagesAnalyzer
 
 
 
+        #region Median-perc5 distribution, heatmap, density processing
 
-
+        /// <summary>
+        /// Handles the Click event of the btnShowMedianPerc5Diagram control.
+        /// Shows current image at the median-perc5 diagram using previously calculated statistics on the image set
+        /// stats data is being obtained from the file at the path "DefaultMedianPerc5StatsXMLFile" of program properties
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         private void btnShowMedianPerc5Diagram_Click(object sender, EventArgs e)
         {
             #region //конвертировали .dat в .xml для упрощенной обработки
@@ -2654,6 +2719,7 @@ namespace SkyImagesAnalyzer
 
             //ServiceTools.WriteObjectToXML(lData, fName + ".xml");
             #endregion //конвертировали .dat в .xml для упрощенной обработки
+
 
             string strStatsDataFilename = ((string)defaultProperties["DefaultDataFilesLocation"]) + "statsWithFNames.xml";
             if (!File.Exists(strStatsDataFilename))
@@ -2745,7 +2811,293 @@ namespace SkyImagesAnalyzer
             List<PointD> lPointsList = lStatsData.ConvertAll<PointD>(statsDatum => new PointD(statsDatum.GrIxStatsMedian, statsDatum.GrIxStatsPerc5));
             EventsDensityAnalysisForm Form1 = new EventsDensityAnalysisForm(lPointsList, defaultProperties, 512);
             Form1.Show();
+
+            Form1.Clusterize();
+
+            Form1.SaveClusteringData(((string)defaultProperties["DefaultDataFilesLocation"]) + "clustering");
         }
+
+
+
+
+
+
+        private void btnSortImagesByClasses_Click(object sender, EventArgs e)
+        {
+            LogWindow errorsLogWindow = null;
+            // прочитаем уже посчитанные данные по median и perc5
+            string strStatsDataFilename = ((string)defaultProperties["DefaultMedianPerc5StatsXMLFile"]);
+            List<SkyImageMedianPerc5Data> lData =
+                (List<SkyImageMedianPerc5Data>)
+                    ServiceTools.ReadObjectFromXML(strStatsDataFilename, typeof(List<SkyImageMedianPerc5Data>));
+
+            string strDataFilesDir = ((string)defaultProperties["DefaultDataFilesLocation"]);
+            DirectoryInfo dir = new DirectoryInfo(strDataFilesDir);
+
+            // получим условие на точки по умолчанию
+            List<SkyImageMedianPerc5Data> lStatsData =
+                (List<SkyImageMedianPerc5Data>)
+                    ServiceTools.ReadObjectFromXML(strStatsDataFilename, typeof(List<SkyImageMedianPerc5Data>));
+
+            List<PointD> lPointsList = lStatsData.ConvertAll<PointD>(statsDatum => new PointD(statsDatum.GrIxStatsMedian, statsDatum.GrIxStatsPerc5));
+            EventsDensityAnalysisForm Form1 = new EventsDensityAnalysisForm(lPointsList, defaultProperties, 512);
+            DenseMatrix dmDensityField = Form1.dmDensityMesh.Copy();
+            double dMaxDensityValue = dmDensityField.Values.Max();
+            double dDensityMinThreshold = dMaxDensityValue / 10.0d;
+
+            Predicate<Point> conditionOnPoints = Form1.conditionOnPoints;
+
+            if (!dir.Exists)
+            {
+                theLogWindow = ServiceTools.LogAText(theLogWindow,
+                    "Операция не выполнена. Не найдена директория:" + Environment.NewLine + strDataFilesDir +
+                    Environment.NewLine, true);
+                return;
+            }
+
+            FileInfo[] fileListClusteringInfo = dir.GetFiles("*.xml", SearchOption.TopDirectoryOnly);
+            if (fileListClusteringInfo.Length == 0)
+            {
+                theLogWindow = ServiceTools.LogAText(theLogWindow,
+                    "Операция не выполнена. Не найдены описания кластеризации событий median-perc5 в директории:" + Environment.NewLine + strDataFilesDir +
+                    Environment.NewLine, true);
+                return;
+            }
+
+            List<ClusteringData> lClusteringinfo = new List<ClusteringData>();
+            List<string> directoriesForSorting = new List<string>();
+            foreach (FileInfo info in fileListClusteringInfo)
+            {
+                ClusteringData currClusteringData =
+                    (ClusteringData)ServiceTools.ReadObjectFromXML(info.FullName, typeof(ClusteringData));
+                lClusteringinfo.Add(currClusteringData);
+                string currClassDirName = info.DirectoryName + "\\" + Path.GetFileNameWithoutExtension(info.FullName) + "\\";
+                if (!ServiceTools.CheckIfDirectoryExists(currClassDirName))
+                {
+                    continue;
+                }
+                directoriesForSorting.Add(currClassDirName);
+
+                //Image<Bgr, byte> imgShowingCurrCluster =
+                //    new Image<Bgr, byte>(currClusteringData.rctOperationalAreaOnGrid.Width,
+                //        currClusteringData.rctOperationalAreaOnGrid.Height);
+                //foreach (Point pt in currClusteringData.lOverallPoints)
+                //{
+                //    imgShowingCurrCluster[pt.Y, pt.X] = new Bgr(255, 255, 255);
+                //}
+            }
+
+            Image<Bgr, byte> imgShowingClusterTemplate =
+                    new Image<Bgr, byte>(lClusteringinfo[0].rctOperationalAreaOnGrid.Width,
+                        lClusteringinfo[0].rctOperationalAreaOnGrid.Height);
+            RandomPastelColorGenerator colorGen = new RandomPastelColorGenerator();
+            foreach (ClusteringData currClusteringData in lClusteringinfo)
+            {
+                Bgr currColor = new Bgr(colorGen.GetNext());
+                foreach (Point pt in currClusteringData.lOverallPoints)
+                {
+                    if (conditionOnPoints(
+                            pt.FlipUpsideDown(new Size(currClusteringData.rctOperationalAreaOnGrid.Width,
+                                currClusteringData.rctOperationalAreaOnGrid.Height)))) continue;
+
+                    if (dmDensityField[pt.Y, pt.X] < dDensityMinThreshold)
+                    {
+                        continue;
+                    }
+
+                    imgShowingClusterTemplate[pt.Y, pt.X] = currColor;
+                }
+            }
+            //imgShowingClusterTemplate = imgShowingClusterTemplate*0.5d;
+            foreach (ClusteringData currClusteringData in lClusteringinfo)
+            {
+                Image<Bgr, byte> imgShowingCluster = imgShowingClusterTemplate.Copy();
+                foreach (Point pt in currClusteringData.lOverallPoints)
+                {
+                    if (conditionOnPoints(
+                            pt.FlipUpsideDown(new Size(currClusteringData.rctOperationalAreaOnGrid.Width,
+                                currClusteringData.rctOperationalAreaOnGrid.Height)))) continue;
+
+                    if (dmDensityField[pt.Y, pt.X] < dDensityMinThreshold)
+                    {
+                        continue;
+                    }
+
+                    imgShowingCluster[pt.Y, pt.X] = new Bgr(255, 255, 255);
+                }
+                imgShowingCluster.Save(directoriesForSorting[lClusteringinfo.IndexOf(currClusteringData)] +
+                                       "cluster-representation.jpg");
+            }
+
+
+            List<PointD> pointsRealSpace = lData.ConvertAll<PointD>(statsDatum => new PointD(statsDatum.GrIxStatsMedian, statsDatum.GrIxStatsPerc5));
+
+            double minXval = pointsRealSpace.Min(pt => pt.X);
+            double maxXval = pointsRealSpace.Max(pt => pt.X);
+            double minYval = pointsRealSpace.Min(pt => pt.Y);
+            double maxYval = pointsRealSpace.Max(pt => pt.Y);
+            minXval = Math.Min(minXval, minYval);
+            minYval = minXval;
+            maxXval = Math.Max(maxXval, maxYval);
+            maxYval = maxXval;
+
+            int spaceDiscretization = lClusteringinfo[0].rctOperationalAreaOnGrid.Width;
+            double xSpaceDiscrete = (maxXval - minXval) / spaceDiscretization;
+            double ySpaceDiscrete = (maxYval - minYval) / spaceDiscretization;
+
+
+
+
+
+            List<bool> bgwFinished = new List<bool>();
+            List<BackgroundWorker> bgwList = new List<BackgroundWorker>();
+            for (int i = 0; i < 16; i++)
+            {
+                bgwFinished.Add(true);
+                bgwList.Add(null);
+            }
+
+            DoWorkEventHandler thisWorkerDoWorkHandler = delegate(object currBGWsender, DoWorkEventArgs args)
+            {
+                object[] currBGWarguments = (object[])args.Argument;
+                SkyImageMedianPerc5Data medianPerc5Data = (SkyImageMedianPerc5Data)currBGWarguments[0];
+                Dictionary<string, object> defaultProps = (Dictionary<string, object>)currBGWarguments[1];
+                int currentBgwID = (int)currBGWarguments[2];
+
+
+                double currMedian = medianPerc5Data.GrIxStatsMedian;
+                double currPerc5 = medianPerc5Data.GrIxStatsPerc5;
+                // найти точку в пространстве кластеризации, соответствующую этим данным
+                int row = Convert.ToInt32((maxYval - currPerc5) / ySpaceDiscrete);
+                int col = Convert.ToInt32((currMedian - minXval) / xSpaceDiscrete);
+                col = Math.Min(col, spaceDiscretization - 1);
+                row = Math.Min(row, spaceDiscretization - 1);
+
+                if (dmDensityField[row, col] < dDensityMinThreshold)
+                {
+                    args.Result = new object[] {currentBgwID};
+                    return;
+                }
+
+                foreach (ClusteringData clusteringData in lClusteringinfo)
+                {
+                    if (clusteringData.lOverallPoints.FindIndex(pt => ((pt.X == col) && (pt.Y == row))) != -1)
+                    {
+                        string currDirPath = directoriesForSorting[lClusteringinfo.IndexOf(clusteringData)];
+                        FileInfo info = new FileInfo(medianPerc5Data.FileName);
+                        string fullNameCopyTo = currDirPath + info.Name;
+                        int i = 0;
+                        while (File.Exists(fullNameCopyTo))
+                        {
+                            fullNameCopyTo = currDirPath + Path.GetFileNameWithoutExtension(info.FullName) +
+                                             "-" + string.Format("{0:000}", i) + Path.GetExtension(info.FullName);
+                            i++;
+                        }
+
+
+                        try
+                        {
+                            File.Copy(medianPerc5Data.FileName, fullNameCopyTo);
+                            theLogWindow = ServiceTools.LogAText(theLogWindow,
+                                "copy: " + info.Name + "  >>  " + currDirPath + Environment.NewLine);
+                        }
+                        catch (Exception exc)
+                        {
+                            errorsLogWindow = ServiceTools.LogAText(errorsLogWindow,
+                                "coudn`t copy file: " + info.Name + ":" + Environment.NewLine + exc.Message +
+                                Environment.NewLine);
+                        }
+
+                        Application.DoEvents();
+                    }
+                }
+
+                args.Result = new object[]
+                {
+                    currentBgwID
+                };
+            };
+
+
+            RunWorkerCompletedEventHandler currWorkCompletedHandler =
+                delegate(object currBGWCompletedSender, RunWorkerCompletedEventArgs args)
+                {
+                    object[] currentBGWResults = (object[])args.Result;
+                    int returningBGWthreadID = (int)currentBGWResults[0];
+
+                    bgwFinished[returningBGWthreadID] = true;
+                    bgwList[returningBGWthreadID].Dispose();
+                    bgwList[returningBGWthreadID] = null;
+                    // theLogWindow = ServiceTools.LogAText(theLogWindow, "finished processing: " + res.FileName);
+                };
+
+
+            int currDataIdx = 0;
+
+            foreach (SkyImageMedianPerc5Data medianPerc5Data in lData)
+            {
+                int currentBgwID = -1;
+                while (bgwFinished.Sum(boolVal => (boolVal) ? ((int)0) : ((int)1)) == bgwFinished.Count)
+                {
+                    System.Windows.Forms.Application.DoEvents();
+                    Thread.Sleep(100);
+                }
+                for (int i = 0; i < bgwFinished.Count; i++)
+                {
+                    if (bgwFinished[i])
+                    {
+                        currentBgwID = i;
+                        bgwFinished[i] = false;
+                        break;
+                    }
+                }
+
+                theLogWindow = ServiceTools.LogAText(theLogWindow, Environment.NewLine + "starting: " + medianPerc5Data.FileName);
+                theLogWindow = ServiceTools.LogAText(theLogWindow, "" + currDataIdx + " / " + lData.Count);
+                theLogWindow.ClearLog();
+
+
+                object[] BGWorker2Args = new object[] { medianPerc5Data, defaultProperties, currentBgwID };
+
+                BackgroundWorker currBgw = new BackgroundWorker();
+                bgwList[currentBgwID] = currBgw;
+                currBgw.DoWork += thisWorkerDoWorkHandler;
+                currBgw.RunWorkerCompleted += currWorkCompletedHandler;
+                currBgw.WorkerReportsProgress = true;
+                currBgw.RunWorkerAsync(BGWorker2Args);
+
+                int progress = Convert.ToInt32(100.0d * (double)currDataIdx / (double)lData.Count);
+                ThreadSafeOperations.UpdateProgressBar(pbUniversalProgressBar, progress);
+                currDataIdx++;
+            }
+
+
+            while (bgwFinished.Sum(boolVal => (boolVal) ? ((int)0) : ((int)1)) > 0)
+            {
+                System.Windows.Forms.Application.DoEvents();
+                Thread.Sleep(100);
+            }
+
+            ThreadSafeOperations.UpdateProgressBar(pbUniversalProgressBar, 0);
+        }
+
+        #endregion Median-perc5 distribution, heatmap, density processing
+
+
+
+
+
+        private void btnTestSunDetection2015_Click(object sender, EventArgs e)
+        {
+            // посчитать grix
+            // сгладить это поле, но не слишком сильно
+            // отфильтровать области слишком больших значений grix
+            // отфильтровать области слишком больших значений градента grix
+            // оставшееся поле интерполировать
+            // попробовать по получившейся форме поля найти положение солнца
+        }
+
+
 
 
     }

@@ -1875,6 +1875,33 @@ namespace SkyImagesAnalyzer
 
 
 
+        private void btnRes3Dview(object sender, EventArgs e)
+        {
+            DenseMatrix dmDataToShow = null;
+            string commentToShow = "";
+            if (sender == btnRes13Dview)
+            {
+                dmDataToShow = result1.DmSourceData;
+                commentToShow = tbFormula1.Text;
+            }
+            if (sender == btnRes23Dview)
+            {
+                dmDataToShow = result2.DmSourceData;
+                commentToShow = tbFormula2.Text;
+            }
+            if (sender == btnRes33Dview)
+            {
+                dmDataToShow = result3.DmSourceData;
+                commentToShow = tbFormula3.Text;
+            }
+
+            Field3Drepresentation form1 = new Field3Drepresentation(dmDataToShow, defaultProperties, commentToShow);
+            form1.Show();
+
+        }
+
+
+
 
 
         #region Обработка действий мышкой на картинках с результатами
@@ -1940,6 +1967,6 @@ namespace SkyImagesAnalyzer
 
         #endregion Обработка действий мышкой на картинках с результатами
 
-
+        
     }
 }

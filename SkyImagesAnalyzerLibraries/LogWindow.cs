@@ -48,6 +48,17 @@ namespace SkyImagesAnalyzerLibraries
         }
 
 
+
+        public void ClearLog(int maxLinesCount = 2048)
+        {
+            if (textBox1.Lines.Count() >= maxLinesCount)
+            {
+                ThreadSafeOperations.SetTextTB(textBox1, "", false);
+            }
+        }
+
+
+
         public int LinesCount
         {
             get { return textBox1.Lines.Length; }

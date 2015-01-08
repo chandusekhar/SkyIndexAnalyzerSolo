@@ -13,6 +13,15 @@ using MathNet.Numerics.LinearAlgebra.Double;
 
 namespace SkyImagesAnalyzerLibraries
 {
+    public enum StandardConvolutionKernels
+    {
+        cos,
+        gauss,
+        flat,
+        linear,
+        bilinear
+    }
+
     public static class Extensions
     {
         public static Gray white = new Gray(255);
@@ -39,11 +48,11 @@ namespace SkyImagesAnalyzerLibraries
 
 
 
-        
+
         public static PointD GetMouseEventPositionOnRealImage<T1, T2>(this PictureBox pbElement, EventArgs mouseEventArgs,
             Image<T1, T2> origImage)
-            where T1: struct, IColor
-            where T2: new()
+            where T1 : struct, IColor
+            where T2 : new()
         {
             // пересчитаем точку из PictureBox в картинку, которая в нем
             PointD retPointD = new PointD();
@@ -82,6 +91,8 @@ namespace SkyImagesAnalyzerLibraries
         }
 
 
+
+
         public static DictionaryBindingList<TKey, TValue>
             ToBindingList<TKey, TValue>(this IDictionary<TKey, TValue> data)
         {
@@ -93,8 +104,8 @@ namespace SkyImagesAnalyzerLibraries
 
         public static DenseMatrix Conv2(this DenseMatrix dmSource, DenseMatrix dmKernel)
         {
-            int kernelHalfSizeRows = (dmKernel.RowCount - 1)/2;
-            int kernelHalfSizeCols = (dmKernel.ColumnCount - 1)/2;
+            int kernelHalfSizeRows = (dmKernel.RowCount - 1) / 2;
+            int kernelHalfSizeCols = (dmKernel.ColumnCount - 1) / 2;
             DenseMatrix dmRes = DenseMatrix.Create(dmSource.RowCount, dmSource.ColumnCount, (r, c) =>
             {
                 int startRow = r - kernelHalfSizeRows;
@@ -112,12 +123,164 @@ namespace SkyImagesAnalyzerLibraries
 
                 DenseMatrix dmSourceSubmatrix = (DenseMatrix)dmSource.SubMatrix(dmSourceStartRow, rowCount, dmSourceStartCol, colCount);
                 DenseMatrix dmKernelSubMatrix =
-                    (DenseMatrix) dmKernel.SubMatrix(kernelStartRow, rowCount, kernelStartCol, colCount);
+                    (DenseMatrix)dmKernel.SubMatrix(kernelStartRow, rowCount, kernelStartCol, colCount);
                 DenseMatrix sumMatrix = (DenseMatrix)(dmSourceSubmatrix.PointwiseMultiply(dmKernelSubMatrix));
                 return sumMatrix.Values.Sum();
             });
             return dmRes;
         }
+
+
+
+
+        public static DenseMatrix Conv2(this DenseMatrix dmSource, StandardConvolutionKernels kernelType, int kernelHalfWidth = 10)
+        {
+            //int kernelHalfLength = Convert.ToInt32(kernelWidth / 2.0d);
+            double maxL = ((double)kernelHalfWidth) * Math.Sqrt(2.0d);
+            DenseMatrix dmKernel = DenseMatrix.Create(2 * kernelHalfWidth + 1, 2 * kernelHalfWidth + 1, 1.0d);
+
+            if (kernelType == StandardConvolutionKernels.cos)
+            {
+                dmKernel = DenseMatrix.Create(2 * kernelHalfWidth + 1, 2 * kernelHalfWidth + 1, (r, c) =>
+                {
+                    double curDist =
+                        (new PointD(r - (double) kernelHalfWidth, c - (double) kernelHalfWidth)).Distance(
+                            new PointD(0.0d, 0.0d));
+                    return Math.Cos(curDist * Math.PI / (2.0d * maxL));
+                });
+            }
+            else if (kernelType == StandardConvolutionKernels.gauss)
+            {
+                dmKernel = DenseMatrix.Create(2*kernelHalfWidth + 1, 2*kernelHalfWidth + 1, (r, c) =>
+                {
+                    double curDist =
+                        (new PointD(r - (double) kernelHalfWidth, c - (double) kernelHalfWidth)).Distance(
+                            new PointD(0.0d, 0.0d));
+                    return Math.Exp(-curDist*curDist/(2.0d*(maxL/3.0d)));
+                });
+            }
+            else if (kernelType == StandardConvolutionKernels.flat)
+            {
+                dmKernel = DenseMatrix.Create(2*kernelHalfWidth + 1, 2*kernelHalfWidth + 1, 1.0d);
+            }
+            else if (kernelType == StandardConvolutionKernels.linear)
+            {
+                // actually it will be cone
+                dmKernel = DenseMatrix.Create(2 * kernelHalfWidth + 1, 2 * kernelHalfWidth + 1, (r, c) =>
+                {
+                    double curDist =
+                        (new PointD(r - (double)kernelHalfWidth, c - (double)kernelHalfWidth)).Distance(
+                            new PointD(0.0d, 0.0d));
+
+                    return Math.Max(1.0d - curDist*(1.0d/(double) kernelHalfWidth), 0.0d);
+                });
+            }
+            else if (kernelType == StandardConvolutionKernels.bilinear)
+            {
+                dmKernel = DenseMatrix.Create(2 * kernelHalfWidth + 1, 2 * kernelHalfWidth + 1, (r, c) =>
+                {
+                    double curDist =
+                        (new PointD(r - (double)kernelHalfWidth, c - (double)kernelHalfWidth)).Distance(
+                            new PointD(0.0d, 0.0d));
+
+                    return Math.Max(1.0d - curDist*curDist*(1.0d/(double) (kernelHalfWidth*kernelHalfWidth)), 0.0d);
+                });
+            }
+
+            double kernelSum = dmKernel.Values.Sum();
+            dmKernel.MapInplace(dval => dval/kernelSum);
+            
+            return dmSource.Conv2(dmKernel);
+        }
+
+
+
+
+        public static DenseVector Conv(this DenseVector dvSource, DenseVector dvKernel)
+        {
+            int kernelHalfSize = (dvKernel.Count - 1) / 2;
+
+            DenseVector dvRes = DenseVector.Create(dvSource.Count, (idx) =>
+            {
+                int startIdx = idx - kernelHalfSize;
+                int dvSourceStartIdx = Math.Max(startIdx, 0);
+                int kernelStartIdx = (startIdx >= 0) ? (0) : (-startIdx);
+                int endIdx = idx + kernelHalfSize;
+                int dvSourceEndIdx = Math.Min(endIdx, dvSource.Count - 1);
+                int elementsCount = dvSourceEndIdx - dvSourceStartIdx + 1;
+
+                DenseVector dvSourceSubvector = (DenseVector)dvSource.SubVector(dvSourceStartIdx, elementsCount);
+                DenseVector dvKernelSubvector =
+                    (DenseVector)dvKernel.SubVector(kernelStartIdx, elementsCount);
+                DenseVector sumVector = (DenseVector)(dvSourceSubvector.PointwiseMultiply(dvKernelSubvector));
+                return sumVector.Values.Sum();
+            });
+            return dvRes;
+        }
+
+
+
+
+
+        public static DenseVector Conv(this DenseVector dvSource, StandardConvolutionKernels kernelType, int kernelHalfWidth = 10)
+        {
+            double maxL = ((double)kernelHalfWidth) * Math.Sqrt(2.0d);
+            DenseVector dvKernel = DenseVector.Create(2 * kernelHalfWidth + 1, 1.0d);
+
+            if (kernelType == StandardConvolutionKernels.cos)
+            {
+                dvKernel = DenseVector.Create(2 * kernelHalfWidth + 1, (idx) =>
+                {
+                    double curDist =
+                        (new PointD(idx - (double)kernelHalfWidth, 0.0d)).Distance(
+                            new PointD(0.0d, 0.0d));
+                    return Math.Cos(curDist * Math.PI / (2.0d * maxL));
+                });
+            }
+            else if (kernelType == StandardConvolutionKernels.gauss)
+            {
+                dvKernel = DenseVector.Create(2 * kernelHalfWidth + 1, (idx) =>
+                {
+                    double curDist =
+                        (new PointD(idx - (double)kernelHalfWidth, 0.0d)).Distance(
+                            new PointD(0.0d, 0.0d));
+                    return Math.Exp(-curDist * curDist / (2.0d * (maxL / 3.0d)));
+                });
+            }
+            else if (kernelType == StandardConvolutionKernels.flat)
+            {
+                dvKernel = DenseVector.Create(2 * kernelHalfWidth + 1, 1.0d);
+            }
+            else if (kernelType == StandardConvolutionKernels.linear)
+            {
+                dvKernel = DenseVector.Create(2 * kernelHalfWidth + 1, (idx) =>
+                {
+                    double curDist =
+                        (new PointD(idx - (double)kernelHalfWidth, 0.0d)).Distance(
+                            new PointD(0.0d, 0.0d));
+
+                    return Math.Max(1.0d - curDist * (1.0d / (double)kernelHalfWidth), 0.0d);
+                });
+            }
+            else if (kernelType == StandardConvolutionKernels.bilinear)
+            {
+                dvKernel = DenseVector.Create(2 * kernelHalfWidth + 1, (idx) =>
+                {
+                    double curDist =
+                        (new PointD(idx - (double)kernelHalfWidth, 0.0d)).Distance(
+                            new PointD(0.0d, 0.0d));
+
+                    return Math.Max(1.0d - curDist * curDist * (1.0d / (double)(kernelHalfWidth * kernelHalfWidth)), 0.0d);
+                });
+            }
+
+            double kernelSum = dvKernel.Values.Sum();
+            dvKernel.MapInplace(dval => dval / kernelSum);
+
+            return dvSource.Conv(dvKernel);
+        }
+
+
 
 
 
@@ -197,9 +360,28 @@ namespace SkyImagesAnalyzerLibraries
                 theContour.BoundingRectangle.Bottom);
             tmpImg.Draw(theContour, white, 0);
             MCvMoments moments = tmpImg.GetMoments(true);
-            double cx = moments.m10/moments.m00;
-            double cy = moments.m01/moments.m00;
+            double cx = moments.m10 / moments.m00;
+            double cy = moments.m01 / moments.m00;
             return new PointD(cx, cy);
+        }
+
+
+
+        public static Point Flip45degrees(this Point pt)
+        {
+            return new Point(pt.Y, pt.X);
+        }
+
+
+        public static Point FlipUpsideDown(this Point pt, Size imageSize)
+        {
+            return new Point(imageSize.Height - pt.Y, pt.X);
+        }
+
+
+        public static Point FlipLeftToRight(this Point pt, Size imageSize)
+        {
+            return new Point(pt.Y, imageSize.Width - pt.X);
         }
 
     }

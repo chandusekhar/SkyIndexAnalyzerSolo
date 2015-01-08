@@ -14,7 +14,7 @@ namespace SkyImagesAnalyzerLibraries
         }
         public List<string> operators;
         private List<string> standart_operators =
-            new List<string>(new string[] { "(", ")", "+", "-", "*", "/", "^", "%", "grad", "sqrt", "mean", "stddev", "abs", "ddx", "ddy", "grad5p" });
+            new List<string>(new string[] { "(", ")", "+", "-", "*", "/", "^", "%", "grad", "sqrt", "mean", "stddev", "abs", "ddx", "ddy", "grad5p", "smoothcos" });
  
         private IEnumerable<string> Separate(string input)
         {
@@ -38,6 +38,9 @@ namespace SkyImagesAnalyzerLibraries
                 pos += s.Length;
             }
         }
+
+
+
         private byte GetPriority(string s)
         {
             switch (s)
@@ -51,19 +54,29 @@ namespace SkyImagesAnalyzerLibraries
                 case "-":
                     return 3;
                 case "*":
+                    return 4;
                 case "/":
                     return 4;
                 case "^":
                     return 5;
                 case "%":
                     return 6;
+                case "smoothcos":
+                    return 6;
                 case "grad":
+                    return 7;
                 case "sqrt":
+                    return 7;
                 case "mean":
+                    return 7;
                 case "stddev":
+                    return 7;
                 case "ddx":
+                    return 7;
                 case "ddy":
+                    return 7;
                 case "abs":
+                    return 7;
                 case "grad5p":
                     return 7;
                 default:
@@ -102,6 +115,8 @@ namespace SkyImagesAnalyzerLibraries
                     else
                         stack.Push(c);
                 }
+                else if (c == " ")
+                    continue;
                 else
                     outputSeparated.Add(c);
             }

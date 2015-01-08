@@ -53,7 +53,7 @@ namespace SkyImagesAnalyzerLibraries
             {
                 if (dvData.Count > 1)
                 {
-                    return Statistics.Median(dvData);
+                    return dvData.Median();
                 }
                 else
                 {
@@ -62,6 +62,25 @@ namespace SkyImagesAnalyzerLibraries
                 
             }
         }
+
+
+
+        public double Perc5
+        {
+            get
+            {
+                if (dvData.Count > 1)
+                {
+                    return dvData.Percentile(5);
+                }
+                else
+                {
+                    return dvData[0];
+                }
+
+            }
+        }
+
 
 
         public int BinsCount

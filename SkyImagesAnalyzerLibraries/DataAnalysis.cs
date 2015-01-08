@@ -141,6 +141,8 @@ namespace SkyImagesAnalyzerLibraries
 
 
 
+
+
         public static DenseVector NPolynomeApproximationLessSquareMethod(DenseVector dvDataValues, DenseVector dvSpace, DenseVector dvFixedValues = null, int polynomeOrder = 3)
         {
             double[] koeffOut = new double[polynomeOrder + 1];
@@ -215,6 +217,8 @@ namespace SkyImagesAnalyzerLibraries
         }
 
 
+
+
         public static double PolynomeValue(DenseVector dvPolynomeKoeffs, double arg)
         {
             double sum = 0.0d;
@@ -241,6 +245,8 @@ namespace SkyImagesAnalyzerLibraries
             median = Statistics.Median(listOfData.Values);
             return new DescriptiveStatistics(listOfData.Values);
         }
+
+
 
 
 
@@ -596,7 +602,8 @@ namespace SkyImagesAnalyzerLibraries
             foreach (Tuple<int, MathNet.Numerics.LinearAlgebra.Vector<double>> tplRowVectorAndIndex in dmOutData.EnumerateRowsIndexed())
             {
                 DenseVector currVector = (DenseVector)tplRowVectorAndIndex.Item2;
-                currVector = ExponentialMovingAverage(currVector, 3, 0.4d);
+                //currVector = ExponentialMovingAverage(currVector, 3, 0.4d);
+                currVector = currVector.Conv(StandardConvolutionKernels.gauss, 3);
                 dmOutData.SetRow(tplRowVectorAndIndex.Item1, currVector.ToArray());
             }
 

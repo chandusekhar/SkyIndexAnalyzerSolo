@@ -210,7 +210,7 @@ namespace SkyImagesAnalyzerLibraries
         {
             dmRes = null;
             resValue = 0.0d;
-            String input = exprString.Replace(" ", "");
+            String input = exprString; //.Replace(" ", "");
             if (!forceUsingDistributedMatrixes)
             {
                 if (dmR == null)
@@ -239,14 +239,18 @@ namespace SkyImagesAnalyzerLibraries
                 if (!rpn.operators.Contains(str))
                 {
                     pushImageToStackByColorChar(stack, str);
-                    try
+                    if (queue.Count > 0)
                     {
-                        str = queue.Dequeue();
+                        try
+                        {
+                            str = queue.Dequeue();
+                        }
+                        catch (Exception)
+                        {
+                            break;
+                        }
                     }
-                    catch (Exception)
-                    {
-                        break;
-                    }
+                    else break;
                 }
                 else
                 {
@@ -361,6 +365,16 @@ namespace SkyImagesAnalyzerLibraries
                                     ServiceTools.FlushMemory(tbLog, "");
                                     break;
                                 }
+                            case "smoothcos":
+                                {
+                                    double a = stack.Pop().dNumber;
+                                    ImageOperationalValue b = stack.Pop();
+                                    summ = ImageOperationalValueSmoothCos(b, a);// b cut a - cuts "b" matrix elements using "a"-nodes spreading cos-based kernel
+                                    ServiceTools.FlushMemory(tbLog, "");
+                                    break;
+                                }
+                            default:
+                                break;
                         }
                     }
                     catch (Exception ex)
@@ -522,6 +536,39 @@ namespace SkyImagesAnalyzerLibraries
 
 
 
+
+        private ImageOperationalValue ImageOperationalValueSmoothCos(ImageOperationalValue a, double kernelWidth)
+        {
+            ImageOperationalValue res = new ImageOperationalValue();
+
+            if (a.operandType() == OperandTypes.DenseMatrix)
+            {
+                // сгладить гауссом или косинусом
+                int kernelHalfLength = Convert.ToInt32(kernelWidth/2.0d);
+                //double maxL = ((double)kernelHalfLength) * Math.Sqrt(2.0d);
+                //DenseMatrix dmKernel = DenseMatrix.Create(2 * kernelHalfLength + 1, 2 * kernelHalfLength + 1, (r, c) =>
+                //{
+                //    double curDist =
+                //        (new PointD(r - (double)kernelHalfLength, c - (double)kernelHalfLength)).Distance(new PointD(0.0d, 0.0d));
+                //    return Math.Cos(curDist * Math.PI / (2.0d * maxL));
+                //});
+
+
+                DenseMatrix dmSmoothed = a.DmImageComponent.Conv2(StandardConvolutionKernels.cos, kernelHalfLength);
+                res.DmImageComponent = dmSmoothed;
+            }
+            else
+            {
+                res.dNumber = a.dNumber;
+            }
+
+            return res;
+        }
+
+
+
+
+
         //пока что возводит в степень
         //надо посчитать Фурье, отрезать высокие гармоники, вернуть обратно
         //пока отрежем значения, лежащие за пределами интервала 3*sigma от среднего
@@ -532,10 +579,10 @@ namespace SkyImagesAnalyzerLibraries
 
             if (a.operandType() == OperandTypes.DenseMatrix)
             {
-                DenseMatrix dmRes = (DenseMatrix)a.DmImageComponent.Clone();
+                //DenseMatrix dmRes = (DenseMatrix)a.DmImageComponent.Clone();
 
                 //determining the new mean value
-                DenseMatrix dmTmp = (DenseMatrix)a.DmImageComponent.Clone();
+                DenseMatrix dmTmp = a.DmImageComponent.Copy();
                 DescriptiveStatistics stats = new DescriptiveStatistics(dmTmp.Values);
                 double dataMeanTmp = stats.Mean;
                 double standDevTmp = stats.StandardDeviation;
@@ -544,30 +591,31 @@ namespace SkyImagesAnalyzerLibraries
                 {
                     if (Math.Abs(dVal - dataMeanTmp) > deviationMarginTmp)
                     {
-                        double theSign = (dVal - dataMeanTmp) / Math.Abs(dVal - dataMeanTmp);
-                        return double.NaN;
+                        //double theSign = (dVal - dataMeanTmp) / Math.Abs(dVal - dataMeanTmp);
+                        // return double.NaN;
+                        return dataMeanTmp;
                     }
                     else return dVal;
                 }));
                 
-                stats = new DescriptiveStatistics(dmTmp.Values);
-                double dataMean = stats.Mean;
-                double standDev = stats.StandardDeviation;
-                double deviationMargin = sigmaCount * standDev;
+                //stats = new DescriptiveStatistics(dmTmp.Values);
+                //double dataMean = stats.Mean;
+                //double standDev = stats.StandardDeviation;
+                //double deviationMargin = sigmaCount * standDev;
 
-                //dmRes.MapInplace(new Func<double, double>((x) => { return Math.Pow(x, sigmaCount); }));
-                //stats = new DescriptiveStatistics(dmRes.Values);
-                dmRes.MapInplace(new Func<double,double>((dVal) =>
-                {
-                    if (Math.Abs(dVal - dataMean) > deviationMargin)
-                    {
-                        //double theSign = (dVal - dataMean)/Math.Abs(dVal - dataMean);
-                        return dataMean;
-                    }
-                    else return dVal;
-                }));
+                ////dmRes.MapInplace(new Func<double, double>((x) => { return Math.Pow(x, sigmaCount); }));
+                ////stats = new DescriptiveStatistics(dmRes.Values);
+                //dmRes.MapInplace(new Func<double,double>((dVal) =>
+                //{
+                //    if (Math.Abs(dVal - dataMean) > deviationMargin)
+                //    {
+                //        //double theSign = (dVal - dataMean)/Math.Abs(dVal - dataMean);
+                //        return dataMean;
+                //    }
+                //    else return dVal;
+                //}));
 
-                res.DmImageComponent = dmRes;
+                res.DmImageComponent = dmTmp.Copy();
             }
             else
             {
