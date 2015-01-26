@@ -55,6 +55,12 @@ namespace CloudCamsDataAnalysis
 
         private void MainForm_Paint(object sender, PaintEventArgs e)
         {
+            if ((wholeImgID1 == null) || (wholeImgID2 == null))
+            {
+                return;
+            }
+
+
             Image<Bgr, byte> wholeImgID1Copy = wholeImgID1.Copy();
             if (rdImgID1 != null)
             {

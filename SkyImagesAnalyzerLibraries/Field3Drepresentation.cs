@@ -10,6 +10,7 @@ using System.Windows.Forms;
 using ILNumerics;
 using ILNumerics.Drawing;
 using ILNumerics.Drawing.Plotting;
+using MathNet.Numerics.LinearAlgebra;
 using MathNet.Numerics.LinearAlgebra.Double;
 
 namespace SkyImagesAnalyzerLibraries
@@ -26,6 +27,7 @@ namespace SkyImagesAnalyzerLibraries
         public DenseMatrix dmData = null;
         public DenseMatrix dmDataXcoord = null;
         public DenseMatrix dmDataYcoord = null;
+
         public int kernelHalfLength = 10;
         public int maxClustersCount = 4;
 
@@ -59,7 +61,7 @@ namespace SkyImagesAnalyzerLibraries
 
             dmData = dmDataToRepresent.Copy();
 
-            #region events density field representing
+            
             ILScene scene = new ILScene();
             currSurfPlotCube = new ILPlotCube();
             currSurfPlotCube.TwoDMode = false;
@@ -89,11 +91,18 @@ namespace SkyImagesAnalyzerLibraries
             scene.Add(currSurfPlotCube);
 
             ilPanel1.Scene = scene;
-            #endregion events density field representing
         }
 
 
 
+
+
+        
+
+
+
+
+        
 
 
 

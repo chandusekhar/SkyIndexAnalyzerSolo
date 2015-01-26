@@ -322,9 +322,7 @@ namespace SkyImagesAnalyzerLibraries
             //img1 = img1.ThresholdBinary(new Gray(150), white);
 
 
-            Contour<Point> contoursDetected =
-                img1.FindContours(Emgu.CV.CvEnum.CHAIN_APPROX_METHOD.CV_CHAIN_APPROX_SIMPLE,
-                    Emgu.CV.CvEnum.RETR_TYPE.CV_RETR_LIST);
+            Contour<Point> contoursDetected = img1.FindContours(Emgu.CV.CvEnum.CHAIN_APPROX_METHOD.CV_CHAIN_APPROX_SIMPLE, Emgu.CV.CvEnum.RETR_TYPE.CV_RETR_LIST);
             return contoursDetected;
         }
 
@@ -382,6 +380,14 @@ namespace SkyImagesAnalyzerLibraries
         public static Point FlipLeftToRight(this Point pt, Size imageSize)
         {
             return new Point(pt.Y, imageSize.Width - pt.X);
+        }
+
+
+
+        public static Color ToRGBColor(this Bgr bgrColor)
+        {
+            Color retColor = Color.FromArgb(Convert.ToInt32(bgrColor.Red), Convert.ToInt32(bgrColor.Green), Convert.ToInt32(bgrColor.Blue));
+            return retColor;
         }
 
     }

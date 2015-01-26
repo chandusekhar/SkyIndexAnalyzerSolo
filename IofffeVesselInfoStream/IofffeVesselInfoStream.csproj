@@ -56,6 +56,14 @@
     <DebugSymbols>true</DebugSymbols>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Emgu.CV">
+      <HintPath>..\..\components\EmguCV-2.4.10-compiled\bin\debug\x64\Emgu.CV.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Emgu.Util">
+      <HintPath>..\..\components\EmguCV-2.4.10-compiled\bin\debug\x64\Emgu.Util.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
     <Reference Include="MathNet.Numerics">
       <HintPath>..\packages\MathNet.Numerics.3.3.0\lib\net40\MathNet.Numerics.dll</HintPath>
       <Private>False</Private>
@@ -113,21 +121,6 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\emgucvcode\Emgu.CV.UI\Emgu.CV.UI.csproj">
-      <Project>{90e78bbf-c7fe-4d8e-ade1-75448e866fdb}</Project>
-      <Name>Emgu.CV.UI</Name>
-      <Private>False</Private>
-    </ProjectReference>
-    <ProjectReference Include="..\emgucvcode\Emgu.CV\Emgu.CV.csproj">
-      <Project>{9a1a77fe-f01b-495e-87b7-4b16e4f8c908}</Project>
-      <Name>Emgu.CV</Name>
-      <Private>False</Private>
-    </ProjectReference>
-    <ProjectReference Include="..\emgucvcode\Emgu.Util\Emgu.Util.csproj">
-      <Project>{7c2c5325-8235-4a24-9c67-6bd79a4679e2}</Project>
-      <Name>Emgu.Util</Name>
-      <Private>False</Private>
-    </ProjectReference>
     <ProjectReference Include="..\SkyImagesAnalyzerLibraries\SkyImagesAnalyzerLibraries.csproj">
       <Project>{7beac8e4-e53f-466a-b824-1fe69e60d114}</Project>
       <Name>SkyImagesAnalyzerLibraries</Name>

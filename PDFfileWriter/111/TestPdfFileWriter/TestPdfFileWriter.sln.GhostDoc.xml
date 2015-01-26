@@ -9,7 +9,7 @@
   </SpellChecker>
 <HelpConfigurations selected="HelpFile">
   <HelpConfiguration name="HelpFile">
-    <OutputPath>C:\_gulevlab\SkyIndexAnalyzerSolo\PDFfileWriter\111\TestPdfFileWriter\Help</OutputPath>
+    <OutputPath>D:\_gulevlab\SkyImagesAnalysis\PDFfileWriter\111\TestPdfFileWriter\Help</OutputPath>
     <ImageFolderPath />
     <HtmlFormats>
       <HtmlHelp>true</HtmlHelp>

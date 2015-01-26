@@ -116,8 +116,22 @@
     <UseVSHostingProcess>false</UseVSHostingProcess>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="ILNumerics, Version=4.5.5459.40319, Culture=neutral, PublicKeyToken=8d9bf50ef854734d, processorArchitecture=MSIL" />
-    <Reference Include="MathNet.Numerics">
+    <Reference Include="Emgu.CV">
+      <HintPath>..\..\components\EmguCV-2.4.10-compiled\bin\debug\x64\Emgu.CV.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Emgu.CV.UI">
+      <HintPath>..\..\components\EmguCV-2.4.10-compiled\bin\debug\x64\Emgu.CV.UI.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Emgu.Util">
+      <HintPath>..\..\components\EmguCV-2.4.10-compiled\bin\debug\x64\Emgu.Util.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="ILNumerics, Version=4.6.0.0, Culture=neutral, PublicKeyToken=8d9bf50ef854734d, processorArchitecture=MSIL" />
+    <Reference Include="ILNumerics.IO.HDF5, Version=4.6.0.0, Culture=neutral, PublicKeyToken=85055996c33d20cc, processorArchitecture=MSIL" />
+    <Reference Include="MathNet.Numerics, Version=3.3.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\MathNet.Numerics.3.3.0\lib\net40\MathNet.Numerics.dll</HintPath>
       <Private>False</Private>
     </Reference>
@@ -253,21 +267,6 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="1381_cog.ico" />
-    <Content Include="libs\cublas32_50_35.dll">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="libs\cudart32_50_35.dll">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="libs\cufft32_50_35.dll">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="libs\cvextern.dll">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="libs\MathNet.Numerics.dll">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
     <Content Include="settings\SkyImagesAnalyzerSettings.xml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
@@ -277,198 +276,6 @@
     <Content Include="libs\Microsoft.GLEE.dll" />
     <Content Include="libs\Microsoft.GLEE.Drawing.dll" />
     <Content Include="libs\Microsoft.GLEE.GraphViewerGDI.dll" />
-    <Content Include="libs\npp32_50_35.dll">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="libs\OpenCL.dll">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="libs\OpenCL.pdb">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="libs\opencv_bioinspired290.dll">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="libs\opencv_bioinspired290.pdb">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="libs\opencv_calib3d290.dll">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="libs\opencv_calib3d290.pdb">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="libs\opencv_contrib290.dll">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="libs\opencv_contrib290.pdb">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="libs\opencv_core290.dll">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="libs\opencv_core290.pdb">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="libs\opencv_features2d290.dll">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="libs\opencv_features2d290.pdb">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="libs\opencv_ffmpeg290_64.dll">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="libs\opencv_flann290.dll">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="libs\opencv_flann290.pdb">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="libs\opencv_gpu290.dll">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="libs\opencv_gpu290.pdb">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="libs\opencv_gpuarithm290.dll">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="libs\opencv_gpuarithm290.pdb">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="libs\opencv_gpubgsegm290.dll">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="libs\opencv_gpubgsegm290.pdb">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="libs\opencv_gpucodec290.dll">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="libs\opencv_gpucodec290.pdb">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="libs\opencv_gpufeatures2d290.dll">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="libs\opencv_gpufeatures2d290.pdb">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="libs\opencv_gpufilters290.dll">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="libs\opencv_gpufilters290.pdb">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="libs\opencv_gpuimgproc290.dll">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="libs\opencv_gpuimgproc290.pdb">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="libs\opencv_gpuoptflow290.dll">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="libs\opencv_gpuoptflow290.pdb">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="libs\opencv_gpustereo290.dll">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="libs\opencv_gpustereo290.pdb">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="libs\opencv_gpuwarping290.dll">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="libs\opencv_gpuwarping290.pdb">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="libs\opencv_highgui290.dll">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="libs\opencv_highgui290.pdb">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="libs\opencv_imgproc290.dll">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="libs\opencv_imgproc290.pdb">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="libs\opencv_legacy290.dll">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="libs\opencv_legacy290.pdb">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="libs\opencv_ml290.dll">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="libs\opencv_ml290.pdb">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="libs\opencv_nonfree290.dll">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="libs\opencv_nonfree290.pdb">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="libs\opencv_objdetect290.dll">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="libs\opencv_objdetect290.pdb">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="libs\opencv_ocl290.dll">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="libs\opencv_ocl290.pdb">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="libs\opencv_optim290.dll">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="libs\opencv_optim290.pdb">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="libs\opencv_photo290.dll">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="libs\opencv_photo290.pdb">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="libs\opencv_softcascade290.dll">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="libs\opencv_softcascade290.pdb">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="libs\opencv_stitching290.dll">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="libs\opencv_stitching290.pdb">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="libs\opencv_superres290.dll">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="libs\opencv_superres290.pdb">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="libs\opencv_video290.dll">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="libs\opencv_video290.pdb">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="libs\opencv_videostab290.dll">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="libs\opencv_videostab290.pdb">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
     <Content Include="Resources\1381_cog.ico" />
     <Content Include="Resources\gearIcon.png" />
   </ItemGroup>
@@ -484,21 +291,6 @@
     </COMReference>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\emgucvcode\Emgu.CV.UI\Emgu.CV.UI.csproj">
-      <Project>{90e78bbf-c7fe-4d8e-ade1-75448e866fdb}</Project>
-      <Name>Emgu.CV.UI</Name>
-      <Private>False</Private>
-    </ProjectReference>
-    <ProjectReference Include="..\emgucvcode\Emgu.CV\Emgu.CV.csproj">
-      <Project>{9a1a77fe-f01b-495e-87b7-4b16e4f8c908}</Project>
-      <Name>Emgu.CV</Name>
-      <Private>False</Private>
-    </ProjectReference>
-    <ProjectReference Include="..\emgucvcode\Emgu.Util\Emgu.Util.csproj">
-      <Project>{7c2c5325-8235-4a24-9c67-6bd79a4679e2}</Project>
-      <Name>Emgu.Util</Name>
-      <Private>False</Private>
-    </ProjectReference>
     <ProjectReference Include="..\MRG.Controls.UI\MRG.Controls.UI.csproj">
       <Project>{48e18b56-4c37-4d69-aba7-429c42b45aac}</Project>
       <Name>MRG.Controls.UI</Name>

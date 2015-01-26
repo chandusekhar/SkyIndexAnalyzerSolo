@@ -80,6 +80,6 @@ unsigned long bmp085ReadUP();
 
 #include "C:\Program Files (x86)\Arduino\hardware\arduino\cores\arduino\arduino.h"
 #include "C:\Program Files (x86)\Arduino\hardware\arduino\variants\standard\pins_arduino.h" 
-#include "D:\_gulevlab\SkyIndexAnalyzerSolo\SensorsCollecting\SensorsCollecting.ino"
-#include "D:\_gulevlab\SkyIndexAnalyzerSolo\SensorsCollecting\BMP085.ino"
+#include "D:\_gulevlab\SkyImagesAnalysis\SensorsCollecting\SensorsCollecting.ino"
+#include "D:\_gulevlab\SkyImagesAnalysis\SensorsCollecting\BMP085.ino"
 #endif

@@ -65,13 +65,21 @@
             this.btnShowMedianPerc5Diagram = new System.Windows.Forms.Button();
             this.btnDensityProcessing = new System.Windows.Forms.Button();
             this.btnSortImagesByClasses = new System.Windows.Forms.Button();
+            this.btnTestSunDetection2015 = new System.Windows.Forms.Button();
             this.bgwProcessDirectoryOfImages = new System.ComponentModel.BackgroundWorker();
             this.bgwSunDetectionOnly = new System.ComponentModel.BackgroundWorker();
-            this.btnTestSunDetection2015 = new System.Windows.Forms.Button();
+            this.lblResultTitle = new System.Windows.Forms.Label();
+            this.groupBox1 = new System.Windows.Forms.GroupBox();
+            this.groupBox2 = new System.Windows.Forms.GroupBox();
+            this.rbtnShowDensity = new System.Windows.Forms.RadioButton();
+            this.rbtnClusterizePoints = new System.Windows.Forms.RadioButton();
+            this.rbtnSaveClustering = new System.Windows.Forms.RadioButton();
             ((System.ComponentModel.ISupportInitialize)(this.trackBar1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.tableLayoutPanel1.SuspendLayout();
+            this.groupBox1.SuspendLayout();
+            this.groupBox2.SuspendLayout();
             this.SuspendLayout();
             // 
             // bgwProcessOneImage
@@ -120,6 +128,7 @@
             // 
             // button4
             // 
+            this.button4.BackColor = System.Drawing.SystemColors.ControlLight;
             this.button4.Dock = System.Windows.Forms.DockStyle.Fill;
             this.button4.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.button4.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
@@ -129,7 +138,7 @@
             this.button4.Size = new System.Drawing.Size(85, 45);
             this.button4.TabIndex = 20;
             this.button4.Text = "OK";
-            this.button4.UseVisualStyleBackColor = true;
+            this.button4.UseVisualStyleBackColor = false;
             this.button4.Click += new System.EventHandler(this.button2_Click_1);
             // 
             // trackBar1
@@ -181,11 +190,11 @@
             this.pictureBox2.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
             this.tableLayoutPanel1.SetColumnSpan(this.pictureBox2, 4);
             this.pictureBox2.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.pictureBox2.Location = new System.Drawing.Point(4, 84);
+            this.pictureBox2.Location = new System.Drawing.Point(1027, 117);
             this.pictureBox2.Margin = new System.Windows.Forms.Padding(4);
             this.pictureBox2.Name = "pictureBox2";
-            this.tableLayoutPanel1.SetRowSpan(this.pictureBox2, 10);
-            this.pictureBox2.Size = new System.Drawing.Size(364, 322);
+            this.tableLayoutPanel1.SetRowSpan(this.pictureBox2, 9);
+            this.pictureBox2.Size = new System.Drawing.Size(377, 289);
             this.pictureBox2.TabIndex = 11;
             this.pictureBox2.TabStop = false;
             this.pictureBox2.Click += new System.EventHandler(this.pictureBox2_Click);
@@ -193,13 +202,13 @@
             // pictureBox1
             // 
             this.pictureBox1.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
-            this.tableLayoutPanel1.SetColumnSpan(this.pictureBox1, 6);
+            this.tableLayoutPanel1.SetColumnSpan(this.pictureBox1, 4);
             this.pictureBox1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.pictureBox1.Location = new System.Drawing.Point(376, 84);
+            this.pictureBox1.Location = new System.Drawing.Point(4, 117);
             this.pictureBox1.Margin = new System.Windows.Forms.Padding(4);
             this.pictureBox1.Name = "pictureBox1";
-            this.tableLayoutPanel1.SetRowSpan(this.pictureBox1, 10);
-            this.pictureBox1.Size = new System.Drawing.Size(550, 322);
+            this.tableLayoutPanel1.SetRowSpan(this.pictureBox1, 9);
+            this.pictureBox1.Size = new System.Drawing.Size(364, 289);
             this.pictureBox1.TabIndex = 10;
             this.pictureBox1.TabStop = false;
             this.pictureBox1.Click += new System.EventHandler(this.pictureBox1_Click);
@@ -267,9 +276,8 @@
             this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 6.666666F));
             this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 6.666666F));
             this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 6.666666F));
-            this.tableLayoutPanel1.Controls.Add(this.rbtnClassMethodGrIx, 4, 15);
-            this.tableLayoutPanel1.Controls.Add(this.pictureBox1, 4, 1);
-            this.tableLayoutPanel1.Controls.Add(this.pictureBox2, 0, 1);
+            this.tableLayoutPanel1.Controls.Add(this.pictureBox1, 0, 2);
+            this.tableLayoutPanel1.Controls.Add(this.pictureBox2, 11, 2);
             this.tableLayoutPanel1.Controls.Add(this.label2, 13, 12);
             this.tableLayoutPanel1.Controls.Add(this.label1, 0, 12);
             this.tableLayoutPanel1.Controls.Add(this.trackBar1, 4, 12);
@@ -283,19 +291,20 @@
             this.tableLayoutPanel1.Controls.Add(this.обработатьToolStripMenuItem, 2, 0);
             this.tableLayoutPanel1.Controls.Add(this.DetectEdgesButton, 4, 0);
             this.tableLayoutPanel1.Controls.Add(this.lblClassificationMethod, 0, 13);
-            this.tableLayoutPanel1.Controls.Add(this.rbtnClassMethodJapan, 4, 13);
-            this.tableLayoutPanel1.Controls.Add(this.rbtnClassMethodUS, 4, 14);
             this.tableLayoutPanel1.Controls.Add(this.richTextBox1, 0, 18);
             this.tableLayoutPanel1.Controls.Add(this.button2, 10, 0);
             this.tableLayoutPanel1.Controls.Add(this.btnProperties, 13, 0);
-            this.tableLayoutPanel1.Controls.Add(this.button3, 10, 1);
+            this.tableLayoutPanel1.Controls.Add(this.button3, 4, 2);
             this.tableLayoutPanel1.Controls.Add(this.btnAbout, 14, 0);
             this.tableLayoutPanel1.Controls.Add(this.btnTest1, 4, 19);
             this.tableLayoutPanel1.Controls.Add(this.btnProcessDirectorySI, 10, 19);
-            this.tableLayoutPanel1.Controls.Add(this.btnShowMedianPerc5Diagram, 10, 3);
-            this.tableLayoutPanel1.Controls.Add(this.btnDensityProcessing, 10, 5);
+            this.tableLayoutPanel1.Controls.Add(this.btnShowMedianPerc5Diagram, 7, 2);
+            this.tableLayoutPanel1.Controls.Add(this.btnDensityProcessing, 4, 4);
             this.tableLayoutPanel1.Controls.Add(this.btnSortImagesByClasses, 4, 21);
-            this.tableLayoutPanel1.Controls.Add(this.btnTestSunDetection2015, 10, 9);
+            this.tableLayoutPanel1.Controls.Add(this.btnTestSunDetection2015, 4, 8);
+            this.tableLayoutPanel1.Controls.Add(this.lblResultTitle, 0, 1);
+            this.tableLayoutPanel1.Controls.Add(this.groupBox1, 8, 4);
+            this.tableLayoutPanel1.Controls.Add(this.groupBox2, 4, 13);
             this.tableLayoutPanel1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tableLayoutPanel1.Location = new System.Drawing.Point(0, 0);
             this.tableLayoutPanel1.Margin = new System.Windows.Forms.Padding(0);
@@ -329,14 +338,12 @@
             // rbtnClassMethodGrIx
             // 
             this.rbtnClassMethodGrIx.AutoSize = true;
-            this.tableLayoutPanel1.SetColumnSpan(this.rbtnClassMethodGrIx, 3);
-            this.rbtnClassMethodGrIx.Dock = System.Windows.Forms.DockStyle.Fill;
             this.rbtnClassMethodGrIx.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.rbtnClassMethodGrIx.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.rbtnClassMethodGrIx.Location = new System.Drawing.Point(376, 580);
+            this.rbtnClassMethodGrIx.Location = new System.Drawing.Point(7, 81);
             this.rbtnClassMethodGrIx.Margin = new System.Windows.Forms.Padding(4);
             this.rbtnClassMethodGrIx.Name = "rbtnClassMethodGrIx";
-            this.rbtnClassMethodGrIx.Size = new System.Drawing.Size(271, 32);
+            this.rbtnClassMethodGrIx.Size = new System.Drawing.Size(117, 29);
             this.rbtnClassMethodGrIx.TabIndex = 50;
             this.rbtnClassMethodGrIx.Text = "GrIx SAIL";
             this.rbtnClassMethodGrIx.UseVisualStyleBackColor = true;
@@ -355,6 +362,7 @@
             // 
             // button1
             // 
+            this.button1.BackColor = System.Drawing.SystemColors.ControlLight;
             this.tableLayoutPanel1.SetColumnSpan(this.button1, 4);
             this.button1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.button1.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
@@ -366,11 +374,12 @@
             this.button1.Size = new System.Drawing.Size(372, 111);
             this.button1.TabIndex = 32;
             this.button1.Text = "Обработка директории: (cloud cover)";
-            this.button1.UseVisualStyleBackColor = true;
+            this.button1.UseVisualStyleBackColor = false;
             this.button1.Click += new System.EventHandler(this.button1_Click);
             // 
             // открытьФайлToolStripMenuItem
             // 
+            this.открытьФайлToolStripMenuItem.BackColor = System.Drawing.SystemColors.ControlLight;
             this.tableLayoutPanel1.SetColumnSpan(this.открытьФайлToolStripMenuItem, 2);
             this.открытьФайлToolStripMenuItem.Dock = System.Windows.Forms.DockStyle.Fill;
             this.открытьФайлToolStripMenuItem.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
@@ -381,11 +390,12 @@
             this.открытьФайлToolStripMenuItem.Size = new System.Drawing.Size(178, 72);
             this.открытьФайлToolStripMenuItem.TabIndex = 34;
             this.открытьФайлToolStripMenuItem.Text = "Открыть файл";
-            this.открытьФайлToolStripMenuItem.UseVisualStyleBackColor = true;
+            this.открытьФайлToolStripMenuItem.UseVisualStyleBackColor = false;
             this.открытьФайлToolStripMenuItem.Click += new System.EventHandler(this.button1_Click_1);
             // 
             // обработатьToolStripMenuItem
             // 
+            this.обработатьToolStripMenuItem.BackColor = System.Drawing.SystemColors.ControlLight;
             this.tableLayoutPanel1.SetColumnSpan(this.обработатьToolStripMenuItem, 2);
             this.обработатьToolStripMenuItem.Dock = System.Windows.Forms.DockStyle.Fill;
             this.обработатьToolStripMenuItem.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
@@ -396,11 +406,12 @@
             this.обработатьToolStripMenuItem.Size = new System.Drawing.Size(178, 72);
             this.обработатьToolStripMenuItem.TabIndex = 35;
             this.обработатьToolStripMenuItem.Text = "Обработать";
-            this.обработатьToolStripMenuItem.UseVisualStyleBackColor = true;
+            this.обработатьToolStripMenuItem.UseVisualStyleBackColor = false;
             this.обработатьToolStripMenuItem.Click += new System.EventHandler(this.button2_Click_1);
             // 
             // DetectEdgesButton
             // 
+            this.DetectEdgesButton.BackColor = System.Drawing.SystemColors.ControlLight;
             this.tableLayoutPanel1.SetColumnSpan(this.DetectEdgesButton, 2);
             this.DetectEdgesButton.Dock = System.Windows.Forms.DockStyle.Fill;
             this.DetectEdgesButton.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
@@ -411,7 +422,7 @@
             this.DetectEdgesButton.Size = new System.Drawing.Size(178, 72);
             this.DetectEdgesButton.TabIndex = 43;
             this.DetectEdgesButton.Text = "Разметка по октам";
-            this.DetectEdgesButton.UseVisualStyleBackColor = true;
+            this.DetectEdgesButton.UseVisualStyleBackColor = false;
             this.DetectEdgesButton.Click += new System.EventHandler(this.DetectEdgesButton_Click);
             // 
             // lblClassificationMethod
@@ -435,14 +446,12 @@
             // 
             this.rbtnClassMethodJapan.AutoSize = true;
             this.rbtnClassMethodJapan.Checked = true;
-            this.tableLayoutPanel1.SetColumnSpan(this.rbtnClassMethodJapan, 3);
-            this.rbtnClassMethodJapan.Dock = System.Windows.Forms.DockStyle.Fill;
             this.rbtnClassMethodJapan.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.rbtnClassMethodJapan.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.rbtnClassMethodJapan.Location = new System.Drawing.Point(376, 500);
+            this.rbtnClassMethodJapan.Location = new System.Drawing.Point(7, 1);
             this.rbtnClassMethodJapan.Margin = new System.Windows.Forms.Padding(4);
             this.rbtnClassMethodJapan.Name = "rbtnClassMethodJapan";
-            this.rbtnClassMethodJapan.Size = new System.Drawing.Size(271, 32);
+            this.rbtnClassMethodJapan.Size = new System.Drawing.Size(199, 29);
             this.rbtnClassMethodJapan.TabIndex = 46;
             this.rbtnClassMethodJapan.TabStop = true;
             this.rbtnClassMethodJapan.Text = "(R-B)/(R+B)   (Jap)";
@@ -452,14 +461,12 @@
             // rbtnClassMethodUS
             // 
             this.rbtnClassMethodUS.AutoSize = true;
-            this.tableLayoutPanel1.SetColumnSpan(this.rbtnClassMethodUS, 3);
-            this.rbtnClassMethodUS.Dock = System.Windows.Forms.DockStyle.Fill;
             this.rbtnClassMethodUS.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.rbtnClassMethodUS.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.rbtnClassMethodUS.Location = new System.Drawing.Point(376, 540);
+            this.rbtnClassMethodUS.Location = new System.Drawing.Point(7, 41);
             this.rbtnClassMethodUS.Margin = new System.Windows.Forms.Padding(4);
             this.rbtnClassMethodUS.Name = "rbtnClassMethodUS";
-            this.rbtnClassMethodUS.Size = new System.Drawing.Size(271, 32);
+            this.rbtnClassMethodUS.Size = new System.Drawing.Size(116, 29);
             this.rbtnClassMethodUS.TabIndex = 47;
             this.rbtnClassMethodUS.Text = "B/R  (US)";
             this.rbtnClassMethodUS.UseVisualStyleBackColor = true;
@@ -478,6 +485,7 @@
             // 
             // button2
             // 
+            this.button2.BackColor = System.Drawing.SystemColors.ControlLight;
             this.tableLayoutPanel1.SetColumnSpan(this.button2, 3);
             this.button2.Dock = System.Windows.Forms.DockStyle.Fill;
             this.button2.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
@@ -488,11 +496,12 @@
             this.button2.Size = new System.Drawing.Size(271, 72);
             this.button2.TabIndex = 49;
             this.button2.Text = "Ручной анализ цветности";
-            this.button2.UseVisualStyleBackColor = true;
+            this.button2.UseVisualStyleBackColor = false;
             this.button2.Click += new System.EventHandler(this.button2_Click);
             // 
             // btnProperties
             // 
+            this.btnProperties.BackColor = System.Drawing.SystemColors.ControlLight;
             this.btnProperties.Dock = System.Windows.Forms.DockStyle.Fill;
             this.btnProperties.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnProperties.Image = global::SkyImagesAnalyzer.Properties.Resources.process;
@@ -501,27 +510,29 @@
             this.btnProperties.Name = "btnProperties";
             this.btnProperties.Size = new System.Drawing.Size(85, 72);
             this.btnProperties.TabIndex = 52;
-            this.btnProperties.UseVisualStyleBackColor = true;
+            this.btnProperties.UseVisualStyleBackColor = false;
             this.btnProperties.Click += new System.EventHandler(this.btnProperties_Click);
             // 
             // button3
             // 
-            this.tableLayoutPanel1.SetColumnSpan(this.button3, 5);
+            this.button3.BackColor = System.Drawing.SystemColors.ControlLight;
+            this.tableLayoutPanel1.SetColumnSpan(this.button3, 3);
             this.button3.Dock = System.Windows.Forms.DockStyle.Fill;
             this.button3.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.button3.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.button3.Location = new System.Drawing.Point(934, 84);
+            this.button3.Location = new System.Drawing.Point(376, 117);
             this.button3.Margin = new System.Windows.Forms.Padding(4);
             this.button3.Name = "button3";
             this.tableLayoutPanel1.SetRowSpan(this.button3, 2);
-            this.button3.Size = new System.Drawing.Size(470, 58);
+            this.button3.Size = new System.Drawing.Size(271, 58);
             this.button3.TabIndex = 53;
             this.button3.Text = "GrIx histogram";
-            this.button3.UseVisualStyleBackColor = true;
+            this.button3.UseVisualStyleBackColor = false;
             this.button3.Click += new System.EventHandler(this.button3_Click_1);
             // 
             // btnAbout
             // 
+            this.btnAbout.BackColor = System.Drawing.SystemColors.ControlLight;
             this.btnAbout.Dock = System.Windows.Forms.DockStyle.Fill;
             this.btnAbout.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnAbout.Image = global::SkyImagesAnalyzer.Properties.Resources.info;
@@ -530,11 +541,12 @@
             this.btnAbout.Name = "btnAbout";
             this.btnAbout.Size = new System.Drawing.Size(98, 72);
             this.btnAbout.TabIndex = 57;
-            this.btnAbout.UseVisualStyleBackColor = true;
+            this.btnAbout.UseVisualStyleBackColor = false;
             this.btnAbout.Click += new System.EventHandler(this.btnAbout_Click);
             // 
             // btnTest1
             // 
+            this.btnTest1.BackColor = System.Drawing.SystemColors.ControlLight;
             this.tableLayoutPanel1.SetColumnSpan(this.btnTest1, 6);
             this.btnTest1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.btnTest1.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
@@ -546,11 +558,12 @@
             this.btnTest1.Size = new System.Drawing.Size(558, 66);
             this.btnTest1.TabIndex = 59;
             this.btnTest1.Text = "Collect statistics (5perc and Median valus over images set)";
-            this.btnTest1.UseVisualStyleBackColor = true;
+            this.btnTest1.UseVisualStyleBackColor = false;
             this.btnTest1.Click += new System.EventHandler(this.btnTest1_Click);
             // 
             // btnProcessDirectorySI
             // 
+            this.btnProcessDirectorySI.BackColor = System.Drawing.SystemColors.ControlLight;
             this.tableLayoutPanel1.SetColumnSpan(this.btnProcessDirectorySI, 5);
             this.btnProcessDirectorySI.Dock = System.Windows.Forms.DockStyle.Fill;
             this.btnProcessDirectorySI.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
@@ -562,41 +575,44 @@
             this.btnProcessDirectorySI.Size = new System.Drawing.Size(478, 111);
             this.btnProcessDirectorySI.TabIndex = 60;
             this.btnProcessDirectorySI.Text = "Обработка директории (только SkyIndex)";
-            this.btnProcessDirectorySI.UseVisualStyleBackColor = true;
+            this.btnProcessDirectorySI.UseVisualStyleBackColor = false;
             this.btnProcessDirectorySI.Click += new System.EventHandler(this.btnProcessDirectorySI_Click);
             // 
             // btnShowMedianPerc5Diagram
             // 
-            this.tableLayoutPanel1.SetColumnSpan(this.btnShowMedianPerc5Diagram, 5);
+            this.btnShowMedianPerc5Diagram.BackColor = System.Drawing.SystemColors.ControlLight;
+            this.tableLayoutPanel1.SetColumnSpan(this.btnShowMedianPerc5Diagram, 4);
             this.btnShowMedianPerc5Diagram.Dock = System.Windows.Forms.DockStyle.Fill;
             this.btnShowMedianPerc5Diagram.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnShowMedianPerc5Diagram.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnShowMedianPerc5Diagram.Location = new System.Drawing.Point(933, 149);
+            this.btnShowMedianPerc5Diagram.Location = new System.Drawing.Point(654, 116);
             this.btnShowMedianPerc5Diagram.Name = "btnShowMedianPerc5Diagram";
             this.tableLayoutPanel1.SetRowSpan(this.btnShowMedianPerc5Diagram, 2);
-            this.btnShowMedianPerc5Diagram.Size = new System.Drawing.Size(472, 60);
+            this.btnShowMedianPerc5Diagram.Size = new System.Drawing.Size(366, 60);
             this.btnShowMedianPerc5Diagram.TabIndex = 61;
             this.btnShowMedianPerc5Diagram.Text = "Show at median-5perc diagram";
-            this.btnShowMedianPerc5Diagram.UseVisualStyleBackColor = true;
+            this.btnShowMedianPerc5Diagram.UseVisualStyleBackColor = false;
             this.btnShowMedianPerc5Diagram.Click += new System.EventHandler(this.btnShowMedianPerc5Diagram_Click);
             // 
             // btnDensityProcessing
             // 
-            this.tableLayoutPanel1.SetColumnSpan(this.btnDensityProcessing, 5);
+            this.btnDensityProcessing.BackColor = System.Drawing.SystemColors.ControlLight;
+            this.tableLayoutPanel1.SetColumnSpan(this.btnDensityProcessing, 4);
             this.btnDensityProcessing.Dock = System.Windows.Forms.DockStyle.Fill;
             this.btnDensityProcessing.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnDensityProcessing.Font = new System.Drawing.Font("Microsoft Sans Serif", 13.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnDensityProcessing.Location = new System.Drawing.Point(933, 215);
+            this.btnDensityProcessing.Location = new System.Drawing.Point(375, 182);
             this.btnDensityProcessing.Name = "btnDensityProcessing";
-            this.tableLayoutPanel1.SetRowSpan(this.btnDensityProcessing, 2);
-            this.btnDensityProcessing.Size = new System.Drawing.Size(472, 60);
+            this.tableLayoutPanel1.SetRowSpan(this.btnDensityProcessing, 4);
+            this.btnDensityProcessing.Size = new System.Drawing.Size(366, 126);
             this.btnDensityProcessing.TabIndex = 62;
-            this.btnDensityProcessing.Text = "Process density (m;p5)...";
-            this.btnDensityProcessing.UseVisualStyleBackColor = true;
+            this.btnDensityProcessing.Text = "Show density (m;p5),\r\nclusterize points\r\nsave clusters data\r\n";
+            this.btnDensityProcessing.UseVisualStyleBackColor = false;
             this.btnDensityProcessing.Click += new System.EventHandler(this.btnDensityProcessing_Click);
             // 
             // btnSortImagesByClasses
             // 
+            this.btnSortImagesByClasses.BackColor = System.Drawing.SystemColors.ControlLight;
             this.tableLayoutPanel1.SetColumnSpan(this.btnSortImagesByClasses, 6);
             this.btnSortImagesByClasses.Dock = System.Windows.Forms.DockStyle.Fill;
             this.btnSortImagesByClasses.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
@@ -606,8 +622,24 @@
             this.btnSortImagesByClasses.Size = new System.Drawing.Size(552, 39);
             this.btnSortImagesByClasses.TabIndex = 63;
             this.btnSortImagesByClasses.Text = "Sort images by classes";
-            this.btnSortImagesByClasses.UseVisualStyleBackColor = true;
+            this.btnSortImagesByClasses.UseVisualStyleBackColor = false;
             this.btnSortImagesByClasses.Click += new System.EventHandler(this.btnSortImagesByClasses_Click);
+            // 
+            // btnTestSunDetection2015
+            // 
+            this.btnTestSunDetection2015.BackColor = System.Drawing.SystemColors.ControlLight;
+            this.tableLayoutPanel1.SetColumnSpan(this.btnTestSunDetection2015, 7);
+            this.btnTestSunDetection2015.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.btnTestSunDetection2015.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnTestSunDetection2015.Font = new System.Drawing.Font("Microsoft Sans Serif", 13.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.btnTestSunDetection2015.Location = new System.Drawing.Point(375, 314);
+            this.btnTestSunDetection2015.Name = "btnTestSunDetection2015";
+            this.tableLayoutPanel1.SetRowSpan(this.btnTestSunDetection2015, 3);
+            this.btnTestSunDetection2015.Size = new System.Drawing.Size(645, 93);
+            this.btnTestSunDetection2015.TabIndex = 64;
+            this.btnTestSunDetection2015.Text = "sun detection jan`2015\r\n(пока не работает)";
+            this.btnTestSunDetection2015.UseVisualStyleBackColor = false;
+            this.btnTestSunDetection2015.Click += new System.EventHandler(this.btnTestSunDetection2015_Click);
             // 
             // bgwProcessDirectoryOfImages
             // 
@@ -617,20 +649,81 @@
             this.bgwProcessDirectoryOfImages.ProgressChanged += new System.ComponentModel.ProgressChangedEventHandler(this.backgroundWorker2_ProgressChanged);
             this.bgwProcessDirectoryOfImages.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(this.backgroundWorker2_RunWorkerCompleted);
             // 
-            // btnTestSunDetection2015
+            // lblResultTitle
             // 
-            this.tableLayoutPanel1.SetColumnSpan(this.btnTestSunDetection2015, 5);
-            this.btnTestSunDetection2015.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.btnTestSunDetection2015.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnTestSunDetection2015.Font = new System.Drawing.Font("Microsoft Sans Serif", 13.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnTestSunDetection2015.Location = new System.Drawing.Point(933, 347);
-            this.btnTestSunDetection2015.Name = "btnTestSunDetection2015";
-            this.tableLayoutPanel1.SetRowSpan(this.btnTestSunDetection2015, 2);
-            this.btnTestSunDetection2015.Size = new System.Drawing.Size(472, 60);
-            this.btnTestSunDetection2015.TabIndex = 64;
-            this.btnTestSunDetection2015.Text = "sun detection jan`2015";
-            this.btnTestSunDetection2015.UseVisualStyleBackColor = true;
-            this.btnTestSunDetection2015.Click += new System.EventHandler(this.btnTestSunDetection2015_Click);
+            this.lblResultTitle.AutoSize = true;
+            this.tableLayoutPanel1.SetColumnSpan(this.lblResultTitle, 4);
+            this.lblResultTitle.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.lblResultTitle.Font = new System.Drawing.Font("Microsoft Sans Serif", 16.2F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lblResultTitle.Location = new System.Drawing.Point(3, 80);
+            this.lblResultTitle.Name = "lblResultTitle";
+            this.lblResultTitle.Size = new System.Drawing.Size(366, 33);
+            this.lblResultTitle.TabIndex = 65;
+            this.lblResultTitle.Text = "source image";
+            this.lblResultTitle.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
+            // groupBox1
+            // 
+            this.tableLayoutPanel1.SetColumnSpan(this.groupBox1, 3);
+            this.groupBox1.Controls.Add(this.rbtnSaveClustering);
+            this.groupBox1.Controls.Add(this.rbtnClusterizePoints);
+            this.groupBox1.Controls.Add(this.rbtnShowDensity);
+            this.groupBox1.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.groupBox1.Location = new System.Drawing.Point(747, 182);
+            this.groupBox1.Name = "groupBox1";
+            this.tableLayoutPanel1.SetRowSpan(this.groupBox1, 4);
+            this.groupBox1.Size = new System.Drawing.Size(273, 126);
+            this.groupBox1.TabIndex = 66;
+            this.groupBox1.TabStop = false;
+            // 
+            // groupBox2
+            // 
+            this.tableLayoutPanel1.SetColumnSpan(this.groupBox2, 3);
+            this.groupBox2.Controls.Add(this.rbtnClassMethodGrIx);
+            this.groupBox2.Controls.Add(this.rbtnClassMethodJapan);
+            this.groupBox2.Controls.Add(this.rbtnClassMethodUS);
+            this.groupBox2.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.groupBox2.Location = new System.Drawing.Point(375, 499);
+            this.groupBox2.Name = "groupBox2";
+            this.tableLayoutPanel1.SetRowSpan(this.groupBox2, 3);
+            this.groupBox2.Size = new System.Drawing.Size(273, 114);
+            this.groupBox2.TabIndex = 67;
+            this.groupBox2.TabStop = false;
+            // 
+            // rbtnShowDensity
+            // 
+            this.rbtnShowDensity.AutoSize = true;
+            this.rbtnShowDensity.Checked = true;
+            this.rbtnShowDensity.Font = new System.Drawing.Font("Microsoft Sans Serif", 13.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.rbtnShowDensity.Location = new System.Drawing.Point(6, 9);
+            this.rbtnShowDensity.Name = "rbtnShowDensity";
+            this.rbtnShowDensity.Size = new System.Drawing.Size(185, 33);
+            this.rbtnShowDensity.TabIndex = 0;
+            this.rbtnShowDensity.TabStop = true;
+            this.rbtnShowDensity.Text = "show diagram";
+            this.rbtnShowDensity.UseVisualStyleBackColor = true;
+            // 
+            // rbtnClusterizePoints
+            // 
+            this.rbtnClusterizePoints.AutoSize = true;
+            this.rbtnClusterizePoints.Font = new System.Drawing.Font("Microsoft Sans Serif", 13.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.rbtnClusterizePoints.Location = new System.Drawing.Point(6, 48);
+            this.rbtnClusterizePoints.Name = "rbtnClusterizePoints";
+            this.rbtnClusterizePoints.Size = new System.Drawing.Size(182, 33);
+            this.rbtnClusterizePoints.TabIndex = 1;
+            this.rbtnClusterizePoints.Text = "and clusterize";
+            this.rbtnClusterizePoints.UseVisualStyleBackColor = true;
+            // 
+            // rbtnSaveClustering
+            // 
+            this.rbtnSaveClustering.AutoSize = true;
+            this.rbtnSaveClustering.Font = new System.Drawing.Font("Microsoft Sans Serif", 13.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.rbtnSaveClustering.Location = new System.Drawing.Point(6, 87);
+            this.rbtnSaveClustering.Name = "rbtnSaveClustering";
+            this.rbtnSaveClustering.Size = new System.Drawing.Size(240, 33);
+            this.rbtnSaveClustering.TabIndex = 2;
+            this.rbtnSaveClustering.Text = "and save clustering";
+            this.rbtnSaveClustering.UseVisualStyleBackColor = true;
             // 
             // MainAnalysisForm
             // 
@@ -657,6 +750,10 @@
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
             this.tableLayoutPanel1.ResumeLayout(false);
             this.tableLayoutPanel1.PerformLayout();
+            this.groupBox1.ResumeLayout(false);
+            this.groupBox1.PerformLayout();
+            this.groupBox2.ResumeLayout(false);
+            this.groupBox2.PerformLayout();
             this.ResumeLayout(false);
 
         }
@@ -702,6 +799,12 @@
         private System.Windows.Forms.Button btnDensityProcessing;
         private System.Windows.Forms.Button btnSortImagesByClasses;
         private System.Windows.Forms.Button btnTestSunDetection2015;
+        private System.Windows.Forms.Label lblResultTitle;
+        private System.Windows.Forms.GroupBox groupBox1;
+        private System.Windows.Forms.GroupBox groupBox2;
+        private System.Windows.Forms.RadioButton rbtnSaveClustering;
+        private System.Windows.Forms.RadioButton rbtnClusterizePoints;
+        private System.Windows.Forms.RadioButton rbtnShowDensity;
     }
 }
 

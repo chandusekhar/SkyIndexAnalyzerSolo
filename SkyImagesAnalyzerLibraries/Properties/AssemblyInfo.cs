@@ -1,4 +1,4 @@
-﻿using System.Reflection;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Resources;
 
@@ -8,9 +8,9 @@ using System.Resources;
 [assembly: AssemblyTitle("SkyImagesAnalyzerLibraries")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("HP")]
+[assembly: AssemblyCompany("SAILab IORAS")]
 [assembly: AssemblyProduct("SkyImagesAnalyzerLibraries")]
-[assembly: AssemblyCopyright("Michael Krinitsky @ LVOAMKI 2013")]
+[assembly: AssemblyCopyright("Michael Krinitsky @ SAILab 2013")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
@@ -32,6 +32,6 @@ using System.Resources;
 // You can specify all the values or you can default the Build and Revision Numbers 
 // by using the '*' as shown below:
 // [assembly: AssemblyVersion("1.0.*")]
-[assembly: AssemblyVersion("1.0.0.0")]
-[assembly: AssemblyFileVersion("1.0.0.0")]
-[assembly: NeutralResourcesLanguageAttribute("")]
+[assembly: AssemblyVersion("2.0.0.9")]
+[assembly: AssemblyFileVersion("2.0.0.9")]
+[assembly: NeutralResourcesLanguageAttribute("ru-RU")]

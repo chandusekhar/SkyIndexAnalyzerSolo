@@ -7,8 +7,8 @@
     <ProjectGuid>{7BEAC8E4-E53F-466A-B824-1FE69E60D114}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>SkyIndexAnalyzerLibraries</RootNamespace>
-    <AssemblyName>SkyIndexAnalyzerLibraries</AssemblyName>
+    <RootNamespace>SkyImagesAnalyzerLibraries</RootNamespace>
+    <AssemblyName>SkyImagesAnalyzerLibraries</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
@@ -48,6 +48,7 @@
     <PlatformTarget>x64</PlatformTarget>
     <ErrorReport>prompt</ErrorReport>
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <UseVSHostingProcess>false</UseVSHostingProcess>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">
     <OutputPath>..\_bin\libs\</OutputPath>
@@ -60,11 +61,33 @@
     <DebugSymbols>true</DebugSymbols>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="ILNumerics, Version=4.5.5459.40319, Culture=neutral, PublicKeyToken=8d9bf50ef854734d, processorArchitecture=MSIL" />
+    <Reference Include="ColorMine, Version=1.1.3.0, Culture=neutral, processorArchitecture=AMD64">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\components\ColorMine\bin\x64\Debug\ColorMine.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Emgu.CV, Version=2.9.0.0, Culture=neutral, PublicKeyToken=7281126722ab4438, processorArchitecture=AMD64">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\components\EmguCV-2.4.10-compiled\bin\debug\x64\Emgu.CV.dll</HintPath>
+    </Reference>
+    <Reference Include="Emgu.CV.UI, Version=2.9.0.0, Culture=neutral, PublicKeyToken=7281126722ab4438, processorArchitecture=AMD64">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\components\EmguCV-2.4.10-compiled\bin\debug\x64\Emgu.CV.UI.dll</HintPath>
+    </Reference>
+    <Reference Include="Emgu.Util, Version=2.9.0.0, Culture=neutral, PublicKeyToken=7281126722ab4438, processorArchitecture=AMD64">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\components\EmguCV-2.4.10-compiled\bin\debug\x64\Emgu.Util.dll</HintPath>
+    </Reference>
+    <Reference Include="ILNumerics, Version=4.6.0.0, Culture=neutral, PublicKeyToken=8d9bf50ef854734d, processorArchitecture=MSIL">
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="ILNumerics.IO.HDF5, Version=4.6.0.0, Culture=neutral, PublicKeyToken=85055996c33d20cc, processorArchitecture=MSIL">
+      <Private>True</Private>
+    </Reference>
     <Reference Include="MathNet.Numerics, Version=3.3.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\MathNet.Numerics.3.3.0\lib\net40\MathNet.Numerics.dll</HintPath>
-      <Private>False</Private>
+      <Private>True</Private>
     </Reference>
     <Reference Include="Microsoft.Research.Science.Data, Version=1.3.14517.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -97,6 +120,12 @@
     </Compile>
     <Compile Include="Field3Drepresentation.Designer.cs">
       <DependentUpon>Field3Drepresentation.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Field4Drepresentation.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Field4Drepresentation.Designer.cs">
+      <DependentUpon>Field4Drepresentation.cs</DependentUpon>
     </Compile>
     <Compile Include="GeoTrackRenderer.cs" />
     <Compile Include="Graph.cs" />
@@ -207,6 +236,9 @@
     <EmbeddedResource Include="Field3Drepresentation.resx">
       <DependentUpon>Field3Drepresentation.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Field4Drepresentation.resx">
+      <DependentUpon>Field4Drepresentation.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="HistogramCalcAndShowForm.resx">
       <DependentUpon>HistogramCalcAndShowForm.cs</DependentUpon>
     </EmbeddedResource>
@@ -280,33 +312,22 @@
     </COMReference>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\emgucvcode\Emgu.CV.UI\Emgu.CV.UI.csproj">
-      <Project>{90e78bbf-c7fe-4d8e-ade1-75448e866fdb}</Project>
-      <Name>Emgu.CV.UI</Name>
-      <Private>False</Private>
-    </ProjectReference>
-    <ProjectReference Include="..\emgucvcode\Emgu.CV\Emgu.CV.csproj">
-      <Project>{9a1a77fe-f01b-495e-87b7-4b16e4f8c908}</Project>
-      <Name>Emgu.CV</Name>
-      <Private>False</Private>
-    </ProjectReference>
-    <ProjectReference Include="..\emgucvcode\Emgu.Util\Emgu.Util.csproj">
-      <Project>{7c2c5325-8235-4a24-9c67-6bd79a4679e2}</Project>
-      <Name>Emgu.Util</Name>
-      <Private>False</Private>
-    </ProjectReference>
     <ProjectReference Include="..\MRG.Controls.UI\MRG.Controls.UI.csproj">
       <Project>{48e18b56-4c37-4d69-aba7-429c42b45aac}</Project>
       <Name>MRG.Controls.UI</Name>
       <Private>False</Private>
     </ProjectReference>
-    <ProjectReference Include="..\packages\ColorMine\colormine.csproj">
-      <Project>{ae7dc769-4a71-49ba-bdd7-281f3e70b02a}</Project>
-      <Name>colormine</Name>
-      <Private>False</Private>
-    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PostBuildEvent>
+    </PostBuildEvent>
+  </PropertyGroup>
+  <PropertyGroup>
+    <PreBuildEvent>copy D:\_gulevlab\components\ColorMine\bin\x64\Debug\ColorMine.* $(TargetDir)
+copy D:\_gulevlab\components\EmguCV-2.4.10-compiled\bin\release\x64\x64\opencv_*.* $(TargetDir)
+copy D:\_gulevlab\components\EmguCV-2.4.10-compiled\bin\debug\x64\Emgu* $(TargetDir)</PreBuildEvent>
+  </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

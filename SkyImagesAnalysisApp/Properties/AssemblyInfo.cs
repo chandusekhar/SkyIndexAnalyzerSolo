@@ -1,4 +1,4 @@
-﻿using System.Reflection;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Resources;
@@ -9,9 +9,9 @@ using System.Resources;
 [assembly: AssemblyTitle("Cloud cover analyzer")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("Институт Океанологии РАН им.Ширшова")]
+[assembly: AssemblyCompany("SAILab IORAS")]
 [assembly: AssemblyProduct("Cloud cover analyzer")]
-[assembly: AssemblyCopyright("")]
+[assembly: AssemblyCopyright("Michael Krinitsky @ SAILab 2013")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
@@ -33,6 +33,6 @@ using System.Resources;
 // Можно задать все значения или принять номер построения и номер редакции по умолчанию, 
 // используя "*", как показано ниже:
 // [assembly: AssemblyVersion("1.0.*")]
-[assembly: AssemblyVersion("1.4.0.1")]
-[assembly: AssemblyFileVersion("1.4.0.1")]
+[assembly: AssemblyVersion("2.0.0.8")]
+[assembly: AssemblyFileVersion("2.0.0.8")]
 [assembly: NeutralResourcesLanguageAttribute("ru-RU")]

@@ -50,6 +50,37 @@ namespace SkyImagesAnalyzerLibraries
         public List<int> verticalMarkersIndexesUsingXSpace = new List<int>();
         private Image<Bgr, byte> markersLayerImage = null;
 
+        public bool equalScale = false;
+        public bool fixSpecifiedMargins = false;
+        public bool drawZeroLines = false;
+
+        public double koeffX = 1.0d;
+        public double koeffY = 1.0d;
+
+
+        #region readonly fields to read properties
+        public int ServiceSpaceGapX
+        {
+            get { return serviceSpaceGapX; }
+        }
+
+        public int ServiceSpaceGapY
+        {
+            get { return serviceSpaceGapY; }
+        }
+
+        public int PictureWidth
+        {
+            get { return pictureWidth; }
+        }
+
+        public int PictureHeight
+        {
+            get { return pictureHeight; }
+        }
+
+        #endregion readonly fields to read properties
+
 
 
         public MultipleScatterAndFunctionsRepresentation Copy()
@@ -73,6 +104,9 @@ namespace SkyImagesAnalyzerLibraries
             newCopy.verticalMarkersList = new System.Collections.Generic.List<double>(verticalMarkersList);
             newCopy.verticalMarkersIndexesUsingXSpace =
                 new System.Collections.Generic.List<int>(verticalMarkersIndexesUsingXSpace);
+            newCopy.equalScale = equalScale;
+            newCopy.fixSpecifiedMargins = fixSpecifiedMargins;
+            newCopy.drawZeroLines = drawZeroLines;
 
             newCopy.Represent();
             return newCopy;
@@ -133,19 +167,24 @@ namespace SkyImagesAnalyzerLibraries
                                        (dvScatterFuncValues.Max((dvCurVector => dvCurVector.Max())) -
                                         dvScatterFuncValues.Min((dvCurVector => dvCurVector.Min())));
 
-                    overallFuncMax = ((dvScatterFuncValues.Max((dvCurVector => dvCurVector.Max())) + ySpaceGap) > overallFuncMax)
-                        ? (dvScatterFuncValues.Max((dvCurVector => dvCurVector.Max())) + ySpaceGap)
-                        : (overallFuncMax);
-                    overallFuncMin = ((dvScatterFuncValues.Min((dvCurVector => dvCurVector.Min())) - ySpaceGap) < overallFuncMin)
-                        ? (dvScatterFuncValues.Min((dvCurVector => dvCurVector.Min())) - ySpaceGap)
-                        : (overallFuncMin);
+                    if (!fixSpecifiedMargins)
+                    {
+                        overallFuncMax = ((dvScatterFuncValues.Max((dvCurVector => dvCurVector.Max())) + ySpaceGap) >
+                                          overallFuncMax)
+                            ? (dvScatterFuncValues.Max((dvCurVector => dvCurVector.Max())) + ySpaceGap)
+                            : (overallFuncMax);
+                        overallFuncMin = ((dvScatterFuncValues.Min((dvCurVector => dvCurVector.Min())) - ySpaceGap) <
+                                          overallFuncMin)
+                            ? (dvScatterFuncValues.Min((dvCurVector => dvCurVector.Min())) - ySpaceGap)
+                            : (overallFuncMin);
 
-                    xSpaceMin = ((dvScatterXSpace.Min((dvCurVector => dvCurVector.Min()))) < xSpaceMin)
-                        ? (dvScatterXSpace.Min((dvCurVector => dvCurVector.Min())))
-                        : (xSpaceMin);
-                    xSpaceMax = ((dvScatterXSpace.Max((dvCurVector => dvCurVector.Max()))) > xSpaceMax)
-                        ? (dvScatterXSpace.Max((dvCurVector => dvCurVector.Max())))
-                        : (xSpaceMax);
+                        xSpaceMin = ((dvScatterXSpace.Min((dvCurVector => dvCurVector.Min()))) < xSpaceMin)
+                            ? (dvScatterXSpace.Min((dvCurVector => dvCurVector.Min())))
+                            : (xSpaceMin);
+                        xSpaceMax = ((dvScatterXSpace.Max((dvCurVector => dvCurVector.Max()))) > xSpaceMax)
+                            ? (dvScatterXSpace.Max((dvCurVector => dvCurVector.Max())))
+                            : (xSpaceMax);
+                    }
                 }
                 else
                 {
@@ -153,15 +192,18 @@ namespace SkyImagesAnalyzerLibraries
                                        (dvScatterFuncValues.Max((dvCurVector => dvCurVector.Max())) -
                                         dvScatterFuncValues.Min((dvCurVector => dvCurVector.Min())));
 
-                    overallFuncMax = dvScatterFuncValues.Max((dvCurVector => dvCurVector.Max())) + ySpaceGap;
-                    overallFuncMin = dvScatterFuncValues.Min((dvCurVector => dvCurVector.Min())) - ySpaceGap;
+                    if (!fixSpecifiedMargins)
+                    {
+                        overallFuncMax = dvScatterFuncValues.Max((dvCurVector => dvCurVector.Max())) + ySpaceGap;
+                        overallFuncMin = dvScatterFuncValues.Min((dvCurVector => dvCurVector.Min())) - ySpaceGap;
 
-                    xSpaceMin = ((dvScatterXSpace.Min((dvCurVector => dvCurVector.Min()))) < xSpaceMin)
-                        ? (dvScatterXSpace.Min((dvCurVector => dvCurVector.Min())))
-                        : (xSpaceMin);
-                    xSpaceMax = ((dvScatterXSpace.Max((dvCurVector => dvCurVector.Max()))) > xSpaceMax)
-                        ? (dvScatterXSpace.Max((dvCurVector => dvCurVector.Max())))
-                        : (xSpaceMax);
+                        xSpaceMin = ((dvScatterXSpace.Min((dvCurVector => dvCurVector.Min()))) < xSpaceMin)
+                            ? (dvScatterXSpace.Min((dvCurVector => dvCurVector.Min())))
+                            : (xSpaceMin);
+                        xSpaceMax = ((dvScatterXSpace.Max((dvCurVector => dvCurVector.Max()))) > xSpaceMax)
+                            ? (dvScatterXSpace.Max((dvCurVector => dvCurVector.Max())))
+                            : (xSpaceMax);
+                    }
                 }
 
             }
@@ -192,6 +234,35 @@ namespace SkyImagesAnalyzerLibraries
             rulerVertices.Add(new Point(pictureWidth - serviceSpaceGapX, serviceSpaceGapY));
             rulerVertices.Add(new Point(serviceSpaceGapX, serviceSpaceGapY));
             theImage.DrawPolyline(rulerVertices.ToArray(), true, colorGreen, 2);
+
+            double koeff = (pictureHeight - (2 * serviceSpaceGapY)) / (overallFuncMax - overallFuncMin);
+            koeffY = ((double)pictureHeight - 2.0d * (double)serviceSpaceGapY) / (overallFuncMax - overallFuncMin);
+            koeffX = ((double)pictureWidth - 2.0d * (double)serviceSpaceGapX) / (xSpaceMax - xSpaceMin);
+            if (equalScale)
+            {
+                koeff = Math.Min(koeffY, koeffX);
+                koeffY = koeff;
+                koeffX = koeff;
+            }
+            
+
+            if (drawZeroLines)
+            {
+                int zeroYcoordinate = Convert.ToInt32(pictureHeight - serviceSpaceGapY - (0 - overallFuncMin) * koeffY);
+                int zeroXcoordinate = Convert.ToInt32(serviceSpaceGapX + (0 - xSpaceMin) * koeffX);
+
+                List<Point> rulerXVertices = new List<Point>();
+                rulerXVertices.Add(new Point(serviceSpaceGapX, zeroYcoordinate));
+                rulerXVertices.Add(new Point(pictureWidth - serviceSpaceGapX, zeroYcoordinate));
+                theImage.DrawPolyline(rulerXVertices.ToArray(), false, colorGreen, 2);
+
+                List<Point> rulerYVertices = new List<Point>();
+                rulerYVertices.Add(new Point(zeroXcoordinate, serviceSpaceGapY));
+                rulerYVertices.Add(new Point(zeroXcoordinate, pictureHeight - serviceSpaceGapY));
+                theImage.DrawPolyline(rulerYVertices.ToArray(), false, colorGreen, 2);
+            }
+
+
 
             DenseVector dvXSpaceValues = DenseVector.Create(xValuesCount, new Func<int, double>(i => xSpaceMin + ((double)i / ((double)xValuesCount - 1.0d)) * (xSpaceMax - xSpaceMin)));
             DenseVector parametersList = null;
@@ -263,7 +334,7 @@ namespace SkyImagesAnalyzerLibraries
 
 
 
-            double koeff = (pictureHeight - (2 * serviceSpaceGapY)) / (overallFuncMax - overallFuncMin);
+            
 
             for (int i = 0; i < theRepresentingFunctions.Count; i++)
             {
@@ -304,8 +375,15 @@ namespace SkyImagesAnalyzerLibraries
         {
             if ((dvScatterXSpace.Count == 0) || (dvScatterFuncValues.Count == 0)) return;
 
-            double koeffY = ((double)pictureHeight - 2.0d * (double)serviceSpaceGapY) / (overallFuncMax - overallFuncMin);
-            double koeffX = ((double)pictureWidth - 2.0d * (double)serviceSpaceGapX) / (xSpaceMax - xSpaceMin);
+            koeffY = ((double)pictureHeight - 2.0d * (double)serviceSpaceGapY) / (overallFuncMax - overallFuncMin);
+            koeffX = ((double)pictureWidth - 2.0d * (double)serviceSpaceGapX) / (xSpaceMax - xSpaceMin);
+            if (equalScale)
+            {
+                double koeff = Math.Min(koeffY, koeffX);
+                koeffY = koeff;
+                koeffX = koeff;
+            }
+
 
             for (int seqIndex = 0; seqIndex < dvScatterFuncValues.Count; seqIndex++)
             {
@@ -392,7 +470,7 @@ namespace SkyImagesAnalyzerLibraries
             markersLayerImage = theImage.CopyBlank();
 
 
-            double koeffX = ((double)pictureWidth - 2.0d * (double)serviceSpaceGapX) / (xSpaceMax - xSpaceMin);
+            koeffX = ((double)pictureWidth - 2.0d * (double)serviceSpaceGapX) / (xSpaceMax - xSpaceMin);
             Bgr curSeqColor = new Bgr(0, 0, 255);
 
             foreach (double dMarkerValue in verticalMarkersList)

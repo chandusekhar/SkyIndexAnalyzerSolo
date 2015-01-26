@@ -10,6 +10,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using Emgu.CV;
+using Emgu.CV.CvEnum;
 using Emgu.CV.Structure;
 using MathNet.Numerics.LinearAlgebra.Double;
 using MathNet.Numerics.Statistics;
@@ -42,7 +43,7 @@ namespace SkyImagesAnalyzerLibraries
         Bgr colorMagenta = new Bgr(Color.Magenta);
         Image<Bgr, Byte> theImage = null;
 
-        private MCvFont theFont = new MCvFont(Emgu.CV.CvEnum.FONT.CV_FONT_HERSHEY_PLAIN, 1.0d, 1.0d);
+        private MCvFont theFont = new MCvFont(FONT.CV_FONT_HERSHEY_PLAIN, 1.0d, 1.0d);
 
         public Dictionary<string, object> defaultProperties = null;
 
@@ -53,7 +54,7 @@ namespace SkyImagesAnalyzerLibraries
             InitializeComponent();
             ThreadSafeOperations.SetText(lblTitle, description, false);
             currentDescription = description;
-            theFont.thickness = 1;
+            //theFont.thickness = 1;
             if (inDefProperties != null)
             {
                 defaultProperties = inDefProperties;

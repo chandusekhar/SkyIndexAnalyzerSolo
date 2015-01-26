@@ -49,6 +49,7 @@ namespace SkyImagesAnalyzerLibraries
             imgSkyIndexDataBinary = imgSkyIndexDataBinary.Mul(classificator.maskImage);
             Image<Bgr, Byte> previewImage = imgSkyIndexDataBinary.CopyBlank().Convert<Bgr, Byte>();
 
+            
             Contour<Point> contoursDetected = imgSkyIndexDataBinary.FindContours(Emgu.CV.CvEnum.CHAIN_APPROX_METHOD.CV_CHAIN_APPROX_SIMPLE, Emgu.CV.CvEnum.RETR_TYPE.CV_RETR_LIST);
             contoursArray = new List<Contour<Point>>();
 

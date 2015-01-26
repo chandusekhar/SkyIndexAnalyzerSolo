@@ -17,14 +17,6 @@ using SkyImagesAnalyzerLibraries;
 
 namespace SkyImagesAnalyzer
 {
-    //public enum pb2Source
-    //{
-    //    SkyindexAnalyzer,
-    //    ConnectedObjectsDetector,
-    //    SkyCloudClassificator };
-
-
-
     public partial class MainAnalysisForm : Form
     {
         #region vars
@@ -2811,11 +2803,24 @@ namespace SkyImagesAnalyzer
 
             List<PointD> lPointsList = lStatsData.ConvertAll<PointD>(statsDatum => new PointD(statsDatum.GrIxStatsMedian, statsDatum.GrIxStatsPerc5));
             EventsDensityAnalysisForm Form1 = new EventsDensityAnalysisForm(lPointsList, defaultProperties, 512);
-            Form1.Show();
-
-            Form1.Clusterize();
-
-            Form1.SaveClusteringData(((string)defaultProperties["DefaultDataFilesLocation"]) + "clustering");
+            if (rbtnShowDensity.Checked)
+            {
+                Form1.Show();
+                Form1.RepresentDensityField3D();
+            }
+            else if (rbtnClusterizePoints.Checked)
+            {
+                Form1.Show();
+                Form1.RepresentDensityField3D();
+                Form1.Clusterize();
+            }
+            else if (rbtnSaveClustering.Checked)
+            {
+                Form1.Show();
+                Form1.RepresentDensityField3D();
+                Form1.Clusterize();
+                Form1.SaveClusteringData(((string)defaultProperties["DefaultDataFilesLocation"]) + "clustering");
+            }
         }
 
 
