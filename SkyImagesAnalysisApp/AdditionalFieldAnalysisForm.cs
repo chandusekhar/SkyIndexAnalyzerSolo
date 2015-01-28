@@ -161,24 +161,10 @@ namespace SkyImagesAnalyzer
                 PointD p1 = sectionDescription.p1;
                 PointD p2 = sectionDescription.p2;
                 bool fromMarginToMargin = false;
-                //SectionRequestForm sectionRequestForm = new SectionRequestForm();
-                //DialogResult res = sectionRequestForm.ShowDialog();
-                //if (res == System.Windows.Forms.DialogResult.Cancel)
-                //{
-                //    return;
-                //}
-
-                //p1 = sectionRequestForm.retPt1;
-                //p2 = sectionRequestForm.retPt2;
-                //fromMarginToMargin = sectionRequestForm.fromMarginToMargin;
+                
                 SectionDescription currSection = new SectionDescription(p1, p2, true);
-                //if (fromMarginToMargin)
-                //{
-                //    currSection =
-                //        currSection.TransformTillMargins(new Rectangle(0, 0, currImgData.Width, currImgData.Height));
-                //}
-
-                LineDescription l1 = currSection.SectionLine;
+                
+                LineDescription2D l1 = currSection.SectionLine;
 
                 DenseMatrix dmValues = (DenseMatrix) currImgData.DmSourceData.Clone();
                 DenseMatrix dmDistanceToLine = (DenseMatrix) currImgData.DmSourceData.Clone();
@@ -203,15 +189,9 @@ namespace SkyImagesAnalyzer
 
                 List<Tuple<double, double>> dataArrayRotated = dataArray.ConvertAll((tpl) =>
                 {
-                    DenseVector pointVector = l1.p0.ToVector(tpl.Item1);
+                    Vector2D pointVector = l1.p0.ToVector2D(tpl.Item1);
                     double projection = pointVector*l1.directionVector;
                     return new Tuple<double, double>(projection, tpl.Item2);
-                    //PointPolar ptp = new PointPolar(tpl.Item1 - new SizeD(l1.p0));
-                    //double angleToSubtract = (new PointPolar(new PointD(l1.directionVector[0], l1.directionVector[1]))).Phi;
-                    //ptp.Phi -= angleToSubtract;
-                    ////ptp.CropAngle(true);
-                    //if (ptp.Phi >= 0.0d) return new Tuple<double, double>(ptp.R, tpl.Item2);
-                    //else return new Tuple<double, double>(-ptp.R, tpl.Item2);
                 });
 
 
@@ -219,7 +199,7 @@ namespace SkyImagesAnalyzer
                 double arrayMaxPosition = dataArrayRotated.Max<Tuple<double, double>>(tpl1 => tpl1.Item1);
                 if (!fromMarginToMargin)
                 {
-                    DenseVector pointVector = l1.p0.ToVector(p2);
+                    Vector2D pointVector = l1.p0.ToVector2D(p2);
                     double projection = pointVector*l1.directionVector;
                     double p2DoublePosition = projection;
 

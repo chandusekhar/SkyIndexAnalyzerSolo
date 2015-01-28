@@ -197,13 +197,13 @@ namespace SkyImagesAnalyzerLibraries
 
 
 
-    [Serializable]
-    public struct EoundDataWithUnderlyingImgSize
-        //ошибся одной буквой раньше :(
-    {
-        public RoundData circle;
-        public Size imgSize;
-    }
+    //[Serializable]
+    //public struct EoundDataWithUnderlyingImgSize
+    //    //ошибся одной буквой раньше :(
+    //{
+    //    public RoundData circle;
+    //    public Size imgSize;
+    //}
 
 
 

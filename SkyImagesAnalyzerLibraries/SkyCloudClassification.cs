@@ -18,7 +18,7 @@ using MathNet.Numerics.LinearAlgebra;
 
 namespace SkyImagesAnalyzerLibraries
 {
-    #region УСТАРЕЛО deprecated structures
+    #region УСТАРЕЛО obsolete structures
     //public enum CloudOrSky
     //{
     //    Sky,
@@ -45,7 +45,7 @@ namespace SkyImagesAnalyzerLibraries
     //    public double SI;
     //    public Classification[] IsCloudByMargin;
     //}
-    #endregion УСТАРЕЛО deprecated structures
+    #endregion УСТАРЕЛО obsolete structures
 
     public enum ClassificationMethods
     {
@@ -418,6 +418,7 @@ namespace SkyImagesAnalyzerLibraries
             }
 
             RoundData sunRoundData = RoundData.nullRoundData();
+            bool predefinedSunDiskLocationWasUsed = false;
             if (sourceImageFileName != "")
             {
                 //посмотрим, нет ли уже имеющихся данных о положении и размере солнечного диска на изображении
@@ -433,6 +434,7 @@ namespace SkyImagesAnalyzerLibraries
                 {
                     existingRoundData = ((RoundDataWithUnderlyingImgSize)existingRoundDataObj).circle;
                     imgSizeUnderExistingRoundData = ((RoundDataWithUnderlyingImgSize)existingRoundDataObj).imgSize;
+                    predefinedSunDiskLocationWasUsed = true;
                 }
 
                 double currScale = (double)LocalProcessingImage.Width / (double)imgSizeUnderExistingRoundData.Width;
@@ -459,8 +461,10 @@ namespace SkyImagesAnalyzerLibraries
 
             BGWorkerReport("закончен поиск солнечного диска. применимость подавления засветки: " + theSunSuppressionSchemeApplicable.ToString());
 
-        
-            while (theSunSuppressionSchemeApplicable)
+
+
+            #region сохраним данные положения солнечного диска
+            if (!sunRoundData.IsNull)
             {
                 BGWorkerReport("расположение солнечного диска: " + Environment.NewLine + sunRoundData.ToString());
                 string strGeometryData = "" + imgP.imageRD.DCenterX.ToString("e").Replace(",", ".") +
@@ -477,6 +481,29 @@ namespace SkyImagesAnalyzerLibraries
                 }
 
 
+                if (sourceImageFileName != "")
+                {
+                    // посмотрим, нет ли уже имеющихся данных о положении и размере солнечного диска на изображении
+                    // если есть - не будем перезаписывать
+                    FileInfo fInfo1 = new FileInfo(sourceImageFileName);
+                    string sunDiskInfoFileName = fInfo1.DirectoryName + "\\" +
+                                                 Path.GetFileNameWithoutExtension(sourceImageFileName) +
+                                                 "-SunDiskInfo.xml";
+                    if (!File.Exists(sunDiskInfoFileName))
+                    {
+                        RoundDataWithUnderlyingImgSize foundSunLocation = new RoundDataWithUnderlyingImgSize();
+                        foundSunLocation.circle = sunRoundData;
+                        foundSunLocation.imgSize = LocalProcessingImage.Size;
+                        ServiceTools.WriteObjectToXML(foundSunLocation, sunDiskInfoFileName);
+                    }
+                }
+            }
+            #endregion сохраним данные положения солнечного диска
+
+
+
+            while (theSunSuppressionSchemeApplicable)
+            {
                 PointD sunCenterPoint = sunRoundData.pointDCircleCenter();
                 double sunRadius = sunRoundData.DRadius;
 
@@ -494,15 +521,15 @@ namespace SkyImagesAnalyzerLibraries
                 BGWorkerReport("анализ и компенсация засветки");
 
                 #region анализ засветки и компенсация
-                DenseMatrix theSkyWeightAbs = DenseMatrix.Create(dmProcessingData.RowCount, dmProcessingData.ColumnCount,
-                    new Func<int, int, double>(
-                        (row, column) =>
-                        {
-                            if (dmProcessingData[row, column] < theStdDevMarginValueDefiningTrueSkyArea)
-                                return 1 - dmProcessingData[row, column];
-                            else return 0.0d;
-                        }));
-                theSkyWeightAbs = (DenseMatrix)theSkyWeightAbs.PointwiseMultiply(dmMask);
+                //DenseMatrix theSkyWeightAbs = DenseMatrix.Create(dmProcessingData.RowCount, dmProcessingData.ColumnCount,
+                //    new Func<int, int, double>(
+                //        (row, column) =>
+                //        {
+                //            if (dmProcessingData[row, column] < theStdDevMarginValueDefiningTrueSkyArea)
+                //                return 1 - dmProcessingData[row, column];
+                //            else return 0.0d;
+                //        }));
+                //theSkyWeightAbs = (DenseMatrix)theSkyWeightAbs.PointwiseMultiply(dmMask);
 
 
                 DenseMatrix dmSunburnProfileDetection = (DenseMatrix)dmProcessingData.Clone();
@@ -512,9 +539,9 @@ namespace SkyImagesAnalyzerLibraries
 
 
 
-                double theSkyWeightSum = theSkyWeightAbs.Values.Sum();
-                DenseMatrix theSkyWeight = (DenseMatrix)theSkyWeightAbs.Clone();
-                theSkyWeight.MapInplace(new Func<double, double>(val => val / theSkyWeightSum));
+                //double theSkyWeightSum = theSkyWeightAbs.Values.Sum();
+                //DenseMatrix theSkyWeight = (DenseMatrix)(theSkyWeightAbs.Copy()/theSkyWeightSum);
+                ////theSkyWeight.MapInplace(new Func<double, double>(val => val / theSkyWeightSum));
 
 
                 DenseMatrix dmDistanceToSunMargin = DenseMatrix.Create(dmProcessingData.RowCount, dmProcessingData.ColumnCount,
@@ -559,9 +586,11 @@ namespace SkyImagesAnalyzerLibraries
                 //это расстояние уже в pixels, ничего пересчитывать не надо
                 double minDataValue = 1.0d;
                 double Rs = 0.0d;
-                List<double> distributionData = new List<double>();
-                List<double> distributionSpace = new List<double>();
+                List<double> envelopValues = new List<double>();
+                List<double> envelopRargument = new List<double>();
 
+
+                #region здесь фильтруем шумы и выбросы ниже основной очевидной огибающей
                 for (int r = 0; r < rMax; r++)
                 {
                     double rMinlocal = (double)r;
@@ -583,10 +612,10 @@ namespace SkyImagesAnalyzerLibraries
                     if (statTempData == null) continue;
 
 
-                    double dataMean = statTempData.Mean;
+                    //double dataMean = statTempData.Mean;
                     //double dataMedian = statTempData.Median;
                     double dataPercentile10 = Statistics.Percentile(dvCurrentDataExcludingZero, 10);
-                    double stdDev = statTempData.StandardDeviation;
+                    //double stdDev = statTempData.StandardDeviation;
                     //DenseVector listTempStatData =
                     //    DataAnalysis.DataVectorizedWithCondition(dmTemporaryProcessinfDataMatrix,
                     //        (x => Math.Abs(x - dataMean) <= 2 * stdDev));
@@ -598,22 +627,29 @@ namespace SkyImagesAnalyzerLibraries
                     if (listTempStatData != null) dataMin = listTempStatData.Min();
                     else continue;
 
-                    distributionData.Add(dataMin);
-                    distributionSpace.Add((double)r);
+                    envelopValues.Add(dataMin);
+                    envelopRargument.Add((double)r);
                 }
+                #endregion здесь фильтруем шумы и выбросы ниже основной очевидной огибающей
+                // получили общую огибающую - "минимальное" значение GrIx от r, расстояния от края солнечного диска
+                // "минимальное" в кавычках - потому что это не абсолютный минимум на указанном интерваке (r;r+1),
+                // а минимум при условии исключения шумов и выбросов за пределами 10-го персентиля
+
 
 
 
                 #region здесь исследуем распределение локальных минимумов распределения GrIx по r в полярной системе координат
-
                 BGWorkerReport("Исследуем распределение величины GrIx по расстоянию от края солнечного диска");
 
-                int angleBinsCount = 144;
-                //int distanceBinsCount = 50;
-                double distanceKoeff = dmDistanceToSunCenter.Values.Max() / 50.0d;
-                double angleValueDiff = 2 * Math.PI / (angleBinsCount - 1);
+                // int angleBinsCount = 144;
+                int angleBinsCount = 180;
 
-                #region //deprecated
+                #region //obsolete
+                //int distanceBinsCount = 50;
+                //double distanceKoeff = dmDistanceToSunCenter.Values.Max() / 50.0d;
+                //double angleValueDiff = 2 * Math.PI / (angleBinsCount - 1);
+
+                
                 //double distanceValueDiff = dmDistanceToSunCenter.Values.Maximum() / (distanceBinsCount - 1);
                 //DenseMatrix angleValuesForDistribution = DenseMatrix.Create(angleBinsCount, distanceBinsCount,
                 //    new Func<int, int, double>(
@@ -621,8 +657,15 @@ namespace SkyImagesAnalyzerLibraries
                 //        {
                 //            return row * angleValueDiff;
                 //        }));
-                #endregion //deprecated
+                #endregion //obsolete
 
+                // предполагаем, что наиболее вероятная симметрия - 
+                // относительно прямой, соединяющей центр солнечного диска и центр изображения
+                // поэтому начальное значение смещения phi0 для аппроксимации зависимости расположения
+                // Rm от phi можно оценить исходя из расположения солнечного диска относительно центра изображения.
+                // Здесь Rm - насстояние от минимального значения GrIx в направлении phi до центра солнечного диска.
+                // phi - угол в полярной системе координат с началом координат в центре солнечного диска.
+                // Угол отсчитывается от горизонтальной прямой. Нулевое значение угла - навправо.
                 double dxSunToCenter = (double)imageCircleCenter.X - (double)sunCenterPoint.X;
                 double dySunToCenter = (double)imageCircleCenter.Y - (double)sunCenterPoint.Y;
                 double rSunToCenter = Math.Sqrt(dxSunToCenter * dxSunToCenter + dySunToCenter * dySunToCenter);
@@ -647,32 +690,33 @@ namespace SkyImagesAnalyzerLibraries
                 //получим параметры распределения для конкретного изображения - их можно использовать дальше
 
 
+                #region запись данных для просмотра и анализа
                 if (verbosityLevel > 1)
                 {
-                    #region //deprecated
+                    #region //obsolete
                     //ImageConditionAndDataRepresentingForm theForm =
                     //    ServiceTools.RepresentDataFromDenseMatrix(dmPolarSystemMinimumsDistribution,
                     //        "minimums distribution in polar coordinates", false, false, 0.0d, 1.0d, false);
                     //theForm.SaveData(currentDirectory + randomFileName + "_SunburnProfilePolar.nc", true);
                     ////theForm.Close();
                     //theForm.Dispose();
-                    #endregion //deprecated
+                    #endregion //obsolete
 
                     dmPolarSystemMinimumsDistribution.SaveNetCDFdataMatrix(currentDirectory + randomFileName +
                                                                            "_SunburnProfilePolar.nc");
-                    #region //deprecated
+                    #region //obsolete
                     //ImageConditionAndDataRepresentingForm theForm1 =
                     //    ServiceTools.RepresentDataFromDenseMatrix(dmPolarMinimumsDistribution,
                     //        "minimums distribution in polar coordinates", false, false, 0.0d, 1.0d, false);
                     //theForm1.SaveData(currentDirectory + randomFileName + "_SunburnProfileMinimums.nc", true);
                     ////theForm1.Close();
                     //theForm1.Dispose();
-                    #endregion //deprecated
+                    #endregion //obsolete
 
                     dmPolarMinimumsDistribution.SaveNetCDFdataMatrix(currentDirectory + randomFileName +
                                                                      "_SunburnProfileMinimums.nc");
 
-                    #region //deprecated
+                    #region //obsolete
                     //ImageConditionAndDataRepresentingForm theForm2 =
                     //    ServiceTools.RepresentDataFromDenseMatrix(dmDecartMinimumsDistribution,
                     //        "minimums distribution in decart coordinates", false, false, 0.0d, 1.0d, false);
@@ -682,37 +726,53 @@ namespace SkyImagesAnalyzerLibraries
                     ////ImageConditionAndDataRepresentingForm TheAngleRepresentation =
                     ////    ServiceTools.RepresentDataFromDenseMatrix(angleValuesForDistribution, "the angle");
                     ////TheAngleRepresentation.SaveData(randomFileName + "_SunburnProfileMinimumsPolarAngles.nc");
-                    #endregion //deprecated
+                    #endregion //obsolete
 
                     dmDecartMinimumsDistribution.SaveNetCDFdataMatrix(currentDirectory + randomFileName +
                                                                       "_SunburnProfileMinimumsDecart.nc");
                 }
+                #endregion запись данных для просмотра и анализа
+
 
                 if (!isCalculatingUsingBgWorker)
                 {
                     theLogWindow = ServiceTools.LogAText(theLogWindow, "смещение по углу: " + Phi1.ToString("e"));
                 }
-
                 #endregion здесь исследуем распределение локальных минимумов распределения GrIx по r в полярной системе координат
 
 
-                BGWorkerReport("сглаживаем полученное распределение, определеяем характерные точки: располпожение глобального минимума, его величину");
+                
 
-                //smoothe the distribution
-                DenseVector dvDataValues = DenseVector.OfEnumerable(distributionData);
+
+                #region аппроксимация распределения GrIx(r) для огибающей
+                BGWorkerReport("сглаживаем полученное распределение, представляющее огибающую GrIx(r)," +
+                               "определеяем характерные точки: расположение глобального минимума, его величину");
+                //smooth the distribution
+                DenseVector dvDataValues = DenseVector.OfEnumerable(envelopValues);
                 //DenseVector dvSmoothedDistribution = DataAnalysis.ExponentialMovingAverage(dvDataValues, 10, 0.4d);
-                DenseVector dvSmoothedDistribution = dvDataValues.Conv(StandardConvolutionKernels.gauss, 10);
+                DenseVector dvSmoothedEnvelopValues = dvDataValues.Conv(StandardConvolutionKernels.gauss, 10);
 
 
 
-                minDataValue = dvSmoothedDistribution.AbsoluteMinimum();
-                Rs = dvSmoothedDistribution.AbsoluteMinimumIndex();
+                
+                
 
-                DenseVector dvDataSpace = DenseVector.OfEnumerable(distributionSpace);
+
+                minDataValue = dvSmoothedEnvelopValues.AbsoluteMinimum();
+                Rs = dvSmoothedEnvelopValues.AbsoluteMinimumIndex();
+
+                DenseVector dvDataSpace = DenseVector.OfEnumerable(envelopRargument);
+
+                MultipleScatterAndFunctionsRepresentation envelopPlottingForm =
+                    new MultipleScatterAndFunctionsRepresentation(800, 600);
+                envelopPlottingForm.dvScatterXSpace.Add(dvDataSpace);
+                envelopPlottingForm.dvScatterFuncValues.Add(dvSmoothedEnvelopValues);
+                envelopPlottingForm.scatterLineColors.Add(new Bgr(Color.Red));
+                envelopPlottingForm.scatterDrawingVariants.Add(SequencesDrawingVariants.circles);
 
                 if (verbosityLevel > 0)
                 {
-                    foreach (var dataValueTuple in dvSmoothedDistribution.EnumerateIndexed())
+                    foreach (var dataValueTuple in dvSmoothedEnvelopValues.EnumerateIndexed())
                     {
                         string textToWrite = "" + dvDataSpace[dataValueTuple.Item1].ToString("e").Replace(",", ".") +
                                              ";";
@@ -736,7 +796,17 @@ namespace SkyImagesAnalyzerLibraries
                     new Func<int, double>(i => (i == 0) ? (minSunburnGrIxValue) : (double.NaN)));
 
                 DenseVector approxPolyKoeffs =
-                    DataAnalysis.NPolynomeApproximationLessSquareMethod(dvSmoothedDistribution, dvDataSpace, dvFixedPoints, polynomeOrder);
+                    DataAnalysis.NPolynomeApproximationLessSquareMethod(dvSmoothedEnvelopValues, dvDataSpace, dvFixedPoints, polynomeOrder);
+
+
+                envelopPlottingForm.theRepresentingFunctions.Add(
+                    (dvParams, x) => DataAnalysis.PolynomeValue(dvParams, x));
+                envelopPlottingForm.parameters.Add(approxPolyKoeffs);
+                envelopPlottingForm.lineColors.Add(new Bgr(Color.Green));
+                envelopPlottingForm.Represent();
+                ServiceTools.ShowPicture(envelopPlottingForm.TheImage.Bitmap, "Overall GrIx values envelop vs r");
+                envelopPlottingForm.TheImage.Save(currentDirectory + randomFileName + "-envelop-approximation-result.jpg");
+
 
                 
                 if (!isCalculatingUsingBgWorker)
@@ -770,10 +840,13 @@ namespace SkyImagesAnalyzerLibraries
 
                 BGWorkerReport("аппроксимация зависимости GrIx(r) завершена");
 
+                #endregion аппроксимация распределения GrIx(r) для огибающей
 
-                BGWorkerReport("Готовим данные для аппроксимации зависимости Rs(phi), выполняем ее методом градиентного спуска");
 
-                #region формируем данные для аппроксимации зависимости r(phi) и выполняем саму аппроксимацию
+                #region аппроксимация распределения Rm(phi)
+                BGWorkerReport("Готовим данные для аппроксимации зависимости Rm(phi), выполняем ее методом градиентного спуска");
+
+                #region формируем данные для аппроксимации зависимости Rm(phi) и выполняем саму аппроксимацию
                 List<double> phiMinimumsSpace = new List<double>();
                 List<double> rMinimumsSpace = new List<double>();
                 List<double> dataMinimumsList = new List<double>();
@@ -796,7 +869,7 @@ namespace SkyImagesAnalyzerLibraries
 
 
                 
-                if (dataMinimumsList.Count < 5)
+                if (dataMinimumsList.Count < 10)
                 {
                     theSunSuppressionSchemeApplicable = false;
 
@@ -851,6 +924,7 @@ namespace SkyImagesAnalyzerLibraries
                 }
 
 
+                #region obsolete
                 //approximator.parametersConditions.Add(new Func<DenseVector, bool>(dvCurrentParameters =>
                 //{
                 //    double d1 = dvCurrentParameters[0];
@@ -858,11 +932,12 @@ namespace SkyImagesAnalyzerLibraries
                 //    double r = dvCurrentParameters[2];
                 //    double phi0 = dvCurrentParameters[3];
                 //    //return d1 * Math.Cos(phi - phi0) + Math.Sqrt(r * r - d2 * d2 * Math.Pow(Math.Sin(phi - phi0), 2.0d));
-
+                //
                 //    return ((d1 + r > 0) && (d1 + r < rSunToCenter + imageCircleRadius));
-
+                //
                 //    return true;
                 //}));
+                #endregion obsolete
 
 
                 double initialParametersKoeff = (double)Rs / (rSunToCenter + imgP.imageRD.DRadius);// / максимальное расстояние до края картинки в этом направлении = это D+R
@@ -904,7 +979,7 @@ namespace SkyImagesAnalyzerLibraries
 
                 //попробуем вот так:
                 // в каждой точке, где определены экспериментальные данные, посчитаем отклонение от аппроксимационной функции
-                // посчитаем по этим отклонениям статистику и отяильтруем точки за пределами например тройного стандартного отклонения
+                // посчитаем по этим отклонениям статистику и отяильтруем точки за пределами например стандартного отклонения
                 // еще раз прогоним аппроксимацию
 
                 DenseVector dvTempDeviations = DenseVector.Create(dvRMinimumsSpace.Count, new Func<int, double>(i =>
@@ -938,6 +1013,9 @@ namespace SkyImagesAnalyzerLibraries
                 approximator.dvSpace = dvTunedPhiSpace;
                 approximator.dvDataValues = dvTunedRSpace;
                 approximatedParameters = approximator.ApproximationGradientDescent2D(approximatedParameters, initialParametersIncremnt, 0.000001d);
+                // фак
+                // откуда-то NaN вылез :((
+
 
                 if (!isCalculatingUsingBgWorker)
                 {
@@ -952,7 +1030,7 @@ namespace SkyImagesAnalyzerLibraries
                 #endregion формируем данные для аппроксимации зависимости r(phi) и выполняем саму аппроксимацию
 
                 BGWorkerReport("Аппроксимация зависимости Rs(phi) завершена");
-
+                #endregion аппроксимация распределения Rm(phi)
 
 
 
@@ -962,7 +1040,22 @@ namespace SkyImagesAnalyzerLibraries
                 //самый глубокий минимум известен - на расстоянии Rs со значением minDataValue
                 //направление на него - направление на самую дальнюю точку границы круга, который представляет собой снимок.
 
-                //поправка: навправление будем определять из аппроксимации распределения минимумов по углу. смещение phi0 - будет нужный угол
+                //поправка: направление будем определять из аппроксимации распределения минимумов по углу. смещение phi0 - будет нужный угол
+
+                // Попробовать новый подход: по совокупности точек, представляющих минимальное значение GrIx в каждом направлении phi
+                // опять же аппроксимировать наиболее подходящую плоскость.
+                // Плоскость задается точкой (x0,y0,GrIx0) и 3D-вектором нормали (x_n, y_n, GrIx_n) - это шесть параметров.
+                // Расстояние от точки (x,y,GrIx), где расположен минимум GrIx в каждом направлении, до этой плоскости
+                // можно легко посчитать. Минимизируем сумму этих расстояний - получим искомую плоскость.
+                // Начальные данные для аппроксимации тоже легко получить: есть точка Rs с самым глубоким минимумом -
+                // известны ее координаты и значение GrIx. Точка минимального значения GrIx на другой стороне
+                // от солнечного диска - вторая опорная точка. Так получаем одну прямую, лежащую в
+                // начальном приближении искомой плоскости. Вектор нормали будет перпендикулярен этой прямой
+                // и будет лежать в вертикальной плоскости.
+
+                
+
+
                 Phi1 = approximatedParameters[3];
                 //Если изображение кропнутое, надо это учитывать
                 double tgT = (sunCenterPoint.Y - imageCircleCenter.Y) / (sunCenterPoint.X - imageCircleCenter.X);
@@ -1003,54 +1096,25 @@ namespace SkyImagesAnalyzerLibraries
 
                 if (verbosityLevel > 1)
                 {
-                    //ImageConditionAndDataRepresentingForm theRepresForm =
-                    //    ServiceTools.RepresentDataFromDenseMatrix(dmValuesToSubtract_plate, "the data to subtract: plate", false, false, 0.0d, 1.0d, false);
-                    //theRepresForm.SaveData(currentDirectory + randomFileName + "_TheDataToSubtract_plate.nc", true);
-                    ////theRepresForm.Close();
-                    //theRepresForm.Dispose();
-
                     dmValuesToSubtract_plate.SaveNetCDFdataMatrix(currentDirectory + randomFileName +
                                                                   "_TheDataToSubtract_plate.nc");
                 }
+                BGWorkerReport("окончание оценки общего тренда уклона фоновой засветки");
                 #endregion оценим общий тренд уклона фоновой засветки по распределению локальных минимумов
 
-                BGWorkerReport("окончание оценки общего тренда уклона фоновой засветки");
+                
+
 
 
                 if (verbosityLevel > 1)
                 {
-                    //ImageConditionAndDataRepresentingForm distanceToSunMarginDataForm =
-                    //    ServiceTools.RepresentDataFromDenseMatrix(dmDistanceToSunMargin, "distance to sun margin data", false, false, 0.0d, 1.0d, false);
-                    //distanceToSunMarginDataForm.SaveData(currentDirectory + randomFileName + "_SunMarginDistance.nc", true);
-                    ////distanceToSunMarginDataForm.Close();
-                    //distanceToSunMarginDataForm.Dispose();
-
                     dmDistanceToSunMargin.SaveNetCDFdataMatrix(currentDirectory + randomFileName +
                                                                "_SunMarginDistance.nc");
-
-                    //ImageConditionAndDataRepresentingForm sunburnProfileDetectionDataForm =
-                    //    ServiceTools.RepresentDataFromDenseMatrix(dmSunburnProfileDetection, "sunburn profile detection data", false, false, 0.0d, 1.0d, false);
-                    //sunburnProfileDetectionDataForm.SaveData(currentDirectory + randomFileName + "_SunburnProfileDetection.nc", true);
-                    ////sunburnProfileDetectionDataForm.Close();
-                    //sunburnProfileDetectionDataForm.Dispose();
-
                     dmSunburnProfileDetection.SaveNetCDFdataMatrix(currentDirectory + randomFileName +
                                                                    "_SunburnProfileDetection.nc");
-
-                    //ImageConditionAndDataRepresentingForm angleAroundTheSunburnDataForm =
-                    //    ServiceTools.RepresentDataFromDenseMatrix(dmAngleAroundTheSunburn, "angle around the sunburn data", false, false, 0.0d, 1.0d, false);
-                    //angleAroundTheSunburnDataForm.SaveData(currentDirectory + randomFileName + "_SunAngle.nc", true);
-                    ////angleAroundTheSunburnDataForm.Close();
-                    //angleAroundTheSunburnDataForm.Dispose();
-
                     dmAngleAroundTheSunburn.SaveNetCDFdataMatrix(currentDirectory + randomFileName + "_SunAngle.nc");
-
-                    //ImageConditionAndDataRepresentingForm processingDataInPolarDataForm =
-                    //    ServiceTools.RepresentDataFromDenseMatrix(dmProcessingDataInPolar, "sunburn data using polar coordinate system");
-                    //processingDataInPolarDataForm.SaveData(randomFileName + "_PolarSystemmedData.nc");
-                    //processingDataInPolarDataForm.Close();
-                    //processingDataInPolarDataForm.Dispose();
                 }
+
 
 
                 BGWorkerReport("финальный шаг обработки: компенсация засветки");
@@ -1081,6 +1145,7 @@ namespace SkyImagesAnalyzerLibraries
                                                             (1.0d -
                                                              DataAnalysis.PolynomeValue(approxPolyKoeffs,
                                                                  startPointRFromSunMargin / currentLinearKoeff));
+                                // УПС. Так далеко наша аппроксимация не действует. Тогда просто вычтем общий фон.
                                 //возьмем смещение общим уклоном dmValuesToSubtract_plate, посмотрим смещение в точке startPointX и
                                 // от этого спляшем по смещению в текущую точку
                                 //для этого надо знать положение стартовой точки в декартовых координатах
@@ -1124,12 +1189,14 @@ namespace SkyImagesAnalyzerLibraries
 
 
 
-                dmReversed.MapIndexedInplace(new Func<int, int, double, double>((row, col, dVal) =>
-                {
-                    double retVal = dVal - dmDataToSubtract[row, col];
-                    if (retVal < 0.0d) retVal = 0.0d;
-                    return retVal;
-                }));
+                //dmReversed.MapIndexedInplace(new Func<int, int, double, double>((row, col, dVal) =>
+                //{
+                //    double retVal = dVal - dmDataToSubtract[row, col];
+                //    if (retVal < 0.0d) retVal = 0.0d;
+                //    return retVal;
+                //}));
+                dmReversed = dmReversed - dmDataToSubtract;
+                dmReversed.MapInplace(dval => (dval < 0.0d) ? (0.0d) : (dval));
                 dmReversed = (DenseMatrix)dmReversed.PointwiseMultiply(dmMask);
                 double dataMinValue = dmReversed.Values.Min();
                 double dataMaxValue = dmReversed.Values.Max();
@@ -1493,7 +1560,6 @@ namespace SkyImagesAnalyzerLibraries
                 //dmReversed.MapInplace(new Func<double, double>(val => val - dataMinValueInsideSkyCircle - 1.0d));
 
 
-
                 #region // НЕ РАБОТАЕТ тестировал тупое вычитание тренда локальных минимумов
                 //DenseMatrix dmReversedTest1 = (DenseMatrix)dmReversed.Clone();
                 //dmReversedTest1.MapIndexedInplace(new Func<int, int, double, double>((row, column, dVal) =>
@@ -1522,6 +1588,7 @@ namespace SkyImagesAnalyzerLibraries
 
                 if (verbosityLevel > 1)
                 {
+                    #region //
                     //ImageConditionAndDataRepresentingForm restoredDataForm = ServiceTools.RepresentDataFromDenseMatrix(dmReversed,
                     //    "finally restored GrIx data", false, false, 0.0d, 1.0d, false);
                     //ImageConditionAndDataRepresentingForm originalDataForm = ServiceTools.RepresentDataFromDenseMatrix(dmProcessingData,
@@ -1531,17 +1598,18 @@ namespace SkyImagesAnalyzerLibraries
                     //dataToSubtractForm.SaveData(currentDirectory + randomFileName + "_TheDataToSubtractApproximated.nc", true);
                     //restoredDataForm.SaveData(currentDirectory + randomFileName + "_res.nc", true);
                     //originalDataForm.SaveData(currentDirectory + randomFileName + "_orig.nc", true);
-
+                    //
                     ////MLApp.MLApp ML = new MLApp.MLApp();
                     ////ML.Visible = 0;
                     ////ML.Execute("run('" + currentDirectory + randomFileName + "_MatlabScript.m" + "');");
-
+                    //
                     ////originalDataForm.Close();
                     //originalDataForm.Dispose();
                     ////dataToSubtractForm.Close();
                     //dataToSubtractForm.Dispose();
                     ////restoredDataForm.Close();
                     ////restoredDataForm.Dispose();
+                    #endregion //
 
                     dmDataToSubtract.SaveNetCDFdataMatrix(currentDirectory + randomFileName +
                                                           "_TheDataToSubtractApproximated.nc");
@@ -1571,18 +1639,15 @@ namespace SkyImagesAnalyzerLibraries
 
                 
                 if (Math.Abs(CloudCover - CloudCoverWithoutSunSuppression) > 0.7d)
-                //как-то очень неправильно определилось солнце и засветка - пересчитаем без подавления
+                    //как-то очень неправильно определилось солнце и засветка
+                    //возьмем результат, посчитанный без подавления засветки
                 {
                     theSunSuppressionSchemeApplicable = false;
-
 
                     theLogWindow =
                         ServiceTools.LogAText(theLogWindow, "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" + Environment.NewLine +
                                               "Слишком нестабильный результат с подавлением засветки. Используем алгоритм без подавления. Case 02" +
                                               Environment.NewLine + "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-
-
-                    
                     break;
                 }
                 

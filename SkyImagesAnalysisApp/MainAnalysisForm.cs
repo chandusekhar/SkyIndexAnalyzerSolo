@@ -56,7 +56,7 @@ namespace SkyImagesAnalyzer
 
         private DelegateOpenFile m_DelegateOpenFile;
 
-        #region //DEPRECATED
+        #region //OBSOLETE
         //private double tunedIFMMargin; 
         //private DateTime beginpartial;
         //private TimeSpan timepartial;
@@ -92,7 +92,7 @@ namespace SkyImagesAnalyzer
         //public int SensorsCycleDataGotTimes;
         //private double tunedIFMMargin_prev;
         //public double tunedSIMargin_prev;
-        #endregion //DEPRECATED
+        #endregion //OBSOLETE
 
 
 

@@ -73,6 +73,13 @@ namespace SkyImagesAnalyzerLibraries
 
 
 
+        public static Vector2D ToVector2D(this PointD p0, PointD p1)
+        {
+            return new Vector2D(p0, p1);
+        }
+
+
+
         public static string SaveNetCDFdataMatrix(this DenseMatrix dmSource, string fileName, string varName = "dataMatrix")
         {
             if (fileName != "")

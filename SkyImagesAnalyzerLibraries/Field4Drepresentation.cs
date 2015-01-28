@@ -49,6 +49,13 @@ namespace SkyImagesAnalyzerLibraries
         }
 
 
+        public enum PlottingVariant
+        {
+            byIsolines,
+            byNodesPoints
+        }
+
+
 
 
 
@@ -56,11 +63,30 @@ namespace SkyImagesAnalyzerLibraries
         public Field4Drepresentation(
             DenseMatrix dmListOfData,
             Dictionary<string, object> properties,
-            bool byIsolines = true,
+            PlottingVariant plottingOption = PlottingVariant.byIsolines,
             string description = "")
         {
             InitializeComponent();
 
+            if (plottingOption == PlottingVariant.byIsolines)
+            {
+                PlotByIsolines(dmListOfData, properties, description);
+            }
+            else if (plottingOption == PlottingVariant.byNodesPoints)
+            {
+                PlotByNodesPoints(dmListOfData, properties, description);
+            }
+        }
+
+
+
+
+
+        private void PlotByIsolines(
+            DenseMatrix dmListOfData,
+            Dictionary<string, object> properties,
+            string description = "")
+        {
             strDataDescription = description;
             ThreadSafeOperations.SetText(lblDescription, strDataDescription, false);
 
@@ -93,7 +119,6 @@ namespace SkyImagesAnalyzerLibraries
                 //    currSurfVectorsList.ConvertAll<float>(dvog => Convert.ToSingle(dvog.y)).ToArray();
                 //ILInArray<float> ilaZvalues =
                 //    currSurfVectorsList.ConvertAll<float>(dvog => Convert.ToSingle(dvog.z)).ToArray();
-
                 //ILSurface currSurf = new ILSurface(ilaZvalues, ilaXvalues, ilaYvalues);
                 // не катит - надо, чтобы сетка z была m*n, сетка x = m*[1|n], сетка y - [1|m]*n
                 // поэтому просто список точек, которые должны составить поверхность, - не катят
@@ -165,41 +190,10 @@ namespace SkyImagesAnalyzerLibraries
                 ILSurface currSurf = new ILSurface(ILMath.convert<double, float>(arrZvalues),
                     ILMath.convert<double, float>(arrXvalues), ILMath.convert<double, float>(arrYvalues), rgbaArrData);
 
-                
-                //currSurf.ColorMode = ILSurface.ColorModes.Solid;
-                //double coloredValue = currSurfVectorsList.Min(dvog => dvog.values[0]);
-                //currSurf.UpdateSolidColor(
-                //    newCS.GetColorByValueAndRange(coloredValue, dataMinVal, dataMaxVal).ToRGBColor());
-
-                
-                
-                //ColorSchemeRuler newCSR = new ColorSchemeRuler(newCS, dataMinVal, dataMaxVal);
-                
-                //currSurf.UpdateRGBA(null, rgbaArrData);
-
                 currSurf.UseLighting = true;
 
                 currSurfPlotCube.Children.Add(currSurf);
-
-                //if (currSurfPlotCube.Children.Count() > 4)
-                //{
-                //    currSurfPlotCube.Children.Add(new ILColorbar());
-                //}
-
-
-                //if (currSurfPlotCube.Children.Count() > 4)
-                //{
-                //    break;
-                //}
             }
-
-
-            //// surf.Children.Add(new ILColorbar());
-
-            ////currSurfPlotCube.Children.Add(new ILColorbar());
-
-            ////currSurfPlotCube.Rotation = Matrix4.Rotation(new Vector3(1, 0, 0), 1.2f) *
-            ////                    Matrix4.Rotation(new Vector3(0, 0, 1), Math.PI);
 
             currSurfPlotCube.Projection = Projection.Orthographic;
 
@@ -208,8 +202,77 @@ namespace SkyImagesAnalyzerLibraries
             scene.Add(currSurfPlotCube);
 
             ilPanel1.Scene = scene;
+        }
 
 
+
+
+
+        private void PlotByNodesPoints(
+            DenseMatrix dmListOfData,
+            Dictionary<string, object> properties,
+            string description = "")
+        {
+            strDataDescription = description;
+            ThreadSafeOperations.SetText(lblDescription, strDataDescription, false);
+
+            defaultProperties = properties;
+            strOutputDirectory = (string)defaultProperties["DefaultDataFilesLocation"];
+            if (!ServiceTools.CheckIfDirectoryExists(strOutputDirectory))
+            {
+                strOutputDirectory = "";
+            }
+
+            dmDataList = dmListOfData.Copy();
+            double dataMaxVal = dmDataList.Column(3).Max();
+            double dataMinVal = dmDataList.Column(3).Min();
+
+            ILScene scene = new ILScene();
+            currSurfPlotCube = new ILPlotCube();
+            currSurfPlotCube.TwoDMode = false;
+
+            ILArray<float> A =
+                ILMath.tosingle((ILArray<double>) (dmDataList.SubMatrix(0, dmDataList.RowCount, 0, 3).ToArray()));
+
+            ILArray<float> colors = ILMath.zeros<float>(4, dmDataList.RowCount);
+
+            ColorScheme newCS = new ColorScheme("");
+
+
+            double[] dvRvalues = DenseVector.Create(dmDataList.RowCount, (r) =>
+                    {
+                        Bgr currColor = newCS.GetColorByValueAndRange(dmDataList[r, 3], dataMinVal, dataMaxVal);
+                        return currColor.Red/255.0d;
+                    }).ToArray();
+            double[] dvGvalues = DenseVector.Create(dmDataList.RowCount, (r) =>
+                {
+                    Bgr currColor = newCS.GetColorByValueAndRange(dmDataList[r, 3], dataMinVal, dataMaxVal);
+                    return currColor.Green/255.0d;
+                }).ToArray();
+            double[] dvBvalues = DenseVector.Create(dmDataList.RowCount, (r) =>
+                {
+                    Bgr currColor = newCS.GetColorByValueAndRange(dmDataList[r, 3], dataMinVal, dataMaxVal);
+                    return currColor.Blue/255.0d;
+                }).ToArray();
+            colors["0;:"] = ILMath.tosingle((ILArray<double>)dvRvalues);
+            colors["1;:"] = ILMath.tosingle((ILArray<double>)dvGvalues);
+            colors["2;:"] = ILMath.tosingle((ILArray<double>)dvBvalues);
+            colors["3;:"] = 0.5f;
+
+            ILPoints pts = new ILPoints
+            {
+                Positions = A,
+                Colors = colors,
+            };
+            pts.Color = null;
+            currSurfPlotCube.Add(pts);
+
+            currSurfPlotCube.Projection = Projection.Orthographic;
+            currSurfPlotCube.Rotation = Matrix4.Rotation(new Vector3(1, 1, 1), 0.5f);
+            currSurfPlotCube.Plots.Reset();
+            scene.Add(currSurfPlotCube);
+
+            ilPanel1.Scene = scene;
         }
 
 

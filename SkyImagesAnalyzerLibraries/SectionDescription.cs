@@ -16,7 +16,7 @@ namespace SkyImagesAnalyzerLibraries
         public bool fromMarginToMargin = true;
 
         private PointD p0 = new PointD();
-        private DenseVector direction = DenseVector.Create(2, (i) => 0.0d);
+        private Vector2D direction = new Vector2D();
 
 
         public SectionDescription()
@@ -32,52 +32,43 @@ namespace SkyImagesAnalyzerLibraries
             fromMarginToMargin = in_fromMarginToMargin;
 
             p0 = in_p1;
-            direction = DenseVector.Create(2, i =>
-            {
-                if (i == 0)// x
-                    return
-                        (p2.X - p1.X)/PointD.Distance(p1, p2);
-                else if (i == 1)
-                    return
-                        (p2.Y - p1.Y)/PointD.Distance(p1, p2);
-                else return 0.0d;
-            });
+            direction = new Vector2D(p1, p2);
         }
 
 
 
 
 
-        public SectionDescription(PointD in_p0, DenseVector in_direction, bool in_fromMarginToMargin)
-        {
-            fromMarginToMargin = in_fromMarginToMargin;
-            p0 = in_p0;
-            direction = in_direction;
-        }
+        //public SectionDescription(PointD in_p0, DenseVector in_direction, bool in_fromMarginToMargin)
+        //{
+        //    fromMarginToMargin = in_fromMarginToMargin;
+        //    p0 = in_p0;
+        //    direction = in_direction;
+        //}
 
 
 
 
         public SectionDescription TransformTillMargins(Rectangle imageMarginsRect)
         {
-            LineDescription lDesc = new LineDescription(p0, direction);
-            DenseVector dvHoriz = DenseVector.Create(2, i => ((i == 0) ? (1.0d) : (0.0d)));
-            DenseVector dvVert = DenseVector.Create(2, i => ((i == 0) ? (0.0d) : (1.0d)));
+            LineDescription2D lDesc = new LineDescription2D(p0, direction);
+            Vector2D vHoriz = new Vector2D(1.0d, 0.0d); // DenseVector.Create(2, i => ((i == 0) ? (1.0d) : (0.0d)));
+            Vector2D vVert = new Vector2D(0.0d, 1.0d); // DenseVector.Create(2, i => ((i == 0) ? (0.0d) : (1.0d)));
             //return new SectionDescription(p1, p2, fromMarginToMargin);
-            LineDescription rectLtop = new LineDescription(new PointD(imageMarginsRect.Left, imageMarginsRect.Top),
-                dvHoriz);
-            LineDescription rectLleft = new LineDescription(new PointD(imageMarginsRect.Left, imageMarginsRect.Top),
-                dvVert);
-            LineDescription rectLright = new LineDescription(new PointD(imageMarginsRect.Right, imageMarginsRect.Top),
-                dvVert);
-            LineDescription rectLbottom = new LineDescription(new PointD(imageMarginsRect.Left, imageMarginsRect.Bottom),
-                dvHoriz);
+            LineDescription2D rectLtop = new LineDescription2D(new PointD(imageMarginsRect.Left, imageMarginsRect.Top),
+                vHoriz);
+            LineDescription2D rectLleft = new LineDescription2D(new PointD(imageMarginsRect.Left, imageMarginsRect.Top),
+                vVert);
+            LineDescription2D rectLright = new LineDescription2D(new PointD(imageMarginsRect.Right, imageMarginsRect.Top),
+                vVert);
+            LineDescription2D rectLbottom = new LineDescription2D(new PointD(imageMarginsRect.Left, imageMarginsRect.Bottom),
+                vHoriz);
 
             List<PointD> ptCross = new List<PointD>();
-            PointD pcTop = LineDescription.CrossPoint(rectLtop, lDesc);
-            PointD pcBottom = LineDescription.CrossPoint(rectLbottom, lDesc);
-            PointD pcLeft = LineDescription.CrossPoint(rectLleft, lDesc);
-            PointD pcRight = LineDescription.CrossPoint(rectLright, lDesc);
+            PointD pcTop = LineDescription2D.CrossPoint(rectLtop, lDesc);
+            PointD pcBottom = LineDescription2D.CrossPoint(rectLbottom, lDesc);
+            PointD pcLeft = LineDescription2D.CrossPoint(rectLleft, lDesc);
+            PointD pcRight = LineDescription2D.CrossPoint(rectLright, lDesc);
 
             if ((pcTop.X >= imageMarginsRect.Left) && (pcTop.X <= imageMarginsRect.Right)) ptCross.Add(pcTop);
             if ((pcBottom.X >= imageMarginsRect.Left) && (pcBottom.X <= imageMarginsRect.Right)) ptCross.Add(pcBottom);
@@ -88,9 +79,9 @@ namespace SkyImagesAnalyzerLibraries
         }
 
 
-        public LineDescription SectionLine
+        public LineDescription2D SectionLine
         {
-            get { return new LineDescription(p0, direction); }
+            get { return new LineDescription2D(p0, direction); }
         }
     }
 
@@ -98,57 +89,5 @@ namespace SkyImagesAnalyzerLibraries
 
 
 
-    public class LineDescription
-    {
-        public PointD p0 = new PointD();
-        public DenseVector directionVector = DenseVector.Create(2, i => 0.0d);
-
-
-        public double directionVectorLength
-        {
-            get { return Math.Sqrt(directionVector[0]*directionVector[0] + directionVector[1]*directionVector[1]); }
-        }
-
-
-        public LineDescription()
-        {
-            
-        }
-
-
-        public LineDescription(PointD _p0, DenseVector _direction)
-        {
-            p0 = _p0;
-            directionVector = (DenseVector)_direction.Clone();
-            SizeD sz1 = new SizeD(directionVector[0], directionVector[1]);
-            if (PointD.Distance(p0, p0 + sz1) != 1.0d)
-            {
-                directionVector /= sz1.DiagonalLength;
-            }
-        }
-
-
-
-
-        public static PointD CrossPoint(LineDescription l1, LineDescription l2)
-        {
-            PointD pc = new PointD();
-
-            if ((l1.directionVector == l2.directionVector) || (l1.directionVector == -l2.directionVector))
-            {
-                return PointD.nullPointD();
-            }
-
-            //double xi = l2.p0.Y/l1.directionVector[1] + l1.p0.X/l1.directionVector[0] -
-            //            l1.p0.Y/l1.directionVector[1] - l2.p0.X/l1.directionVector[0];
-            //double d1 = l2.directionVector[0]/l1.directionVector[0] - l2.directionVector[1]/l1.directionVector[1];
-            double d1 = l2.p0.Y*l1.directionVector[0] - l1.p0.Y*l1.directionVector[0] + l1.p0.X*l1.directionVector[1] -
-                        l2.p0.X*l1.directionVector[1];
-            double d2 = l1.directionVector[1]*l2.directionVector[0] - l1.directionVector[0]*l2.directionVector[1];
-            double t2Cross = d1/d2;
-            pc = l2.p0 + l2.directionVector*t2Cross;
-
-            return pc;
-        }
-    }
+    
 }

@@ -146,6 +146,7 @@
       <DependentUpon>MultipleProgressIndicatingForm.cs</DependentUpon>
     </Compile>
     <Compile Include="MultipleScatterAndFunctionsRepresentation.cs" />
+    <Compile Include="Point3D.cs" />
     <Compile Include="PointPolar.cs" />
     <Compile Include="GradientDescentApproximator.cs">
       <SubType>Code</SubType>
@@ -166,6 +167,7 @@
     </Compile>
     <Compile Include="SequencesDrawingVariants.cs" />
     <Compile Include="ServiceDataClasses.cs" />
+    <Compile Include="SimpleGeometry.cs" />
     <Compile Include="simpleMultipleImagesShow.cs">
       <SubType>Form</SubType>
     </Compile>

@@ -396,12 +396,13 @@ namespace SkyImagesAnalyzerLibraries
 
 
 
-        public double DistanceToLine(LineDescription l1)
+        public double DistanceToLine(LineDescription2D l1)
         {
-            PointD vect1 = new PointD(l1.directionVector[0], l1.directionVector[1]);
-            PointD vect2 = l1.p0 - new SizeD(this);
-            double retDist = (vect1.X * vect2.Y - vect1.Y * vect2.X) / (l1.directionVectorLength);
-            return Math.Abs(retDist);
+            //PointD vect1 = new PointD(l1.directionVector[0], l1.directionVector[1]);
+            //PointD vect2 = l1.p0 - new SizeD(this);
+            //double retDist = (vect1.X * vect2.Y - vect1.Y * vect2.X) / (l1.directionVectorLength);
+            //return Math.Abs(retDist);
+            return l1.Distance(this);
         }
 
 

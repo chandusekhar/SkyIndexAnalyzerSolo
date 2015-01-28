@@ -54,7 +54,7 @@
   </table>
   <table>
     <key>DefaultMaxImageSize</key>
-    <value>1024</value>
+    <value>800</value>
   </table>
   <table>
     <key>DefaultScalingFactor</key>
@@ -74,6 +74,6 @@
   </table>
   <table>
     <key>DefaultMedianPerc5StatsXMLFile</key>
-    <value>D:\_gulevlab\SkyImagesAnalysis_appData\clustering-tests\images_complete-2007-polarstern-CanonA640\median-perc5-stats.xml</value>
+    <value>D:\_gulevlab\SkyImagesAnalysis_appData\AI45-total\ID1\stats\statsWithFNames.xml</value>
   </table>
 </DataSet>
