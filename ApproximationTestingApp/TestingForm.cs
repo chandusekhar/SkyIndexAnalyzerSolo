@@ -249,7 +249,7 @@ namespace ApproximationTestingApp
             }
             
             DenseVector initialParametersIncremnt = DenseVector.Create(dvParameters.Count, (i => 1.0d));
-            theApproximator.ApproximationGradientDescent2D(dvParameters, initialParametersIncremnt, 0.0000001d);
+            theApproximator.ApproximationGradientDescent2D(dvParameters, ref initialParametersIncremnt, 0.0000001d);
 
             //while (true)
             //{

@@ -334,7 +334,7 @@ namespace SkyImagesAnalyzerLibraries
         /// <param name="dvInitialParametersIncrement">The dv initial parameters increment.</param>
         /// <param name="maxRelativeError">The maximum relative error.</param>
         /// <returns>DenseVector.</returns>
-        public DenseVector ApproximationGradientDescent2D(DenseVector dvInitioalParametersValues, DenseVector dvInitialParametersIncrement, double maxRelativeError = 0.0001d)
+        public DenseVector ApproximationGradientDescent2D(DenseVector dvInitioalParametersValues, ref DenseVector dvInitialParametersIncrement, double maxRelativeError = 0.0001d)
         {
             DenseVector currentParametersValues = (DenseVector)dvInitioalParametersValues.Clone();
             updateParametersScale(currentParametersValues);
@@ -499,6 +499,8 @@ namespace SkyImagesAnalyzerLibraries
             {
                 //theSelfLogWindow = ServiceTools.LogAText(theSelfLogWindow, "DONE" + Environment.NewLine + densevectorToString(nextParametersValues), false);
             }
+
+            dvInitialParametersIncrement = DenseVector.OfVector(dvCurrentParametersIncrement);
 
             return nextParametersValues;
         }

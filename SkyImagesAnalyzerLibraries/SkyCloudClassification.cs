@@ -636,6 +636,20 @@ namespace SkyImagesAnalyzerLibraries
                 // а минимум при условии исключения шумов и выбросов за пределами 10-го персентиля
 
 
+                #region здесь фильтруем данные выше значения GrIx=theStdDevMarginValueDefiningTrueSkyArea
+                // Попробуем отфильтровать данные, чтобы брать во внимание только те, которые лежат ниже границы
+                // которую определим как значение, ниже которого - точно синее небо
+
+                List<Tuple<double, double>> lEnvelopRGrIxvalues =
+                    new List<Tuple<double, double>>(
+                        envelopRargument.Zip<double, double, Tuple<double, double>>(envelopValues,
+                            (r, grix) => new Tuple<double, double>(r, grix)));
+                lEnvelopRGrIxvalues =
+                    lEnvelopRGrIxvalues.FindAll(tpl => (tpl.Item2 <= theStdDevMarginValueDefiningTrueSkyArea));
+                envelopValues = lEnvelopRGrIxvalues.ConvertAll<double>(tpl => tpl.Item2);
+                envelopRargument = lEnvelopRGrIxvalues.ConvertAll<double>(tpl => tpl.Item1);
+
+                #endregion здесь фильтруем данные выше значения GrIx=theStdDevMarginValueDefiningTrueSkyArea
 
 
                 #region здесь исследуем распределение локальных минимумов распределения GrIx по r в полярной системе координат
@@ -744,35 +758,51 @@ namespace SkyImagesAnalyzerLibraries
                 
 
 
+                
+                
                 #region аппроксимация распределения GrIx(r) для огибающей
                 BGWorkerReport("сглаживаем полученное распределение, представляющее огибающую GrIx(r)," +
                                "определеяем характерные точки: расположение глобального минимума, его величину");
                 //smooth the distribution
                 DenseVector dvDataValues = DenseVector.OfEnumerable(envelopValues);
                 //DenseVector dvSmoothedDistribution = DataAnalysis.ExponentialMovingAverage(dvDataValues, 10, 0.4d);
-                DenseVector dvSmoothedEnvelopValues = dvDataValues.Conv(StandardConvolutionKernels.gauss, 10);
-
-
-
                 
-                
+                // DenseVector dvSmoothedEnvelopValues = dvDataValues.Conv(StandardConvolutionKernels.gauss, 10);
 
 
-                minDataValue = dvSmoothedEnvelopValues.AbsoluteMinimum();
-                Rs = dvSmoothedEnvelopValues.AbsoluteMinimumIndex();
+                // будем аппроксимировать по-другому - нужно учитывать веса точек.
+                // чем меньше значение GrIx в точке, - тем больше ее вес.
+                // аппроксимировать будем уже не решением СЛУ, а, как и в остальных случаях, - методом градиентного спуска
+                // для этого функция будет задаваться здесь же.
+                // и начальные коэффициенты тоже.
+                // данные пока оставим отфильтрованные по значению GrIx
+
+
+                minDataValue = dvDataValues.AbsoluteMinimum();
+                Rs = envelopRargument.ElementAt(dvDataValues.AbsoluteMinimumIndex());
 
                 DenseVector dvDataSpace = DenseVector.OfEnumerable(envelopRargument);
+
+                //добавим фиксированную точку в начало - на край солнечного диска
+                // для аппроксимации в этой паре массивов она может быть произвольной
+                // главное, чтобы был под нее "номер" в последовательности точек
+                List<double> tmpList = new List<double>(dvDataSpace);
+                tmpList.Insert(0, 0.0d);
+                dvDataSpace = DenseVector.OfEnumerable(tmpList);
+                tmpList = new List<double>(dvDataValues);
+                tmpList.Insert(0, minSunburnGrIxValue);
+                dvDataValues = DenseVector.OfEnumerable(tmpList);
 
                 MultipleScatterAndFunctionsRepresentation envelopPlottingForm =
                     new MultipleScatterAndFunctionsRepresentation(800, 600);
                 envelopPlottingForm.dvScatterXSpace.Add(dvDataSpace);
-                envelopPlottingForm.dvScatterFuncValues.Add(dvSmoothedEnvelopValues);
+                envelopPlottingForm.dvScatterFuncValues.Add(dvDataValues);
                 envelopPlottingForm.scatterLineColors.Add(new Bgr(Color.Red));
                 envelopPlottingForm.scatterDrawingVariants.Add(SequencesDrawingVariants.circles);
 
                 if (verbosityLevel > 0)
                 {
-                    foreach (var dataValueTuple in dvSmoothedEnvelopValues.EnumerateIndexed())
+                    foreach (var dataValueTuple in dvDataValues.EnumerateIndexed())
                     {
                         string textToWrite = "" + dvDataSpace[dataValueTuple.Item1].ToString("e").Replace(",", ".") +
                                              ";";
@@ -785,19 +815,86 @@ namespace SkyImagesAnalyzerLibraries
                     }
                 }
 
-                BGWorkerReport("аппроксимируем полученное распределение полиномом, МНК");
 
-                // int polynomeOrder = 10;
+
+
+
+                // Определим, как выглядит функция от аргумента
+                Func<DenseVector, double, double> theEvemlopApproximationFunction =
+                    ((dvPolynomeKoeffs, dRVal) => DataAnalysis.PolynomeValue(dvPolynomeKoeffs, dRVal));
+
+                // создаем сам объект, который будет аппроксимировать
+                GradientDescentApproximator evenlopApproximator =
+                    new GradientDescentApproximator(dvDataValues, dvDataSpace, theEvemlopApproximationFunction);
+                
+                // у аппроксиматора надо задать некоторые начальне значения, чтобы ему было от чего скакать
+                // например, начальные значения коэффициентов полинома. Пусть это будет просто прямая y=1-x
+                // а порядок полинома будет задаваться количеством этих коэффициентов - то есть, длиной вектора коэффициентов
                 int polynomeOrder = 6;
 
-                //DenseVector dvFixedPoints = DenseVector.Create(dvDataSpace.Count,
-                //    new Func<int, double>(i => (i == 0) ? (1.0d) : (double.NaN)));
+                // оценим начальные значения из аппроксимации без весов - по старой версии
+                // методом МНК, который для полинома дает всего лишь решение СЛУ
+
+                // int polynomeOrder = 10;
+                // int polynomeOrder = 6;
+                //int polynomeOrder = 4;
+
+                // укажем, что есть фиксированная точка - в отдельном массиве фиксированных точек
                 DenseVector dvFixedPoints = DenseVector.Create(dvDataSpace.Count,
                     new Func<int, double>(i => (i == 0) ? (minSunburnGrIxValue) : (double.NaN)));
 
-                DenseVector approxPolyKoeffs =
-                    DataAnalysis.NPolynomeApproximationLessSquareMethod(dvSmoothedEnvelopValues, dvDataSpace, dvFixedPoints, polynomeOrder);
+                DenseVector dvInitialParameters_EvenlopApprox =
+                    DataAnalysis.NPolynomeApproximationLessSquareMethod(
+                                                            dvDataValues,
+                                                            dvDataSpace,
+                                                            dvFixedPoints,
+                                                            polynomeOrder);
 
+                //List<double> initParametersList_EvenlopApprox = new List<double>();
+                //initParametersList_EvenlopApprox.Add(1.0d);
+                //initParametersList_EvenlopApprox.Add(-1.0d);
+                //for (int i = 0; i < polynomeOrder-1; i++)
+                //{
+                //    initParametersList_EvenlopApprox.Add(0.01d);
+                //}
+                //DenseVector dvInitialParameters_EvenlopApprox = DenseVector.OfEnumerable(initParametersList_EvenlopApprox);
+                DenseVector initialParametersIncrement_EvenlopApprox =
+                    DenseVector.Create(dvInitialParameters_EvenlopApprox.Count,
+                        i => dvInitialParameters_EvenlopApprox[i]*0.1);
+
+                // для того, чтобы в точке r=Rs/3 вес был 1/10
+                // решим уравнение
+                double a = (Rs*Rs)/9.0d;
+                double b = Math.Log(0.1d) - (2.0d/3.0d)*Rs*Rs;
+                double c = Rs*Rs;
+                double d = b*b - 4.0d*a*c;
+                double rt1 = (-b - Math.Sqrt(d))/(2.0d*a);
+                double rt2 = (-b + Math.Sqrt(d)) / (2.0d * a);
+                double rtmean = (Math.Sqrt(rt1) + Math.Sqrt(rt2))/2.0d;
+
+
+
+                DenseVector dvWeights_EvenlopApprox = DenseVector.Create(dvDataValues.Count, (i =>
+                {
+                    double weight = (0.4d +
+                                     0.6d*(dvDataValues.Max() - dvDataValues[i])/
+                                     (dvDataValues.Max() - dvDataValues.Min()));
+
+                    // а еще чем ближе r к Rs - тем больше доверия
+                    weight *=
+                        Math.Exp(-(rtmean*dvDataSpace[i]/3.0d - Rs/rtmean)*(rtmean*dvDataSpace[i]/3.0d - Rs/rtmean));
+
+                    return weight;
+                }));
+                double dvWeights_EvenlopApprox_totalWeight = dvWeights_EvenlopApprox.Sum();
+                dvWeights_EvenlopApprox /= dvWeights_EvenlopApprox_totalWeight;
+                evenlopApproximator.DvWeights = dvWeights_EvenlopApprox;
+                DenseVector approxPolyKoeffs = evenlopApproximator.ApproximationGradientDescent2D(
+                    dvInitialParameters_EvenlopApprox,
+                    ref initialParametersIncrement_EvenlopApprox,
+                    0.0000001d);
+                
+                
 
                 envelopPlottingForm.theRepresentingFunctions.Add(
                     (dvParams, x) => DataAnalysis.PolynomeValue(dvParams, x));
@@ -840,7 +937,10 @@ namespace SkyImagesAnalyzerLibraries
 
                 BGWorkerReport("аппроксимация зависимости GrIx(r) завершена");
 
-                #endregion аппроксимация распределения GrIx(r) для огибающей
+                #endregion аппроксимация распределения GrIx(r) для огибающей (ЗАВЕРШЕНО)
+
+
+
 
 
                 #region аппроксимация распределения Rm(phi)
@@ -974,7 +1074,7 @@ namespace SkyImagesAnalyzerLibraries
                     theFunctionsForm.Show();
                     theFunctionsForm.Represent();
                 }
-                DenseVector approximatedParameters = approximator.ApproximationGradientDescent2D(dvInitialParameters, initialParametersIncremnt, 0.0000001d);
+                DenseVector approximatedParameters = approximator.ApproximationGradientDescent2D(dvInitialParameters, ref initialParametersIncremnt, 0.0000001d);
 
 
                 //попробуем вот так:
@@ -1012,9 +1112,10 @@ namespace SkyImagesAnalyzerLibraries
                 approximator.DvWeights = dvTunedWeights;
                 approximator.dvSpace = dvTunedPhiSpace;
                 approximator.dvDataValues = dvTunedRSpace;
-                approximatedParameters = approximator.ApproximationGradientDescent2D(approximatedParameters, initialParametersIncremnt, 0.000001d);
+                approximatedParameters = approximator.ApproximationGradientDescent2D(approximatedParameters, ref initialParametersIncremnt, 0.000001d);
                 // фак
                 // откуда-то NaN вылез :((
+
 
 
                 if (!isCalculatingUsingBgWorker)
