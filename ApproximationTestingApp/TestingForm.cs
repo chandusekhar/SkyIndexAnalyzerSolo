@@ -223,6 +223,9 @@ namespace ApproximationTestingApp
             }
         }
 
+
+
+
         private void bgwApproximatorWorker_DoWork(object sender, DoWorkEventArgs e)
         {
             System.ComponentModel.BackgroundWorker SelfWorker = sender as System.ComponentModel.BackgroundWorker;
@@ -249,7 +252,8 @@ namespace ApproximationTestingApp
             }
             
             DenseVector initialParametersIncremnt = DenseVector.Create(dvParameters.Count, (i => 1.0d));
-            theApproximator.ApproximationGradientDescent2D(dvParameters, ref initialParametersIncremnt, 0.0000001d);
+            //dvCurrentParameters = theApproximator.ApproximationGradientDescentMultidim(dvParameters, ref initialParametersIncremnt, 0.0000001d);
+            dvCurrentParameters = theApproximator.Approximation_ILOptimizer(dvParameters, ref initialParametersIncremnt, 1.0e-10d);
 
             //while (true)
             //{
@@ -358,7 +362,7 @@ namespace ApproximationTestingApp
 
             theForm.theRepresentingFunctions.Add(newFunc);
             theForm.parameters.Add(dvCurrentParameters);
-            theForm.lineColors.Add(new Bgr(0, 0, 0));
+            theForm.lineColors.Add(new Bgr(0, 255, 0));
             theForm.Represent();
 
             //theLogWindow = ServiceTools.LogAText(theLogWindow, densevectorToString(dvCurrentParameters) + Environment.NewLine);

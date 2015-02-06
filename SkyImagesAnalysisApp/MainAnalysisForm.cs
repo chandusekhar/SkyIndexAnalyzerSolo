@@ -96,6 +96,13 @@ namespace SkyImagesAnalyzer
 
 
 
+
+
+        
+
+
+
+
         private void btnProperties_Click(object sender, EventArgs e)
         {
             PropertiesEditor propForm = new PropertiesEditor(defaultProperties, defaultPropertiesXMLfileName);
@@ -1693,7 +1700,7 @@ namespace SkyImagesAnalyzer
             //currImageRedChannelMap = null;
             #endregion
 
-            #region new-style analyzing
+            
             DateTime beginNew = DateTime.Now;
             //classificator = new SkyCloudClassification(imagetoadd, pictureBox2, pbUniversalProgressBar, textBox1);
 
@@ -1735,54 +1742,76 @@ namespace SkyImagesAnalyzer
             classificator.LogWindow = theLogWindow;
             string defaultOutputDataDirectory = (string)defaultProperties["DefaultDataFilesLocation"];
             classificator.defaultOutputDataDirectory = defaultOutputDataDirectory;
-            classificator.Classify();
-            Note(classificator.resultingStatusMessages);
-            classificator.resultingStatusMessages = "";
-            bitmapSI = new Bitmap(classificator.PreviewBitmap);
-            TimeSpan timeNew = DateTime.Now - beginNew;
-            #endregion
-
-            ServiceTools.FlushMemory(null, "#02");
-
-            ThreadSafeOperations.UpdatePictureBox(pictureBox2, bitmapSI, true);
-
-
-            if (classificator.verbosityLevel > 0)
+            theLogWindow = ServiceTools.LogAText(theLogWindow, DateTime.Now.ToString() + Environment.NewLine, true);
+            classificator.theLogWindow = theLogWindow;
+            
+            BackgroundWorker bgwClassifyWorker = new BackgroundWorker();
+            classificator.SelfWorker = bgwClassifyWorker;
+            bgwClassifyWorker.DoWork += new DoWorkEventHandler((obj, args) =>
             {
-                string outputFilename = ImageFileName;
-                outputFilename = Path.GetFileNameWithoutExtension(finfoOriginalFile.Name) + "-result-" +
-                                 classificator.ClassificationMethod.ToString() + ".jpg";
-                outputFilename = defaultOutputDataDirectory + outputFilename;
-                bitmapSI.Save(outputFilename, ImageFormat.Jpeg);
+                SkyCloudClassification bgwClassificator = (SkyCloudClassification) ((object[])args.Argument)[0];
+                bgwClassificator.Classify();
+                args.Result = new object[] {bgwClassificator};
+            });
 
-                string origImageCopyFilename = Path.GetFileNameWithoutExtension(finfoOriginalFile.Name) + "-orig-" + ".jpg";
-                origImageCopyFilename = defaultOutputDataDirectory + origImageCopyFilename;
-                imagetoadd.Save(origImageCopyFilename);
-            }
+            bgwClassifyWorker.RunWorkerCompleted += new RunWorkerCompletedEventHandler((obj, args) =>
+            {
+                object[] objArgs = (object[]) (args.Result);
 
-            pictureBox2Bitmap = new Bitmap(bitmapSI);
+                SkyCloudClassification bgwClassificator = (SkyCloudClassification)objArgs[0];
 
-            ThreadSafeOperations.UpdateProgressBar(pbUniversalProgressBar, 0);
+                Note(bgwClassificator.resultingStatusMessages);
+                bgwClassificator.resultingStatusMessages = "";
+                bitmapSI = new Bitmap(bgwClassificator.PreviewBitmap);
+                TimeSpan timeNew = DateTime.Now - beginNew;
 
-            string strtowrite3 = "Cloud cover 1 = " + Math.Round(classificator.CloudCover, 2).ToString() + Environment.NewLine;
+                ServiceTools.FlushMemory(null, "#02");
 
-
-
-            #region // private void GetEXIFs() - устарело, пока больше не применяется
-            //GetEXIFs();
-            #endregion // private void GetEXIFs() - устарело, пока больше не применяется
+                ThreadSafeOperations.UpdatePictureBox(pictureBox2, bitmapSI, true);
 
 
+                if (bgwClassificator.verbosityLevel > 0)
+                {
+                    string outputFilename = ImageFileName;
+                    outputFilename = Path.GetFileNameWithoutExtension(finfoOriginalFile.Name) + "-result-" +
+                                     bgwClassificator.ClassificationMethod.ToString() + ".jpg";
+                    outputFilename = defaultOutputDataDirectory + outputFilename;
+                    bitmapSI.Save(outputFilename, ImageFormat.Jpeg);
 
-            timetotal = DateTime.Now - begintotal;
+                    string origImageCopyFilename = Path.GetFileNameWithoutExtension(finfoOriginalFile.Name) + "-orig-" + ".jpg";
+                    origImageCopyFilename = defaultOutputDataDirectory + origImageCopyFilename;
+                    imagetoadd.Save(origImageCopyFilename);
+                }
 
-            Note("Общее время выполнения: " + timetotal);
-            Note("Время обсчета по новому алгоритму: " + timeNew);
+                pictureBox2Bitmap = new Bitmap(bitmapSI);
 
-            //tunedSIMargin_prev = tunedSIMargin;
+                ThreadSafeOperations.UpdateProgressBar(pbUniversalProgressBar, 0);
 
-            UpdateSIIFMlabels(1, classificator.CloudCover);
-            ServiceTools.FlushMemory(null, "");
+                #region //OBSOLETE
+                //string strtowrite3 = "Cloud cover 1 = " + Math.Round(classificator.CloudCover, 2).ToString() + Environment.NewLine;
+                #endregion //OBSOLETE
+
+
+                #region // private void GetEXIFs() - устарело, пока больше не применяется
+                //GetEXIFs();
+                #endregion // private void GetEXIFs() - устарело, пока больше не применяется
+
+
+
+                timetotal = DateTime.Now - begintotal;
+
+                Note("Общее время выполнения: " + timetotal);
+                Note("Время обсчета по новому алгоритму: " + timeNew);
+
+                //tunedSIMargin_prev = tunedSIMargin;
+
+                UpdateSIIFMlabels(1, bgwClassificator.CloudCover);
+                ServiceTools.FlushMemory(null, "");
+            });
+
+            object[] bgwArgs = new object[] {classificator};
+
+            bgwClassifyWorker.RunWorkerAsync(bgwArgs);
         }
 
 

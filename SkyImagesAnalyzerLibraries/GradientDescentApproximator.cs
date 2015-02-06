@@ -6,6 +6,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using MathNet.Numerics.LinearAlgebra.Double;
 using MathNet.Numerics.Statistics;
+using ILNumerics;
+using MathNet.Numerics.Interpolation;
 
 namespace SkyImagesAnalyzerLibraries
 {
@@ -28,11 +30,14 @@ namespace SkyImagesAnalyzerLibraries
         // 0 - обычная функция
         // 1 - набор точек на плоскости, не обязательно однозначное соответствие x => y
 
+        Random rnd = new Random();
+
+
 
         public GradientDescentApproximator(DenseVector dvInputDataValues, DenseVector dvInputSpace, Func<DenseVector, double, double> inputApproxFunc)
         {
-            dvDataValues = (DenseVector)dvInputDataValues.Clone();
-            dvSpace = (DenseVector)dvInputSpace.Clone();
+            dvDataValues = dvInputDataValues.Copy();
+            dvSpace = dvInputSpace.Copy();
             approxFunc = inputApproxFunc;
             calculationType = 0;
         }
@@ -59,7 +64,7 @@ namespace SkyImagesAnalyzerLibraries
                 if (theSum == 0.0d) dvWeights = null;
                 else if (theSum != 1.0d)
                 {
-                    dvWeights.MapInplace(new Func<double, double>(x => x / theSum));
+                    dvWeights.MapInplace(x => x / theSum);
                 }
             }
         }
@@ -70,14 +75,14 @@ namespace SkyImagesAnalyzerLibraries
         {
             if (dvParametersScale == null)
                 dvParametersScale = DenseVector.Create(dvActualParametersValues.Count,
-                    new Func<int, double>(i => Math.Abs(dvActualParametersValues[i])));
+                    i => Math.Abs(dvActualParametersValues[i]));
             else
             {
-                dvParametersScale.MapIndexedInplace(new Func<int, double, double>((i, dVal) =>
+                dvParametersScale.MapIndexedInplace((i, dVal) =>
                 {
                     if (Math.Abs(dvActualParametersValues[i]) > dVal) return Math.Abs(dvActualParametersValues[i]);
                     else return dVal;
-                }));
+                });
             }
         }
 
@@ -96,37 +101,37 @@ namespace SkyImagesAnalyzerLibraries
         /// <returns>DenseVector.</returns>
         public DenseVector ApproximationGradientDescent2DPt(DenseVector dvInitioalParametersValues, DenseVector dvInitialParametersIncrement, double maxRelativeError = 0.0001d)
         {
-            DenseVector currentParametersValues = (DenseVector)dvInitioalParametersValues.Clone();
+            DenseVector currentParametersValues = dvInitioalParametersValues.Copy();
             updateParametersScale(currentParametersValues);
 
-            DenseVector dvCurrentParametersIncrement = (DenseVector)dvInitialParametersIncrement.Clone();
+            DenseVector dvCurrentParametersIncrement = dvInitialParametersIncrement.Copy();
             DenseVector dvNewParametersIncrements;
             double stepFollowingGradKoeff = 1.0d;
             double relativeMinimizingValueDiffIncrement = 1.0d;
             double previousRelativeMinimizingValueIncrement = 1.0d;
-            DenseVector nextParametersValues = (DenseVector)currentParametersValues.Clone();
+            DenseVector nextParametersValues = currentParametersValues.Copy();
 
             while (Math.Abs(relativeMinimizingValueDiffIncrement) > maxRelativeError)
             {
                 stepFollowingGradKoeff = stepFollowingGradKoeff * 2.0d;
                 DenseVector dvCurrentGrad = GradOfEvaluatingValue(
-                    new Func<DenseVector, double>(DeviationsSquaredSumPt),
+                    DeviationsSquaredSumPt,
                     currentParametersValues,
                     dvCurrentParametersIncrement,
                     out dvNewParametersIncrements);
-                dvCurrentParametersIncrement = (DenseVector)dvNewParametersIncrements.Clone();
+                dvCurrentParametersIncrement = dvNewParametersIncrements.Copy();
 
                 nextParametersValues = currentParametersValues - stepFollowingGradKoeff * dvCurrentGrad;
 
                 DenseVector dvNextGrad = GradOfEvaluatingValue(
-                    new Func<DenseVector, double>(DeviationsSquaredSumPt),
+                    DeviationsSquaredSumPt,
                     nextParametersValues,
                     dvCurrentParametersIncrement,
                     out dvNewParametersIncrements);
-                dvCurrentParametersIncrement = (DenseVector)dvNewParametersIncrements.Clone();
+                dvCurrentParametersIncrement = dvNewParametersIncrements.Copy();
 
                 DenseVector gradIncrement = dvNextGrad - dvCurrentGrad;
-                double gradRelativeIncrement = Math.Sqrt(gradIncrement * gradIncrement / (dvCurrentGrad * dvCurrentGrad));
+                double gradRelativeIncrement = gradIncrement.Abs() / dvCurrentGrad.Abs();
 
 
                 while (gradRelativeIncrement > 0.1d)
@@ -144,18 +149,18 @@ namespace SkyImagesAnalyzerLibraries
                     nextParametersValues = currentParametersValues - stepFollowingGradKoeff * dvCurrentGrad;
 
                     dvNextGrad = GradOfEvaluatingValue(
-                        new Func<DenseVector, double>(dvParametersVector =>
+                        dvParametersVector =>
                         {
                             //здесь должна быть функция, от которой берем градиент
                             return DeviationsSquaredSumPt(dvParametersVector);
-                        }),
+                        },
                         nextParametersValues,
                         dvCurrentParametersIncrement,
                         out dvNewParametersIncrements);
-                    dvCurrentParametersIncrement = (DenseVector)dvNewParametersIncrements.Clone();
+                    dvCurrentParametersIncrement = dvNewParametersIncrements.Copy();
 
                     gradIncrement = dvNextGrad - dvCurrentGrad;
-                    gradRelativeIncrement = Math.Sqrt(gradIncrement * gradIncrement / (dvCurrentGrad * dvCurrentGrad));
+                    gradRelativeIncrement = gradIncrement.Abs() / dvCurrentGrad.Abs();
                 }
 
                 #region Проверка условий
@@ -210,7 +215,7 @@ namespace SkyImagesAnalyzerLibraries
 
                     //Thread.Sleep(10);
                     Tuple<DenseVector, double> theObject = new Tuple<DenseVector, double>(currentParametersValues, stats.StandardDeviation / stats.Mean);
-                    SelfWorker.ReportProgress(50, (object)theObject);
+                    SelfWorker.ReportProgress(50, theObject);
 
                     if (SelfWorker.CancellationPending)
                     {
@@ -247,21 +252,21 @@ namespace SkyImagesAnalyzerLibraries
             DenseVector dvApproxFuncValues;
             if (dvWeights == null)
             {
-                dvApproxFuncValues = DenseVector.Create(pointsList.Count, new Func<int, double>(ix =>
+                dvApproxFuncValues = DenseVector.Create(pointsList.Count, ix =>
                 {
                     return approxFuncPt(currentParametersSpacePoint, pointsList[ix]);
-                }));
+                });
             }
             else
             {
-                dvApproxFuncValues = DenseVector.Create(pointsList.Count, new Func<int, double>(ix =>
+                dvApproxFuncValues = DenseVector.Create(pointsList.Count, ix =>
                 {
                     return approxFuncPt(currentParametersSpacePoint, pointsList[ix]);
-                }));
+                });
                 dvApproxFuncValues = (DenseVector)dvApproxFuncValues.PointwiseMultiply(dvWeights);
             }
 
-            return Math.Sqrt(dvApproxFuncValues * dvApproxFuncValues);
+            return dvApproxFuncValues.Abs();
         }
 
 
@@ -281,31 +286,36 @@ namespace SkyImagesAnalyzerLibraries
         /// <param name="currentParametersSpacePoint">The current parameters space point.
         /// Тот самый фиксированный вектор параметров, используемый для вычисления значений аппроксимирующей функции над пространсовм независимой переменной</param>
         /// <returns>System.Double. Значение абсолютного </returns>
-        private static double DeviationsSquaredSumRelative(DenseVector dvDataValues, DenseVector dvSpace, Func<DenseVector, double, double> approxFunc, DenseVector currentParametersSpacePoint, DenseVector dvWeights)
-        //public delegate double DeviationsSquaredSumRelative(DenseVector currentParametersSpacePoint)
+        private static double DeviationsSquaredSumRelative(
+            DenseVector dvDataValues,
+            DenseVector dvSpace,
+            Func<DenseVector, double, double> approxFunc,
+            DenseVector currentParametersSpacePoint,
+            DenseVector dvWeights)
         {
-            DenseVector dvDistanceRelative;
+            double distanceRelative = 0.0d;
             if (dvWeights == null)
             {
-                DenseVector dvApproxFuncValues = DenseVector.Create(dvSpace.Count, new Func<int, double>(ix =>
+                DenseVector dvApproxFuncValues = DenseVector.Create(dvSpace.Count, ix =>
                 {
                     return approxFunc(currentParametersSpacePoint, dvSpace[ix]);
-                }));
+                });
                 DenseVector dvDistanceAbs = dvApproxFuncValues - dvDataValues;
-                dvDistanceRelative = (DenseVector)(dvDistanceAbs.PointwiseDivide(dvDataValues));
-
+                distanceRelative = dvDistanceAbs.Abs() / dvDataValues.Abs();
             }
             else
             {
-                DenseVector dvApproxFuncValues = DenseVector.Create(dvSpace.Count, new Func<int, double>(ix =>
+                DenseVector dvApproxFuncValues = DenseVector.Create(dvSpace.Count, ix =>
                 {
                     return approxFunc(currentParametersSpacePoint, dvSpace[ix]);
-                }));
+                });
                 DenseVector dvDistanceAbs = dvApproxFuncValues - dvDataValues;
-                dvDistanceRelative = (DenseVector)(dvDistanceAbs.PointwiseDivide(dvDataValues));
+                dvDistanceAbs.MapInplace(d => Math.Abs(d));
+                DenseVector dvDistanceRelative = (DenseVector)(dvDistanceAbs / dvDataValues.Map(Math.Abs));
                 dvDistanceRelative = (DenseVector)dvDistanceRelative.PointwiseMultiply(dvWeights);
+                distanceRelative = dvDistanceRelative.Abs();
             }
-            return Math.Sqrt(dvDistanceRelative * dvDistanceRelative);
+            return distanceRelative;
         }
 
 
@@ -315,11 +325,41 @@ namespace SkyImagesAnalyzerLibraries
 
 
 
+        private static DenseVector DeviationsArray_ILOptimizer(
+            DenseVector dvDataValues,
+            DenseVector dvSpace,
+            Func<DenseVector, double, double> approxFunc,
+            DenseVector currentParametersSpacePoint,
+            DenseVector dvWeights)
+        {
+            DenseVector dvDistanceAbs = DenseVector.Create(1, 0.0d);
+            if (dvWeights == null)
+            {
+                DenseVector dvApproxFuncValues = DenseVector.Create(dvSpace.Count, ix =>
+                {
+                    return approxFunc(currentParametersSpacePoint, dvSpace[ix]);
+                });
+                dvDistanceAbs = dvApproxFuncValues - dvDataValues;
+            }
+            else
+            {
+                DenseVector dvApproxFuncValues = DenseVector.Create(dvSpace.Count, ix =>
+                {
+                    return approxFunc(currentParametersSpacePoint, dvSpace[ix]);
+                });
+                dvDistanceAbs = dvApproxFuncValues - dvDataValues;
+                dvDistanceAbs = (DenseVector)dvDistanceAbs.PointwiseMultiply(dvWeights);
+            }
+            return dvDistanceAbs;
+        }
 
 
 
 
-        private double RandomWithLimits(Random rnd, double rndMin, double rndMax)
+
+
+
+        private double RandomWithLimits(double rndMin, double rndMax)
         {
             return rndMin + rnd.NextDouble() * (rndMax - rndMin);
         }
@@ -327,52 +367,77 @@ namespace SkyImagesAnalyzerLibraries
 
 
 
+
+
+
+        public DenseVector Approximation_ILOptimizer(DenseVector dvInitialParametersValues,
+            ref DenseVector dvInitialParametersIncrement, double maxRelativeError = 1.0e-8d)
+        {
+            Optimization.ObjectiveFunction<double> devFunc = (parametersPoint) =>
+            {
+                using (ILScope.Enter(parametersPoint))
+                {
+                    DenseVector dvParametersPoint = DenseVector.OfEnumerable(parametersPoint);
+                    DenseVector dvDevValues =
+                        DeviationsArray_ILOptimizer(dvDataValues, dvSpace, approxFunc, dvParametersPoint,
+                            dvWeights);
+                    return dvDevValues.ToArray();
+                }
+            };
+            ILRetArray<double> min = Optimization.leastsq_pdl(
+                                                            devFunc,
+                                                            dvInitialParametersValues.ToArray(),
+                                                            tol: maxRelativeError);
+            return DenseVector.OfEnumerable(min);
+        }
+
+
+
+
+
+
         /// <summary>
         /// Approximations using gradient descent method. The ordinary function case.
         /// </summary>
-        /// <param name="dvInitioalParametersValues">The dv initioal parameters values.</param>
+        /// <param name="dvInitialParametersValues">The dv initioal parameters values.</param>
         /// <param name="dvInitialParametersIncrement">The dv initial parameters increment.</param>
         /// <param name="maxRelativeError">The maximum relative error.</param>
         /// <returns>DenseVector.</returns>
-        public DenseVector ApproximationGradientDescent2D(DenseVector dvInitioalParametersValues, ref DenseVector dvInitialParametersIncrement, double maxRelativeError = 0.0001d)
+        public DenseVector ApproximationGradientDescentMultidim(DenseVector dvInitialParametersValues, ref DenseVector dvInitialParametersIncrement, double maxRelativeError = 0.0001d)
         {
-            DenseVector currentParametersValues = (DenseVector)dvInitioalParametersValues.Clone();
+            DenseVector currentParametersValues = dvInitialParametersValues.Copy();
             updateParametersScale(currentParametersValues);
 
-            Random rnd = new Random();
-
-            DenseVector dvCurrentParametersIncrement = (DenseVector)dvInitialParametersIncrement.Clone();
-            DenseVector dvNewParametersIncrements;
+            DenseVector dvCurrentParametersIncrement = dvInitialParametersIncrement.Copy();
             double stepFollowingGradKoeff = 1.0d;
-            double relativeMinimizingValueDiffIncrement = 1.0d;
+            double relativeMinimizingValueDiffIncrement = maxRelativeError * 2.0d;
             double previousRelativeMinimizingValueIncrement = 1.0d;
-            DenseVector nextParametersValues = (DenseVector)currentParametersValues.Clone();
+            DenseVector nextParametersValues = currentParametersValues.Copy();
 
             while (Math.Abs(relativeMinimizingValueDiffIncrement) > maxRelativeError)
             {
                 stepFollowingGradKoeff = stepFollowingGradKoeff * 2.0d;
-                DenseVector dvCurrentGrad = GradOfEvaluatingValue(new Func<DenseVector, double>(dvParametersPoint =>
-                {
-                    return DeviationsSquaredSumRelative(dvDataValues, dvSpace, approxFunc, dvParametersPoint, dvWeights);
-                }),
-                currentParametersValues,
-                dvCurrentParametersIncrement,
-                out dvNewParametersIncrements);
-                dvCurrentParametersIncrement = (DenseVector)dvNewParametersIncrements.Clone();
+                DenseVector dvNewParametersIncrements;
+                //DenseVector dvCurrentGrad = GradOfEvaluatingValueRidder(
+                DenseVector dvCurrentGrad = GradOfEvaluatingValue(
+                                                dvParametersPoint => DeviationsSquaredSumRelative(dvDataValues, dvSpace, approxFunc, dvParametersPoint, dvWeights),
+                                                currentParametersValues,
+                                                dvCurrentParametersIncrement,
+                                                out dvNewParametersIncrements);
+                dvCurrentParametersIncrement = dvNewParametersIncrements.Copy();
 
                 nextParametersValues = currentParametersValues - stepFollowingGradKoeff * dvCurrentGrad;
 
-                DenseVector dvNextGrad = GradOfEvaluatingValue(new Func<DenseVector, double>(dvParametersPoint =>
-                {
-                    return DeviationsSquaredSumRelative(dvDataValues, dvSpace, approxFunc, dvParametersPoint, dvWeights);
-                }),
-                    nextParametersValues,
-                    dvCurrentParametersIncrement,
-                    out dvNewParametersIncrements);
-                dvCurrentParametersIncrement = (DenseVector)dvNewParametersIncrements.Clone();
+                //DenseVector dvNextGrad = GradOfEvaluatingValueRidder(
+                DenseVector dvNextGrad = GradOfEvaluatingValue(
+                                                dvParametersPoint => DeviationsSquaredSumRelative(dvDataValues, dvSpace, approxFunc, dvParametersPoint, dvWeights),
+                                                nextParametersValues,
+                                                dvCurrentParametersIncrement,
+                                                out dvNewParametersIncrements);
+                dvCurrentParametersIncrement = dvNewParametersIncrements.Copy();
 
                 DenseVector gradIncrement = dvNextGrad - dvCurrentGrad;
-                double gradRelativeIncrement = Math.Sqrt(gradIncrement * gradIncrement / (dvCurrentGrad * dvCurrentGrad));
+                double gradRelativeIncrement = gradIncrement.Abs() / dvCurrentGrad.Abs();
 
 
                 while (gradRelativeIncrement > 0.2d)
@@ -382,42 +447,29 @@ namespace SkyImagesAnalyzerLibraries
 
                     if (gradRelativeIncrement > 0.2d)
                     {
-                        stepFollowingGradKoeff = stepFollowingGradKoeff * RandomWithLimits(rnd, 0.3d, 0.7d);
+                        stepFollowingGradKoeff = stepFollowingGradKoeff * RandomWithLimits(0.3d, 0.7d);
                         if (stepFollowingGradKoeff == 0.0d)
                         {
                             stepFollowingGradKoeff = stepFollowingGradKoeffPrev * 2.0d;
                             break;
                         }
                     }
-                    //else if (gradRelativeIncrement < 0.00001d)
-                    //{
-                    //    stepFollowingGradKoeff = stepFollowingGradKoeff * RandomWithLimits(rnd, 1.5d, 2.5d);
-                    //    if (stepFollowingGradKoeff == 0.0d)
-                    //    {
-                    //        stepFollowingGradKoeff = stepFollowingGradKoeffPrev * 2.0d;
-                    //        break;
-                    //    }
-                    //}
-
-
-
 
                     nextParametersValues = currentParametersValues - stepFollowingGradKoeff * dvCurrentGrad;
 
-                    dvNextGrad = GradOfEvaluatingValue(new Func<DenseVector, double>(dvParametersPoint =>
-                {
-                    return DeviationsSquaredSumRelative(dvDataValues, dvSpace, approxFunc, dvParametersPoint, dvWeights);
-                }),
-                        nextParametersValues,
-                        dvCurrentParametersIncrement,
-                        out dvNewParametersIncrements);
-                    dvCurrentParametersIncrement = (DenseVector)dvNewParametersIncrements.Clone();
+                    //dvNextGrad = GradOfEvaluatingValueRidder(
+                    dvNextGrad = GradOfEvaluatingValue(
+                                                dvParametersPoint => DeviationsSquaredSumRelative(dvDataValues, dvSpace, approxFunc, dvParametersPoint, dvWeights),
+                                                nextParametersValues,
+                                                dvCurrentParametersIncrement,
+                                                out dvNewParametersIncrements);
+                    dvCurrentParametersIncrement = dvNewParametersIncrements.Copy();
 
                     gradIncrement = dvNextGrad - dvCurrentGrad;
-                    gradRelativeIncrement = Math.Sqrt(gradIncrement * gradIncrement / (dvCurrentGrad * dvCurrentGrad));
+                    gradRelativeIncrement = gradIncrement.Abs() / dvCurrentGrad.Abs();
                 }
 
-                #region Проверка условий
+                #region // Проверка условий
 
                 //if (parametersConditions.Count > 0)
                 //{
@@ -443,7 +495,7 @@ namespace SkyImagesAnalyzerLibraries
 
                 //}
 
-                #endregion Проверка условий
+                #endregion // Проверка условий
 
                 double currentMinimizingValue = DeviationsSquaredSumRelative(dvDataValues, dvSpace, approxFunc, currentParametersValues, dvWeights);
                 double nextMinimizingValue = DeviationsSquaredSumRelative(dvDataValues, dvSpace, approxFunc, currentParametersValues - stepFollowingGradKoeff * dvCurrentGrad, dvWeights);
@@ -456,7 +508,7 @@ namespace SkyImagesAnalyzerLibraries
                 if (currentRelativeIncrement == 0.0d)
                 {
                     currentRelativeIncrement = currentRelativeIncrement +
-                                               RandomWithLimits(rnd, 0.2d, 0.6d);
+                                               RandomWithLimits(0.2d, 0.6d);
                     relativeMinimizingValueDiffIncrement = (currentRelativeIncrement -
                                                             previousRelativeMinimizingValueIncrement) /
                                                            currentRelativeIncrement;
@@ -482,7 +534,7 @@ namespace SkyImagesAnalyzerLibraries
                     //Thread.Sleep(10);
                     Tuple<DenseVector, double> theObject = new Tuple<DenseVector, double>(currentParametersValues,
                         stats.StandardDeviation / stats.Mean);
-                    SelfWorker.ReportProgress(50, (object)theObject);
+                    SelfWorker.ReportProgress(50, theObject);
                     if (SelfWorker.CancellationPending)
                     {
                         break;
@@ -528,8 +580,8 @@ namespace SkyImagesAnalyzerLibraries
             DenseVector dvCurrentParametersPoint,
             DenseVector dvPreviousParametersIncrement, out DenseVector dvNewParametersIncrement, double maxRelativeError = 0.005d)
         {
-            DenseVector dvCurrentParametersIncrement = (DenseVector)dvPreviousParametersIncrement.Clone() * 2.0d;
-            Func<DenseVector, double> theFunction = new Func<DenseVector, double>(inputFunction);
+            DenseVector dvCurrentParametersIncrement = dvPreviousParametersIncrement.Copy() * 2.0d;
+            Func<DenseVector, double> theFunction = inputFunction;
 
 
             for (int i = 0; i < dvCurrentParametersIncrement.Count; i++)
@@ -544,28 +596,27 @@ namespace SkyImagesAnalyzerLibraries
                 }
             }
 
-            //for (int i = 0; i < dvCurrentParametersIncrement.Count; i++)
-            //{
-            //    if (dvCurrentParametersIncrement[i] / dvParametersScale[i])
-            //}
 
-            DenseVector grad = DenseVector.Create(dvCurrentParametersPoint.Count, new Func<int, double>((index) =>
-            {
-                DenseVector dvPartialParametersIncrement = DenseVector.Create(dvCurrentParametersIncrement.Count,
-                    (i => (i == index) ? (dvCurrentParametersIncrement[i]) : (0.0d)));
-                return (theFunction(dvCurrentParametersPoint + dvPartialParametersIncrement) -
-                                       theFunction(dvCurrentParametersPoint)) / dvPartialParametersIncrement.Sum();
-            }));
 
-            DenseVector gradHalfed = DenseVector.Create(dvCurrentParametersPoint.Count, new Func<int, double>((index) =>
-            {
-                DenseVector dvPartialParametersIncrementHalfed = DenseVector.Create(dvCurrentParametersIncrement.Count,
-                    (i => (i == index) ? (dvCurrentParametersIncrement[i] / 2.0d) : (0.0d)));
-                return (theFunction(dvCurrentParametersPoint + dvPartialParametersIncrementHalfed) -
-                                       theFunction(dvCurrentParametersPoint)) / dvPartialParametersIncrementHalfed.Sum();
-            }));
+            DenseVector grad = DenseVector.Create(dvCurrentParametersPoint.Count, (index) =>
+                                                    {
+                                                        DenseVector dvPartialParametersIncrement = DenseVector.Create(dvCurrentParametersIncrement.Count,
+                                                            (i => (i == index) ? (dvCurrentParametersIncrement[i]) : (0.0d)));
+                                                        return (theFunction(dvCurrentParametersPoint + dvPartialParametersIncrement) -
+                                                                theFunction(dvCurrentParametersPoint - dvPartialParametersIncrement))/
+                                                               2.0d * dvPartialParametersIncrement[index];
+                                                    });
 
-            double relativeError = Math.Sqrt(((grad - gradHalfed) * (grad - gradHalfed)) / (grad * grad));
+            DenseVector gradHalfed = DenseVector.Create(dvCurrentParametersPoint.Count, (index) =>
+                                                        {
+                                                            DenseVector dvPartialParametersIncrementHalfed = DenseVector.Create(dvCurrentParametersIncrement.Count,
+                                                                (i => (i == index) ? (dvCurrentParametersIncrement[i] / 2.0d) : (0.0d)));
+                                                            return (theFunction(dvCurrentParametersPoint + dvPartialParametersIncrementHalfed) -
+                                                                    theFunction(dvCurrentParametersPoint - dvPartialParametersIncrementHalfed))/
+                                                                   2.0d*dvPartialParametersIncrementHalfed[index];
+                                                        });
+
+            double relativeError = (grad - gradHalfed).Abs() / grad.Abs();
             for (int varIndex = 0; varIndex < dvCurrentParametersIncrement.Count; varIndex++)
             {
                 double partialRelativeError = relativeError;
@@ -585,35 +636,42 @@ namespace SkyImagesAnalyzerLibraries
                         break;
                     }
 
-                    DenseVector gradPartial = DenseVector.Create(dvCurrentParametersPoint.Count, new Func<int, double>((index) =>
-                    {
-                        if (index != varIndex) return 0.0d;
-                        DenseVector dvPartialParametersIncrement = DenseVector.Create(dvCurrentParametersIncrement.Count,
-                            (i => (i == index) ? (currentVarIncrement) : (0.0d)));
+                    DenseVector gradPartial = DenseVector.Create(dvCurrentParametersPoint.Count,
+                                                                (index) =>
+                                                                {
+                                                                    if (index != varIndex) return 0.0d;
+                                                                    DenseVector dvPartialParametersIncrement =
+                                                                        DenseVector.Create(
+                                                                            dvCurrentParametersIncrement.Count,
+                                                                            (i => (i == index) ? (currentVarIncrement) : (0.0d)));
 
-                        return (theFunction(dvCurrentParametersPoint + dvPartialParametersIncrement) -
-                                               theFunction(dvCurrentParametersPoint)) / currentVarIncrement;
-                    }));
+                                                                    return (theFunction(dvCurrentParametersPoint + dvPartialParametersIncrement) -
+                                                                            theFunction(dvCurrentParametersPoint - dvPartialParametersIncrement))/
+                                                                            2.0d*currentVarIncrement;
+                                                                });
 
-                    DenseVector gradPartialHalfed = DenseVector.Create(dvCurrentParametersPoint.Count, new Func<int, double>((index) =>
-                    {
-                        if (index != varIndex) return 0.0d;
-                        DenseVector dvPartialParametersIncrement = DenseVector.Create(dvCurrentParametersIncrement.Count,
-                            (i => (i == index) ? (currentVarIncrement / 2.0d) : (0.0d)));
+                    DenseVector gradPartialHalfed = DenseVector.Create(dvCurrentParametersPoint.Count,
+                                                                (index) =>
+                                                                {
+                                                                    if (index != varIndex) return 0.0d;
+                                                                    DenseVector dvPartialParametersIncrement =
+                                                                        DenseVector.Create(
+                                                                            dvCurrentParametersIncrement.Count,
+                                                                            (i => (i == index) ? (currentVarIncrement/2.0d) : (0.0d)));
 
-                        return (theFunction(dvCurrentParametersPoint + dvPartialParametersIncrement) -
-                                               theFunction(dvCurrentParametersPoint)) / (currentVarIncrement / 2.0d);
-                    }));
+                                                                    return (theFunction(dvCurrentParametersPoint + dvPartialParametersIncrement) -
+                                                                            theFunction(dvCurrentParametersPoint - dvPartialParametersIncrement))/
+                                                                           currentVarIncrement;
+                                                                });
 
-                    double gradPartialModule = Math.Sqrt(gradPartial * gradPartial);
-                    double gradPartialHalfedModule = Math.Sqrt(gradPartialHalfed * gradPartialHalfed);
-                    if ((gradPartialModule == 0.0d) || (gradPartialHalfedModule == 0.0d))
+                    
+                    if ((gradPartial.Abs() == 0.0d) || (gradPartialHalfed.Abs() == 0.0d))
                     {
                         currentVarIncrement = currentVarIncrement * 2.0d;
                         break;
                     }
 
-                    partialRelativeError = Math.Sqrt(((gradPartial - gradPartialHalfed) * (gradPartial - gradPartialHalfed)) / (gradPartial * gradPartial));
+                    partialRelativeError = (gradPartial - gradPartialHalfed).Abs() / gradPartial.Abs();
 
 
                     if (SelfWorker != null)
@@ -624,31 +682,202 @@ namespace SkyImagesAnalyzerLibraries
                         }
                     }
                 }
+
                 dvCurrentParametersIncrement[varIndex] = currentVarIncrement;
             }
 
-            grad = DenseVector.Create(dvCurrentParametersPoint.Count, new Func<int, double>((index) =>
-            {
-                DenseVector dvPartialParametersIncrement = DenseVector.Create(dvCurrentParametersIncrement.Count,
-                    (i => (i == index) ? (dvCurrentParametersIncrement[i]) : (0.0d)));
-                return (theFunction(dvCurrentParametersPoint + dvPartialParametersIncrement) -
-                                       theFunction(dvCurrentParametersPoint)) / dvPartialParametersIncrement.Sum();
-            }));
+            grad = DenseVector.Create(dvCurrentParametersPoint.Count, (index) =>
+                                        {
+                                            DenseVector dvPartialParametersIncrement = DenseVector.Create(dvCurrentParametersIncrement.Count,
+                                                (i => (i == index) ? (dvCurrentParametersIncrement[index]) : (0.0d)));
+                                            return (theFunction(dvCurrentParametersPoint + dvPartialParametersIncrement) -
+                                                    theFunction(dvCurrentParametersPoint - dvPartialParametersIncrement))/
+                                                    2.0d*dvPartialParametersIncrement[index];
+                                        });
 
-            dvNewParametersIncrement = (DenseVector)dvCurrentParametersIncrement.Clone();
+            dvNewParametersIncrement = dvCurrentParametersIncrement.Copy();
 
             return grad;
         }
 
-        private string densevectorToString(DenseVector dvData)
+
+
+
+
+
+
+
+
+
+
+
+
+        private DenseVector GradOfEvaluatingValueRidder(Func<DenseVector, double> inputFunction,
+            DenseVector dvCurrentParametersPoint,
+            DenseVector dvPreviousParametersIncrement, out DenseVector dvNewParametersIncrement, double maxRelativeError = 0.005d)
         {
-            string strOut = "";
-            foreach (double d in dvData)
+            DenseVector dvCurrentParametersIncrement = dvPreviousParametersIncrement.Copy() * 2.0d;
+            Func<DenseVector, double> theFunction = inputFunction;
+            double maxRelPartialDerivAboveMin = 1000.0d;
+
+            for (int i = 0; i < dvCurrentParametersIncrement.Count; i++)
             {
-                strOut += d.ToString() + ";";
+                if (Math.Abs(dvCurrentParametersIncrement[i]) / dvParametersScale[i] < 1.0e-2)
+                {
+                    dvCurrentParametersIncrement[i] = dvParametersScale[i] * 1.0e-2;
+                }
+                else if (Math.Abs(dvCurrentParametersIncrement[i]) / dvParametersScale[i] > 1.0e+2)
+                {
+                    dvCurrentParametersIncrement[i] = dvParametersScale[i];
+                }
             }
-            strOut = strOut.Substring(0, strOut.Length - 5);
-            return strOut;
+
+
+
+            DenseVector grad = DenseVector.Create(dvCurrentParametersPoint.Count, (index) =>
+            {
+                DenseVector dvPartialParametersIncrement = DenseVector.Create(dvCurrentParametersIncrement.Count,
+                    (i => (i == index) ? (dvCurrentParametersIncrement[i]) : (0.0d)));
+                return (theFunction(dvCurrentParametersPoint + dvPartialParametersIncrement) -
+                        theFunction(dvCurrentParametersPoint - dvPartialParametersIncrement)) / (2.0d * dvPartialParametersIncrement.Sum());
+            });
+
+            DenseVector gradHalfed = DenseVector.Create(dvCurrentParametersPoint.Count, (index) =>
+            {
+                DenseVector dvPartialParametersIncrementHalfed = DenseVector.Create(dvCurrentParametersIncrement.Count,
+                    (i => (i == index) ? (dvCurrentParametersIncrement[i] / 2.0d) : (0.0d)));
+                return (theFunction(dvCurrentParametersPoint + dvPartialParametersIncrementHalfed) -
+                        theFunction(dvCurrentParametersPoint - dvPartialParametersIncrementHalfed)) / (2.0d * dvPartialParametersIncrementHalfed.Sum());
+            });
+
+            double relativeError = (grad - gradHalfed).Abs() / grad.Abs();
+
+            for (int varIndex = 0; varIndex < dvCurrentParametersIncrement.Count; varIndex++)
+            {
+                double partialRelativeError = relativeError;
+                double currentVarIncrement = dvCurrentParametersIncrement[varIndex];
+
+                List<Tuple<double, double, int>> lTplRelErrAndPartDeriv = new List<Tuple<double, double, int>>();
+
+                DenseVector dvPartialParametersIncrement = DenseVector.Create(dvCurrentParametersIncrement.Count,
+                    (i => (i == varIndex) ? (dvCurrentParametersIncrement[i]) : (0.0d)));
+                List<DenseVector> dvParametersPointsToDetermineDerivative = new List<DenseVector>();
+                dvParametersPointsToDetermineDerivative.Add(dvCurrentParametersPoint - dvPartialParametersIncrement);
+                dvParametersPointsToDetermineDerivative.Add(dvCurrentParametersPoint + dvPartialParametersIncrement);
+                NevillePolynomialInterpolation interpolator = new NevillePolynomialInterpolation(
+                    dvParametersPointsToDetermineDerivative.ConvertAll<double>(dv => dv[varIndex]).ToArray(),
+                    dvParametersPointsToDetermineDerivative.ConvertAll<double>(dv => theFunction(dv)).ToArray());
+
+                double prevPartialDeriv = interpolator.Differentiate(dvCurrentParametersPoint[varIndex]);
+
+                int iNumberOfPointsBetween = 0;
+
+                while (partialRelativeError > maxRelativeError)
+                {
+                    iNumberOfPointsBetween += 2;
+
+                    List<DenseVector> dvCurrParametersPoints = new List<DenseVector>();
+                    dvCurrParametersPoints.InsertRange(0, dvParametersPointsToDetermineDerivative);
+                    for (int i = 1; i <= iNumberOfPointsBetween; i++)
+                    {
+                        dvCurrParametersPoints.Add(dvParametersPointsToDetermineDerivative[0] +
+                                                   (dvParametersPointsToDetermineDerivative[1] -
+                                                    dvParametersPointsToDetermineDerivative[0]) / (i + 1));
+                    }
+                    dvCurrParametersPoints.Sort(
+                        (dv1, dv2) => (dv1[varIndex] < dv2[varIndex]) ? (-1) : (1));
+                    NevillePolynomialInterpolation currInterpolator = new NevillePolynomialInterpolation(
+                        dvCurrParametersPoints.ConvertAll<double>(dv => dv[varIndex]).ToArray(),
+                        dvCurrParametersPoints.ConvertAll<double>(dv => theFunction(dv)).ToArray());
+
+                    double currPartialDeriv = currInterpolator.Differentiate(dvCurrentParametersPoint[varIndex]);
+
+
+
+                    #region // OBSOLETE
+                    //currentVarIncrement = currentVarIncrement / 2.0d;
+                    //if (Math.Abs(currentVarIncrement) / dvParametersScale[varIndex] < 1.0e-20)
+                    //{
+                    //    currentVarIncrement = currentVarIncrement * 2.0d;
+                    //    break;
+                    //}
+                    //else if (Math.Abs(currentVarIncrement) / dvParametersScale[varIndex] > 1.0e+20)
+                    //{
+                    //    currentVarIncrement = currentVarIncrement / 2.0d;
+                    //    break;
+                    //}
+
+                    //DenseVector gradPartial = DenseVector.Create(dvCurrentParametersPoint.Count, new Func<int, double>((index) =>
+                    //{
+                    //    if (index != varIndex) return 0.0d;
+                    //    DenseVector dvPartialParametersIncrement = DenseVector.Create(dvCurrentParametersIncrement.Count,
+                    //        (i => (i == index) ? (currentVarIncrement) : (0.0d)));
+
+                    //    return (theFunction(dvCurrentParametersPoint + dvPartialParametersIncrement) -
+                    //                           theFunction(dvCurrentParametersPoint)) / currentVarIncrement;
+                    //}));
+                    //
+                    //DenseVector gradPartialHalfed = DenseVector.Create(dvCurrentParametersPoint.Count, new Func<int, double>((index) =>
+                    //{
+                    //    if (index != varIndex) return 0.0d;
+                    //    DenseVector dvPartialParametersIncrement = DenseVector.Create(dvCurrentParametersIncrement.Count,
+                    //        (i => (i == index) ? (currentVarIncrement / 2.0d) : (0.0d)));
+
+                    //    return (theFunction(dvCurrentParametersPoint + dvPartialParametersIncrement) -
+                    //                           theFunction(dvCurrentParametersPoint)) / (currentVarIncrement / 2.0d);
+                    //}));
+
+                    //double gradPartialModule = gradPartial.Abs();
+                    //double gradPartialHalfedModule = gradPartialHalfed.Abs();
+                    //if ((gradPartialModule == 0.0d) || (gradPartialHalfedModule == 0.0d))
+                    //{
+                    //    currentVarIncrement = currentVarIncrement * 2.0d;
+                    //    break;
+                    //}
+
+                    // (gradPartial - gradPartialHalfed).Abs() / gradPartial.Abs();
+                    #endregion // OBSOLETE
+
+                    partialRelativeError = Math.Abs((currPartialDeriv - prevPartialDeriv) / prevPartialDeriv);
+                    prevPartialDeriv = currPartialDeriv;
+                    dvCurrentParametersIncrement[varIndex] = currentVarIncrement / (iNumberOfPointsBetween + 2);
+
+
+                    lTplRelErrAndPartDeriv.Add(new Tuple<double, double, int>(partialRelativeError, currPartialDeriv, iNumberOfPointsBetween));
+                    if (partialRelativeError / lTplRelErrAndPartDeriv.Min(tpl => tpl.Item1) > maxRelPartialDerivAboveMin)
+                    {
+                        prevPartialDeriv = lTplRelErrAndPartDeriv.Min(tpl => tpl.Item2);
+                        dvCurrentParametersIncrement[varIndex] = currentVarIncrement / (lTplRelErrAndPartDeriv.Min(tpl => tpl.Item3) + 2);
+                        break;
+                    }
+
+                    if (SelfWorker != null)
+                    {
+                        if (SelfWorker.CancellationPending)
+                        {
+                            break;
+                        }
+                    }
+                }
+                grad[varIndex] = prevPartialDeriv;
+            }
+
+
+
+            #region // OBSOLETE
+            //grad = DenseVector.Create(dvCurrentParametersPoint.Count, new Func<int, double>((index) =>
+            //{
+            //    DenseVector dvPartialParametersIncrement = DenseVector.Create(dvCurrentParametersIncrement.Count,
+            //        (i => (i == index) ? (dvCurrentParametersIncrement[i]) : (0.0d)));
+            //    return (theFunction(dvCurrentParametersPoint + dvPartialParametersIncrement) -
+            //                           theFunction(dvCurrentParametersPoint - dvPartialParametersIncrement)) / (2.0d*dvPartialParametersIncrement.Sum());
+            //}));
+            #endregion // OBSOLETE
+
+            dvNewParametersIncrement = DenseVector.OfEnumerable(dvCurrentParametersIncrement);
+            dvNewParametersIncrement = (grad / grad.Abs()) * dvNewParametersIncrement.Abs();
+
+            return grad;
         }
     }
 }

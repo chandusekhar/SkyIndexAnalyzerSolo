@@ -732,5 +732,13 @@ namespace SkyImagesAnalyzerLibraries
             return pDataString;
         }
 
+
+
+
+        public static void ExecMethodInSeparateThread(Form owner, MethodInvoker method)
+        {
+            owner.Invoke(method);
+        }
+
     }
 }

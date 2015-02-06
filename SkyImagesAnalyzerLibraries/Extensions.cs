@@ -397,6 +397,21 @@ namespace SkyImagesAnalyzerLibraries
             return retColor;
         }
 
+
+
+
+
+        public static double Abs(this DenseVector dv)
+        {
+            return Math.Sqrt(dv*dv);
+        }
+
+
+
+        public static DenseVector Copy(this DenseVector dv)
+        {
+            return DenseVector.OfEnumerable(dv.Values);
+        }
     }
 
 

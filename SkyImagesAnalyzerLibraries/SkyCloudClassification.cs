@@ -100,8 +100,8 @@ namespace SkyImagesAnalyzerLibraries
         #endregion переменные для нашего тестового анализатора
 
         public bool isCalculatingUsingBgWorker = true;
-        public BackgroundWorker SelfWorker = null;
-        private LogWindow theLogWindow = null;
+        private BackgroundWorker selfWorker = null;
+        public LogWindow theLogWindow = null;
         public string defaultOutputDataDirectory = "";
         private double theImageCircleCropFactor = 0.9d;
 
@@ -136,6 +136,23 @@ namespace SkyImagesAnalyzerLibraries
         {
             get { return theLogWindow; }
             set { theLogWindow = value; }
+        }
+
+        public BackgroundWorker SelfWorker
+        {
+            get { return selfWorker; }
+            set
+            {
+                selfWorker = value;
+                if (selfWorker == null)
+                {
+                    isCalculatingUsingBgWorker = false;
+                }
+                else
+                {
+                    isCalculatingUsingBgWorker = true;
+                }
+            }
         }
 
 
@@ -303,7 +320,7 @@ namespace SkyImagesAnalyzerLibraries
 
         private void BGWorkerReport(string message = "")
         {
-            if (SelfWorker != null)
+            if (selfWorker != null)
             {
                 theLogWindow = ServiceTools.LogAText(theLogWindow, message + Environment.NewLine, true);
             }
@@ -748,10 +765,10 @@ namespace SkyImagesAnalyzerLibraries
                 #endregion запись данных для просмотра и анализа
 
 
-                if (!isCalculatingUsingBgWorker)
-                {
+                //if (!isCalculatingUsingBgWorker)
+                //{
                     theLogWindow = ServiceTools.LogAText(theLogWindow, "смещение по углу: " + Phi1.ToString("e"));
-                }
+                //}
                 #endregion здесь исследуем распределение локальных минимумов распределения GrIx по r в полярной системе координат
 
 
@@ -873,6 +890,9 @@ namespace SkyImagesAnalyzerLibraries
                 double rtmean = (Math.Sqrt(rt1) + Math.Sqrt(rt2))/2.0d;
 
 
+                // попробуем учесть только точки в пределах 0.3Rs от глобального минимума
+                double rsRateToGetWeightsZeroedOutside = 0.3d;
+                double kForWeightDependency = 1.0d/(Rs*rsRateToGetWeightsZeroedOutside);
 
                 DenseVector dvWeights_EvenlopApprox = DenseVector.Create(dvDataValues.Count, (i =>
                 {
@@ -881,18 +901,31 @@ namespace SkyImagesAnalyzerLibraries
                                      (dvDataValues.Max() - dvDataValues.Min()));
 
                     // а еще чем ближе r к Rs - тем больше доверия
-                    weight *=
-                        Math.Exp(-(rtmean*dvDataSpace[i]/3.0d - Rs/rtmean)*(rtmean*dvDataSpace[i]/3.0d - Rs/rtmean));
+                    //weight *=
+                    //    Math.Exp(-(rtmean*dvDataSpace[i]/3.0d - Rs/rtmean)*(rtmean*dvDataSpace[i]/3.0d - Rs/rtmean));
+
+                    weight *= 1 - kForWeightDependency*Math.Abs(dvDataSpace[i] - Rs);
+                    weight = (weight < 0.0d) ? (0.0d) : weight;
 
                     return weight;
                 }));
+                dvWeights_EvenlopApprox[0] = dvWeights_EvenlopApprox.Sum();
                 double dvWeights_EvenlopApprox_totalWeight = dvWeights_EvenlopApprox.Sum();
                 dvWeights_EvenlopApprox /= dvWeights_EvenlopApprox_totalWeight;
-                evenlopApproximator.DvWeights = dvWeights_EvenlopApprox;
-                DenseVector approxPolyKoeffs = evenlopApproximator.ApproximationGradientDescent2D(
+                //evenlopApproximator.DvWeights = dvWeights_EvenlopApprox;
+
+                DenseVector approxPolyKoeffs = evenlopApproximator.Approximation_ILOptimizer(
                     dvInitialParameters_EvenlopApprox,
                     ref initialParametersIncrement_EvenlopApprox,
-                    0.0000001d);
+                    1.0e-8d);
+
+                //DenseVector approxPolyKoeffs = evenlopApproximator.ApproximationGradientDescentMultidim(
+                //    dvInitialParameters_EvenlopApprox,
+                //    ref initialParametersIncrement_EvenlopApprox,
+                //    0.0000001d);
+
+
+
                 
                 
 
@@ -901,13 +934,17 @@ namespace SkyImagesAnalyzerLibraries
                 envelopPlottingForm.parameters.Add(approxPolyKoeffs);
                 envelopPlottingForm.lineColors.Add(new Bgr(Color.Green));
                 envelopPlottingForm.Represent();
-                ServiceTools.ShowPicture(envelopPlottingForm.TheImage.Bitmap, "Overall GrIx values envelop vs r");
-                envelopPlottingForm.TheImage.Save(currentDirectory + randomFileName + "-envelop-approximation-result.jpg");
+                ServiceTools.ExecMethodInSeparateThread(ParentForm, delegate()
+                {
+                    ServiceTools.ShowPicture(envelopPlottingForm.TheImage.Bitmap, "Overall GrIx values envelop vs r");
+                    envelopPlottingForm.TheImage.Save(currentDirectory + randomFileName + "-envelop-approximation-result.jpg");
+                });
+                
 
 
                 
-                if (!isCalculatingUsingBgWorker)
-                {
+                //if (!isCalculatingUsingBgWorker)
+                //{
                     theLogWindow = ServiceTools.LogAText(theLogWindow, "Rs = " + Rs.ToString() + Environment.NewLine);
                     theLogWindow = ServiceTools.LogAText(theLogWindow, "GrIx Min = " + minDataValue.ToString("e") + Environment.NewLine);
                     theLogWindow = ServiceTools.LogAText(theLogWindow, "approx function koefficients: ");
@@ -916,7 +953,7 @@ namespace SkyImagesAnalyzerLibraries
                         int l = polynomeOrder - i;
                         theLogWindow = ServiceTools.LogAText(theLogWindow, "[" + l + "]: " + approxPolyKoeffs[l].ToString("e"));
                     }
-                }
+                //}
 
                 double rMaxOfApproximatedMinimumsDistribution = dvDataSpace[dvDataSpace.Count - 1];
                 DenseVector dvDataValuesForLastMileApproximation = DenseVector.Create(2,
@@ -1074,7 +1111,8 @@ namespace SkyImagesAnalyzerLibraries
                     theFunctionsForm.Show();
                     theFunctionsForm.Represent();
                 }
-                DenseVector approximatedParameters = approximator.ApproximationGradientDescent2D(dvInitialParameters, ref initialParametersIncremnt, 0.0000001d);
+                //DenseVector approximatedParameters = approximator.ApproximationGradientDescentMultidim(dvInitialParameters, ref initialParametersIncremnt, 0.0000001d);
+                DenseVector approximatedParameters = approximator.Approximation_ILOptimizer(dvInitialParameters, ref initialParametersIncremnt);
 
 
                 //попробуем вот так:
@@ -1112,7 +1150,8 @@ namespace SkyImagesAnalyzerLibraries
                 approximator.DvWeights = dvTunedWeights;
                 approximator.dvSpace = dvTunedPhiSpace;
                 approximator.dvDataValues = dvTunedRSpace;
-                approximatedParameters = approximator.ApproximationGradientDescent2D(approximatedParameters, ref initialParametersIncremnt, 0.000001d);
+                //approximatedParameters = approximator.ApproximationGradientDescentMultidim(approximatedParameters, ref initialParametersIncremnt, 0.000001d);
+                approximatedParameters = approximator.Approximation_ILOptimizer(approximatedParameters, ref initialParametersIncremnt);
                 // фак
                 // откуда-то NaN вылез :((
 
@@ -1902,7 +1941,7 @@ namespace SkyImagesAnalyzerLibraries
             DenseVector dvInitialParametersValues =
                 DenseVector.OfEnumerable(new double[] { massCenterX, massCenterY, rInit });
             DenseVector dvInitialParametersIncrement = DenseVector.OfEnumerable(new double[] { 1.0d, 1.0d, 1.0d });
-            approximator1st.SelfWorker = SelfWorker;
+            approximator1st.SelfWorker = selfWorker;
             DenseVector dvApproximatedParameters =
                 approximator1st.ApproximationGradientDescent2DPt(dvInitialParametersValues,
                     dvInitialParametersIncrement, 0.0001d);
