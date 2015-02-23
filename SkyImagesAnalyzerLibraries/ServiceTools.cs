@@ -1,4 +1,5 @@
 ﻿using System;
+using System.CodeDom.Compiler;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
@@ -18,6 +19,7 @@ using MathNet.Numerics.LinearAlgebra.Double;
 //using MathNet.Numerics.LinearAlgebra.Generic;
 using System.Data;
 using MathNet.Numerics.LinearAlgebra;
+using Microsoft.CSharp;
 
 namespace SkyImagesAnalyzerLibraries
 {
@@ -729,6 +731,7 @@ namespace SkyImagesAnalyzerLibraries
         {
             StreamReader sr = new StreamReader(fileName);
             string pDataString = sr.ReadToEnd();
+            sr.Close();
             return pDataString;
         }
 
@@ -738,6 +741,93 @@ namespace SkyImagesAnalyzerLibraries
         public static void ExecMethodInSeparateThread(Form owner, MethodInvoker method)
         {
             owner.Invoke(method);
+        }
+
+
+
+
+        public static object ReadDataFromCSV(string filePath, int titleRows = 0, string valuesSeparator = ";", string linesSeparator = "\n")
+        {
+            string dataString = ServiceTools.ReadTextFromFile(filePath);
+            List<string> dataSubstrings = new List<string>(dataString.Split(linesSeparator.ToCharArray()));
+            dataSubstrings.RemoveAll(str => str == "");
+            string[] values0 = dataSubstrings[0].Split(valuesSeparator.ToCharArray());
+            if (values0.Count() == 1)
+            {
+                DenseVector retVec = DenseVector.Create(dataSubstrings.Count(),
+                    idx => Convert.ToDouble(dataSubstrings[idx].Replace(".", ",")));
+                return retVec;
+            }
+            else
+            {
+                DenseMatrix retMatrix = DenseMatrix.Create(dataSubstrings.Count(), values0.Count(),
+                    (r, c) =>
+                        Convert.ToDouble(dataSubstrings[r].Split(valuesSeparator.ToCharArray())[c].Replace(".", ",")));
+                //foreach (string substring in dataSubstrings)
+                //{
+                //    List<string> currRowStrings = new List<string>(substring.Split(valuesSeparator.ToCharArray()));
+                //    retMatrix.InsertRow(retMatrix.RowCount,
+                //        DenseVector.OfEnumerable(
+                //            currRowStrings.ConvertAll<double>(str => Convert.ToDouble(str.Replace(".", ",")))));
+                //}
+                return retMatrix;
+            }
+        }
+
+
+
+
+
+
+
+        public static string ErrorTextDescription(CompilerError error)
+        {
+            string strErrDescription = "[" + error.ErrorNumber + "]" + Environment.NewLine;
+            strErrDescription += "file: " + error.FileName + Environment.NewLine;
+            strErrDescription += "line:column: " + error.Line + " : " + error.Column + Environment.NewLine;
+            strErrDescription += "message: " + error.ErrorText + Environment.NewLine;
+
+            return strErrDescription;
+        }
+
+
+
+
+        public static Assembly CompileAssemblyFromExternalCodeSource(string textFilePath, out CompilerResults results)
+        {
+            string codeSource = ReadTextFromFile(textFilePath);
+            Assembly executingAssembly = Assembly.GetExecutingAssembly();
+            Dictionary<string, string> providerOptions = new Dictionary<string, string>
+                {
+                    {"CompilerVersion", "v4.0"}
+                };
+            CSharpCodeProvider provider = new CSharpCodeProvider(providerOptions);
+            CompilerParameters compilerParams = new CompilerParameters
+            {
+                GenerateInMemory = true,
+                GenerateExecutable = false
+            };
+            //compilerParams.CompilerOptions = "/lib:" + Directory.GetCurrentDirectory() + "/libs/";
+            
+            compilerParams.ReferencedAssemblies.Add(executingAssembly.Location);
+            foreach (AssemblyName assemblyName in executingAssembly.GetReferencedAssemblies())
+            {
+                compilerParams.ReferencedAssemblies.Add(Assembly.Load(assemblyName).Location);
+            }
+            results = provider.CompileAssemblyFromSource(compilerParams, codeSource);
+            if (results.Errors.Count != 0)
+            {
+                //theLogWindow = ServiceTools.LogAText(theLogWindow, "Function compilation failed!");
+                //foreach (CompilerError error in results.Errors)
+                //{
+                //    theLogWindow = ServiceTools.LogAText(theLogWindow, ServiceTools.ErrorTextDescription(error));
+                //}
+
+                //throw new Exception("failed to compile external source code")
+                return null;
+            }
+
+            return results.CompiledAssembly;
         }
 
     }

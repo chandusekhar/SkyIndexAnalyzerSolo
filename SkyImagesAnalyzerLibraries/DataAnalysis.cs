@@ -219,12 +219,97 @@ namespace SkyImagesAnalyzerLibraries
 
 
 
+
+        public static DenseVector NPolynomeApproximationLessSquareMethod(DenseVector dvDataValues, DenseVector dvSpace, List<PointD> lFixedPoints, int polynomeOrder = 3)
+        {
+            double[] koeffOut = new double[polynomeOrder + 1];
+            int pointsCount = dvSpace.Count;
+
+
+            DenseMatrix dmFactorsA = DenseMatrix.Create(polynomeOrder + 1, polynomeOrder + 1,
+                new Func<int, int, double>(
+                    (row, column) =>
+                    {
+                        double sum = 0.0d;
+                        for (int j = 0; j < pointsCount; j++)
+                        {
+                            sum += Math.Pow(dvSpace[j], (column + row));
+                        }
+                        return sum;
+                    }));
+            DenseVector dvFactorB = DenseVector.Create(polynomeOrder + 1,
+                new Func<int, double>(
+                    (index) =>
+                    {
+                        double sum = 0.0d;
+                        for (int j = 0; j < pointsCount; j++)
+                        {
+                            sum += dvDataValues[j] * Math.Pow(dvSpace[j], index);
+                        }
+                        return sum;
+                    }));
+
+
+
+            if (lFixedPoints.Count > 0)
+            {
+                foreach (PointD fixedPoint in lFixedPoints)
+                {
+                    double fixedValuePosition = fixedPoint.X;
+                    double fixedValue = fixedPoint.Y;
+                    if (!double.IsNaN(fixedValue))
+                    {
+                        PointD locPoint = fixedPoint;
+                        dmFactorsA.MapIndexedInplace(new Func<int, int, double, double>((row, column, dValue) =>
+                        {
+                            if (row == lFixedPoints.IndexOf(locPoint))
+                            {
+                                return Math.Pow(fixedValuePosition, column);
+                            }
+                            else return dValue;
+                        }));
+
+                        dvFactorB.MapIndexedInplace(new Func<int, double, double>((index, dValue) =>
+                        {
+                            if (index == lFixedPoints.IndexOf(locPoint))
+                            {
+                                return fixedValue;
+                            }
+                            else return dValue;
+                        }));
+                    }
+                }
+            }
+
+
+            DenseVector dvResult = (DenseVector)dmFactorsA.LU().Solve(dvFactorB);
+
+
+            return dvResult;
+        }
+
+
+
+
         public static double PolynomeValue(DenseVector dvPolynomeKoeffs, double arg)
         {
             double sum = 0.0d;
             for (int i = 0; i < dvPolynomeKoeffs.Count; i++)
             {
                 sum += dvPolynomeKoeffs[i] * Math.Pow(arg, i);
+            }
+
+            return sum;
+        }
+
+
+
+        public static double PolynomeNthDerivative(DenseVector dvPolynomeKoeffs, double arg, int n = 1)
+        {
+            double sum = 0.0d;
+            for (int i = n; i < dvPolynomeKoeffs.Count; i++)
+            {
+                sum += dvPolynomeKoeffs[i] * Math.Pow(arg, i - n) * MathNet.Numerics.Combinatorics.Variations(i, i) / MathNet.Numerics.Combinatorics.Variations(i-n, i-n);
             }
 
             return sum;

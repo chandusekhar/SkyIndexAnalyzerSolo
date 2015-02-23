@@ -19,6 +19,8 @@ namespace SkyImagesAnalyzerLibraries
     {
         public List<Func<DenseVector, double, double>> theRepresentingFunctions = new List<Func<DenseVector, double, double>>();
         public List<DenseVector> parameters = new List<DenseVector>();
+        public List<bool> scaleFunctionValuesToMax = new List<bool>();
+
         public DenseVector dvScatterXSpace = null;
         public DenseVector dvScatterFuncValues = null;
         public SequencesDrawingVariants scatterFuncDrawingVariant = SequencesDrawingVariants.circles;
@@ -30,8 +32,8 @@ namespace SkyImagesAnalyzerLibraries
         public string yAxisNote = "Y, px";
         public string xAxisNote = "X, px";
 
-        public double overallFuncMax = 1.0d;
-        public double overallFuncMin = 0.0d;
+        public double overallFuncMax = double.MinValue;
+        public double overallFuncMin = double.MaxValue;
         int pictureWidth = 400;
         int pictureHeight = 300;
         int serviceSpaceGap = 40;
@@ -213,6 +215,19 @@ namespace SkyImagesAnalyzerLibraries
                 Func<DenseVector, double, double> theRepresentingFunction = theRepresentingFunctions[i];
                 DenseVector currentParametersList = parameters[i];
 
+                double currFuncKoeff = koeff;
+                if (scaleFunctionValuesToMax[i])
+                {
+                    DenseVector dvCurrFuncValues = DenseVector.Create(xValuesCount, j => theRepresentingFunction(currentParametersList, dvXSpaceValues[j]));
+                    double currFuncMax = dvCurrFuncValues.Max();
+                    double currFuncMin = dvCurrFuncValues.Min();
+
+                    currFuncKoeff = (pictureHeight - (2 * serviceSpaceGap)) / (currFuncMax - currFuncMin);
+
+                }
+
+                
+
                 //DenseVector dvXSpaceValues = DenseVector.Create(xValuesCount, new Func<int, double>(i => xSpaceMin + ((double)i / ((double)xValuesCount - 1.0d)) * (xSpaceMax - xSpaceMin)));
                 parametersList = null;
                 DenseVector dvFuncValues = DenseVector.Create(xValuesCount, new Func<int, double>(j => theRepresentingFunction(currentParametersList, dvXSpaceValues[j])));
@@ -222,7 +237,7 @@ namespace SkyImagesAnalyzerLibraries
                 DenseVector xCoordinates = DenseVector.Create(xValuesCount, new Func<int, double>(j => ((double)serviceSpaceGap + j)));
                 DenseVector yCoordinates = DenseVector.Create(xValuesCount, new Func<int, double>(j =>
                 {
-                    double pixValue = koeff * (dvFuncValues[j] - overallFuncMin);
+                    double pixValue = currFuncKoeff * (dvFuncValues[j] - overallFuncMin);
                     return (pictureHeight - serviceSpaceGap - pixValue);
                 }));
 

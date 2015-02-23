@@ -163,6 +163,8 @@ namespace SkyImagesAnalyzer
             //SkyCloudClassificator = null;
             //ObjectsDetector = null;
             //ThreadSafeOperations.ToggleButtonState(btnDefineConnectedObjects, true, "Загрузить в классификатор", false);
+
+            readDefaultProperties();
         }
 
 

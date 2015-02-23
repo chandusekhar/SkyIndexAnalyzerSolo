@@ -538,6 +538,7 @@ namespace SkyImagesAnalyzerLibraries
                 BGWorkerReport("анализ и компенсация засветки");
 
                 #region анализ засветки и компенсация
+                #region // unused
                 //DenseMatrix theSkyWeightAbs = DenseMatrix.Create(dmProcessingData.RowCount, dmProcessingData.ColumnCount,
                 //    new Func<int, int, double>(
                 //        (row, column) =>
@@ -547,7 +548,7 @@ namespace SkyImagesAnalyzerLibraries
                 //            else return 0.0d;
                 //        }));
                 //theSkyWeightAbs = (DenseMatrix)theSkyWeightAbs.PointwiseMultiply(dmMask);
-
+                #endregion // unused
 
                 DenseMatrix dmSunburnProfileDetection = (DenseMatrix)dmProcessingData.Clone();
 
@@ -555,11 +556,11 @@ namespace SkyImagesAnalyzerLibraries
                 dmSunburnProfileDetection = (DenseMatrix)dmSunburnProfileDetection.PointwiseMultiply(dmMaskCircled);
 
 
-
+                #region // unused
                 //double theSkyWeightSum = theSkyWeightAbs.Values.Sum();
                 //DenseMatrix theSkyWeight = (DenseMatrix)(theSkyWeightAbs.Copy()/theSkyWeightSum);
                 ////theSkyWeight.MapInplace(new Func<double, double>(val => val / theSkyWeightSum));
-
+                #endregion // unused
 
                 DenseMatrix dmDistanceToSunMargin = DenseMatrix.Create(dmProcessingData.RowCount, dmProcessingData.ColumnCount,
                     new Func<int, int, double>(
@@ -573,15 +574,17 @@ namespace SkyImagesAnalyzerLibraries
                         }));
                 dmDistanceToSunMargin = (DenseMatrix)dmDistanceToSunMargin.PointwiseMultiply(dmMask);
 
-                DenseMatrix dmDistanceToSunCenter = DenseMatrix.Create(dmProcessingData.RowCount, dmProcessingData.ColumnCount,
-                    new Func<int, int, double>(
-                        (row, column) =>
-                        {
-                            double dx = (double)column - sunCenterPoint.X;
-                            double dy = (double)row - sunCenterPoint.Y;
-                            double r = Math.Sqrt(dx * dx + dy * dy);
-                            return r;
-                        }));
+                #region // unused
+                //DenseMatrix dmDistanceToSunCenter = DenseMatrix.Create(dmProcessingData.RowCount, dmProcessingData.ColumnCount,
+                //    new Func<int, int, double>(
+                //        (row, column) =>
+                //        {
+                //            double dx = (double)column - sunCenterPoint.X;
+                //            double dy = (double)row - sunCenterPoint.Y;
+                //            double r = Math.Sqrt(dx * dx + dy * dy);
+                //            return r;
+                //        }));
+                #endregion // unused
 
 
                 DenseMatrix dmAngleAroundTheSunburn = DenseMatrix.Create(dmProcessingData.RowCount, dmProcessingData.ColumnCount,
@@ -614,7 +617,7 @@ namespace SkyImagesAnalyzerLibraries
                     double rMaxLocal = (double)(r + 1);
 
 
-                    DenseMatrix dmTemporaryProcessinfDataMatrix = DenseMatrix.Create(dmSunburnProfileDetection.RowCount, dmSunburnProfileDetection.ColumnCount,
+                    DenseMatrix dmTemporaryProcessingDataMatrix = DenseMatrix.Create(dmSunburnProfileDetection.RowCount, dmSunburnProfileDetection.ColumnCount,
                         new Func<int, int, double>((row, column) =>
                         {
                             double currDist = dmDistanceToSunMargin[row, column];
@@ -623,21 +626,16 @@ namespace SkyImagesAnalyzerLibraries
                         }));
 
                     DenseVector dvCurrentDataExcludingZero =
-                        DataAnalysis.DataVectorizedExcludingValues(dmTemporaryProcessinfDataMatrix, 0.0d);
+                        DataAnalysis.DataVectorizedExcludingValues(dmTemporaryProcessingDataMatrix, 0.0d);
                     double curMedian = 0.0d;
-                    DescriptiveStatistics statTempData = DataAnalysis.StatsOfDataExcludingValues(dmTemporaryProcessinfDataMatrix, 0.0d, out curMedian);
+                    DescriptiveStatistics statTempData = DataAnalysis.StatsOfDataExcludingValues(dmTemporaryProcessingDataMatrix, 0.0d, out curMedian);
                     if (statTempData == null) continue;
 
 
-                    //double dataMean = statTempData.Mean;
-                    //double dataMedian = statTempData.Median;
                     double dataPercentile10 = Statistics.Percentile(dvCurrentDataExcludingZero, 10);
-                    //double stdDev = statTempData.StandardDeviation;
-                    //DenseVector listTempStatData =
-                    //    DataAnalysis.DataVectorizedWithCondition(dmTemporaryProcessinfDataMatrix,
-                    //        (x => Math.Abs(x - dataMean) <= 2 * stdDev));
+                    
                     DenseVector listTempStatData =
-                        DataAnalysis.DataVectorizedWithCondition(dmTemporaryProcessinfDataMatrix,
+                        DataAnalysis.DataVectorizedWithCondition(dmTemporaryProcessingDataMatrix,
                             (x => x >= dataPercentile10));
 
                     double dataMin = 1.0d;
@@ -648,25 +646,429 @@ namespace SkyImagesAnalyzerLibraries
                     envelopRargument.Add((double)r);
                 }
                 #endregion здесь фильтруем шумы и выбросы ниже основной очевидной огибающей
+                
+                
                 // получили общую огибающую - "минимальное" значение GrIx от r, расстояния от края солнечного диска
                 // "минимальное" в кавычках - потому что это не абсолютный минимум на указанном интерваке (r;r+1),
                 // а минимум при условии исключения шумов и выбросов за пределами 10-го персентиля
 
 
-                #region здесь фильтруем данные выше значения GrIx=theStdDevMarginValueDefiningTrueSkyArea
+                #region // здесь фильтруем данные выше значения GrIx=theStdDevMarginValueDefiningTrueSkyArea
                 // Попробуем отфильтровать данные, чтобы брать во внимание только те, которые лежат ниже границы
                 // которую определим как значение, ниже которого - точно синее небо
 
-                List<Tuple<double, double>> lEnvelopRGrIxvalues =
-                    new List<Tuple<double, double>>(
-                        envelopRargument.Zip<double, double, Tuple<double, double>>(envelopValues,
-                            (r, grix) => new Tuple<double, double>(r, grix)));
-                lEnvelopRGrIxvalues =
-                    lEnvelopRGrIxvalues.FindAll(tpl => (tpl.Item2 <= theStdDevMarginValueDefiningTrueSkyArea));
-                envelopValues = lEnvelopRGrIxvalues.ConvertAll<double>(tpl => tpl.Item2);
-                envelopRargument = lEnvelopRGrIxvalues.ConvertAll<double>(tpl => tpl.Item1);
+                //List<Tuple<double, double>> lEnvelopRGrIxvalues =
+                //    new List<Tuple<double, double>>(
+                //        envelopRargument.Zip<double, double, Tuple<double, double>>(envelopValues,
+                //            (r, grix) => new Tuple<double, double>(r, grix)));
+                //lEnvelopRGrIxvalues =
+                //    lEnvelopRGrIxvalues.FindAll(tpl => (tpl.Item2 <= theStdDevMarginValueDefiningTrueSkyArea));
+                //envelopValues = lEnvelopRGrIxvalues.ConvertAll<double>(tpl => tpl.Item2);
+                //envelopRargument = lEnvelopRGrIxvalues.ConvertAll<double>(tpl => tpl.Item1);
 
-                #endregion здесь фильтруем данные выше значения GrIx=theStdDevMarginValueDefiningTrueSkyArea
+                #endregion // здесь фильтруем данные выше значения GrIx=theStdDevMarginValueDefiningTrueSkyArea
+
+
+
+
+
+
+                #region аппроксимация распределения GrIx(r) для огибающей
+
+                BGWorkerReport("сглаживаем полученное распределение, представляющее огибающую GrIx(r)," +
+                               "определеяем характерные точки: расположение глобального минимума, его величину");
+                
+                DenseVector dvDataValues = DenseVector.OfEnumerable(envelopValues);
+
+                #region //obsolete
+                //DenseVector dvSmoothedDistribution = DataAnalysis.ExponentialMovingAverage(dvDataValues, 10, 0.4d);
+
+                // DenseVector dvSmoothedEnvelopValues = dvDataValues.Conv(StandardConvolutionKernels.gauss, 10);
+
+                // будем аппроксимировать по-другому - нужно учитывать веса точек.
+                // чем меньше значение GrIx в точке, - тем больше ее вес.
+                // аппроксимировать будем уже не решением СЛУ, а, как и в остальных случаях, - методом градиентного спуска
+                // для этого функция будет задаваться здесь же.
+                // и начальные коэффициенты тоже.
+                // данные пока оставим отфильтрованные по значению GrIx
+                #endregion //obsolete
+
+
+                minDataValue = dvDataValues.AbsoluteMinimum();
+                Rs = envelopRargument.ElementAt(dvDataValues.AbsoluteMinimumIndex());
+
+                DenseVector dvDataSpace = DenseVector.OfEnumerable(envelopRargument);
+
+
+                #region //добавим фиксированную точку в начало - на край солнечного диска
+                //добавим фиксированную точку в начало - на край солнечного диска
+                // для аппроксимации в этой паре массивов она может быть произвольной
+                // главное, чтобы был под нее "номер" в последовательности точек
+                //List<double> tmpList = new List<double>(dvDataSpace);
+                //tmpList.Insert(0, 0.0d);
+                //dvDataSpace = DenseVector.OfEnumerable(tmpList);
+                //tmpList = new List<double>(dvDataValues);
+                //tmpList.Insert(0, minSunburnGrIxValue);
+                //dvDataValues = DenseVector.OfEnumerable(tmpList);
+                #endregion //добавим фиксированную точку в начало - на край солнечного диска
+
+                #region // obsolete
+                // у аппроксиматора надо задать некоторые начальне значения, чтобы ему было от чего скакать
+                // например, начальные значения коэффициентов полинома. Пусть это будет просто прямая y=1-x
+                // а порядок полинома будет задаваться количеством этих коэффициентов - то есть, длиной вектора коэффициентов
+                // int polynomeOrder = 2;
+
+                // оценим начальные значения из аппроксимации без весов - по старой версии
+                // методом МНК, который для полинома дает всего лишь решение СЛУ
+
+                // int polynomeOrder = 10;
+                // int polynomeOrder = 6;
+                //int polynomeOrder = 4;
+
+                // укажем, что есть фиксированная точка - в отдельном массиве фиксированных точек
+                //DenseVector dvFixedPoints = DenseVector.Create(dvDataSpace.Count,
+                //    new Func<int, double>(i => (i == 0) ? (minSunburnGrIxValue) : (double.NaN)));
+
+                //DenseVector dvInitialParameters_EvenlopApprox =
+                //    DataAnalysis.NPolynomeApproximationLessSquareMethod(dvDataValues,
+                //                                                        dvDataSpace,
+                //                                                        dvFixedPoints,
+                //                                                        polynomeOrder);
+
+                //List<double> initParametersList_EvenlopApprox = new List<double>();
+                //initParametersList_EvenlopApprox.Add(1.0d);
+                //initParametersList_EvenlopApprox.Add(-1.0d);
+                //for (int i = 0; i < polynomeOrder-1; i++)
+                //{
+                //    initParametersList_EvenlopApprox.Add(0.01d);
+                //}
+                //DenseVector dvInitialParameters_EvenlopApprox = DenseVector.OfEnumerable(initParametersList_EvenlopApprox);
+                //DenseVector initialParametersIncrement_EvenlopApprox =
+                //    DenseVector.Create( dvInitialParameters_EvenlopApprox.Count,
+                //                        i => dvInitialParameters_EvenlopApprox[i]*0.1);
+                #endregion // obsolete
+
+                // для того, чтобы в точке r=Rs/3 вес был 1/10
+                // решим уравнение
+                double l_w = 0.7d; // расстояние от нуля в долях Rs, где вес должен быть уже равным m_w
+                double m_w = 0.1d;
+                double k_w = -Math.Log(m_w) / (Rs * Rs * (l_w - 1.0d) * (l_w - 1.0d));
+
+                #region // попробуем учесть только точки в пределах 0.3Rs от глобального минимума
+                // попробуем учесть только точки в пределах 0.3Rs от глобального минимума
+                //double rsRateToGetWeightsZeroedOutside = 0.3d;
+                //double kForWeightDependency = 1.0d / (Rs * rsRateToGetWeightsZeroedOutside);
+                #endregion // попробуем учесть только точки в пределах 0.3Rs от глобального минимума
+
+                DenseVector dvWeights_EvenlopApprox = DenseVector.Create(dvDataValues.Count, (i =>
+                {
+                    double x = dvDataSpace[i];
+                    double weight = m_w + Math.Exp(-k_w * Math.Pow(x - Rs, 2.0d));
+
+                    return weight;
+                }));
+                double dvWeights_EvenlopApprox_totalWeight = dvWeights_EvenlopApprox.Sum();
+                dvWeights_EvenlopApprox /= dvWeights_EvenlopApprox_totalWeight;
+
+
+
+                if (verbosityLevel > 0)
+                {
+                    foreach (var dataValueTuple in dvDataValues.EnumerateIndexed())
+                    {
+                        string textToWrite = "" + dvDataSpace[dataValueTuple.Item1].ToString("e").Replace(",", ".") + ";";
+                        textToWrite += dataValueTuple.Item2.ToString().Replace(",", ".") + ";";
+                        textToWrite += dvWeights_EvenlopApprox[dataValueTuple.Item1].ToString("e").Replace(",", ".");
+                        textToWrite += Environment.NewLine;
+
+                        ServiceTools.logToTextFile(currentDirectory + randomFileName + "_dataDistribution.csv",
+                            textToWrite, true);
+
+                    }
+                }
+
+
+
+                #region // obsolete
+                //dvWeights_EvenlopApprox[0] = dvWeights_EvenlopApprox.Sum();
+
+                // устарело. Поставим жесткое условие на параметры
+                // чтобы в точке r = 0 значение обязательно равнялось "полностью засвеченному"
+
+                // не работает - решение вообще никуда не движется
+                // придется зафиксировать точку вручную - переопределением функции
+                //evenlopApproximator.parametersConditions.Add(dvPar =>
+                //{
+                //    if (theEvemlopApproximationFunction(dvPar, 0.0d) == minSunburnGrIxValue)
+                //    {
+                //        return true;
+                //    }
+                //
+                //    return false;
+                //});
+                #endregion
+
+                // Определим, как выглядит функция от аргумента
+                //Func<DenseVector, double, double> theEvenlopApproximationFunction =
+                //    ((dvPolynomeKoeffs_except0th, dRVal) =>
+                //    {
+                //        DenseVector dvPolynomeKoeffs =
+                //            DenseVector.OfEnumerable(
+                //                DenseVector.Create(1, minSunburnGrIxValue).Concat(dvPolynomeKoeffs_except0th));
+                //        return DataAnalysis.PolynomeValue(dvPolynomeKoeffs, dRVal);
+                //    });
+
+
+                // Определим, как выглядит функция от аргумента
+                // при этом надо еще зафиксировать вторую точку - на правой границе области
+                // для этого надо наложить условие на коэффициенты - будет еще минус одно значение
+                Func<DenseVector, double, double> theEvenlopApproximationFunction =
+                    ((dvPolynomeKoeffs_except0th, dRVal) =>
+                    {
+                        DenseVector dvPolynomeKoeffs =
+                            DenseVector.OfEnumerable(
+                                DenseVector.Create(1, minSunburnGrIxValue).Concat(dvPolynomeKoeffs_except0th));
+                        return DataAnalysis.PolynomeValue(dvPolynomeKoeffs, dRVal);
+                    });
+
+
+
+                // создаем сам объект, который будет аппроксимировать
+                GradientDescentApproximator evenlopApproximator = new GradientDescentApproximator(dvDataValues,
+                                                                                                    dvDataSpace,
+                                                                                                    theEvenlopApproximationFunction);
+
+
+                //int polynomeOrder = 6;
+                const int polynomeOrder3 = 3;
+                const int polynomeOrder6 = 6;
+                
+                DenseVector dvInitialParameters_EvenlopApprox3 = DenseVector.Create(polynomeOrder3, 0.0d);
+                DenseVector dvInitialParameters_EvenlopApprox6 = DenseVector.Create(polynomeOrder6, 0.0d);
+
+                // собственно аппроксимация
+                DenseVector approxPolyKoeffs6 = evenlopApproximator.Approximation_ILOptimizer(dvInitialParameters_EvenlopApprox6);
+                
+                // для кубической применим веса значений - рассчет см.выше
+                evenlopApproximator.DvWeights = dvWeights_EvenlopApprox;
+                DenseVector approxPolyKoeffs3 = evenlopApproximator.Approximation_ILOptimizer(dvInitialParameters_EvenlopApprox3);
+                
+
+                // добавим в нулевую позицию зафиксированный элемент
+                approxPolyKoeffs3 =
+                    DenseVector.OfEnumerable(DenseVector.Create(1, minSunburnGrIxValue).Concat(approxPolyKoeffs3));
+                approxPolyKoeffs6 =
+                    DenseVector.OfEnumerable(DenseVector.Create(1, minSunburnGrIxValue).Concat(approxPolyKoeffs6));
+                
+
+
+                #region plot evenlop approximation summary
+                MultipleScatterAndFunctionsRepresentation weightAndDataPlot =
+                    new MultipleScatterAndFunctionsRepresentation(1024, 768);
+                weightAndDataPlot.dvScatterXSpace.Add(dvDataSpace);
+                weightAndDataPlot.dvScatterFuncValues.Add(dvDataValues);
+                weightAndDataPlot.scatterDrawingVariants.Add(SequencesDrawingVariants.circles);
+                weightAndDataPlot.scatterLineColors.Add(new Bgr(Color.Red));
+
+                DenseVector dvWeightsToShow = dvWeights_EvenlopApprox.Copy();
+                dvWeightsToShow.MapInplace(dVal => dVal * dvDataValues.Max() / dvWeights_EvenlopApprox.Max());
+                weightAndDataPlot.dvScatterXSpace.Add(dvDataSpace);
+                weightAndDataPlot.dvScatterFuncValues.Add(dvWeightsToShow);
+                weightAndDataPlot.scatterDrawingVariants.Add(SequencesDrawingVariants.squares);
+                weightAndDataPlot.scatterLineColors.Add(new Bgr(Color.Magenta));
+
+                weightAndDataPlot.Represent();
+                ServiceTools.ExecMethodInSeparateThread(ParentForm, delegate()
+                {
+                    ServiceTools.ShowPicture(weightAndDataPlot.TheImage.Bitmap, "Overall GrIx values envelop vs r");
+                    weightAndDataPlot.TheImage.Save(currentDirectory + randomFileName + "-envelop-approximation-result-with-weights.jpg");
+                });
+                
+
+                MultipleScatterAndFunctionsRepresentation envelopPlottingForm =
+                    new MultipleScatterAndFunctionsRepresentation(1024, 768);
+                envelopPlottingForm.dvScatterXSpace.Add(dvDataSpace);
+                envelopPlottingForm.dvScatterFuncValues.Add(dvDataValues);
+                envelopPlottingForm.scatterLineColors.Add(new Bgr(Color.Red));
+                envelopPlottingForm.scatterDrawingVariants.Add(SequencesDrawingVariants.circles);
+                
+                envelopPlottingForm.theRepresentingFunctions.Add(DataAnalysis.PolynomeValue);
+                envelopPlottingForm.parameters.Add(approxPolyKoeffs3);
+                envelopPlottingForm.lineColors.Add(new Bgr(Color.Green));
+
+                envelopPlottingForm.theRepresentingFunctions.Add(DataAnalysis.PolynomeValue);
+                envelopPlottingForm.parameters.Add(approxPolyKoeffs6);
+                envelopPlottingForm.lineColors.Add(new Bgr(Color.Blue));
+
+                envelopPlottingForm.Represent();
+                ServiceTools.ExecMethodInSeparateThread(ParentForm, delegate()
+                {
+                    ServiceTools.ShowPicture(envelopPlottingForm.TheImage.Bitmap, "Overall GrIx values envelop vs r");
+                    envelopPlottingForm.TheImage.Save(currentDirectory + randomFileName + "-envelop-approximation-result.jpg");
+                });
+                #endregion plot evenlop approximation summary
+
+
+
+
+                #region // не получилось
+                // внедрим следующий этап:
+                // по полученной зависимости (без весов) посчитаем вторую производную
+                // отследим область вокруг Rs, где она положительна
+                // в области от нуля до полученной - экспериментальные данные заменим
+                // простой линейной интерполяцией
+                // и снова прогоним аппроксимацию
+                //Func<DenseVector, double, double> theEvenlopApproximationFunction2ndDeriv =
+                //    ((dvKoeffs, dVal) =>
+                //    {
+                //        return DataAnalysis.PolynomeNthDerivative(dvKoeffs, dVal, 2);
+                //    });
+                //DenseVector dvPolynome2ndDrivativeAtDataSpace = (DenseVector)dvDataSpace.Map<double>(dVal =>
+                //    theEvenlopApproximationFunction2ndDeriv(approxPolyKoeffs, dVal), Zeros.Include);
+                //int idx = dvDataSpace.EnumerateIndexed().First(r => r.Item2 >= Rs).Item1;
+                //while (dvPolynome2ndDrivativeAtDataSpace[idx] >= 0.0d)
+                //{
+                //    idx--;
+                //}
+                //DenseVector dvDataValuesInterpolated = dvDataValues.Copy();
+                //dvDataValuesInterpolated.MapIndexedInplace((i, dVal) =>
+                //{
+                //    if ((i > 0) && (i < idx))
+                //    {
+                //        double r = dvDataSpace[i];
+                //        return (dvDataValues[0] +
+                //                (r - dvDataSpace[0]) * (dvDataValues[idx] - dvDataValues[0]) /
+                //                (dvDataSpace[idx] - dvDataSpace[0]));
+                //    }
+                //    else
+                //    {
+                //        return dVal;
+                //    }
+                //});
+                #endregion // не получилось
+
+                #region // 2015-02-12 : пробуем использовать только первый проход аппроксимации
+                // по-другому:
+                // внедрим следующий этап:
+                // по полученной зависимости (без весов) посчитаем вторую производную
+                // отследим область, где она отрицательна
+                // В таких областях заполним значения интерполяцией
+                // и снова прогоним аппроксимацию
+
+                // 2015-02-12 : пробуем использовать только первый проход аппроксимации
+                // порядок полинома ставим 3
+                // веса задаем по гауссу - см. подробности первого прохода
+
+                //Func<DenseVector, double, double> theEvenlopApproximationFunction2ndDeriv =
+                //    ((dvKoeffs, dVal) =>
+                //    {
+                //        return DataAnalysis.PolynomeNthDerivative(dvKoeffs, dVal, 2);
+                //    });
+                //DenseVector dv2ndDeriv = (DenseVector)dvDataSpace.Map<double>(dVal =>
+                //    theEvenlopApproximationFunction2ndDeriv(approxPolyKoeffs, dVal), Zeros.Include);
+                //List<double> l2ndDeriv = new List<double>(dv2ndDeriv);
+                //DenseVector dvDataValuesInterpolated = dvDataValues.Copy();
+                //dvDataValuesInterpolated.MapIndexedInplace((i, dVal) =>
+                //{
+                //    if (l2ndDeriv[i] <= 0.0d)
+                //    {
+                //        int idx_prev = l2ndDeriv.FindLastIndex(i-1, i, d2ndDerVal => d2ndDerVal > 0.0d);
+                //        int idx_foll = l2ndDeriv.FindIndex(i+1, d2ndDerVal => d2ndDerVal > 0.0d);
+
+                //        double r = dvDataSpace[i];
+                //        double retVal = (dvDataValues[idx_prev] +
+                //                (r - dvDataSpace[idx_prev]) * (dvDataValues[idx_foll] - dvDataValues[idx_prev]) /
+                //                (dvDataSpace[idx_foll] - dvDataSpace[idx_prev]));
+                //        return retVal;
+                //    }
+                //    else
+                //    {
+                //        return dVal;
+                //    }
+                //});
+
+
+                //evenlopApproximator = null;
+
+                //GradientDescentApproximator evenlopApproximator2 = new GradientDescentApproximator(dvDataValuesInterpolated,
+                //                                                                                    dvDataSpace,
+                //                                                                                    theEvenlopApproximationFunction);
+
+                //dvInitialParameters_EvenlopApprox = DenseVector.Create(polynomeOrder, i => approxPolyKoeffs[i+1]);
+
+                //// собственно аппроксимация - второй заход
+                //approxPolyKoeffs = evenlopApproximator2.Approximation_ILOptimizer(dvInitialParameters_EvenlopApprox);
+
+                //// добавим в нулевую позицию зафиксированный элемент
+                //newParametersList = new List<double>(approxPolyKoeffs);
+                //newParametersList.Insert(0, minSunburnGrIxValue);
+                //approxPolyKoeffs = DenseVector.OfEnumerable(newParametersList);
+
+
+                //#region // plot 2nd evenlop approximation result
+                //envelopPlottingForm = new MultipleScatterAndFunctionsRepresentation(1024, 768);
+                //envelopPlottingForm.dvScatterXSpace.Add(dvDataSpace);
+                //envelopPlottingForm.dvScatterFuncValues.Add(dvDataValuesInterpolated);
+                //envelopPlottingForm.scatterLineColors.Add(new Bgr(Color.Red));
+                //envelopPlottingForm.scatterDrawingVariants.Add(SequencesDrawingVariants.circles);
+                //envelopPlottingForm.theRepresentingFunctions.Add(DataAnalysis.PolynomeValue);
+                //envelopPlottingForm.parameters.Add(approxPolyKoeffs);
+                //envelopPlottingForm.lineColors.Add(new Bgr(Color.Green));
+                //envelopPlottingForm.Represent();
+                //ServiceTools.ExecMethodInSeparateThread(ParentForm, delegate()
+                //{
+                //    ServiceTools.ShowPicture(envelopPlottingForm.TheImage.Bitmap, "Overall GrIx values envelop vs r - 2nd result");
+                //    envelopPlottingForm.TheImage.Save(currentDirectory + randomFileName + "-envelop-approximation-2nd-result.jpg");
+                //});
+                //#endregion // plot 2nd evenlop approximation result
+                #endregion // 2015-02-12 : пробуем использовать только первый проход аппроксимации
+
+
+                theLogWindow = ServiceTools.LogAText(theLogWindow, "Rs = " + Rs.ToString() + Environment.NewLine);
+                theLogWindow = ServiceTools.LogAText(theLogWindow, "GrIx Min = " + minDataValue.ToString("e") + Environment.NewLine);
+                theLogWindow = ServiceTools.LogAText(theLogWindow, "approx function koefficients (3rd order): ");
+                for (int i = 0; i <= polynomeOrder3; i++)
+                {
+                    int l = polynomeOrder3 - i;
+                    theLogWindow = ServiceTools.LogAText(theLogWindow, "[" + l + "]: " + approxPolyKoeffs3[l].ToString("e"));
+                }
+                theLogWindow = ServiceTools.LogAText(theLogWindow, "approx function koefficients (6th order): ");
+                for (int i = 0; i <= polynomeOrder6; i++)
+                {
+                    int l = polynomeOrder6 - i;
+                    theLogWindow = ServiceTools.LogAText(theLogWindow, "[" + l + "]: " + approxPolyKoeffs6[l].ToString("e"));
+                }
+                
+
+                double rMaxOfApproximatedMinimumsDistribution = dvDataSpace.Max();
+
+                #region // LastMileApproximation
+                //DenseVector dvDataValuesForLastMileApproximation = DenseVector.Create(2,
+                //    new Func<int, double>(
+                //        i =>
+                //            (i == 0)
+                //                ? (DataAnalysis.PolynomeValue(approxPolyKoeffs, dvDataSpace[dvDataSpace.Count - 1]))
+                //                : (1.0d)));
+                //DenseVector dvSpaceValuesForLastMileApproximation = DenseVector.Create(2,
+                //    new Func<int, double>(
+                //        i =>
+                //            (i == 0)
+                //                ? (dvDataSpace[dvDataSpace.Count - 1])
+                //                : (rMax)));
+                //DenseVector theLastMileLinearApproximationKoeffs =
+                //    DataAnalysis.NPolynomeApproximationLessSquareMethod(dvDataValuesForLastMileApproximation,
+                //        dvSpaceValuesForLastMileApproximation, null, 1);
+                #endregion // LastMileApproximation
+
+                BGWorkerReport("аппроксимация зависимости GrIx(r) завершена");
+
+                #endregion аппроксимация распределения GrIx(r) для огибающей (ЗАВЕРШЕНО)
+
+
+
+
+
+
 
 
                 #region здесь исследуем распределение локальных минимумов распределения GrIx по r в полярной системе координат
@@ -777,205 +1179,6 @@ namespace SkyImagesAnalyzerLibraries
 
                 
                 
-                #region аппроксимация распределения GrIx(r) для огибающей
-                BGWorkerReport("сглаживаем полученное распределение, представляющее огибающую GrIx(r)," +
-                               "определеяем характерные точки: расположение глобального минимума, его величину");
-                //smooth the distribution
-                DenseVector dvDataValues = DenseVector.OfEnumerable(envelopValues);
-                //DenseVector dvSmoothedDistribution = DataAnalysis.ExponentialMovingAverage(dvDataValues, 10, 0.4d);
-                
-                // DenseVector dvSmoothedEnvelopValues = dvDataValues.Conv(StandardConvolutionKernels.gauss, 10);
-
-
-                // будем аппроксимировать по-другому - нужно учитывать веса точек.
-                // чем меньше значение GrIx в точке, - тем больше ее вес.
-                // аппроксимировать будем уже не решением СЛУ, а, как и в остальных случаях, - методом градиентного спуска
-                // для этого функция будет задаваться здесь же.
-                // и начальные коэффициенты тоже.
-                // данные пока оставим отфильтрованные по значению GrIx
-
-
-                minDataValue = dvDataValues.AbsoluteMinimum();
-                Rs = envelopRargument.ElementAt(dvDataValues.AbsoluteMinimumIndex());
-
-                DenseVector dvDataSpace = DenseVector.OfEnumerable(envelopRargument);
-
-                //добавим фиксированную точку в начало - на край солнечного диска
-                // для аппроксимации в этой паре массивов она может быть произвольной
-                // главное, чтобы был под нее "номер" в последовательности точек
-                List<double> tmpList = new List<double>(dvDataSpace);
-                tmpList.Insert(0, 0.0d);
-                dvDataSpace = DenseVector.OfEnumerable(tmpList);
-                tmpList = new List<double>(dvDataValues);
-                tmpList.Insert(0, minSunburnGrIxValue);
-                dvDataValues = DenseVector.OfEnumerable(tmpList);
-
-                MultipleScatterAndFunctionsRepresentation envelopPlottingForm =
-                    new MultipleScatterAndFunctionsRepresentation(800, 600);
-                envelopPlottingForm.dvScatterXSpace.Add(dvDataSpace);
-                envelopPlottingForm.dvScatterFuncValues.Add(dvDataValues);
-                envelopPlottingForm.scatterLineColors.Add(new Bgr(Color.Red));
-                envelopPlottingForm.scatterDrawingVariants.Add(SequencesDrawingVariants.circles);
-
-                if (verbosityLevel > 0)
-                {
-                    foreach (var dataValueTuple in dvDataValues.EnumerateIndexed())
-                    {
-                        string textToWrite = "" + dvDataSpace[dataValueTuple.Item1].ToString("e").Replace(",", ".") +
-                                             ";";
-                        textToWrite += dataValueTuple.Item2.ToString().Replace(",", ".");
-                        textToWrite += Environment.NewLine;
-
-                        ServiceTools.logToTextFile(currentDirectory + randomFileName + "_dataDistribution.csv",
-                            textToWrite, true);
-
-                    }
-                }
-
-
-
-
-
-                // Определим, как выглядит функция от аргумента
-                Func<DenseVector, double, double> theEvemlopApproximationFunction =
-                    ((dvPolynomeKoeffs, dRVal) => DataAnalysis.PolynomeValue(dvPolynomeKoeffs, dRVal));
-
-                // создаем сам объект, который будет аппроксимировать
-                GradientDescentApproximator evenlopApproximator =
-                    new GradientDescentApproximator(dvDataValues, dvDataSpace, theEvemlopApproximationFunction);
-                
-                // у аппроксиматора надо задать некоторые начальне значения, чтобы ему было от чего скакать
-                // например, начальные значения коэффициентов полинома. Пусть это будет просто прямая y=1-x
-                // а порядок полинома будет задаваться количеством этих коэффициентов - то есть, длиной вектора коэффициентов
-                int polynomeOrder = 6;
-
-                // оценим начальные значения из аппроксимации без весов - по старой версии
-                // методом МНК, который для полинома дает всего лишь решение СЛУ
-
-                // int polynomeOrder = 10;
-                // int polynomeOrder = 6;
-                //int polynomeOrder = 4;
-
-                // укажем, что есть фиксированная точка - в отдельном массиве фиксированных точек
-                DenseVector dvFixedPoints = DenseVector.Create(dvDataSpace.Count,
-                    new Func<int, double>(i => (i == 0) ? (minSunburnGrIxValue) : (double.NaN)));
-
-                DenseVector dvInitialParameters_EvenlopApprox =
-                    DataAnalysis.NPolynomeApproximationLessSquareMethod(
-                                                            dvDataValues,
-                                                            dvDataSpace,
-                                                            dvFixedPoints,
-                                                            polynomeOrder);
-
-                //List<double> initParametersList_EvenlopApprox = new List<double>();
-                //initParametersList_EvenlopApprox.Add(1.0d);
-                //initParametersList_EvenlopApprox.Add(-1.0d);
-                //for (int i = 0; i < polynomeOrder-1; i++)
-                //{
-                //    initParametersList_EvenlopApprox.Add(0.01d);
-                //}
-                //DenseVector dvInitialParameters_EvenlopApprox = DenseVector.OfEnumerable(initParametersList_EvenlopApprox);
-                DenseVector initialParametersIncrement_EvenlopApprox =
-                    DenseVector.Create(dvInitialParameters_EvenlopApprox.Count,
-                        i => dvInitialParameters_EvenlopApprox[i]*0.1);
-
-                // для того, чтобы в точке r=Rs/3 вес был 1/10
-                // решим уравнение
-                double a = (Rs*Rs)/9.0d;
-                double b = Math.Log(0.1d) - (2.0d/3.0d)*Rs*Rs;
-                double c = Rs*Rs;
-                double d = b*b - 4.0d*a*c;
-                double rt1 = (-b - Math.Sqrt(d))/(2.0d*a);
-                double rt2 = (-b + Math.Sqrt(d)) / (2.0d * a);
-                double rtmean = (Math.Sqrt(rt1) + Math.Sqrt(rt2))/2.0d;
-
-
-                // попробуем учесть только точки в пределах 0.3Rs от глобального минимума
-                double rsRateToGetWeightsZeroedOutside = 0.3d;
-                double kForWeightDependency = 1.0d/(Rs*rsRateToGetWeightsZeroedOutside);
-
-                DenseVector dvWeights_EvenlopApprox = DenseVector.Create(dvDataValues.Count, (i =>
-                {
-                    double weight = (0.4d +
-                                     0.6d*(dvDataValues.Max() - dvDataValues[i])/
-                                     (dvDataValues.Max() - dvDataValues.Min()));
-
-                    // а еще чем ближе r к Rs - тем больше доверия
-                    //weight *=
-                    //    Math.Exp(-(rtmean*dvDataSpace[i]/3.0d - Rs/rtmean)*(rtmean*dvDataSpace[i]/3.0d - Rs/rtmean));
-
-                    weight *= 1 - kForWeightDependency*Math.Abs(dvDataSpace[i] - Rs);
-                    weight = (weight < 0.0d) ? (0.0d) : weight;
-
-                    return weight;
-                }));
-                dvWeights_EvenlopApprox[0] = dvWeights_EvenlopApprox.Sum();
-                double dvWeights_EvenlopApprox_totalWeight = dvWeights_EvenlopApprox.Sum();
-                dvWeights_EvenlopApprox /= dvWeights_EvenlopApprox_totalWeight;
-                //evenlopApproximator.DvWeights = dvWeights_EvenlopApprox;
-
-                DenseVector approxPolyKoeffs = evenlopApproximator.Approximation_ILOptimizer(
-                    dvInitialParameters_EvenlopApprox,
-                    ref initialParametersIncrement_EvenlopApprox,
-                    1.0e-8d);
-
-                //DenseVector approxPolyKoeffs = evenlopApproximator.ApproximationGradientDescentMultidim(
-                //    dvInitialParameters_EvenlopApprox,
-                //    ref initialParametersIncrement_EvenlopApprox,
-                //    0.0000001d);
-
-
-
-                
-                
-
-                envelopPlottingForm.theRepresentingFunctions.Add(
-                    (dvParams, x) => DataAnalysis.PolynomeValue(dvParams, x));
-                envelopPlottingForm.parameters.Add(approxPolyKoeffs);
-                envelopPlottingForm.lineColors.Add(new Bgr(Color.Green));
-                envelopPlottingForm.Represent();
-                ServiceTools.ExecMethodInSeparateThread(ParentForm, delegate()
-                {
-                    ServiceTools.ShowPicture(envelopPlottingForm.TheImage.Bitmap, "Overall GrIx values envelop vs r");
-                    envelopPlottingForm.TheImage.Save(currentDirectory + randomFileName + "-envelop-approximation-result.jpg");
-                });
-                
-
-
-                
-                //if (!isCalculatingUsingBgWorker)
-                //{
-                    theLogWindow = ServiceTools.LogAText(theLogWindow, "Rs = " + Rs.ToString() + Environment.NewLine);
-                    theLogWindow = ServiceTools.LogAText(theLogWindow, "GrIx Min = " + minDataValue.ToString("e") + Environment.NewLine);
-                    theLogWindow = ServiceTools.LogAText(theLogWindow, "approx function koefficients: ");
-                    for (int i = 0; i <= polynomeOrder; i++)
-                    {
-                        int l = polynomeOrder - i;
-                        theLogWindow = ServiceTools.LogAText(theLogWindow, "[" + l + "]: " + approxPolyKoeffs[l].ToString("e"));
-                    }
-                //}
-
-                double rMaxOfApproximatedMinimumsDistribution = dvDataSpace[dvDataSpace.Count - 1];
-                DenseVector dvDataValuesForLastMileApproximation = DenseVector.Create(2,
-                    new Func<int, double>(
-                        i =>
-                            (i == 0)
-                                ? (DataAnalysis.PolynomeValue(approxPolyKoeffs, dvDataSpace[dvDataSpace.Count - 1]))
-                                : (1.0d)));
-                DenseVector dvSpaceValuesForLastMileApproximation = DenseVector.Create(2,
-                    new Func<int, double>(
-                        i =>
-                            (i == 0)
-                                ? (dvDataSpace[dvDataSpace.Count - 1])
-                                : (rMax)));
-                DenseVector theLastMileLinearApproximationKoeffs =
-                    DataAnalysis.NPolynomeApproximationLessSquareMethod(dvDataValuesForLastMileApproximation,
-                        dvSpaceValuesForLastMileApproximation, null, 1);
-
-                BGWorkerReport("аппроксимация зависимости GrIx(r) завершена");
-
-                #endregion аппроксимация распределения GrIx(r) для огибающей (ЗАВЕРШЕНО)
-
 
 
 
@@ -1030,6 +1233,36 @@ namespace SkyImagesAnalyzerLibraries
                         return d1 * Math.Cos(phi - phi0) + Math.Sqrt(r * r - d2 * d2 * Math.Pow(Math.Sin(phi - phi0), 2.0d));
                     });
 
+                #region //obsolete
+                //List<Func<DenseVector, bool>> theApproximatinFunctionParametersConditions = new List<Func<DenseVector, bool>>();
+                //theApproximatinFunctionParametersConditions.Add(dvPar =>
+                //                                                {
+                //                                                    double d1 = dvPar[0];
+                //                                                    double d2 = dvPar[1];
+                //                                                    double r = dvPar[2];
+                //
+                //                                                    if ((d1 < 0.0d) || (d2 < 0.0d) || (r < 0.0d))
+                //                                                    {
+                //                                                        return false;
+                //                                                    }
+                //
+                //                                                    if ((d1 > r) || (d2 > r))
+                //                                                    {
+                //                                                        return false;
+                //                                                    }
+                //                                                    return true;
+                //                                                });
+                #endregion //obsolete
+
+                List<Func<DenseVector, double, double>> theApproximatinFunctionParametersConditionsInequality =
+                    new List<Func<DenseVector, double, double>>();
+                theApproximatinFunctionParametersConditionsInequality.Add((dvPar, x) => -dvPar[0]);
+                theApproximatinFunctionParametersConditionsInequality.Add((dvPar, x) => -dvPar[1]);
+                theApproximatinFunctionParametersConditionsInequality.Add((dvPar, x) => -dvPar[2]);
+                theApproximatinFunctionParametersConditionsInequality.Add((dvPar, x) => dvPar[0] - dvPar[2]);
+                theApproximatinFunctionParametersConditionsInequality.Add((dvPar, x) => dvPar[1] - dvPar[2]);
+
+
                 DenseVector dvWeights = DenseVector.Create(dataMinimumsList.Count, new Func<int, double>(i =>
                 {
                     double weight = (0.6d +
@@ -1043,9 +1276,11 @@ namespace SkyImagesAnalyzerLibraries
 
                 DenseVector dvRMinimumsSpace = DenseVector.OfEnumerable(rMinimumsSpace);
                 DenseVector dvphiMinimumsSpace = DenseVector.OfEnumerable(phiMinimumsSpace);
-                GradientDescentApproximator approximator =
-                    new GradientDescentApproximator(dvRMinimumsSpace, dvphiMinimumsSpace, theApproximatinFunction);
+                GradientDescentApproximator approximator = new GradientDescentApproximator( dvRMinimumsSpace,
+                                                                                            dvphiMinimumsSpace,
+                                                                                            theApproximatinFunction);
                 approximator.DvWeights = dvWeights;
+                approximator.parametersConditionsLessThan0 = theApproximatinFunctionParametersConditionsInequality;
 
                 if (verbosityLevel > 0)
                 {
@@ -1112,7 +1347,7 @@ namespace SkyImagesAnalyzerLibraries
                     theFunctionsForm.Represent();
                 }
                 //DenseVector approximatedParameters = approximator.ApproximationGradientDescentMultidim(dvInitialParameters, ref initialParametersIncremnt, 0.0000001d);
-                DenseVector approximatedParameters = approximator.Approximation_ILOptimizer(dvInitialParameters, ref initialParametersIncremnt);
+                DenseVector approximatedParameters = approximator.Approximation_ILOptimizer(dvInitialParameters);
 
 
                 //попробуем вот так:
@@ -1151,7 +1386,7 @@ namespace SkyImagesAnalyzerLibraries
                 approximator.dvSpace = dvTunedPhiSpace;
                 approximator.dvDataValues = dvTunedRSpace;
                 //approximatedParameters = approximator.ApproximationGradientDescentMultidim(approximatedParameters, ref initialParametersIncremnt, 0.000001d);
-                approximatedParameters = approximator.Approximation_ILOptimizer(approximatedParameters, ref initialParametersIncremnt);
+                approximatedParameters = approximator.Approximation_ILOptimizer(approximatedParameters);
                 // фак
                 // откуда-то NaN вылез :((
 
@@ -1225,7 +1460,7 @@ namespace SkyImagesAnalyzerLibraries
                 }
                 DenseVector theLine1Coeffs =
                     DataAnalysis.NPolynomeApproximationLessSquareMethod(DenseVector.OfEnumerable(minimumsDataValues),
-                        DenseVector.OfEnumerable(minimumsXDashedCoodinate), null, 1);
+                        DenseVector.OfEnumerable(minimumsXDashedCoodinate), new List<PointD>(), 1);
 
                 DenseMatrix dmValuesToSubtract_plate = DenseMatrix.Create(dmProcessingData.RowCount,
                     dmProcessingData.ColumnCount, new Func<int, int, double>(
@@ -1259,9 +1494,10 @@ namespace SkyImagesAnalyzerLibraries
 
                 BGWorkerReport("финальный шаг обработки: компенсация засветки");
 
-                DenseMatrix dmReversed = (DenseMatrix)dmProcessingData.Clone();
+                DenseMatrix dmReversed3rdOrder = dmProcessingData.Copy();
+                DenseMatrix dmReversed6thOrder = dmProcessingData.Copy();
 
-                DenseMatrix dmDataToSubtract = DenseMatrix.Create(dmReversed.RowCount, dmReversed.ColumnCount,
+                DenseMatrix dmDataToSubtract3rdOrder = DenseMatrix.Create(dmProcessingData.RowCount, dmProcessingData.ColumnCount,
                     new Func<int, int, double>(
                         (row, col) =>
                         {
@@ -1283,7 +1519,7 @@ namespace SkyImagesAnalyzerLibraries
                                 double startPointVal = 1.0d -
                                                             currentLinearKoeff *
                                                             (1.0d -
-                                                             DataAnalysis.PolynomeValue(approxPolyKoeffs,
+                                                             DataAnalysis.PolynomeValue(approxPolyKoeffs3,
                                                                  startPointRFromSunMargin / currentLinearKoeff));
                                 // УПС. Так далеко наша аппроксимация не действует. Тогда просто вычтем общий фон.
                                 //возьмем смещение общим уклоном dmValuesToSubtract_plate, посмотрим смещение в точке startPointX и
@@ -1313,7 +1549,7 @@ namespace SkyImagesAnalyzerLibraries
                                 scaledSubtractionValue = 1.0d -
                                                             currentLinearKoeff *
                                                             (1.0d -
-                                                             DataAnalysis.PolynomeValue(approxPolyKoeffs,
+                                                             DataAnalysis.PolynomeValue(approxPolyKoeffs3,
                                                                  currDistance / currentLinearKoeff));
                             }
 
@@ -1323,7 +1559,74 @@ namespace SkyImagesAnalyzerLibraries
 
                             return scaledSubtractionValue;
                         }));
-                dmDataToSubtract = (DenseMatrix)dmDataToSubtract.PointwiseMultiply(dmMask);
+
+
+                DenseMatrix dmDataToSubtract6thOrder = DenseMatrix.Create(dmProcessingData.RowCount, dmProcessingData.ColumnCount,
+                    new Func<int, int, double>(
+                        (row, col) =>
+                        {
+                            double currAngle = dmAngleAroundTheSunburn[row, col] - Phi1;
+                            double currDistance = dmDistanceToSunMargin[row, col];
+                            double theMinimumDistanceForThisAngle = theApproximatinFunction(approximatedParameters,
+                                dmAngleAroundTheSunburn[row, col]);
+                            double currentLinearKoeff = theMinimumDistanceForThisAngle /
+                                                        (approximatedParameters[0] + approximatedParameters[2]);
+                            double maxRadiusOfApproximation = rMaxOfApproximatedMinimumsDistribution * currentLinearKoeff;
+                            double scaledSubtractionValue = 0.0d;
+
+                            if (maxRadiusOfApproximation < 0) maxRadiusOfApproximation = 0.0d;
+
+                            if (currDistance > maxRadiusOfApproximation)
+                            {
+                                double startPointRFromSunMargin = maxRadiusOfApproximation;
+                                double startPointR = maxRadiusOfApproximation + sunRadius;
+                                double startPointVal = 1.0d -
+                                                            currentLinearKoeff *
+                                                            (1.0d -
+                                                             DataAnalysis.PolynomeValue(approxPolyKoeffs6,
+                                                                 startPointRFromSunMargin / currentLinearKoeff));
+                                // УПС. Так далеко наша аппроксимация не действует. Тогда просто вычтем общий фон.
+                                //возьмем смещение общим уклоном dmValuesToSubtract_plate, посмотрим смещение в точке startPointX и
+                                // от этого спляшем по смещению в текущую точку
+                                //для этого надо знать положение стартовой точки в декартовых координатах
+                                int startPointX =
+                                    Convert.ToInt32((startPointR) * Math.Cos(currAngle + Phi1) +
+                                                    sunCenterPoint.X);
+                                startPointX = (startPointX < 0) ? 0 : startPointX;
+                                startPointX = (startPointX >= dmValuesToSubtract_plate.ColumnCount) ? (dmValuesToSubtract_plate.ColumnCount - 1) : startPointX;
+
+                                int startPointY =
+                                    Convert.ToInt32(-(startPointR) * Math.Sin(currAngle + Phi1) +
+                                                     sunCenterPoint.Y);
+                                startPointY = (startPointY < 0) ? 0 : startPointY;
+                                startPointY = (startPointY >= dmValuesToSubtract_plate.RowCount) ? (dmValuesToSubtract_plate.RowCount - 1) : startPointY;
+
+                                double dVal = dmValuesToSubtract_plate[row, col] - dmValuesToSubtract_plate[startPointY, startPointX];
+
+                                //scaledSubtractionValue = startPointVal +
+                                //                         (currDistance - startPointX)*(endPointVal - startPointVal)/
+                                //                         (endPointX - startPointX);
+                                scaledSubtractionValue = startPointVal + dVal;
+                            }
+                            else
+                            {
+                                scaledSubtractionValue = 1.0d -
+                                                            currentLinearKoeff *
+                                                            (1.0d -
+                                                             DataAnalysis.PolynomeValue(approxPolyKoeffs6,
+                                                                 currDistance / currentLinearKoeff));
+                            }
+
+                            if (double.IsNaN(scaledSubtractionValue)) return 0.0d;
+                            if (scaledSubtractionValue > 1.0d) return 1.0d;
+                            if (scaledSubtractionValue < 0.0d) return 0.0d;
+
+                            return scaledSubtractionValue;
+                        }));
+
+
+                dmDataToSubtract3rdOrder = (DenseMatrix)dmDataToSubtract3rdOrder.PointwiseMultiply(dmMask);
+                dmDataToSubtract6thOrder = (DenseMatrix)dmDataToSubtract6thOrder.PointwiseMultiply(dmMask);
 
                 BGWorkerReport("данные для вычитания засветки рассчитаны");
 
@@ -1335,14 +1638,54 @@ namespace SkyImagesAnalyzerLibraries
                 //    if (retVal < 0.0d) retVal = 0.0d;
                 //    return retVal;
                 //}));
-                dmReversed = dmReversed - dmDataToSubtract;
-                dmReversed.MapInplace(dval => (dval < 0.0d) ? (0.0d) : (dval));
-                dmReversed = (DenseMatrix)dmReversed.PointwiseMultiply(dmMask);
-                double dataMinValue = dmReversed.Values.Min();
-                double dataMaxValue = dmReversed.Values.Max();
-                double dataValuesRange = dataMaxValue - dataMinValue;
+                dmReversed3rdOrder = dmReversed3rdOrder - dmDataToSubtract3rdOrder;
+                dmReversed6thOrder = dmReversed6thOrder - dmDataToSubtract6thOrder;
 
-                #region данные и Matlab-скрипт для вывода данных в горизонтальном разрезе через центр солнца
+                dmReversed3rdOrder.MapInplace(dval => (dval < 0.0d) ? (0.0d) : (dval));
+                dmReversed6thOrder.MapInplace(dval => (dval < 0.0d) ? (0.0d) : (dval));
+
+                dmReversed3rdOrder = (DenseMatrix)dmReversed3rdOrder.PointwiseMultiply(dmMask);
+                dmReversed6thOrder = (DenseMatrix)dmReversed6thOrder.PointwiseMultiply(dmMask);
+
+                //double dataMinValue = dmReversed.Values.Min();
+                //double dataMaxValue = dmReversed.Values.Max();
+                //double dataValuesRange = dataMaxValue - dataMinValue;
+
+
+                // странно. а где компенсация величины пиков за счет "прижимания" к верхней границе?..
+                // надо восстановить.
+                // minDataValue - минимальное значение, которое вроде бы вычитается
+                // при вычитании этого значения ничего не масштабируем.
+                // При вычитании мЕньших - масштабируем во столько раз, во сколько меньше вычитаем
+                Func<DenseMatrix, DenseMatrix, DenseMatrix> ProcessResult = (dmResult, dmSubtracting) =>
+                {
+                    dmResult.MapIndexedInplace((r, c, dVal) =>
+                    {
+                        double subtractedValue = dmSubtracting[r, c];
+                        double koeff = (minSunburnGrIxValue - minDataValue) / (minSunburnGrIxValue - subtractedValue);
+                        return dVal * koeff;
+                    });
+
+                    DescriptiveStatistics stats = new DescriptiveStatistics(dmResult.Values);
+                    // удалим значения за пределами 3s
+                    dmResult.MapInplace(dVal =>
+                    {
+                        if (Math.Abs(dVal - stats.Mean) > stats.StandardDeviation * 3.0d)
+                        {
+                            return 0.0d;
+                        }
+                        else return dVal;
+                    });
+                    dmResult.MapInplace(dVal => ((dVal < 0.0d) || (dVal > minSunburnGrIxValue)) ? (0.0d) : (dVal));
+
+                    return dmResult;
+                };
+
+                dmReversed3rdOrder = ProcessResult(dmReversed3rdOrder, dmDataToSubtract3rdOrder);
+                dmReversed6thOrder = ProcessResult(dmReversed6thOrder, dmDataToSubtract6thOrder);
+
+
+                
 
                 if (!isCalculatingUsingBgWorker)
                 {
@@ -1357,345 +1700,347 @@ namespace SkyImagesAnalyzerLibraries
                     //theLogWindow = ServiceTools.LogAText(theLogWindow,
                     //    "average sky data value at average sky distance: " + averageSkyDataValue);
 
-                    theLogWindow = ServiceTools.LogAText(theLogWindow,
-                        "resulting data min value = " + dataMinValue.ToString("e"));
-                    theLogWindow = ServiceTools.LogAText(theLogWindow,
-                        "resulting data max value = " + dataMaxValue.ToString("e"));
+                    //theLogWindow = ServiceTools.LogAText(theLogWindow,
+                    //    "resulting data min value = " + dataMinValue.ToString("e"));
+                    //theLogWindow = ServiceTools.LogAText(theLogWindow,
+                    //    "resulting data max value = " + dataMaxValue.ToString("e"));
 
                     BGWorkerReport("формирование данных и скрипта для отрисовки картинок в Matlab");
                 }
 
-                if (verbosityLevel > 0)
-                {
-                    //double H = 1.0d - averageSkyDataValue;
-                    //double k = Math.Abs(theGradIndicativeValue);
-                    //double f = 1.0d / 3.0d;
-                    //double p = (H / (k * f * averageSkyDistance) - 1) / (f * averageSkyDistance);
+                #region // данные и Matlab-скрипт для визуализации
+                //if (verbosityLevel > 0)
+                //{
+                //    //double H = 1.0d - averageSkyDataValue;
+                //    //double k = Math.Abs(theGradIndicativeValue);
+                //    //double f = 1.0d / 3.0d;
+                //    //double p = (H / (k * f * averageSkyDistance) - 1) / (f * averageSkyDistance);
 
-                    //int leftSunMargin = Convert.ToInt32(sunCenterPoint.X - sunRadius);
-                    //int rightSunMargin = Convert.ToInt32(sunCenterPoint.X + sunRadius);
-                    //int leftAverageSkyMargin = Convert.ToInt32(leftSunMargin - averageSkyDistance);
-                    //int rightAverageSkyMargin = Convert.ToInt32(rightSunMargin + averageSkyDistance);
-                    //int leftOneThirdToAverageSkyMargin = Convert.ToInt32(leftSunMargin - f * averageSkyDistance);
-                    //int rightOneThirdToAverageSkyMargin = Convert.ToInt32(rightSunMargin + f * averageSkyDistance);
-                    //double leftA = 1.0 - Math.Abs(theGradIndicativeValue) * leftSunMargin;
-                    //double rightA = 1.0 + Math.Abs(theGradIndicativeValue) * rightSunMargin;
-                    //int topSunMargin = Convert.ToInt32(sunCenterPoint.Y - sunRadius);
-                    //int bottomSunMargin = Convert.ToInt32(sunCenterPoint.Y + sunRadius);
-                    //int topAverageSkyMargin = Convert.ToInt32(topSunMargin - averageSkyDistance);
-                    //int bottomAverageSkyMargin = Convert.ToInt32(bottomSunMargin + averageSkyDistance);
-                    //int topOneThirdToAverageSkyMargin = Convert.ToInt32(topSunMargin - f * averageSkyDistance);
-                    //int bottomOneThirdToAverageSkyMargin = Convert.ToInt32(bottomSunMargin + f * averageSkyDistance);
-                    //double topA = 1.0 - Math.Abs(theGradIndicativeValue) * topSunMargin;
-                    //double bottomA = 1.0 + Math.Abs(theGradIndicativeValue) * bottomSunMargin;
-
-
-                    string matlabScript = "clear;" + Environment.NewLine;
-                    matlabScript += "origDataMatrix = ncread('" + currentDirectory + randomFileName +
-                                    "_orig.nc','dataMatrix');" + Environment.NewLine;
-                    matlabScript += "resultDataMatrix = ncread('" + currentDirectory + randomFileName +
-                                    "_res.nc','dataMatrix');" + Environment.NewLine;
-                    matlabScript += "skyDataSunburnProfileDetectionMatrix = ncread('" + currentDirectory +
-                                    randomFileName +
-                                    "_SunburnProfileDetection.nc','dataMatrix');" + Environment.NewLine;
-                    matlabScript += "sunMarginDistanceDataMatrix = ncread('" + currentDirectory + randomFileName +
-                                    "_SunMarginDistance.nc','dataMatrix');" + Environment.NewLine;
-                    matlabScript += "decartDistributionSunburnMinimums = ncread('" + currentDirectory + randomFileName +
-                                    "_SunburnProfileMinimumsDecart.nc','dataMatrix');" + Environment.NewLine;
-                    matlabScript += "angleDistributionSunburnDetectionData = ncread('" + currentDirectory +
-                                    randomFileName +
-                                    "_SunburnProfileMinimums.nc','dataMatrix');" + Environment.NewLine;
-                    matlabScript += "angleDistributionSunburn = ncread('" + currentDirectory + randomFileName +
-                                    "_SunburnProfilePolar.nc','dataMatrix');" + Environment.NewLine;
-                    matlabScript += "dataToSubtract = ncread('" + currentDirectory + randomFileName +
-                                    "_TheDataToSubtract_plate.nc','dataMatrix');" + Environment.NewLine;
-                    matlabScript += "dataToSubtractApproximated = ncread('" + currentDirectory + randomFileName +
-                                    "_TheDataToSubtractApproximated.nc','dataMatrix');" + Environment.NewLine;
-                    matlabScript += "[rSpace, phiSpace, vals] = find(angleDistributionSunburnDetectionData);" +
-                                    Environment.NewLine;
-
-                    matlabScript += "fig = figure;" + Environment.NewLine;
-                    matlabScript += "set(fig,'units','normalized','outerposition',[0 0 1 1]);" + Environment.NewLine;
-                    matlabScript += "scatter(phiSpace, vals, 'bo', 'LineWidth', 2);" + Environment.NewLine;
-                    matlabScript +=
-                        "title('GrIx local minima distribution on angle around sunburn center', 'FontWeight','bold', 'FontUnits', 'normalized', 'FontSize', 0.03);" +
-                        Environment.NewLine;
-                    matlabScript +=
-                        "ylabel(gca, 'GrIx', 'FontWeight','bold', 'FontUnits', 'normalized', 'FontSize', 0.03);" +
-                        Environment.NewLine;
-                    matlabScript +=
-                        "xlabel(gca, '\\phi, the angle around sunburn center, rad', 'FontWeight','bold', 'FontUnits', 'normalized', 'FontSize', 0.03);" +
-                        Environment.NewLine;
-                    //matlabScript += "export_fig '" + currentDirectory + randomFileName + "_img01.pdf';" +
-                    //                Environment.NewLine;
-                    //matlabScript += "close(fig);" + Environment.NewLine;
-
-                    matlabScript += "fig = figure;" + Environment.NewLine;
-                    matlabScript += "set(fig,'units','normalized','outerposition',[0 0 1 1]);" + Environment.NewLine;
-                    matlabScript += "scatter(rSpace, vals, 'bo', 'LineWidth',2);" + Environment.NewLine;
-                    matlabScript +=
-                        "title('GrIx local minima distribution on distance to the sunburn margin', 'FontWeight','bold', 'FontUnits', 'normalized', 'FontSize', 0.03);" +
-                        Environment.NewLine;
-                    matlabScript +=
-                        "ylabel(gca, 'GrIx', 'FontWeight','bold', 'FontUnits', 'normalized', 'FontSize', 0.03);" +
-                        Environment.NewLine;
-                    matlabScript +=
-                        "xlabel(gca, 'r, distance to sunburn margin', 'FontWeight','bold', 'FontUnits', 'normalized', 'FontSize', 0.03);" +
-                        Environment.NewLine;
-                    //matlabScript += "export_fig '" + currentDirectory + randomFileName + "_img02.pdf';" +
-                    //                Environment.NewLine;
-                    //matlabScript += "close(fig);" + Environment.NewLine;
-
-                    matlabScript += "dataToSubtractApproximated(dataToSubtractApproximated == 0) = NaN;" +
-                                    Environment.NewLine;
-                    matlabScript += "fig = figure;" + Environment.NewLine;
-                    matlabScript += "set(fig,'units','normalized','outerposition',[0 0 1 1]);" + Environment.NewLine;
-                    matlabScript += "mesh(dataToSubtractApproximated);" + Environment.NewLine;
-                    matlabScript +=
-                        "title('GrIx values to subtract during the sunburn effect suppression', 'FontWeight','bold', 'FontUnits', 'normalized', 'FontSize', 0.03);" +
-                        Environment.NewLine;
-                    matlabScript +=
-                        "zlabel(gca, 'GrIx', 'FontWeight','bold', 'FontUnits', 'normalized', 'FontSize', 0.03);" +
-                        Environment.NewLine;
-                    matlabScript +=
-                        "ylabel(gca, 'x, px', 'FontWeight','bold', 'FontUnits', 'normalized', 'FontSize', 0.03);" +
-                        Environment.NewLine;
-                    matlabScript +=
-                        "xlabel(gca, 'y, px', 'FontWeight','bold', 'FontUnits', 'normalized', 'FontSize', 0.03);" +
-                        Environment.NewLine;
-                    //matlabScript += "export_fig '" + currentDirectory + randomFileName + "_img03.pdf';" +
-                    //                Environment.NewLine;
-                    //matlabScript += "close(fig);" + Environment.NewLine;
+                //    //int leftSunMargin = Convert.ToInt32(sunCenterPoint.X - sunRadius);
+                //    //int rightSunMargin = Convert.ToInt32(sunCenterPoint.X + sunRadius);
+                //    //int leftAverageSkyMargin = Convert.ToInt32(leftSunMargin - averageSkyDistance);
+                //    //int rightAverageSkyMargin = Convert.ToInt32(rightSunMargin + averageSkyDistance);
+                //    //int leftOneThirdToAverageSkyMargin = Convert.ToInt32(leftSunMargin - f * averageSkyDistance);
+                //    //int rightOneThirdToAverageSkyMargin = Convert.ToInt32(rightSunMargin + f * averageSkyDistance);
+                //    //double leftA = 1.0 - Math.Abs(theGradIndicativeValue) * leftSunMargin;
+                //    //double rightA = 1.0 + Math.Abs(theGradIndicativeValue) * rightSunMargin;
+                //    //int topSunMargin = Convert.ToInt32(sunCenterPoint.Y - sunRadius);
+                //    //int bottomSunMargin = Convert.ToInt32(sunCenterPoint.Y + sunRadius);
+                //    //int topAverageSkyMargin = Convert.ToInt32(topSunMargin - averageSkyDistance);
+                //    //int bottomAverageSkyMargin = Convert.ToInt32(bottomSunMargin + averageSkyDistance);
+                //    //int topOneThirdToAverageSkyMargin = Convert.ToInt32(topSunMargin - f * averageSkyDistance);
+                //    //int bottomOneThirdToAverageSkyMargin = Convert.ToInt32(bottomSunMargin + f * averageSkyDistance);
+                //    //double topA = 1.0 - Math.Abs(theGradIndicativeValue) * topSunMargin;
+                //    //double bottomA = 1.0 + Math.Abs(theGradIndicativeValue) * bottomSunMargin;
 
 
-                    matlabScript += "fig = figure;" + Environment.NewLine;
-                    matlabScript += "set(fig,'units','normalized','outerposition',[0 0 1 1]);" + Environment.NewLine;
-                    matlabScript += "mesh(angleDistributionSunburn);" + Environment.NewLine;
-                    matlabScript +=
-                        "title('GrIx minima, distribution using polar coordinates system', 'FontWeight','bold', 'FontUnits', 'normalized', 'FontSize', 0.03);" +
-                        Environment.NewLine;
-                    matlabScript +=
-                        "zlabel(gca, 'GrIx', 'FontWeight','bold', 'FontUnits', 'normalized', 'FontSize', 0.03);" +
-                        Environment.NewLine;
-                    matlabScript +=
-                        "ylabel(gca, 'r, distance to sunburn margin, px', 'FontWeight','bold', 'FontUnits', 'normalized', 'FontSize', 0.03);" +
-                        Environment.NewLine;
-                    matlabScript +=
-                        "xlabel(gca, '\\phi, the angle around sunburn center, rad', 'FontWeight','bold', 'FontUnits', 'normalized', 'FontSize', 0.03);" +
-                        Environment.NewLine;
-                    //matlabScript += "export_fig '" + currentDirectory + randomFileName + "_img04.pdf';" +
-                    //                Environment.NewLine;
-                    //matlabScript += "close(fig);" + Environment.NewLine;
+                //    string matlabScript = "clear;" + Environment.NewLine;
+                //    matlabScript += "origDataMatrix = ncread('" + currentDirectory + randomFileName +
+                //                    "_orig.nc','dataMatrix');" + Environment.NewLine;
+                //    matlabScript += "resultDataMatrix = ncread('" + currentDirectory + randomFileName +
+                //                    "_res.nc','dataMatrix');" + Environment.NewLine;
+                //    matlabScript += "skyDataSunburnProfileDetectionMatrix = ncread('" + currentDirectory +
+                //                    randomFileName +
+                //                    "_SunburnProfileDetection.nc','dataMatrix');" + Environment.NewLine;
+                //    matlabScript += "sunMarginDistanceDataMatrix = ncread('" + currentDirectory + randomFileName +
+                //                    "_SunMarginDistance.nc','dataMatrix');" + Environment.NewLine;
+                //    matlabScript += "decartDistributionSunburnMinimums = ncread('" + currentDirectory + randomFileName +
+                //                    "_SunburnProfileMinimumsDecart.nc','dataMatrix');" + Environment.NewLine;
+                //    matlabScript += "angleDistributionSunburnDetectionData = ncread('" + currentDirectory +
+                //                    randomFileName +
+                //                    "_SunburnProfileMinimums.nc','dataMatrix');" + Environment.NewLine;
+                //    matlabScript += "angleDistributionSunburn = ncread('" + currentDirectory + randomFileName +
+                //                    "_SunburnProfilePolar.nc','dataMatrix');" + Environment.NewLine;
+                //    matlabScript += "dataToSubtract = ncread('" + currentDirectory + randomFileName +
+                //                    "_TheDataToSubtract_plate.nc','dataMatrix');" + Environment.NewLine;
+                //    matlabScript += "dataToSubtractApproximated = ncread('" + currentDirectory + randomFileName +
+                //                    "_TheDataToSubtractApproximated.nc','dataMatrix');" + Environment.NewLine;
+                //    matlabScript += "[rSpace, phiSpace, vals] = find(angleDistributionSunburnDetectionData);" +
+                //                    Environment.NewLine;
 
-                    //matlabScript += "skyDataSunburnProfileDetectionMatrixPolar = ncread('" + currentDirectory + randomFileName +
-                    //                "_PolarSystemmedData.nc','dataMatrix');" + Environment.NewLine;
-                    matlabScript += "origDataVect = origDataMatrix(1:end," +
-                                    Convert.ToInt32(Math.Round(sunCenterPoint.Y, 0)) + ");" + Environment.NewLine;
-                    matlabScript += "resultDataVect = resultDataMatrix(1:end," +
-                                    Convert.ToInt32(Math.Round(sunCenterPoint.Y, 0)) + ");" + Environment.NewLine;
-                    matlabScript += "xSpace = 1:1:" + dmReversed.ColumnCount + ";" + Environment.NewLine;
-                    //matlabScript += "markersValues(xSpace) = " + averageSkyDataValue.ToString("e").Replace(",", ".") + ";" +
-                    //                Environment.NewLine;
-                    //matlabScript += "markersValues(xSpace <= " + leftAverageSkyMargin + ") = 0.0;" + Environment.NewLine;
-                    //matlabScript += "markersValues(xSpace >= " + rightAverageSkyMargin + ") = 0.0;" + Environment.NewLine;
-                    //matlabScript += "markersValues(xSpace == " + leftOneThirdToAverageSkyMargin + ") = 0.0;" + Environment.NewLine;
-                    //matlabScript += "markersValues(xSpace == " + rightOneThirdToAverageSkyMargin + ") = 0.0;" + Environment.NewLine;
-                    //matlabScript += "approxFunc1(xSpace) = " + leftA.ToString("e").Replace(",", ".") + " + " +
-                    //                Math.Abs(theGradIndicativeValue).ToString("e").Replace(",", ".") + " * xSpace;" +
-                    //                Environment.NewLine;
-                    //matlabScript += "approxFunc1(xSpace >= " + leftSunMargin + ") = 1.0;" + Environment.NewLine;
-                    //matlabScript += "approxFunc2(xSpace) = " + rightA.ToString("e").Replace(",", ".") + " - " +
-                    //                Math.Abs(theGradIndicativeValue).ToString("e").Replace(",", ".") + " * xSpace;" +
-                    //                Environment.NewLine;
-                    //matlabScript += "approxFunc2(xSpace <= " + rightSunMargin + ") = 1.0;" + Environment.NewLine;
-                    matlabScript += "fig = figure;" + Environment.NewLine;
-                    matlabScript += "set(fig,'units','normalized','outerposition',[0 0 1 1]);" + Environment.NewLine;
-                    //matlabScript +=
-                    //    "plot(xSpace, origDataVect, xSpace, resultDataVect, xSpace, markersValues, xSpace, approxFunc1, xSpace, approxFunc2);" +
-                    //    Environment.NewLine;
-                    matlabScript += "plot(xSpace, origDataVect, xSpace, resultDataVect);" + Environment.NewLine;
-                    matlabScript +=
-                        "title('GrIx values at the fixed X slice. Before and after sunburn suppression', 'FontWeight','bold', 'FontUnits', 'normalized', 'FontSize', 0.03);" +
-                        Environment.NewLine;
-                    matlabScript +=
-                        "xlabel(gca, 'y, px', 'FontWeight','bold', 'FontUnits', 'normalized', 'FontSize', 0.03);" +
-                        Environment.NewLine;
-                    matlabScript +=
-                        "ylabel(gca, 'GrIx value', 'FontWeight','bold', 'FontUnits', 'normalized', 'FontSize', 0.03);" +
-                        Environment.NewLine;
-                    //matlabScript += "export_fig '" + currentDirectory + randomFileName + "_img05.pdf';" +
-                    //                Environment.NewLine;
-                    //matlabScript += "close(fig);" + Environment.NewLine;
+                //    matlabScript += "fig = figure;" + Environment.NewLine;
+                //    matlabScript += "set(fig,'units','normalized','outerposition',[0 0 1 1]);" + Environment.NewLine;
+                //    matlabScript += "scatter(phiSpace, vals, 'bo', 'LineWidth', 2);" + Environment.NewLine;
+                //    matlabScript +=
+                //        "title('GrIx local minima distribution on angle around sunburn center', 'FontWeight','bold', 'FontUnits', 'normalized', 'FontSize', 0.03);" +
+                //        Environment.NewLine;
+                //    matlabScript +=
+                //        "ylabel(gca, 'GrIx', 'FontWeight','bold', 'FontUnits', 'normalized', 'FontSize', 0.03);" +
+                //        Environment.NewLine;
+                //    matlabScript +=
+                //        "xlabel(gca, '\\phi, the angle around sunburn center, rad', 'FontWeight','bold', 'FontUnits', 'normalized', 'FontSize', 0.03);" +
+                //        Environment.NewLine;
+                //    //matlabScript += "export_fig '" + currentDirectory + randomFileName + "_img01.pdf';" +
+                //    //                Environment.NewLine;
+                //    //matlabScript += "close(fig);" + Environment.NewLine;
 
-                    matlabScript += "origDataVectOrtho = origDataMatrix(" +
-                                    Convert.ToInt32(Math.Round(sunCenterPoint.X, 0)) + ", 1:end);" + Environment.NewLine;
-                    matlabScript += "resultDataVectOrtho = resultDataMatrix(" +
-                                    Convert.ToInt32(Math.Round(sunCenterPoint.X, 0)) + ", 1:end);" + Environment.NewLine;
-                    matlabScript += "xSpaceOrtho = 1:1:" + dmReversed.RowCount + ";" + Environment.NewLine;
-                    //matlabScript += "markersValuesOrtho(xSpaceOrtho) = " + averageSkyDataValue.ToString("e").Replace(",", ".") + ";" +
-                    //                Environment.NewLine;
-                    //matlabScript += "markersValuesOrtho(xSpaceOrtho <= " + topAverageSkyMargin + ") = 0.0;" + Environment.NewLine;
-                    //matlabScript += "markersValuesOrtho(xSpaceOrtho >= " + bottomAverageSkyMargin + ") = 0.0;" + Environment.NewLine;
-                    //matlabScript += "markersValuesOrtho(xSpaceOrtho == " + topOneThirdToAverageSkyMargin + ") = 0.0;" + Environment.NewLine;
-                    //matlabScript += "markersValuesOrtho(xSpaceOrtho == " + bottomOneThirdToAverageSkyMargin + ") = 0.0;" + Environment.NewLine;
-                    //matlabScript += "approxFunc3(xSpaceOrtho) = " + topA.ToString("e").Replace(",", ".") + " + " +
-                    //                Math.Abs(theGradIndicativeValue).ToString("e").Replace(",", ".") + " * xSpaceOrtho;" +
-                    //                Environment.NewLine;
-                    //matlabScript += "approxFunc3(xSpaceOrtho >= " + topSunMargin + ") = 1.0;" + Environment.NewLine;
-                    //matlabScript += "approxFunc4(xSpaceOrtho) = " + bottomA.ToString("e").Replace(",", ".") + " - " +
-                    //                Math.Abs(theGradIndicativeValue).ToString("e").Replace(",", ".") + " * xSpaceOrtho;" +
-                    //                Environment.NewLine;
-                    //matlabScript += "approxFunc4(xSpaceOrtho <= " + bottomSunMargin + ") = 1.0;" + Environment.NewLine;
-                    matlabScript += "fig = figure;" + Environment.NewLine;
-                    matlabScript += "set(fig,'units','normalized','outerposition',[0 0 1 1]);" + Environment.NewLine;
-                    //matlabScript +=
-                    //    "plot(xSpaceOrtho, origDataVectOrtho, xSpaceOrtho, resultDataVectOrtho, xSpaceOrtho, markersValuesOrtho, xSpaceOrtho, approxFunc3, xSpaceOrtho, approxFunc4);" +
-                    //    Environment.NewLine;
-                    matlabScript += "plot(xSpaceOrtho, origDataVectOrtho, xSpaceOrtho, resultDataVectOrtho);" +
-                                    Environment.NewLine;
-                    matlabScript +=
-                        "title('GrIx values at the fixed Y slice. Before and after sunburn suppression', 'FontWeight','bold', 'FontUnits', 'normalized', 'FontSize', 0.03);" +
-                        Environment.NewLine;
-                    matlabScript +=
-                        "xlabel(gca, 'x, px', 'FontWeight','bold', 'FontUnits', 'normalized', 'FontSize', 0.03);" +
-                        Environment.NewLine;
-                    matlabScript +=
-                        "ylabel(gca, 'GrIx value', 'FontWeight','bold', 'FontUnits', 'normalized', 'FontSize', 0.03);" +
-                        Environment.NewLine;
-                    //matlabScript += "export_fig '" + currentDirectory + randomFileName + "_img06.pdf';" +
-                    //                Environment.NewLine;
-                    //matlabScript += "close(fig);" + Environment.NewLine;
+                //    matlabScript += "fig = figure;" + Environment.NewLine;
+                //    matlabScript += "set(fig,'units','normalized','outerposition',[0 0 1 1]);" + Environment.NewLine;
+                //    matlabScript += "scatter(rSpace, vals, 'bo', 'LineWidth',2);" + Environment.NewLine;
+                //    matlabScript +=
+                //        "title('GrIx local minima distribution on distance to the sunburn margin', 'FontWeight','bold', 'FontUnits', 'normalized', 'FontSize', 0.03);" +
+                //        Environment.NewLine;
+                //    matlabScript +=
+                //        "ylabel(gca, 'GrIx', 'FontWeight','bold', 'FontUnits', 'normalized', 'FontSize', 0.03);" +
+                //        Environment.NewLine;
+                //    matlabScript +=
+                //        "xlabel(gca, 'r, distance to sunburn margin', 'FontWeight','bold', 'FontUnits', 'normalized', 'FontSize', 0.03);" +
+                //        Environment.NewLine;
+                //    //matlabScript += "export_fig '" + currentDirectory + randomFileName + "_img02.pdf';" +
+                //    //                Environment.NewLine;
+                //    //matlabScript += "close(fig);" + Environment.NewLine;
 
-                    //matlabScript += "multSpace = 1:1:" + Convert.ToInt32(averageSkyDistance) + ";" + Environment.NewLine;
-                    //matlabScript += "multFunc(multSpace) = 1.0 + " + p.ToString("e").Replace(",", ".") + " * multSpace;" + Environment.NewLine;
-                    //matlabScript += "multFunc(multSpace > " + Convert.ToInt32(averageSkyDistance * f) + ") = 0.0;" + Environment.NewLine;
-                    //matlabScript += "multFunc2(multSpace) = " + H.ToString("e").Replace(",", ".") + " ./ (" +
-                    //                k.ToString("e").Replace(",", ".") + " * multSpace);" + Environment.NewLine;
-                    //matlabScript += "multFunc2(multSpace < " + Convert.ToInt32(averageSkyDistance * f) + ") = 0.0;" + Environment.NewLine;
-                    //matlabScript += "figure;" + Environment.NewLine;
-                    //matlabScript += "plot(multSpace, multFunc, multSpace, multFunc2);" + Environment.NewLine;
-                    matlabScript +=
-                        "origSunburnProfileSkyDataMatrixReshaped = reshape(skyDataSunburnProfileDetectionMatrix, 1, []);" +
-                        Environment.NewLine;
-                    matlabScript +=
-                        "sunMarginDistanceDataMatrixReshaped = reshape(sunMarginDistanceDataMatrix, 1, []);" +
-                        Environment.NewLine;
-
-                    matlabScript += "fig = figure;" + Environment.NewLine;
-                    matlabScript += "set(fig,'units','normalized','outerposition',[0 0 1 1]);" + Environment.NewLine;
-                    matlabScript += "origSkyDataMatrixReshaped = reshape(origDataMatrix, 1, []);" + Environment.NewLine;
-                    matlabScript += "scatter(sunMarginDistanceDataMatrixReshaped, origSkyDataMatrixReshaped);" +
-                                    Environment.NewLine;
-                    matlabScript +=
-                        "title('Original GrIx distribution on distance to sunburn margin', 'FontWeight','bold', 'FontUnits', 'normalized', 'FontSize', 0.03);" +
-                        Environment.NewLine;
-                    matlabScript +=
-                        "xlabel(gca, 'Distance to sunburn margin, px', 'FontWeight','bold', 'FontUnits', 'normalized', 'FontSize', 0.03);" +
-                        Environment.NewLine;
-                    matlabScript +=
-                        "ylabel(gca, 'GrIx value', 'FontWeight','bold', 'FontUnits', 'normalized', 'FontSize', 0.03);" +
-                        Environment.NewLine;
-                    //matlabScript += "export_fig '" + currentDirectory + randomFileName + "_img07.pdf';" +
-                    //                Environment.NewLine;
-                    //matlabScript += "close(fig);" + Environment.NewLine;
-
-                    matlabScript += "xMin = min(sunMarginDistanceDataMatrixReshaped);" + Environment.NewLine;
-                    matlabScript += "xMax = max(sunMarginDistanceDataMatrixReshaped);" + Environment.NewLine;
-                    matlabScript += "xq = xMin:(xMax-xMin)/100:xMax;" + Environment.NewLine;
-                    matlabScript += "i = (origSunburnProfileSkyDataMatrixReshaped > 0.0);" + Environment.NewLine;
-                    matlabScript +=
-                        "origSunburnProfileSkyDataMatrixReshaped = origSunburnProfileSkyDataMatrixReshaped(1, i);" +
-                        Environment.NewLine;
-                    matlabScript += "sunMarginDistanceDataMatrixReshaped = sunMarginDistanceDataMatrixReshaped(1, i);" +
-                                    Environment.NewLine;
+                //    matlabScript += "dataToSubtractApproximated(dataToSubtractApproximated == 0) = NaN;" +
+                //                    Environment.NewLine;
+                //    matlabScript += "fig = figure;" + Environment.NewLine;
+                //    matlabScript += "set(fig,'units','normalized','outerposition',[0 0 1 1]);" + Environment.NewLine;
+                //    matlabScript += "mesh(dataToSubtractApproximated);" + Environment.NewLine;
+                //    matlabScript +=
+                //        "title('GrIx values to subtract during the sunburn effect suppression', 'FontWeight','bold', 'FontUnits', 'normalized', 'FontSize', 0.03);" +
+                //        Environment.NewLine;
+                //    matlabScript +=
+                //        "zlabel(gca, 'GrIx', 'FontWeight','bold', 'FontUnits', 'normalized', 'FontSize', 0.03);" +
+                //        Environment.NewLine;
+                //    matlabScript +=
+                //        "ylabel(gca, 'x, px', 'FontWeight','bold', 'FontUnits', 'normalized', 'FontSize', 0.03);" +
+                //        Environment.NewLine;
+                //    matlabScript +=
+                //        "xlabel(gca, 'y, px', 'FontWeight','bold', 'FontUnits', 'normalized', 'FontSize', 0.03);" +
+                //        Environment.NewLine;
+                //    //matlabScript += "export_fig '" + currentDirectory + randomFileName + "_img03.pdf';" +
+                //    //                Environment.NewLine;
+                //    //matlabScript += "close(fig);" + Environment.NewLine;
 
 
-                    matlabScript += "fig = figure;" + Environment.NewLine;
-                    matlabScript += "set(fig,'units','normalized','outerposition',[0 0 1 1]);" + Environment.NewLine;
-                    matlabScript += "origSkyDataMatrixReshaped = reshape(origDataMatrix, 1, []);" + Environment.NewLine;
-                    matlabScript +=
-                        "scatter(sunMarginDistanceDataMatrixReshaped, origSunburnProfileSkyDataMatrixReshaped);" +
-                        Environment.NewLine;
-                    matlabScript +=
-                        "title('Original GrIx distribution on distance to sunburn margin', 'FontWeight','bold', 'FontUnits', 'normalized', 'FontSize', 0.03);" +
-                        Environment.NewLine;
-                    matlabScript +=
-                        "xlabel(gca, 'Distance to sunburn margin, px', 'FontWeight','bold', 'FontUnits', 'normalized', 'FontSize', 0.03);" +
-                        Environment.NewLine;
-                    matlabScript +=
-                        "ylabel(gca, 'GrIx value', 'FontWeight','bold', 'FontUnits', 'normalized', 'FontSize', 0.03);" +
-                        Environment.NewLine;
-                    //matlabScript += "export_fig '" + currentDirectory + randomFileName + "_img08.pdf';" +
-                    //                Environment.NewLine;
-                    //matlabScript += "close(fig);" + Environment.NewLine;
+                //    matlabScript += "fig = figure;" + Environment.NewLine;
+                //    matlabScript += "set(fig,'units','normalized','outerposition',[0 0 1 1]);" + Environment.NewLine;
+                //    matlabScript += "mesh(angleDistributionSunburn);" + Environment.NewLine;
+                //    matlabScript +=
+                //        "title('GrIx minima, distribution using polar coordinates system', 'FontWeight','bold', 'FontUnits', 'normalized', 'FontSize', 0.03);" +
+                //        Environment.NewLine;
+                //    matlabScript +=
+                //        "zlabel(gca, 'GrIx', 'FontWeight','bold', 'FontUnits', 'normalized', 'FontSize', 0.03);" +
+                //        Environment.NewLine;
+                //    matlabScript +=
+                //        "ylabel(gca, 'r, distance to sunburn margin, px', 'FontWeight','bold', 'FontUnits', 'normalized', 'FontSize', 0.03);" +
+                //        Environment.NewLine;
+                //    matlabScript +=
+                //        "xlabel(gca, '\\phi, the angle around sunburn center, rad', 'FontWeight','bold', 'FontUnits', 'normalized', 'FontSize', 0.03);" +
+                //        Environment.NewLine;
+                //    //matlabScript += "export_fig '" + currentDirectory + randomFileName + "_img04.pdf';" +
+                //    //                Environment.NewLine;
+                //    //matlabScript += "close(fig);" + Environment.NewLine;
+
+                //    //matlabScript += "skyDataSunburnProfileDetectionMatrixPolar = ncread('" + currentDirectory + randomFileName +
+                //    //                "_PolarSystemmedData.nc','dataMatrix');" + Environment.NewLine;
+                //    matlabScript += "origDataVect = origDataMatrix(1:end," +
+                //                    Convert.ToInt32(Math.Round(sunCenterPoint.Y, 0)) + ");" + Environment.NewLine;
+                //    matlabScript += "resultDataVect = resultDataMatrix(1:end," +
+                //                    Convert.ToInt32(Math.Round(sunCenterPoint.Y, 0)) + ");" + Environment.NewLine;
+                //    matlabScript += "xSpace = 1:1:" + dmReversed.ColumnCount + ";" + Environment.NewLine;
+                //    //matlabScript += "markersValues(xSpace) = " + averageSkyDataValue.ToString("e").Replace(",", ".") + ";" +
+                //    //                Environment.NewLine;
+                //    //matlabScript += "markersValues(xSpace <= " + leftAverageSkyMargin + ") = 0.0;" + Environment.NewLine;
+                //    //matlabScript += "markersValues(xSpace >= " + rightAverageSkyMargin + ") = 0.0;" + Environment.NewLine;
+                //    //matlabScript += "markersValues(xSpace == " + leftOneThirdToAverageSkyMargin + ") = 0.0;" + Environment.NewLine;
+                //    //matlabScript += "markersValues(xSpace == " + rightOneThirdToAverageSkyMargin + ") = 0.0;" + Environment.NewLine;
+                //    //matlabScript += "approxFunc1(xSpace) = " + leftA.ToString("e").Replace(",", ".") + " + " +
+                //    //                Math.Abs(theGradIndicativeValue).ToString("e").Replace(",", ".") + " * xSpace;" +
+                //    //                Environment.NewLine;
+                //    //matlabScript += "approxFunc1(xSpace >= " + leftSunMargin + ") = 1.0;" + Environment.NewLine;
+                //    //matlabScript += "approxFunc2(xSpace) = " + rightA.ToString("e").Replace(",", ".") + " - " +
+                //    //                Math.Abs(theGradIndicativeValue).ToString("e").Replace(",", ".") + " * xSpace;" +
+                //    //                Environment.NewLine;
+                //    //matlabScript += "approxFunc2(xSpace <= " + rightSunMargin + ") = 1.0;" + Environment.NewLine;
+                //    matlabScript += "fig = figure;" + Environment.NewLine;
+                //    matlabScript += "set(fig,'units','normalized','outerposition',[0 0 1 1]);" + Environment.NewLine;
+                //    //matlabScript +=
+                //    //    "plot(xSpace, origDataVect, xSpace, resultDataVect, xSpace, markersValues, xSpace, approxFunc1, xSpace, approxFunc2);" +
+                //    //    Environment.NewLine;
+                //    matlabScript += "plot(xSpace, origDataVect, xSpace, resultDataVect);" + Environment.NewLine;
+                //    matlabScript +=
+                //        "title('GrIx values at the fixed X slice. Before and after sunburn suppression', 'FontWeight','bold', 'FontUnits', 'normalized', 'FontSize', 0.03);" +
+                //        Environment.NewLine;
+                //    matlabScript +=
+                //        "xlabel(gca, 'y, px', 'FontWeight','bold', 'FontUnits', 'normalized', 'FontSize', 0.03);" +
+                //        Environment.NewLine;
+                //    matlabScript +=
+                //        "ylabel(gca, 'GrIx value', 'FontWeight','bold', 'FontUnits', 'normalized', 'FontSize', 0.03);" +
+                //        Environment.NewLine;
+                //    //matlabScript += "export_fig '" + currentDirectory + randomFileName + "_img05.pdf';" +
+                //    //                Environment.NewLine;
+                //    //matlabScript += "close(fig);" + Environment.NewLine;
+
+                //    matlabScript += "origDataVectOrtho = origDataMatrix(" +
+                //                    Convert.ToInt32(Math.Round(sunCenterPoint.X, 0)) + ", 1:end);" + Environment.NewLine;
+                //    matlabScript += "resultDataVectOrtho = resultDataMatrix(" +
+                //                    Convert.ToInt32(Math.Round(sunCenterPoint.X, 0)) + ", 1:end);" + Environment.NewLine;
+                //    matlabScript += "xSpaceOrtho = 1:1:" + dmReversed.RowCount + ";" + Environment.NewLine;
+                //    //matlabScript += "markersValuesOrtho(xSpaceOrtho) = " + averageSkyDataValue.ToString("e").Replace(",", ".") + ";" +
+                //    //                Environment.NewLine;
+                //    //matlabScript += "markersValuesOrtho(xSpaceOrtho <= " + topAverageSkyMargin + ") = 0.0;" + Environment.NewLine;
+                //    //matlabScript += "markersValuesOrtho(xSpaceOrtho >= " + bottomAverageSkyMargin + ") = 0.0;" + Environment.NewLine;
+                //    //matlabScript += "markersValuesOrtho(xSpaceOrtho == " + topOneThirdToAverageSkyMargin + ") = 0.0;" + Environment.NewLine;
+                //    //matlabScript += "markersValuesOrtho(xSpaceOrtho == " + bottomOneThirdToAverageSkyMargin + ") = 0.0;" + Environment.NewLine;
+                //    //matlabScript += "approxFunc3(xSpaceOrtho) = " + topA.ToString("e").Replace(",", ".") + " + " +
+                //    //                Math.Abs(theGradIndicativeValue).ToString("e").Replace(",", ".") + " * xSpaceOrtho;" +
+                //    //                Environment.NewLine;
+                //    //matlabScript += "approxFunc3(xSpaceOrtho >= " + topSunMargin + ") = 1.0;" + Environment.NewLine;
+                //    //matlabScript += "approxFunc4(xSpaceOrtho) = " + bottomA.ToString("e").Replace(",", ".") + " - " +
+                //    //                Math.Abs(theGradIndicativeValue).ToString("e").Replace(",", ".") + " * xSpaceOrtho;" +
+                //    //                Environment.NewLine;
+                //    //matlabScript += "approxFunc4(xSpaceOrtho <= " + bottomSunMargin + ") = 1.0;" + Environment.NewLine;
+                //    matlabScript += "fig = figure;" + Environment.NewLine;
+                //    matlabScript += "set(fig,'units','normalized','outerposition',[0 0 1 1]);" + Environment.NewLine;
+                //    //matlabScript +=
+                //    //    "plot(xSpaceOrtho, origDataVectOrtho, xSpaceOrtho, resultDataVectOrtho, xSpaceOrtho, markersValuesOrtho, xSpaceOrtho, approxFunc3, xSpaceOrtho, approxFunc4);" +
+                //    //    Environment.NewLine;
+                //    matlabScript += "plot(xSpaceOrtho, origDataVectOrtho, xSpaceOrtho, resultDataVectOrtho);" +
+                //                    Environment.NewLine;
+                //    matlabScript +=
+                //        "title('GrIx values at the fixed Y slice. Before and after sunburn suppression', 'FontWeight','bold', 'FontUnits', 'normalized', 'FontSize', 0.03);" +
+                //        Environment.NewLine;
+                //    matlabScript +=
+                //        "xlabel(gca, 'x, px', 'FontWeight','bold', 'FontUnits', 'normalized', 'FontSize', 0.03);" +
+                //        Environment.NewLine;
+                //    matlabScript +=
+                //        "ylabel(gca, 'GrIx value', 'FontWeight','bold', 'FontUnits', 'normalized', 'FontSize', 0.03);" +
+                //        Environment.NewLine;
+                //    //matlabScript += "export_fig '" + currentDirectory + randomFileName + "_img06.pdf';" +
+                //    //                Environment.NewLine;
+                //    //matlabScript += "close(fig);" + Environment.NewLine;
+
+                //    //matlabScript += "multSpace = 1:1:" + Convert.ToInt32(averageSkyDistance) + ";" + Environment.NewLine;
+                //    //matlabScript += "multFunc(multSpace) = 1.0 + " + p.ToString("e").Replace(",", ".") + " * multSpace;" + Environment.NewLine;
+                //    //matlabScript += "multFunc(multSpace > " + Convert.ToInt32(averageSkyDistance * f) + ") = 0.0;" + Environment.NewLine;
+                //    //matlabScript += "multFunc2(multSpace) = " + H.ToString("e").Replace(",", ".") + " ./ (" +
+                //    //                k.ToString("e").Replace(",", ".") + " * multSpace);" + Environment.NewLine;
+                //    //matlabScript += "multFunc2(multSpace < " + Convert.ToInt32(averageSkyDistance * f) + ") = 0.0;" + Environment.NewLine;
+                //    //matlabScript += "figure;" + Environment.NewLine;
+                //    //matlabScript += "plot(multSpace, multFunc, multSpace, multFunc2);" + Environment.NewLine;
+                //    matlabScript +=
+                //        "origSunburnProfileSkyDataMatrixReshaped = reshape(skyDataSunburnProfileDetectionMatrix, 1, []);" +
+                //        Environment.NewLine;
+                //    matlabScript +=
+                //        "sunMarginDistanceDataMatrixReshaped = reshape(sunMarginDistanceDataMatrix, 1, []);" +
+                //        Environment.NewLine;
+
+                //    matlabScript += "fig = figure;" + Environment.NewLine;
+                //    matlabScript += "set(fig,'units','normalized','outerposition',[0 0 1 1]);" + Environment.NewLine;
+                //    matlabScript += "origSkyDataMatrixReshaped = reshape(origDataMatrix, 1, []);" + Environment.NewLine;
+                //    matlabScript += "scatter(sunMarginDistanceDataMatrixReshaped, origSkyDataMatrixReshaped);" +
+                //                    Environment.NewLine;
+                //    matlabScript +=
+                //        "title('Original GrIx distribution on distance to sunburn margin', 'FontWeight','bold', 'FontUnits', 'normalized', 'FontSize', 0.03);" +
+                //        Environment.NewLine;
+                //    matlabScript +=
+                //        "xlabel(gca, 'Distance to sunburn margin, px', 'FontWeight','bold', 'FontUnits', 'normalized', 'FontSize', 0.03);" +
+                //        Environment.NewLine;
+                //    matlabScript +=
+                //        "ylabel(gca, 'GrIx value', 'FontWeight','bold', 'FontUnits', 'normalized', 'FontSize', 0.03);" +
+                //        Environment.NewLine;
+                //    //matlabScript += "export_fig '" + currentDirectory + randomFileName + "_img07.pdf';" +
+                //    //                Environment.NewLine;
+                //    //matlabScript += "close(fig);" + Environment.NewLine;
+
+                //    matlabScript += "xMin = min(sunMarginDistanceDataMatrixReshaped);" + Environment.NewLine;
+                //    matlabScript += "xMax = max(sunMarginDistanceDataMatrixReshaped);" + Environment.NewLine;
+                //    matlabScript += "xq = xMin:(xMax-xMin)/100:xMax;" + Environment.NewLine;
+                //    matlabScript += "i = (origSunburnProfileSkyDataMatrixReshaped > 0.0);" + Environment.NewLine;
+                //    matlabScript +=
+                //        "origSunburnProfileSkyDataMatrixReshaped = origSunburnProfileSkyDataMatrixReshaped(1, i);" +
+                //        Environment.NewLine;
+                //    matlabScript += "sunMarginDistanceDataMatrixReshaped = sunMarginDistanceDataMatrixReshaped(1, i);" +
+                //                    Environment.NewLine;
 
 
-                    matlabScript += "csvdata = importdata('" + currentDirectory + randomFileName +
-                                    "_dataDistribution.csv', ';');" + Environment.NewLine;
-                    matlabScript += "distributionDataX = csvdata(:,1);" + Environment.NewLine;
-                    matlabScript += "distributionData = csvdata(:,2);" + Environment.NewLine;
-                    //matlabScript += "interpolatedFuncMLkoeffs = polyfit(distributionDataX, distributionData, 5);" +
-                    //                Environment.NewLine;
-                    //matlabScript += "interpolatedFuncML = polyval(interpolatedFuncMLkoeffs, distributionDataX);" + Environment.NewLine;
-                    //matlabScript += "" + Environment.NewLine;
-                    string matlabSubstr = "";
-                    for (int i = 0; i <= polynomeOrder; i++)
-                    {
-                        int l = polynomeOrder - i;
-                        matlabSubstr += approxPolyKoeffs[l].ToString("e").Replace(",", ".");
-                        if (l > 0) matlabSubstr += ",";
-                    }
-                    matlabScript += "interpolatedFuncKoeffs = [" + matlabSubstr + "];" + Environment.NewLine;
+                //    matlabScript += "fig = figure;" + Environment.NewLine;
+                //    matlabScript += "set(fig,'units','normalized','outerposition',[0 0 1 1]);" + Environment.NewLine;
+                //    matlabScript += "origSkyDataMatrixReshaped = reshape(origDataMatrix, 1, []);" + Environment.NewLine;
+                //    matlabScript +=
+                //        "scatter(sunMarginDistanceDataMatrixReshaped, origSunburnProfileSkyDataMatrixReshaped);" +
+                //        Environment.NewLine;
+                //    matlabScript +=
+                //        "title('Original GrIx distribution on distance to sunburn margin', 'FontWeight','bold', 'FontUnits', 'normalized', 'FontSize', 0.03);" +
+                //        Environment.NewLine;
+                //    matlabScript +=
+                //        "xlabel(gca, 'Distance to sunburn margin, px', 'FontWeight','bold', 'FontUnits', 'normalized', 'FontSize', 0.03);" +
+                //        Environment.NewLine;
+                //    matlabScript +=
+                //        "ylabel(gca, 'GrIx value', 'FontWeight','bold', 'FontUnits', 'normalized', 'FontSize', 0.03);" +
+                //        Environment.NewLine;
+                //    //matlabScript += "export_fig '" + currentDirectory + randomFileName + "_img08.pdf';" +
+                //    //                Environment.NewLine;
+                //    //matlabScript += "close(fig);" + Environment.NewLine;
 
-                    matlabScript += "interpolatedFunc = polyval(interpolatedFuncKoeffs, distributionDataX);;" +
-                                    Environment.NewLine;
 
-                    matlabScript += "fig = figure;" + Environment.NewLine;
-                    matlabScript += "set(fig,'units','normalized','outerposition',[0 0 1 1]);" + Environment.NewLine;
-                    //matlabScript += "scatter(sunMarginDistanceDataMatrixReshaped, origSunburnProfileSkyDataMatrixReshaped, 'x');" + Environment.NewLine;
-                    matlabScript += "hold on;" + Environment.NewLine;
-                    matlabScript += "plot(distributionDataX, interpolatedFunc, 'g', 'LineWidth', 3);" +
-                                    Environment.NewLine;
-                    matlabScript += "plot(distributionDataX, distributionData, 'r', 'LineWidth', 3);" +
-                                    Environment.NewLine;
-                    //matlabScript += "plot(distributionDataX, interpolatedFuncML, 'y', 'LineWidth', 3);" + Environment.NewLine;
-                    matlabScript += "hold off;" + Environment.NewLine;
-                    matlabScript +=
-                        "title('GrIx minima distribution on distance to sunburn margin. With approximation function.', 'FontWeight','bold', 'FontUnits', 'normalized', 'FontSize', 0.03);" +
-                        Environment.NewLine;
-                    matlabScript +=
-                        "xlabel(gca, 'Distance to sunburn margin, px', 'FontWeight','bold', 'FontUnits', 'normalized', 'FontSize', 0.03);" +
-                        Environment.NewLine;
-                    matlabScript +=
-                        "ylabel(gca, 'GrIx value', 'FontWeight','bold', 'FontUnits', 'normalized', 'FontSize', 0.03);" +
-                        Environment.NewLine;
-                    //matlabScript += "export_fig '" + currentDirectory + randomFileName + "_img09.pdf';" +
-                    //                Environment.NewLine;
-                    //matlabScript += "close(fig);" + Environment.NewLine;
+                //    matlabScript += "csvdata = importdata('" + currentDirectory + randomFileName +
+                //                    "_dataDistribution.csv', ';');" + Environment.NewLine;
+                //    matlabScript += "distributionDataX = csvdata(:,1);" + Environment.NewLine;
+                //    matlabScript += "distributionData = csvdata(:,2);" + Environment.NewLine;
+                //    //matlabScript += "interpolatedFuncMLkoeffs = polyfit(distributionDataX, distributionData, 5);" +
+                //    //                Environment.NewLine;
+                //    //matlabScript += "interpolatedFuncML = polyval(interpolatedFuncMLkoeffs, distributionDataX);" + Environment.NewLine;
+                //    //matlabScript += "" + Environment.NewLine;
+                //    string matlabSubstr = "";
+                //    for (int i = 0; i <= polynomeOrder; i++)
+                //    {
+                //        int l = polynomeOrder - i;
+                //        matlabSubstr += approxPolyKoeffs[l].ToString("e").Replace(",", ".");
+                //        if (l > 0) matlabSubstr += ",";
+                //    }
+                //    matlabScript += "interpolatedFuncKoeffs = [" + matlabSubstr + "];" + Environment.NewLine;
 
-                    //matlabScript += "decartDistributionSunburnMinimums(decartDistributionSunburnMinimums == 0) = NaN;" + Environment.NewLine;
-                    //matlabScript += "figure;" + Environment.NewLine;
-                    //matlabScript += "mesh(decartDistributionSunburnMinimums);" + Environment.NewLine;
+                //    matlabScript += "interpolatedFunc = polyval(interpolatedFuncKoeffs, distributionDataX);;" +
+                //                    Environment.NewLine;
 
-                    #region // УСТАРЕЛО побочные вычисления, не используется
-                    //DenseMatrix dmTestReversedInsideSkyCircle = (DenseMatrix)dmReversed.Clone();
-                    //dmTestReversedInsideSkyCircle.MapIndexedInplace(new Func<int, int, double, double>((row, column, val) =>
-                    //{
-                    //    double currDist = dmDistanceToSunMargin[row, column];
-                    //    if ((currDist >= averageSkyDistance) || (currDist == 0.0d) || (dmMask[row, column] == 0.0d))
-                    //        return 0.0d;
-                    //    else return val;
-                    //}));
-                    //double dataMinValueInsideSkyCircle = dmTestReversedInsideSkyCircle.Values.Min();
-                    //double dataMaxValueInsideSkyCircle = dmTestReversedInsideSkyCircle.Values.Max();
-                    #endregion // УСТАРЕЛО побочные вычисления, не используется
+                //    matlabScript += "fig = figure;" + Environment.NewLine;
+                //    matlabScript += "set(fig,'units','normalized','outerposition',[0 0 1 1]);" + Environment.NewLine;
+                //    //matlabScript += "scatter(sunMarginDistanceDataMatrixReshaped, origSunburnProfileSkyDataMatrixReshaped, 'x');" + Environment.NewLine;
+                //    matlabScript += "hold on;" + Environment.NewLine;
+                //    matlabScript += "plot(distributionDataX, interpolatedFunc, 'g', 'LineWidth', 3);" +
+                //                    Environment.NewLine;
+                //    matlabScript += "plot(distributionDataX, distributionData, 'r', 'LineWidth', 3);" +
+                //                    Environment.NewLine;
+                //    //matlabScript += "plot(distributionDataX, interpolatedFuncML, 'y', 'LineWidth', 3);" + Environment.NewLine;
+                //    matlabScript += "hold off;" + Environment.NewLine;
+                //    matlabScript +=
+                //        "title('GrIx minima distribution on distance to sunburn margin. With approximation function.', 'FontWeight','bold', 'FontUnits', 'normalized', 'FontSize', 0.03);" +
+                //        Environment.NewLine;
+                //    matlabScript +=
+                //        "xlabel(gca, 'Distance to sunburn margin, px', 'FontWeight','bold', 'FontUnits', 'normalized', 'FontSize', 0.03);" +
+                //        Environment.NewLine;
+                //    matlabScript +=
+                //        "ylabel(gca, 'GrIx value', 'FontWeight','bold', 'FontUnits', 'normalized', 'FontSize', 0.03);" +
+                //        Environment.NewLine;
+                //    //matlabScript += "export_fig '" + currentDirectory + randomFileName + "_img09.pdf';" +
+                //    //                Environment.NewLine;
+                //    //matlabScript += "close(fig);" + Environment.NewLine;
 
-                    ServiceTools.logToTextFile(currentDirectory + randomFileName + "_MatlabScript.m", matlabScript,
-                                            false);
+                //    //matlabScript += "decartDistributionSunburnMinimums(decartDistributionSunburnMinimums == 0) = NaN;" + Environment.NewLine;
+                //    //matlabScript += "figure;" + Environment.NewLine;
+                //    //matlabScript += "mesh(decartDistributionSunburnMinimums);" + Environment.NewLine;
 
-                }
+                //    #region // УСТАРЕЛО побочные вычисления, не используется
+                //    //DenseMatrix dmTestReversedInsideSkyCircle = (DenseMatrix)dmReversed.Clone();
+                //    //dmTestReversedInsideSkyCircle.MapIndexedInplace(new Func<int, int, double, double>((row, column, val) =>
+                //    //{
+                //    //    double currDist = dmDistanceToSunMargin[row, column];
+                //    //    if ((currDist >= averageSkyDistance) || (currDist == 0.0d) || (dmMask[row, column] == 0.0d))
+                //    //        return 0.0d;
+                //    //    else return val;
+                //    //}));
+                //    //double dataMinValueInsideSkyCircle = dmTestReversedInsideSkyCircle.Values.Min();
+                //    //double dataMaxValueInsideSkyCircle = dmTestReversedInsideSkyCircle.Values.Max();
+                //    #endregion // УСТАРЕЛО побочные вычисления, не используется
 
-                #endregion данные и Matlab-скрипт для вывода данных в горизонтальном разрезе через центр солнца
+                //    ServiceTools.logToTextFile(currentDirectory + randomFileName + "_MatlabScript.m", matlabScript,
+                //                            false);
+
+                //}
+                #endregion // данные и Matlab-скрипт для визуализации
+
+                //#endregion данные и Matlab-скрипт для вывода данных в горизонтальном разрезе через центр солнца
 
                 //dmReversed.MapInplace(new Func<double, double>(val => val - dataMinValueInsideSkyCircle - 1.0d));
 
@@ -1751,31 +2096,50 @@ namespace SkyImagesAnalyzerLibraries
                     ////restoredDataForm.Dispose();
                     #endregion //
 
-                    dmDataToSubtract.SaveNetCDFdataMatrix(currentDirectory + randomFileName +
-                                                          "_TheDataToSubtractApproximated.nc");
-                    dmReversed.SaveNetCDFdataMatrix(currentDirectory + randomFileName + "_res.nc");
+                    dmDataToSubtract3rdOrder.SaveNetCDFdataMatrix(currentDirectory + randomFileName +
+                                                          "_TheDataToSubtract-3rdOrder-Approximated.nc");
+                    dmReversed3rdOrder.SaveNetCDFdataMatrix(currentDirectory + randomFileName + "_res3rdOrder.nc");
+                    dmDataToSubtract6thOrder.SaveNetCDFdataMatrix(currentDirectory + randomFileName +
+                                                          "_TheDataToSubtract-6thOrder-Approximated.nc");
+                    dmReversed3rdOrder.SaveNetCDFdataMatrix(currentDirectory + randomFileName + "_res-6thOrder.nc");
                     dmProcessingData.SaveNetCDFdataMatrix(currentDirectory + randomFileName + "_orig.nc");
                 }
 
                 BGWorkerReport("формирование изображений для визуализации");
 
                 cloudSkySeparationValue = theStdDevMarginValueDefiningSkyCloudSeparation_SunSuppressed;
-                //cloudSkySeparationValue = 0.2657d - 0.343d * minDataValue;
 
                 ColorScheme skyCloudColorScheme =
                     ColorScheme.InversedBinaryCloudSkyColorScheme(
-                        cloudSkySeparationValue, dmReversed.Values.Min(),
-                        dmReversed.Values.Max());
-                ColorSchemeRuler skyCloudRuler = new ColorSchemeRuler(skyCloudColorScheme, dmReversed.Values.Min(), dmReversed.Values.Max());
+                        cloudSkySeparationValue, Math.Min(dmReversed6thOrder.Values.Min(), dmReversed3rdOrder.Values.Min()),
+                        Math.Max(dmReversed6thOrder.Values.Max(), dmReversed3rdOrder.Values.Max()));
+                //ColorSchemeRuler skyCloudRuler = new ColorSchemeRuler(skyCloudColorScheme,
+                //    dmReversed6thOrder.Values.Min(), dmReversed6thOrder.Values.Max());
 
-                Image<Bgr, Byte> previewImage = ImageProcessing.evalResultColoredWithFixedDataBounds(dmReversed, maskImage, skyCloudColorScheme, dmReversed.Values.Min(), dmReversed.Values.Max());
+                Image<Bgr, Byte> previewImage6thOrder = ImageProcessing.evalResultColoredWithFixedDataBounds(
+                    dmReversed6thOrder, maskImage, skyCloudColorScheme, dmReversed6thOrder.Values.Min(),
+                    dmReversed6thOrder.Values.Max());
+                previewImage6thOrder.Save(currentDirectory + randomFileName + "-result-6thOrder.jpg");
+                Image<Bgr, Byte> previewImage3rdOrder = ImageProcessing.evalResultColoredWithFixedDataBounds(
+                    dmReversed3rdOrder, maskImage, skyCloudColorScheme, dmReversed3rdOrder.Values.Min(),
+                    dmReversed3rdOrder.Values.Max());
+                previewImage3rdOrder.Save(currentDirectory + randomFileName + "-result-3rdOrder.jpg");
 
-                cloudCounter = previewImage.CountNonzero()[1];
+
+                cloudCounter = previewImage6thOrder.CountNonzero()[1];
                 skyCounter = maskImage.CountNonzero()[0] - cloudCounter;
                 CloudCover = (double)cloudCounter / (double)(skyCounter + cloudCounter);
 
-                dmSkyIndexData = dmReversed;
-                localPreviewBitmap = previewImage.Bitmap;
+                int cloudCounter3 = previewImage3rdOrder.CountNonzero()[1];
+                int skyCounter3 = maskImage.CountNonzero()[0] - cloudCounter;
+                double CloudCover3 = (double)cloudCounter3 / (double)(skyCounter3 + cloudCounter3);
+
+                string strResult = "3rd order approx: cloud cover = " + CloudCover3.ToString() + Environment.NewLine;
+                strResult += "6th order approx: cloud cover = " + CloudCover.ToString() + Environment.NewLine;
+                ServiceTools.logToTextFile(currentDirectory + randomFileName + "-results.txt", strResult, true);
+
+                dmSkyIndexData = dmReversed6thOrder;
+                localPreviewBitmap = previewImage6thOrder.Bitmap;
 
                 
                 if (Math.Abs(CloudCover - CloudCoverWithoutSunSuppression) > 0.7d)

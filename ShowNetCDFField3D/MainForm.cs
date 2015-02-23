@@ -116,6 +116,45 @@ namespace ShowNetCDFField3D
 
             scene.Add(currSurfPlotCube);
 
+
+
+            //scene.First<ILSurface>().MouseClick += (s, arg) =>
+            //{
+            //    // we start at the mouse event target -> this will be the 
+            //    // surface group node (the parent of "Fill" and "Wireframe")
+            //    var group = arg.Target.Parent;
+            //    if (group != null)
+            //    {
+            //        // walk up to the next camera node 
+            //        Matrix4 trans = group.Transform;
+            //        while (!(group is ILCamera) && group != null)
+            //        {
+            //            group = group.Parent;
+            //            // collect all nodes on the path up
+            //            trans = group.Transform * trans;
+            //        }
+            //        if (group != null && (group is ILCamera))
+            //        {
+            //            // convert args.LocationF to world coords
+            //            // The Z coord is not provided by the mouse! -> choose arbitrary value
+            //            var pos = new Vector3(arg.LocationF.X * 2 - 1, arg.LocationF.Y * -2 + 1, 0);
+            //            // invert the matrix.
+            //            trans = Matrix4.Invert(trans);
+            //            // trans now converts from the world coord system (at the camera) to 
+            //            // the local coord system in the 'target' group node (surface). 
+            //            // In order to transform the mouse (viewport) position, we 
+            //            // left multiply the transformation matrix.
+            //            pos = trans * pos;
+            //            // view result in the window title
+            //            //Text = "Model Position: " + pos.ToString();
+            //            ThreadSafeOperations.SetText(lblStatus, pos.ToString(), false);
+            //        }
+            //    }
+            //};
+
+
+
+
             ilPanel1.Scene = scene;
         }
 
