@@ -469,7 +469,7 @@ namespace SkyImagesAnalyzerLibraries
             }
 
             Optimization.ObjectiveFunction<double> ineqFunc =
-                (parametersPoint) => (ILRetArray<double>) (DenseVector.Create(dvSpace.Count, -1.0d).ToArray());
+                (parametersPoint) => (ILRetArray<double>)(DenseVector.Create(dvSpace.Count, -1.0d).ToArray());
             if (parametersConditionsLessThan0.Count > 0)
             {
                 ineqFunc = (parametersPoint) =>
@@ -496,7 +496,7 @@ namespace SkyImagesAnalyzerLibraries
                             resValues = new List<bool>(resValues.Zip(currResultBool, (b1, b2) => b1 && b2));
                         }
 
-                        return (resValues.Aggregate((bv1, bv2) => bv1 && bv2))?(-1):(1);
+                        return (resValues.Aggregate((bv1, bv2) => bv1 && bv2)) ? (-1) : (1);
 
                         //return
                         //    (ILRetArray<double>)
@@ -523,6 +523,13 @@ namespace SkyImagesAnalyzerLibraries
             return DenseVector.OfEnumerable(resDoub);
         }
 
+
+
+
+        public DenseVector Approximation_MKL(DenseVector dvInitialParametersValues, double maxRelativeError = 1.0e-8d)
+        {
+            
+        }
 
 
 
