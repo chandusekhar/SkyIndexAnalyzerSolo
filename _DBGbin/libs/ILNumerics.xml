@@ -5867,6 +5867,54 @@
             <param name="size">the size of the new logical array</param>
             <returns>a new logical with the elements from data and the given size</returns>
         </member>
+        <member name="M:ILNumerics.ILMath.MMultBlockedThreaded(System.Double[],System.Double[],System.Double[],System.Int32,System.Int32,System.Int32,System.Int32)">
+            <summary>
+            Experimental! Do not use! This function is not working in a mutithreaded context!!
+            </summary>
+            <param name="A"></param>
+            <param name="B"></param>
+            <param name="C"></param>
+            <param name="m"></param>
+            <param name="n"></param>
+            <param name="k"></param>
+            <param name="kc"></param>
+        </member>
+        <member name="M:ILNumerics.ILMath.MMultBlockedThreaded(System.Single[],System.Single[],System.Single[],System.Int32,System.Int32,System.Int32,System.Int32)">
+            <summary>
+            Experimental! Do not use! This function is not working in a mutithreaded context!!
+            </summary>
+            <param name="A"></param>
+            <param name="B"></param>
+            <param name="C"></param>
+            <param name="m"></param>
+            <param name="n"></param>
+            <param name="k"></param>
+            <param name="kc"></param>
+        </member>
+        <member name="M:ILNumerics.ILMath.MMultBlockedThreaded(ILNumerics.fcomplex[],ILNumerics.fcomplex[],ILNumerics.fcomplex[],System.Int32,System.Int32,System.Int32,System.Int32)">
+            <summary>
+            Experimental! Do not use! This function is not working in a mutithreaded context!!
+            </summary>
+            <param name="A"></param>
+            <param name="B"></param>
+            <param name="C"></param>
+            <param name="m"></param>
+            <param name="n"></param>
+            <param name="k"></param>
+            <param name="kc"></param>
+        </member>
+        <member name="M:ILNumerics.ILMath.MMultBlockedThreaded(ILNumerics.complex[],ILNumerics.complex[],ILNumerics.complex[],System.Int32,System.Int32,System.Int32,System.Int32)">
+            <summary>
+            Experimental! Do not use! This function is not working in a mutithreaded context!!
+            </summary>
+            <param name="A"></param>
+            <param name="B"></param>
+            <param name="C"></param>
+            <param name="m"></param>
+            <param name="n"></param>
+            <param name="k"></param>
+            <param name="kc"></param>
+        </member>
         <member name="M:ILNumerics.ILMath.MMultBlockedThreadedSIMD(System.Double[],System.Double[],System.Double[],System.Int32,System.Int32,System.Int32,System.Int32)">
             *!HC:inArr*/double* pYA, pXA, pZA;
         </member>
@@ -20585,8 +20633,8 @@
             Update the existing plot with new data
             </summary>
             <param name="Z">data</param>
-            <param name="colormap"></param>
-            <param name="minMaxDataValues"></param>
+            <param name="colormap">Colormap used for coloring the tiles</param>
+            <param name="minMaxDataValues">data value range provided as tuple, specifies the data range for coloring</param>
         </member>
         <member name="P:ILNumerics.Drawing.Plotting.ILImageSCPlot.Tiles">
             <summary>
@@ -21071,6 +21119,209 @@
         <member name="P:ILNumerics.Drawing.ILCircle.Resolution">
             <summary>
             Gets the resolution used for the creation of the circle (readonly)
+            </summary>
+        </member>
+        <member name="T:ILNumerics.Drawing.Padding">
+            <summary>
+            Redefinition of the padding struct, prevents from Windows.Forms dependency.
+            </summary>
+        </member>
+        <member name="T:ILNumerics.Drawing.Positioning">
+            <summary>
+            Positioning constants for screen objects
+            </summary>
+        </member>
+        <member name="F:ILNumerics.Drawing.Positioning.TopLeft">
+            <summary>
+            Place the object at the upper left corner
+            </summary>
+        </member>
+        <member name="F:ILNumerics.Drawing.Positioning.TopCenter">
+            <summary>
+            Place the object in the upper center
+            </summary>
+        </member>
+        <member name="F:ILNumerics.Drawing.Positioning.TopRight">
+            <summary>
+            Place the object at the upper right corner
+            </summary>
+        </member>
+        <member name="F:ILNumerics.Drawing.Positioning.MiddleLeft">
+            <summary>
+            Place the object vertically centered at the left edge
+            </summary>
+        </member>
+        <member name="F:ILNumerics.Drawing.Positioning.MiddleCenter">
+            <summary>
+            Place the object centered on the viewport
+            </summary>
+        </member>
+        <member name="F:ILNumerics.Drawing.Positioning.MiddleRight">
+            <summary>
+            Place the object vertically centered at the right edge
+            </summary>
+        </member>
+        <member name="F:ILNumerics.Drawing.Positioning.BottomLeft">
+            <summary>
+            Place the object at the lower left corner
+            </summary>
+        </member>
+        <member name="F:ILNumerics.Drawing.Positioning.BottomCenter">
+            <summary>
+            Place the object centered at the lower edge
+            </summary>
+        </member>
+        <member name="F:ILNumerics.Drawing.Positioning.BottomRight">
+            <summary>
+            Place the object at the lower right corner
+            </summary>
+        </member>
+        <member name="T:ILNumerics.Drawing.ILTitle">
+            <summary>
+            Title object for labeling scenes in ILNumerics Visualization Engine
+            </summary>
+            <remarks>Title objects are screen objects which are used to label a scene.
+            <para>Titles are created with a white, slightly transparent background, a thin, gray border and a regular label, 
+            centered in the title object. The size of the title automatically adopts to the size of the text displayed by the label.</para>
+            <para>ILTitle allows for the convenient positioning within the viewport. 9 predefined <see cref="T:ILNumerics.Drawing.Positioning"/> values exist and 
+            can be specified at construction time. By default, titles are placed in the upper right corner of the viewport.</para>
+            <para>The value specified for the initial position does affect the initial values of <see cref="P:ILNumerics.Drawing.ILScreenObject.Location"/> and <see cref="P:ILNumerics.Drawing.ILScreenObject.Anchor"/> 
+            of the title only. It is possible to overwrite those properties with user defined values in order to position the title arbitrarily.</para>
+            <seealso cref="T:ILNumerics.Drawing.ILScreenObject"/>
+            <see href="http://ilnumerics.net/world3d-and-screen2d-nodes.html"/>
+            </remarks>
+        </member>
+        <member name="T:ILNumerics.Drawing.ILScreenObject">
+            <summary>
+            Screen oriented rectangle with viewport relative position and size ([0..1])
+            </summary>
+            <remarks><para>Screen objects are used for labels, legends, colorbars a.t.l. Unlike regular 3D objects, screen objects represent 
+            a subtree of arbitrary objects which are always rendered on top of regular 3D nodes. Therefore, objects contained within 
+            a screen object will appear on top of the rest of the scene in the rendered output.</para>
+            <para>ILScreenObjects come with basic interactive capabilities: they can be dragged around with the mouse.</para>
+            <para>Screen objects allow absolut values (pixels) or relative values (fraction of the panel size) for their size. They create 
+            a local coordinate system ranging from [0..1] in X and Y and allowing for the easy placement of objects like labels and lines.</para>
+            </remarks>
+        </member>
+        <member name="M:ILNumerics.Drawing.ILScreenObject.#ctor(System.Object,System.Single,System.Single)">
+            <summary>
+            Creates a new screen object
+            </summary>
+            <param name="tag"></param>
+            <param name="minWidth"></param>
+            <param name="minHeight"></param>
+        </member>
+        <member name="P:ILNumerics.Drawing.ILScreenObject.ZCoord">
+            <summary>
+            Gets or sets the Z coordinate for this screen object. Childs will take this as base depth value.
+            </summary>
+        </member>
+        <member name="P:ILNumerics.Drawing.ILScreenObject.Movable">
+            <summary>
+            Dis-/allows the user to move the rectangle on screen interactively (if supported by the driver). Default: true 
+            </summary>
+        </member>
+        <member name="P:ILNumerics.Drawing.ILScreenObject.Border">
+            <summary>
+            Border of the screen rectangle
+            </summary>
+        </member>
+        <member name="P:ILNumerics.Drawing.ILScreenObject.Background">
+            <summary>
+            Background fill area 
+            </summary>
+        </member>
+        <member name="P:ILNumerics.Drawing.ILScreenObject.Anchor">
+            <summary>
+            Gets the reference point for the location of the screen rectangle relative to the rectangles size. Default: center of the rectangle (.5,.5)
+            </summary>
+        </member>
+        <member name="P:ILNumerics.Drawing.ILScreenObject.Location">
+            <summary>
+            Location of the anchor point of the screen rectangle in units defined by LocationXUnit and LocationYUnit. Default: viewport center 
+            </summary>
+        </member>
+        <member name="P:ILNumerics.Drawing.ILScreenObject.Width">
+            <summary>
+            Width of the screen rectangle in units defined by WidthUnit. Default: Auto (null); determined by content
+            </summary>
+        </member>
+        <member name="P:ILNumerics.Drawing.ILScreenObject.Height">
+            <summary>
+            Height of the screen rectangle in units defined by HeightUnit. Default: Auto (null); determined by content
+            </summary>
+        </member>
+        <member name="P:ILNumerics.Drawing.ILScreenObject.MinimumSize">
+            <summary>
+            Minimum size of the screen rect when Size mode is null (auto), in units defined by WidthUnit and HeightUnit
+            </summary>
+        </member>
+        <member name="P:ILNumerics.Drawing.ILScreenObject.LocationXUnit">
+            <summary>
+            Units for the horizontal location of the anchor point
+            </summary>
+        </member>
+        <member name="P:ILNumerics.Drawing.ILScreenObject.LocationYUnit">
+            <summary>
+            Units for the vertical location of the anchor point
+            </summary>
+        </member>
+        <member name="P:ILNumerics.Drawing.ILScreenObject.WidthUnit">
+            <summary>
+            Units for the width of the screen rectangle
+            </summary>
+        </member>
+        <member name="P:ILNumerics.Drawing.ILScreenObject.HeightUnit">
+            <summary>
+            Units for the height of the screen rectangle
+            </summary>
+        </member>
+        <member name="F:ILNumerics.Drawing.ILTitle.DefaultTitleTag">
+            <summary>
+            Default tag used to identify the title object within the scene
+            </summary>
+        </member>
+        <member name="F:ILNumerics.Drawing.ILTitle.DefaultLabelTag">
+            <summary>
+            Default tag used to identify the label of the title within the scene
+            </summary>
+        </member>
+        <member name="M:ILNumerics.Drawing.ILTitle.#ctor(ILNumerics.Drawing.ILTitle)">
+            <summary>
+            Copy constructor
+            </summary>
+            <param name="source">source title object to create a copy from</param>
+        </member>
+        <member name="M:ILNumerics.Drawing.ILTitle.#ctor(System.String,ILNumerics.Drawing.Positioning,System.Object)">
+            <summary>
+            Create a new title object 
+            </summary>
+            <param name="text">[Optional] The text for the title object. Default: 'Title'</param>
+            <param name="position">[Optional] one of the predefined positioning values. See: <see cref="T:ILNumerics.Drawing.Positioning"/>. Default: <see cref="F:ILNumerics.Drawing.Positioning.TopRight"/></param>
+            <param name="tag">[Optional] Tag used to identify the title in the scene. Default: <see cref="F:ILNumerics.Drawing.ILTitle.DefaultTitleTag"/></param>
+        </member>
+        <member name="M:ILNumerics.Drawing.ILTitle.Synchronize(ILNumerics.Drawing.ILNode,ILNumerics.Drawing.ILSyncParams)">
+            <summary>
+            Synchronize (internal use only)
+            </summary>
+            <param name="copy"></param>
+            <param name="syncParams"></param>
+            <returns></returns>
+        </member>
+        <member name="M:ILNumerics.Drawing.ILTitle.Copy">
+            <summary>
+            Create a Copy of this object (internal use only, use ILNode.Add() in order to duplicate scene objects)
+            </summary>
+            <returns>Copy of this title object an its content</returns>
+        </member>
+        <member name="P:ILNumerics.Drawing.ILTitle.Label">
+            <summary>
+            Gives a reference to the label used to render the title text
+            </summary>
+        </member>
+        <member name="P:ILNumerics.Drawing.ILTitle.Padding">
+            <summary>
+            Gets the labels padding within the title or sets it
             </summary>
         </member>
         <member name="T:ILNumerics.Misc.ILArrayVisualizerProxy">
@@ -25206,7 +25457,7 @@
             <param name="ZXYPositions">[optional] positions data matrix, size: [M x N x [1|2|3]] with Z, [X and Y] values, resizing allowed</param>
             <param name="RGBAcolors">RGBA color component tuples for every grid point, size [M x N x [3|4]]</param>
         </member>
-        <member name="M:ILNumerics.Drawing.Plotting.ILSurface.UpdateColormapped(ILNumerics.ILInArray{System.Single},ILNumerics.Drawing.Plotting.ILColormap,System.Tuple{System.Single,System.Single},ILNumerics.ILInArray{System.Single})">
+        <member name="M:ILNumerics.Drawing.Plotting.ILSurface.UpdateColormapped(ILNumerics.ILInArray{System.Single},ILNumerics.Drawing.Plotting.ILColormap,System.Tuple{System.Single,System.Single},ILNumerics.ILInArray{System.Single},ILNumerics.Drawing.ILLimits)">
             <summary>
             Update positions data [optional] and color data [optional], switch to colormapped mode 
             </summary>
@@ -25596,91 +25847,6 @@
             </summary>
             <remarks>Colorbars are added to arbitrary object groups, supporting the IILColormapProvider interface. <see cref="T:ILNumerics.Drawing.Plotting.ILSurface"/> is a common example. 
             They visualize the colormap and the data range mapped to the colors for the object.</remarks>
-        </member>
-        <member name="T:ILNumerics.Drawing.ILScreenObject">
-            <summary>
-            Screen oriented rectangle with viewport relative position and size ([0..1])
-            </summary>
-            <remarks><para>Screen objects are used for labels, legends, colorbars a.t.l. Unlike regular 3D objects, screen objects represent 
-            a subtree of arbitrary objects which are always rendered on top of regular 3D nodes. Therefore, objects contained within 
-            a screen object will appear on top of the rest of the scene in the rendered output.</para>
-            <para>ILScreenObjects come with basic interactive capabilities: they can be dragged around with the mouse.</para>
-            <para>Screen objects allow absolut values (pixels) or relative values (fraction of the panel size) for their size. They create 
-            a local coordinate system ranging from [0..1] in X and Y and allowing for the easy placement of objects like labels and lines.</para>
-            </remarks>
-        </member>
-        <member name="M:ILNumerics.Drawing.ILScreenObject.#ctor(System.Object,System.Single,System.Single)">
-            <summary>
-            Creates a new screen object
-            </summary>
-            <param name="tag"></param>
-            <param name="minWidth"></param>
-            <param name="minHeight"></param>
-        </member>
-        <member name="P:ILNumerics.Drawing.ILScreenObject.ZCoord">
-            <summary>
-            Gets or sets the Z coordinate for this screen object. Childs will take this as base depth value.
-            </summary>
-        </member>
-        <member name="P:ILNumerics.Drawing.ILScreenObject.Movable">
-            <summary>
-            Dis-/allows the user to move the rectangle on screen interactively (if supported by the driver). Default: true 
-            </summary>
-        </member>
-        <member name="P:ILNumerics.Drawing.ILScreenObject.Border">
-            <summary>
-            Border of the screen rectangle
-            </summary>
-        </member>
-        <member name="P:ILNumerics.Drawing.ILScreenObject.Background">
-            <summary>
-            Background fill area 
-            </summary>
-        </member>
-        <member name="P:ILNumerics.Drawing.ILScreenObject.Anchor">
-            <summary>
-            Gets the reference point for the location of the screen rectangle relative to the rectangles size. Default: center of the rectangle (.5,.5)
-            </summary>
-        </member>
-        <member name="P:ILNumerics.Drawing.ILScreenObject.Location">
-            <summary>
-            Location of the anchor point of the screen rectangle in units defined by LocationXUnit and LocationYUnit. Default: viewport center 
-            </summary>
-        </member>
-        <member name="P:ILNumerics.Drawing.ILScreenObject.Width">
-            <summary>
-            Width of the screen rectangle in units defined by WidthUnit. Default: Auto (null); determined by content
-            </summary>
-        </member>
-        <member name="P:ILNumerics.Drawing.ILScreenObject.Height">
-            <summary>
-            Height of the screen rectangle in units defined by HeightUnit. Default: Auto (null); determined by content
-            </summary>
-        </member>
-        <member name="P:ILNumerics.Drawing.ILScreenObject.MinimumSize">
-            <summary>
-            Minimum size of the screen rect when Size mode is null (auto), in units defined by WidthUnit and HeightUnit
-            </summary>
-        </member>
-        <member name="P:ILNumerics.Drawing.ILScreenObject.LocationXUnit">
-            <summary>
-            Units for the horizontal location of the anchor point
-            </summary>
-        </member>
-        <member name="P:ILNumerics.Drawing.ILScreenObject.LocationYUnit">
-            <summary>
-            Units for the vertical location of the anchor point
-            </summary>
-        </member>
-        <member name="P:ILNumerics.Drawing.ILScreenObject.WidthUnit">
-            <summary>
-            Units for the width of the screen rectangle
-            </summary>
-        </member>
-        <member name="P:ILNumerics.Drawing.ILScreenObject.HeightUnit">
-            <summary>
-            Units for the height of the screen rectangle
-            </summary>
         </member>
         <member name="P:ILNumerics.Drawing.Plotting.ILColorbar.ColorFillWidth">
             <summary>

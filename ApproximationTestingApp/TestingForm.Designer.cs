@@ -40,11 +40,12 @@
             this.lblCurrWorkingDir = new System.Windows.Forms.Label();
             this.btnProperties = new System.Windows.Forms.Button();
             this.cbUseConstraints = new System.Windows.Forms.CheckBox();
-            this.pbRes = new System.Windows.Forms.PictureBox();
             this.btnInitEvenlopData = new System.Windows.Forms.Button();
             this.btnApproxEvenlop = new System.Windows.Forms.Button();
+            this.btnInitDataForintelMKL = new System.Windows.Forms.Button();
+            this.rtbDataFilesPrefixMKL = new System.Windows.Forms.RichTextBox();
+            this.btnApproximateMKL = new System.Windows.Forms.Button();
             this.tableLayoutPanel1.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.pbRes)).BeginInit();
             this.SuspendLayout();
             // 
             // button1
@@ -87,13 +88,14 @@
             // 
             this.tableLayoutPanel1.SetColumnSpan(this.tbLog, 5);
             this.tbLog.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.tbLog.Font = new System.Drawing.Font("Courier New", 16.2F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.tbLog.Location = new System.Drawing.Point(4, 921);
+            this.tbLog.Font = new System.Drawing.Font("Courier New", 13.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.tbLog.Location = new System.Drawing.Point(4, 204);
             this.tbLog.Margin = new System.Windows.Forms.Padding(4);
             this.tbLog.Multiline = true;
             this.tbLog.Name = "tbLog";
-            this.tableLayoutPanel1.SetRowSpan(this.tbLog, 3);
-            this.tbLog.Size = new System.Drawing.Size(1472, 142);
+            this.tableLayoutPanel1.SetRowSpan(this.tbLog, 4);
+            this.tbLog.ScrollBars = System.Windows.Forms.ScrollBars.Both;
+            this.tbLog.Size = new System.Drawing.Size(1472, 859);
             this.tbLog.TabIndex = 2;
             // 
             // lblStatus
@@ -139,14 +141,17 @@
             this.tableLayoutPanel1.Controls.Add(this.lblCurrWorkingDir, 1, 0);
             this.tableLayoutPanel1.Controls.Add(this.btnProperties, 4, 0);
             this.tableLayoutPanel1.Controls.Add(this.cbUseConstraints, 4, 1);
-            this.tableLayoutPanel1.Controls.Add(this.pbRes, 0, 3);
             this.tableLayoutPanel1.Controls.Add(this.btnInitEvenlopData, 0, 2);
             this.tableLayoutPanel1.Controls.Add(this.btnApproxEvenlop, 2, 2);
+            this.tableLayoutPanel1.Controls.Add(this.btnInitDataForintelMKL, 0, 3);
+            this.tableLayoutPanel1.Controls.Add(this.rtbDataFilesPrefixMKL, 1, 3);
+            this.tableLayoutPanel1.Controls.Add(this.btnApproximateMKL, 2, 3);
             this.tableLayoutPanel1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tableLayoutPanel1.Location = new System.Drawing.Point(0, 0);
             this.tableLayoutPanel1.Margin = new System.Windows.Forms.Padding(4);
             this.tableLayoutPanel1.Name = "tableLayoutPanel1";
-            this.tableLayoutPanel1.RowCount = 7;
+            this.tableLayoutPanel1.RowCount = 8;
+            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 50F));
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 50F));
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 50F));
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 50F));
@@ -225,16 +230,6 @@
             this.cbUseConstraints.Text = "use constraints";
             this.cbUseConstraints.UseVisualStyleBackColor = true;
             // 
-            // pbRes
-            // 
-            this.tableLayoutPanel1.SetColumnSpan(this.pbRes, 5);
-            this.pbRes.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.pbRes.Location = new System.Drawing.Point(3, 153);
-            this.pbRes.Name = "pbRes";
-            this.pbRes.Size = new System.Drawing.Size(1474, 761);
-            this.pbRes.TabIndex = 20;
-            this.pbRes.TabStop = false;
-            // 
             // btnInitEvenlopData
             // 
             this.btnInitEvenlopData.Dock = System.Windows.Forms.DockStyle.Fill;
@@ -261,6 +256,42 @@
             this.btnApproxEvenlop.UseVisualStyleBackColor = true;
             this.btnApproxEvenlop.Click += new System.EventHandler(this.btnApproxEvenlop_Click);
             // 
+            // btnInitDataForintelMKL
+            // 
+            this.btnInitDataForintelMKL.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.btnInitDataForintelMKL.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnInitDataForintelMKL.Font = new System.Drawing.Font("Microsoft Sans Serif", 13.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.btnInitDataForintelMKL.Location = new System.Drawing.Point(3, 153);
+            this.btnInitDataForintelMKL.Name = "btnInitDataForintelMKL";
+            this.btnInitDataForintelMKL.Size = new System.Drawing.Size(290, 44);
+            this.btnInitDataForintelMKL.TabIndex = 23;
+            this.btnInitDataForintelMKL.Text = "init data for MKL";
+            this.btnInitDataForintelMKL.UseVisualStyleBackColor = true;
+            this.btnInitDataForintelMKL.Click += new System.EventHandler(this.btnInitDataForintelMKL_Click);
+            // 
+            // rtbDataFilesPrefixMKL
+            // 
+            this.rtbDataFilesPrefixMKL.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.rtbDataFilesPrefixMKL.Font = new System.Drawing.Font("Microsoft Sans Serif", 13.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.rtbDataFilesPrefixMKL.Location = new System.Drawing.Point(299, 153);
+            this.rtbDataFilesPrefixMKL.Name = "rtbDataFilesPrefixMKL";
+            this.rtbDataFilesPrefixMKL.Size = new System.Drawing.Size(290, 44);
+            this.rtbDataFilesPrefixMKL.TabIndex = 24;
+            this.rtbDataFilesPrefixMKL.Text = "";
+            // 
+            // btnApproximateMKL
+            // 
+            this.btnApproximateMKL.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.btnApproximateMKL.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnApproximateMKL.Font = new System.Drawing.Font("Microsoft Sans Serif", 13.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.btnApproximateMKL.Location = new System.Drawing.Point(595, 153);
+            this.btnApproximateMKL.Name = "btnApproximateMKL";
+            this.btnApproximateMKL.Size = new System.Drawing.Size(290, 44);
+            this.btnApproximateMKL.TabIndex = 25;
+            this.btnApproximateMKL.Text = "test approximation with MKL";
+            this.btnApproximateMKL.UseVisualStyleBackColor = true;
+            this.btnApproximateMKL.Click += new System.EventHandler(this.btnApproximateMKL_Click);
+            // 
             // TestingForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
@@ -275,7 +306,6 @@
             this.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.TestingForm_KeyPress);
             this.tableLayoutPanel1.ResumeLayout(false);
             this.tableLayoutPanel1.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.pbRes)).EndInit();
             this.ResumeLayout(false);
 
         }
@@ -294,9 +324,11 @@
         private System.Windows.Forms.Label lblCurrWorkingDir;
         private System.Windows.Forms.Button btnProperties;
         private System.Windows.Forms.CheckBox cbUseConstraints;
-        private System.Windows.Forms.PictureBox pbRes;
         private System.Windows.Forms.Button btnInitEvenlopData;
         private System.Windows.Forms.Button btnApproxEvenlop;
+        private System.Windows.Forms.Button btnInitDataForintelMKL;
+        private System.Windows.Forms.RichTextBox rtbDataFilesPrefixMKL;
+        private System.Windows.Forms.Button btnApproximateMKL;
     }
 }
 

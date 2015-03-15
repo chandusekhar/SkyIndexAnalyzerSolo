@@ -11,7 +11,12 @@ namespace MKLwrapper
 {
     public sealed class NonLinLeastSqProbWithBC
     {
-        private NonLinLeastSqProbWithBC() { }
+        private IntPtr solverHandle;
+
+        public NonLinLeastSqProbWithBC()
+        {
+            //solverHandle = new IntPtr();
+        }
 
 
         #region naming conventions and functions prototypes (see mkl_rci.h)
@@ -104,8 +109,8 @@ namespace MKLwrapper
 
 
 
-        public static int NonLinLeastSqProbWithBC_init(
-                                            ref IntPtr handle,
+
+        public int NonLinLeastSqProbWithBC_init(
                                             int xLength,
                                             int fLength,
                                             double[] xInitialGuess,
@@ -116,7 +121,7 @@ namespace MKLwrapper
                                             int trialIterMaxCount,
                                             double trustRegionInitialSize)
         {
-            return NonLinLeastSqProbWithBCNative.dtrnlspbc_init(ref handle, xLength, fLength, xInitialGuess,
+            return NonLinLeastSqProbWithBCNative.dtrnlspbc_init(out solverHandle, xLength, fLength, xInitialGuess,
                 xLowBounds, xUpperBounds, stopCriteria, iterMaxCount, trialIterMaxCount, trustRegionInitialSize);
         }
 
@@ -125,8 +130,7 @@ namespace MKLwrapper
 
 
 
-        public static int NonLinLeastSqProbWithBC_check(
-                                            ref IntPtr handle,
+        public int NonLinLeastSqProbWithBC_check(
                                             int xLength,
                                             int fLength,
                                             double[,] fJacobianMatrix,
@@ -136,7 +140,7 @@ namespace MKLwrapper
                                             double[] stopCriteria,
                                             out int[] info)
         {
-            return NonLinLeastSqProbWithBCNative.dtrnlspbc_check(ref handle, xLength, fLength, fJacobianMatrix,
+            return NonLinLeastSqProbWithBCNative.dtrnlspbc_check(ref solverHandle, xLength, fLength, fJacobianMatrix,
                 devFuncValues, xLowBounds, xUpperBounds, stopCriteria, out info);
         }
 
@@ -145,40 +149,40 @@ namespace MKLwrapper
 
 
 
-        public static int NonLinLeastSqProbWithBC_solve(
-                                            ref IntPtr handle,
+        public int NonLinLeastSqProbWithBC_solve(
                                             ref double[] devFuncValues,
                                             double[,] fJacobianMatrix,
                                             out int RCI_Request)
         {
-            return NonLinLeastSqProbWithBCNative.dtrnlspbc_solve(ref handle, ref devFuncValues, fJacobianMatrix, out RCI_Request);
+            return NonLinLeastSqProbWithBCNative.dtrnlspbc_solve(ref solverHandle, ref devFuncValues, fJacobianMatrix, out RCI_Request);
         }
 
 
 
 
 
-        public static int NonLinLeastSqProbWithBC_get(
-                                            ref IntPtr handle,
+        public int NonLinLeastSqProbWithBC_get(
                                             ref int iterationsCount,
                                             ref int stopCriterion,
                                             ref double initialPositionResidual,
                                             ref double solutionPositionResidual)
         {
-            return NonLinLeastSqProbWithBCNative.dtrnlspbc_get(ref handle, out iterationsCount, out stopCriterion,
+            return NonLinLeastSqProbWithBCNative.dtrnlspbc_get(ref solverHandle, out iterationsCount, out stopCriterion,
                 out initialPositionResidual, out solutionPositionResidual);
         }
 
 
 
 
-        public static int NonLinLeastSqProbWithBC_delete(ref IntPtr handle)
+        public int NonLinLeastSqProbWithBC_delete()
         {
-            int res = NonLinLeastSqProbWithBCNative.dtrnlspbc_delete(ref handle);
+            int res = NonLinLeastSqProbWithBCNative.dtrnlspbc_delete(ref solverHandle);
             NonLinLeastSqProbWithBCNative.mkl_free_buffers();
             return res;
         }
     }
+
+
 
 
 
@@ -237,7 +241,7 @@ namespace MKLwrapper
         #endregion intel dtrnlspbc_init description
         [DllImport("mkl_rt.dll", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true, SetLastError = false)]
         internal static extern int dtrnlspbc_init(
-                                ref IntPtr handle,
+                                out IntPtr handle,
                                 int xLength,
                                 int fLength,
                                 double[] xInitialGuess,

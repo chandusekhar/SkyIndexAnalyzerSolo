@@ -17,8 +17,7 @@ using Emgu.CV;
 using Emgu.CV.Structure;
 using System.CodeDom.Compiler;
 using Microsoft.CSharp;
-
-
+using MKLwrapper;
 
 
 namespace ApproximationTestingApp
@@ -138,6 +137,8 @@ namespace ApproximationTestingApp
             dvCurrentParameters =
                 (DenseVector)
                     ServiceTools.ReadDataFromCSV(CurrentDir + dataFilePrefix + "approximationInitialParameters.csv");
+
+
 
             Func<DenseVector, double, double> theFunctionToShow = (parametersListLoc, x) =>
             {
@@ -266,6 +267,8 @@ namespace ApproximationTestingApp
                 theApproximationFunction);
             theApproximator.SelfWorker = SelfWorker;
 
+
+
             #region //parameters space constraints
             //theApproximator.parametersConditions.Add(new Func<DenseVector, bool>(dvCurrentParameters =>
             //{
@@ -281,6 +284,8 @@ namespace ApproximationTestingApp
             //}));
             #endregion //parameters space constraints
 
+
+
             if ((cbUseWeights.Checked) && (dvFuncWeights != null))
             {
                 theApproximator.DvWeights = dvFuncWeights;
@@ -291,10 +296,12 @@ namespace ApproximationTestingApp
                 theApproximator.parametersConditionsLessThan0 = approxParametersCondition;
             }
             
-            //DenseVector initialParametersIncremnt = DenseVector.Create(dvParameters.Count, (i => 1.0d));
-            //dvCurrentParameters = theApproximator.ApproximationGradientDescentMultidim(dvParameters, ref initialParametersIncremnt, 0.0000001d);
-            //dvCurrentParameters = theApproximator.Approximation_ILOptimizer(dvParameters, ref initialParametersIncremnt, 1.0e-10d);
-            dvCurrentParameters = theApproximator.Approximation_ILOptimizerConstrained(dvParameters, 1.0e-10d);
+            //DenseVector initialParametersIncrement = DenseVector.Create(dvParameters.Count, (i => 1.0d));
+            //dvCurrentParameters = theApproximator.ApproximationGradientDescentMultidim(dvParameters, ref initialParametersIncrement, 0.0000001d);
+            //dvCurrentParameters = theApproximator.Approximation_ILOptimizer(dvParameters, ref initialParametersIncrement, 1.0e-10d);
+            //dvCurrentParameters = theApproximator.Approximation_ILOptimizerConstrained(dvParameters, 1.0e-10d);
+            DenseVector initialParametersIncrement = DenseVector.Create(dvParameters.Count, (i => 1.0d));
+            dvCurrentParameters = theApproximator.ApproximationGradientDescentMultidim(dvParameters, ref initialParametersIncrement, 1.0e-10d);
         }
 
 
@@ -723,7 +730,9 @@ namespace ApproximationTestingApp
                 theApproximator.parametersConditionsLessThan0 = approxParametersCondition;
             }
 
-            dvCurrentParameters = theApproximator.Approximation_ILOptimizerConstrained(dvParameters);
+            //dvCurrentParameters = theApproximator.Approximation_ILOptimizerConstrained(dvParameters);
+            DenseVector initialParametersIncrement = DenseVector.Create(dvParameters.Count, (i => 1.0d));
+            dvCurrentParameters = theApproximator.ApproximationGradientDescentMultidim(dvParameters, ref initialParametersIncrement);
 
             theForm.theRepresentingFunctions.Add(theApproximationFunction);
             theForm.scaleFunctionValuesToMax.Add(false);
@@ -745,5 +754,162 @@ namespace ApproximationTestingApp
 
             e.Result = new object[] { dvCurrentParameters, dvCurrentParameters2 };
         }
+
+
+
+
+
+
+
+
+
+
+        #region MKL optimization test
+
+        private BackgroundWorker bgwMKLapproximationWorker;
+        private void btnInitDataForintelMKL_Click(object sender, EventArgs e)
+        {
+            dataFilePrefix = rtbDataFilesPrefixMKL.Text + "_";
+
+            theForm = new FunctionRepresentationForm("test function");
+            theForm.Show();
+
+            if (!File.Exists(CurrentDir + dataFilePrefix + "dataMinimumPhi.csv"))
+            {
+                string[] csvFilesInfo = Directory.GetFiles(CurrentDir, "*_dataMinimumPhi.csv");
+                if (csvFilesInfo.Count() == 0)
+                {
+                    ThreadSafeOperations.SetTextTB(tbLog,
+                        "Couldn`t find any proper csv file in directory:" + Environment.NewLine + CurrentDir, true);
+                    return;
+                }
+                else
+                {
+                    dataFilePrefix = Path.GetFileName(csvFilesInfo[0]).Replace("_dataMinimumPhi.csv", "") + "_";
+                }
+            }
+
+            xData = (DenseVector)ServiceTools.ReadDataFromCSV(CurrentDir + dataFilePrefix + "dataMinimumPhi.csv");
+            funcData = (DenseVector)ServiceTools.ReadDataFromCSV(CurrentDir + dataFilePrefix + "dataMinimumR.csv");
+            dvFuncWeights = (DenseVector)ServiceTools.ReadDataFromCSV(CurrentDir + dataFilePrefix + "dataWeights.csv");
+
+            dvCurrentParameters =
+                (DenseVector)
+                    ServiceTools.ReadDataFromCSV(CurrentDir + dataFilePrefix + "approximationInitialParameters.csv");
+
+
+
+            theApproximationFunction = (parametersListLoc, x) =>
+            {
+                double d1 = parametersListLoc[0];
+                double d2 = parametersListLoc[1];
+                double r = parametersListLoc[2];
+                double phi0 = parametersListLoc[3];
+                return d1 * Math.Cos(x - phi0) + Math.Sqrt(r * r - d2 * d2 * Math.Pow(Math.Sin(x - phi0), 2.0d));
+            };
+
+
+            theForm.theRepresentingFunctions.Add(theApproximationFunction);
+            theForm.scaleFunctionValuesToMax.Add(false);
+            theForm.theRepresentingFunctions.Add(theApproximationFunction); // для той, которая будет аппроксимацией
+            theForm.scaleFunctionValuesToMax.Add(false);
+            theForm.parameters.Add(dvCurrentParameters);
+            theForm.parameters.Add(dvCurrentParameters); // для той, которая будет аппроксимацией
+            theForm.lineColors.Add(new Bgr(Color.Magenta));
+            theForm.lineColors.Add(new Bgr(Color.Black)); // для той, которая будет аппроксимацией
+
+            ThreadSafeOperations.SetTextTB(tbLog, ServiceTools.densevectorToString(dvCurrentParameters), true);
+
+            theForm.dvScatterXSpace = xData.Copy();
+            theForm.dvScatterFuncValues = funcData.Copy();
+
+            theForm.xSpaceMin = theForm.dvScatterXSpace.Min() - (theForm.dvScatterXSpace.Max() - theForm.dvScatterXSpace.Min()) / 5.0d;
+            theForm.xSpaceMax = theForm.dvScatterXSpace.Max() + (theForm.dvScatterXSpace.Max() - theForm.dvScatterXSpace.Min()) / 5.0d;
+
+
+            if (theForm.xSpaceMax - theForm.xSpaceMin < 2.0d * Math.PI)
+                theForm.xSpaceMax = theForm.xSpaceMin + 2.0d * Math.PI;
+
+
+            theForm.Represent();
+
+
+            string str2show = "" + theForm.theRepresentingFunctions[0].ToString() + Environment.NewLine;
+            str2show += theForm.parameters[0].ToString();
+            ThreadSafeOperations.SetTextTB(tbLog, str2show, true);
+        }
+        
+
+
+
+
+        private void btnApproximateMKL_Click(object sender, EventArgs e)
+        {
+            stepsCount = 0;
+            if (bgwMKLapproximationWorker != null)
+            {
+                if (bgwMKLapproximationWorker.IsBusy)
+                {
+                    bgwMKLapproximationWorker.CancelAsync();
+                    return;
+                }
+            }
+            
+
+            ThreadSafeOperations.SetTextTB(tbLog, ServiceTools.densevectorToString(dvCurrentParameters), false);
+
+            approxParametersCondition = new List<Func<DenseVector, double, double>>();
+            approxParametersCondition.Add((dvPar, x) => -dvPar[0]);
+            approxParametersCondition.Add((dvPar, x) => -dvPar[1]);
+            approxParametersCondition.Add((dvPar, x) => -dvPar[2]);
+            approxParametersCondition.Add((dvPar, x) => dvPar[0] - dvPar[2]);
+            approxParametersCondition.Add((dvPar, x) => dvPar[1] - dvPar[2]);
+            DoWorkEventArgs args = new DoWorkEventArgs(new object[]{dvCurrentParameters});
+
+            bgwMKLapproximationWorker = new BackgroundWorker();
+            bgwMKLapproximationWorker.DoWork += bgwMKLapproximationWorker_DoWork;
+            bgwMKLapproximationWorker.RunWorkerCompleted += bgwMKLapproximationWorker_RunWorkerCompleted;
+
+            bgwMKLapproximationWorker.RunWorkerAsync(args);
+        }
+
+        
+
+
+        void bgwMKLapproximationWorker_DoWork(object sender, DoWorkEventArgs e)
+        {
+            BackgroundWorker SelfWorker = sender as BackgroundWorker;
+            object[] args = (object[])(((DoWorkEventArgs)(e.Argument)).Argument);
+            DenseVector dvParameters = ((DenseVector)args[0]).Copy();
+
+            NonLinLeastSqProbWoConstraints solver = new NonLinLeastSqProbWoConstraints();
+            solver.mSpaceVector = xData.Copy();
+            solver.mFittingValuesVector = funcData.Copy();
+            solver.nXspacePoint = dvParameters.Copy();
+            solver.fittingFunction =
+                (paramsVector, xValue) => theApproximationFunction(DenseVector.OfEnumerable(paramsVector), xValue);
+            dvParameters = DenseVector.OfEnumerable(solver.SolveOptimizationProblem());
+
+            //dvCurrentParameters = theApproximator.Approximation_ILOptimizerConstrained(dvParameters, 1.0e-10d);
+            e.Result = new object[] { dvParameters };
+        }
+
+
+
+        void bgwMKLapproximationWorker_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
+        {
+            object[] bgwResult = e.Result as object[];
+            dvCurrentParameters = bgwResult[0] as DenseVector;
+
+
+            theForm.theRepresentingFunctions.Add(theApproximationFunction);
+            theForm.scaleFunctionValuesToMax.Add(false);
+            theForm.parameters.Add(dvCurrentParameters);
+            theForm.lineColors.Add(new Bgr(Color.Green));
+            theForm.Represent();
+
+            ThreadSafeOperations.SetTextTB(tbLog, "DONE" + Environment.NewLine + ServiceTools.densevectorToString(dvCurrentParameters), false);
+        }
+        #endregion MKL optimization test
     }
 }

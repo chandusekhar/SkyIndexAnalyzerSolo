@@ -65,7 +65,7 @@
       <Private>False</Private>
     </Reference>
     <Reference Include="MathNet.Numerics">
-      <HintPath>..\packages\MathNet.Numerics.3.3.0\lib\net40\MathNet.Numerics.dll</HintPath>
+      <HintPath>..\packages\MathNet.Numerics.3.5.0\lib\net40\MathNet.Numerics.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="MRG.Controls.UI, Version=1.0.5304.31396, Culture=neutral, processorArchitecture=MSIL">

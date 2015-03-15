@@ -63,7 +63,7 @@
       <Private>False</Private>
     </Reference>
     <Reference Include="MathNet.Numerics">
-      <HintPath>..\packages\MathNet.Numerics.3.3.0\lib\net40\MathNet.Numerics.dll</HintPath>
+      <HintPath>..\packages\MathNet.Numerics.3.5.0\lib\net40\MathNet.Numerics.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Microsoft.GLEE">
@@ -138,6 +138,7 @@
     <ProjectReference Include="..\MKLwrapper\MKLwrapper.csproj">
       <Project>{4b32fbed-9adb-43e3-a7dc-cf1ff1230d91}</Project>
       <Name>MKLwrapper</Name>
+      <Private>False</Private>
     </ProjectReference>
     <ProjectReference Include="..\SkyImagesAnalyzerLibraries\SkyImagesAnalyzerLibraries.csproj">
       <Project>{7beac8e4-e53f-466a-b824-1fe69e60d114}</Project>

@@ -5,6 +5,8 @@
 packages/
 emgucvcode/
 _bin/
+_DBGbin/
+_DBGbin/libs/
 
 # User-specific files
 *.suo

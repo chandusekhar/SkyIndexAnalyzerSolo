@@ -847,12 +847,16 @@ namespace SkyImagesAnalyzerLibraries
                 DenseVector dvInitialParameters_EvenlopApprox6 = DenseVector.Create(polynomeOrder6, 0.0d);
 
                 // собственно аппроксимация
-                DenseVector approxPolyKoeffs6 = evenlopApproximator.Approximation_ILOptimizer(dvInitialParameters_EvenlopApprox6);
+                // DenseVector approxPolyKoeffs6 = evenlopApproximator.Approximation_ILOptimizer(dvInitialParameters_EvenlopApprox6);
+                DenseVector approxPolyKoeffs6 = dvInitialParameters_EvenlopApprox6.Copy();
+                throw new NotImplementedException("Аппроксимация огибающей временно была отключена - надо восстановить!");
+
                 
                 // для кубической применим веса значений - рассчет см.выше
                 evenlopApproximator.DvWeights = dvWeights_EvenlopApprox;
-                DenseVector approxPolyKoeffs3 = evenlopApproximator.Approximation_ILOptimizer(dvInitialParameters_EvenlopApprox3);
-                
+                //DenseVector approxPolyKoeffs3 = evenlopApproximator.Approximation_ILOptimizer(dvInitialParameters_EvenlopApprox3);
+                DenseVector approxPolyKoeffs3 = dvInitialParameters_EvenlopApprox6.Copy();
+                throw new NotImplementedException("Аппроксимация огибающей временно была отключена - надо восстановить!");
 
                 // добавим в нулевую позицию зафиксированный элемент
                 approxPolyKoeffs3 =
@@ -1347,7 +1351,9 @@ namespace SkyImagesAnalyzerLibraries
                     theFunctionsForm.Represent();
                 }
                 //DenseVector approximatedParameters = approximator.ApproximationGradientDescentMultidim(dvInitialParameters, ref initialParametersIncremnt, 0.0000001d);
-                DenseVector approximatedParameters = approximator.Approximation_ILOptimizer(dvInitialParameters);
+                //DenseVector approximatedParameters = approximator.Approximation_ILOptimizer(dvInitialParameters);
+                DenseVector approximatedParameters = dvInitialParameters.Copy();
+                throw new NotImplementedException("Аппроксимация зависимости Rm(phi) временно отключена - надо восстановить, без нее работать корректно не будет!");
 
 
                 //попробуем вот так:
@@ -1386,7 +1392,10 @@ namespace SkyImagesAnalyzerLibraries
                 approximator.dvSpace = dvTunedPhiSpace;
                 approximator.dvDataValues = dvTunedRSpace;
                 //approximatedParameters = approximator.ApproximationGradientDescentMultidim(approximatedParameters, ref initialParametersIncremnt, 0.000001d);
-                approximatedParameters = approximator.Approximation_ILOptimizer(approximatedParameters);
+                // approximatedParameters = approximator.Approximation_ILOptimizer(approximatedParameters);
+
+                throw new NotImplementedException("вторичная аппроксимация зависимости Rm(phi) временно отключена. Надо включить - без нее работать корректно не будет!");
+
                 // фак
                 // откуда-то NaN вылез :((
 

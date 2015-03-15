@@ -384,153 +384,144 @@ namespace SkyImagesAnalyzerLibraries
 
 
 
-        public DenseVector Approximation_ILOptimizer(DenseVector dvInitialParametersValues,
-                                                    double maxRelativeError = 1.0e-8d)
-        {
-            // найдем некое максимальное значение функции - для формирования высокого градиента
-            // на границе запрещенных областей по параметрам
-            // DenseVector dvInitFuncValues = (DenseVector) dvSpace.Map(x => approxFunc(dvInitialParametersValues, x));
-            // approxFuncMaxValue_FAKE = dvInitFuncValues.Max();
-            
-            Optimization.ObjectiveFunction<double> devFunc = (parametersPoint) =>
-            {
-                using (ILScope.Enter(parametersPoint))
-                {
-                    DenseVector dvParametersPoint = DenseVector.OfEnumerable(parametersPoint);
-                    DenseVector dvDevValues =
-                        DeviationsArray_ILOptimizer(dvDataValues, dvSpace, approxFunc, dvParametersPoint,
-                            dvWeights);
-                    return (ILRetArray<double>)(dvDevValues.ToArray());
-                }
-            };
-
-
-            ILArray<double> initParameters = dvInitialParametersValues.ToArray();
-            double[] resDoub;
-            using (ILScope.Enter(initParameters))
-            {
-                ILRetArray<double> result = Optimization.leastsq_pdl(
-                                                                    devFunc,
-                                                                    initParameters,
-                                                                    tol: maxRelativeError);
-                resDoub = result.ToArray();
-            }
-
-            return DenseVector.OfEnumerable(resDoub);
-        }
-
-
-
+        //public DenseVector Approximation_ILOptimizer(DenseVector dvInitialParametersValues,
+        //                                            double maxRelativeError = 1.0e-8d)
+        //{
+        //    // найдем некое максимальное значение функции - для формирования высокого градиента
+        //    // на границе запрещенных областей по параметрам
+        //    // DenseVector dvInitFuncValues = (DenseVector) dvSpace.Map(x => approxFunc(dvInitialParametersValues, x));
+        //    // approxFuncMaxValue_FAKE = dvInitFuncValues.Max();
+        //
+        //    Optimization.ObjectiveFunction<double> devFunc = (parametersPoint) =>
+        //    {
+        //        using (ILScope.Enter(parametersPoint))
+        //        {
+        //            DenseVector dvParametersPoint = DenseVector.OfEnumerable(parametersPoint);
+        //            DenseVector dvDevValues =
+        //                DeviationsArray_ILOptimizer(dvDataValues, dvSpace, approxFunc, dvParametersPoint,
+        //                    dvWeights);
+        //            return (ILRetArray<double>)(dvDevValues.ToArray());
+        //        }
+        //    };
+        //
+        //
+        //    ILArray<double> initParameters = dvInitialParametersValues.ToArray();
+        //    double[] resDoub;
+        //    using (ILScope.Enter(initParameters))
+        //    {
+        //        ILRetArray<double> result = Optimization.leastsq_pdl(
+        //                                                            devFunc,
+        //                                                            initParameters,
+        //                                                            tol: maxRelativeError);
+        //        resDoub = result.ToArray();
+        //    }
+        //
+        //    return DenseVector.OfEnumerable(resDoub);
+        //}
 
 
 
 
-        public DenseVector Approximation_ILOptimizerConstrained(DenseVector dvInitialParametersValues,
-                                                                double maxRelativeError = 1.0e-8d)
-        {
-            Optimization.ObjectiveFunction<double> devFunc = (parametersPoint) =>
-            {
-                using (ILScope.Enter(parametersPoint))
-                {
-                    DenseVector dvParametersPoint = DenseVector.OfEnumerable(parametersPoint);
-                    DenseVector dvDevValues =
-                        DeviationsArray_ILOptimizer(dvDataValues, dvSpace, approxFunc, dvParametersPoint,
-                            dvWeights);
-                    return (ILRetArray<double>)(dvDevValues.ToArray());
-                }
-            };
-
-            //Optimization.ObjectiveFunction<double> eqFunc =
-            //    (parametersPoint) => (ILRetArray<double>) (DenseVector.Create(dvSpace.Count, 0.0d).ToArray());
-            Optimization.ObjectiveFunction<double> eqFunc = (parametersPoint) => 0.0d;
-            if (parametersConditionsEquals0.Count > 0)
-            {
-                eqFunc = (parametersPoint) =>
-                {
-                    using (ILScope.Enter(parametersPoint))
-                    {
-                        // посольку ограничений на равенство нулю может быть несколько
-                        // одновременно они все обратятся в ноль только если сумма квадратов будет равна нулю
-                        // значит, итоговая функция должна возвращать сумму квадратов функций
-
-                        DenseVector dvParametersPoint = DenseVector.OfEnumerable(parametersPoint);
-                        DenseVector dvResSumSq = DenseVector.Create(dvSpace.Count, 0.0d);
-                        foreach (Func<DenseVector, double, double> func in parametersConditionsEquals0)
-                        {
-                            DenseVector eqConstraintFuncValues = DenseVector.Create(dvSpace.Count,
-                                i => func(dvParametersPoint, dvSpace[i]));
-                            eqConstraintFuncValues.MapInplace(dVal => dVal*dVal);
-                            dvResSumSq += eqConstraintFuncValues;
-                        }
-
-                        return (ILRetArray<double>) (dvResSumSq.ToArray());
-                    }
-                };
-            }
-
-            Optimization.ObjectiveFunction<double> ineqFunc =
-                (parametersPoint) => (ILRetArray<double>)(DenseVector.Create(dvSpace.Count, -1.0d).ToArray());
-            if (parametersConditionsLessThan0.Count > 0)
-            {
-                ineqFunc = (parametersPoint) =>
-                {
-                    using (ILScope.Enter(parametersPoint))
-                    {
-                        // посольку ограничений на отрицательное значение может быть несколько
-                        // поэтому сделаем так: преобразуем условия в булевы по принципу "верно ли неравенство"
-                        // потом - логическим И получим результат по всем условиям
-                        // выдадим результат: true = -1, false = +1
-
-                        DenseVector dvParametersPoint = DenseVector.OfEnumerable(parametersPoint);
-                        List<bool> resValues = new List<bool>();
-                        foreach (double d in dvSpace)
-                        {
-                            resValues.Add(false);
-                        }
-                        foreach (Func<DenseVector, double, double> func in parametersConditionsLessThan0)
-                        {
-                            DenseVector ineqConstraintFuncValues = DenseVector.Create(dvSpace.Count,
-                                i => func(dvParametersPoint, dvSpace[i]));
-                            List<double> currResult = new List<double>(ineqConstraintFuncValues);
-                            List<bool> currResultBool = currResult.ConvertAll<bool>(dVal => (dVal < 0) ? (true) : (false));
-                            resValues = new List<bool>(resValues.Zip(currResultBool, (b1, b2) => b1 && b2));
-                        }
-
-                        return (resValues.Aggregate((bv1, bv2) => bv1 && bv2)) ? (-1) : (1);
-
-                        //return
-                        //    (ILRetArray<double>)
-                        //        (resValues.ConvertAll<double>(bVal => (bVal) ? (-1.0d) : (1.0d)).ToArray());
-
-                    }
-                };
-            }
-
-
-            ILArray<double> initParameters = dvInitialParametersValues.ToArray();
-            double[] resDoub;
-            using (ILScope.Enter(initParameters))
-            {
-                ILRetArray<double> result = Optimization.fmin(
-                                                            devFunc,
-                                                            initParameters,
-                                                            EqualityConstraint: eqFunc,
-                                                            InequalityConstraint: ineqFunc,
-                                                            tol: maxRelativeError);
-                resDoub = result.ToArray();
-            }
-
-            return DenseVector.OfEnumerable(resDoub);
-        }
 
 
 
-
-        public DenseVector Approximation_MKL(DenseVector dvInitialParametersValues, double maxRelativeError = 1.0e-8d)
-        {
-            
-        }
-
+        //public DenseVector Approximation_ILOptimizerConstrained(DenseVector dvInitialParametersValues,
+        //                                                        double maxRelativeError = 1.0e-8d)
+        //{
+        //    Optimization.ObjectiveFunction<double> devFunc = (parametersPoint) =>
+        //    {
+        //        using (ILScope.Enter(parametersPoint))
+        //        {
+        //            DenseVector dvParametersPoint = DenseVector.OfEnumerable(parametersPoint);
+        //            DenseVector dvDevValues =
+        //                DeviationsArray_ILOptimizer(dvDataValues, dvSpace, approxFunc, dvParametersPoint,
+        //                    dvWeights);
+        //            return (ILRetArray<double>)(dvDevValues.ToArray());
+        //        }
+        //    };
+        //
+        //    //Optimization.ObjectiveFunction<double> eqFunc =
+        //    //    (parametersPoint) => (ILRetArray<double>) (DenseVector.Create(dvSpace.Count, 0.0d).ToArray());
+        //    Optimization.ObjectiveFunction<double> eqFunc = (parametersPoint) => 0.0d;
+        //    if (parametersConditionsEquals0.Count > 0)
+        //    {
+        //        eqFunc = (parametersPoint) =>
+        //        {
+        //            using (ILScope.Enter(parametersPoint))
+        //            {
+        //                // посольку ограничений на равенство нулю может быть несколько
+        //                // одновременно они все обратятся в ноль только если сумма квадратов будет равна нулю
+        //                // значит, итоговая функция должна возвращать сумму квадратов функций
+        //
+        //                DenseVector dvParametersPoint = DenseVector.OfEnumerable(parametersPoint);
+        //                DenseVector dvResSumSq = DenseVector.Create(dvSpace.Count, 0.0d);
+        //                foreach (Func<DenseVector, double, double> func in parametersConditionsEquals0)
+        //                {
+        //                    DenseVector eqConstraintFuncValues = DenseVector.Create(dvSpace.Count,
+        //                        i => func(dvParametersPoint, dvSpace[i]));
+        //                    eqConstraintFuncValues.MapInplace(dVal => dVal*dVal);
+        //                    dvResSumSq += eqConstraintFuncValues;
+        //                }
+        //
+        //                return (ILRetArray<double>) (dvResSumSq.ToArray());
+        //            }
+        //        };
+        //    }
+        //
+        //    Optimization.ObjectiveFunction<double> ineqFunc =
+        //        (parametersPoint) => (ILRetArray<double>)(DenseVector.Create(dvSpace.Count, -1.0d).ToArray());
+        //    if (parametersConditionsLessThan0.Count > 0)
+        //    {
+        //        ineqFunc = (parametersPoint) =>
+        //        {
+        //            using (ILScope.Enter(parametersPoint))
+        //            {
+        //                // посольку ограничений на отрицательное значение может быть несколько
+        //                // поэтому сделаем так: преобразуем условия в булевы по принципу "верно ли неравенство"
+        //                // потом - логическим И получим результат по всем условиям
+        //                // выдадим результат: true = -1, false = +1
+        //
+        //                DenseVector dvParametersPoint = DenseVector.OfEnumerable(parametersPoint);
+        //                List<bool> resValues = new List<bool>();
+        //                foreach (double d in dvSpace)
+        //                {
+        //                    resValues.Add(false);
+        //                }
+        //                foreach (Func<DenseVector, double, double> func in parametersConditionsLessThan0)
+        //                {
+        //                    DenseVector ineqConstraintFuncValues = DenseVector.Create(dvSpace.Count,
+        //                        i => func(dvParametersPoint, dvSpace[i]));
+        //                    List<double> currResult = new List<double>(ineqConstraintFuncValues);
+        //                    List<bool> currResultBool = currResult.ConvertAll<bool>(dVal => (dVal < 0) ? (true) : (false));
+        //                    resValues = new List<bool>(resValues.Zip(currResultBool, (b1, b2) => b1 && b2));
+        //                }
+        //
+        //                return (resValues.Aggregate((bv1, bv2) => bv1 && bv2)) ? (-1) : (1);
+        //
+        //                //return
+        //                //    (ILRetArray<double>)
+        //                //        (resValues.ConvertAll<double>(bVal => (bVal) ? (-1.0d) : (1.0d)).ToArray());
+        //
+        //            }
+        //        };
+        //    }
+        //
+        //
+        //    ILArray<double> initParameters = dvInitialParametersValues.ToArray();
+        //    double[] resDoub;
+        //    using (ILScope.Enter(initParameters))
+        //    {
+        //        ILRetArray<double> result = Optimization.fmin(
+        //                                                    devFunc,
+        //                                                    initParameters,
+        //                                                    EqualityConstraint: eqFunc,
+        //                                                    InequalityConstraint: ineqFunc,
+        //                                                    tol: maxRelativeError);
+        //        resDoub = result.ToArray();
+        //    }
+        //
+        //    return DenseVector.OfEnumerable(resDoub);
+        //}
 
 
 
