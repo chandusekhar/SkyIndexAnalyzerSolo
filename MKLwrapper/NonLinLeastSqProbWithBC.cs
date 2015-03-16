@@ -9,13 +9,22 @@ using System.Security;
 
 namespace MKLwrapper
 {
-    public sealed class NonLinLeastSqProbWithBC
+    public sealed class NonLinLeastSqProbWithBC : IDisposable
     {
         private IntPtr solverHandle;
+        public IEnumerable<double> mSpaceVector = null;
+        public IEnumerable<double> mFittingValuesVector = null;
+        public IEnumerable<double> nXspacePoint = null;
+        public Func<IEnumerable<double>, double, double> fittingFunction = null;
+        public IEnumerable<double> lowerBoundConstraints = null;
+        public IEnumerable<double> upperBoundConstraints = null;
+
+
+        public string resultStatus = "";
 
         public NonLinLeastSqProbWithBC()
         {
-            //solverHandle = new IntPtr();
+            solverHandle = new IntPtr();
         }
 
 
@@ -106,80 +115,200 @@ namespace MKLwrapper
         #endregion naming conventions and functions prototypes (see mkl_rci.h)
 
 
-
-
-
-
-        public int NonLinLeastSqProbWithBC_init(
-                                            int xLength,
-                                            int fLength,
-                                            double[] xInitialGuess,
-                                            double[] xLowBounds,
-                                            double[] xUpperBounds,
-                                            double[] stopCriteria,
-                                            int iterMaxCount,
-                                            int trialIterMaxCount,
-                                            double trustRegionInitialSize)
+        private IEnumerable<double> ObjectiveFunctional(IEnumerable<double> xPoint)
         {
-            return NonLinLeastSqProbWithBCNative.dtrnlspbc_init(out solverHandle, xLength, fLength, xInitialGuess,
-                xLowBounds, xUpperBounds, stopCriteria, iterMaxCount, trialIterMaxCount, trustRegionInitialSize);
+            List<double> lFittingFunctionValues = new List<double>(mSpaceVector);
+            lFittingFunctionValues =
+                lFittingFunctionValues.ConvertAll(nSpacePointVal => fittingFunction(xPoint, nSpacePointVal));
+            lFittingFunctionValues =
+                new List<double>(lFittingFunctionValues.Zip(mFittingValuesVector,
+                    (funcValue, fittingValue) => funcValue - fittingValue));
+            return lFittingFunctionValues;
+        }
+
+
+
+        public IEnumerable<double> SolveOptimizationProblem(double precision = 1.0e-8d)
+        {
+            if (mSpaceVector == null)
+            {
+                throw new NotSetRequiredParametersException("x space values vector is null");
+                return null;
+            }
+            if (mFittingValuesVector == null)
+            {
+                throw new NotSetRequiredParametersException("fitting values vector is null");
+                return null;
+            }
+            if (nXspacePoint == null)
+            {
+                throw new NotSetRequiredParametersException("initial guess X vector is null");
+                return null;
+            }
+            if (fittingFunction == null)
+            {
+                throw new NotSetRequiredParametersException("fitting function has not been set");
+                return null;
+            }
+            if (lowerBoundConstraints == null)
+            {
+                throw new NotSetRequiredParametersException("lower bound constraints has not been set");
+                return null;
+            }
+            if (upperBoundConstraints == null)
+            {
+                throw new NotSetRequiredParametersException("upper bound constraints has not been set");
+                return null;
+            }
+
+            int m = mSpaceVector.Count();
+            int n = nXspacePoint.Count();
+            double[] eps = new double[6] { precision, precision, precision, precision, precision, precision };
+            int iter1 = 100000;
+            int iter2 = 10000;
+            int RCI_Request = 0;
+            double rs = 0.0d;
+            bool successful = false;
+            double r1 = 0.0d;
+            double r2 = 0.0d;
+            int[] check_info = new int[6] { 0, 0, 0, 0, 0, 0 };
+            double[] x = nXspacePoint.ToArray();
+            double[] fVec = ObjectiveFunctional(x).ToArray();
+            double[,] fJacobi = new double[m, n];
+            double[] lwBC = lowerBoundConstraints.ToArray();
+            double[] upBC = upperBoundConstraints.ToArray();
+            for (int i = 0; i < m; i++)
+            {
+                for (int j = 0; j < n; j++)
+                {
+                    fJacobi[i, j] = 0.0d;
+                }
+            }
+
+            unsafe
+            {
+                fixed (double* xPtr = &x[0], fVecPtr = &fVec[0], fJacPtr = &fJacobi[0, 0], lwBCptr = &lwBC[0], upBCptr = &upBC[0], epsPtr = &eps[0])
+                {
+                    int init_res = NonLinLeastSqProbWithBCNative.dtrnlspbc_init(ref solverHandle, ref n, ref m,
+                        (IntPtr)xPtr, (IntPtr)lwBCptr, (IntPtr)upBCptr, (IntPtr)epsPtr, ref iter1, ref iter2, ref rs);
+                    if (init_res != MKLwrapper.DEFINE.TR_SUCCESS)
+                    {
+                        DeleteAndFreeBuffers();
+                        return x;
+                    }
+
+
+                    int check_res = NonLinLeastSqProbWithBCNative.dtrnlspbc_check(ref solverHandle, ref n, ref m,
+                        (IntPtr)fJacPtr, (IntPtr)fVecPtr, (IntPtr)lwBCptr, (IntPtr)upBCptr, (IntPtr)epsPtr, check_info);
+
+                    if (check_res != MKLwrapper.DEFINE.TR_SUCCESS)
+                    {
+                        DeleteAndFreeBuffers();
+                        return x;
+                    }
+                    else
+                    {
+                        if (check_info.Sum() > 0)
+                        {
+                            resultStatus = "input parameters aren`t valid.";
+                            DeleteAndFreeBuffers();
+                            return nXspacePoint;
+                        }
+                    }
+
+
+
+                    while (!successful)
+                    {
+                        int solve_res = NonLinLeastSqProbWithBCNative.dtrnlspbc_solve(ref solverHandle,
+                            (IntPtr)fVecPtr, (IntPtr)fJacPtr, ref RCI_Request);
+                        if (solve_res != MKLwrapper.DEFINE.TR_SUCCESS)
+                        {
+                            resultStatus = "error in dtrnlsp_solve";
+                            DeleteAndFreeBuffers();
+                            return nXspacePoint;
+                        }
+
+                        if (RCI_Request == -1 || RCI_Request == -2 || RCI_Request == -3 || RCI_Request == -4 || RCI_Request == -5 || RCI_Request == -6)
+                            successful = true;
+
+                        if (RCI_Request == 1)
+                        {
+                            double[] newFVecValues = ObjectiveFunctional(x).ToArray();
+                            for (int i = 0; i < m; i++)
+                            {
+                                fVec[i] = newFVecValues[i];
+                            }
+                            resultStatus = "";
+                        }
+
+                        if (RCI_Request == 2)
+                        {
+                            JacobianMatrixCalc jCalculator = new JacobianMatrixCalc();
+                            jCalculator.mSpaceVector = (new List<double>(mSpaceVector)).ToArray();
+                            jCalculator.mFittingValuesVector = (new List<double>(mFittingValuesVector)).ToArray();
+                            jCalculator.nXspacePoint = (new List<double>(x)).ToArray();
+                            jCalculator.objectiveFunction = xPoint => ObjectiveFunctional(xPoint).ToArray();
+                            double[,] tmpNewJacobi = jCalculator.SolveJacobianMatrix(precision);
+
+                            for (int i = 0; i < m; i++)
+                            {
+                                for (int j = 0; j < n; j++)
+                                {
+                                    fJacobi[i, j] = tmpNewJacobi[i, j];
+                                }
+                            }
+                            resultStatus = "";
+                        }
+                    }
+                }
+            }
+
+
+
+
+
+            int iterationsMade = 0;
+            int stopCriterion = 0;
+            if (NonLinLeastSqProbWithBCNative.dtrnlspbc_get(ref solverHandle, ref iterationsMade, ref stopCriterion, ref r1, ref r2) != MKLwrapper.DEFINE.TR_SUCCESS)
+            {
+                resultStatus = "error in dtrnlsp_get";
+                DeleteAndFreeBuffers();
+                return x;
+            }
+
+            DeleteAndFreeBuffers();
+
+
+            if (r2 < precision)
+            {
+                resultStatus = "optimization passed successfully";
+                return x;
+            }
+            else
+            {
+                resultStatus = "optimization failed";
+                return x;
+            }
         }
 
 
 
 
-
-
-        public int NonLinLeastSqProbWithBC_check(
-                                            int xLength,
-                                            int fLength,
-                                            double[,] fJacobianMatrix,
-                                            double[] devFuncValues,
-                                            double[] xLowBounds,
-                                            double[] xUpperBounds,
-                                            double[] stopCriteria,
-                                            out int[] info)
-        {
-            return NonLinLeastSqProbWithBCNative.dtrnlspbc_check(ref solverHandle, xLength, fLength, fJacobianMatrix,
-                devFuncValues, xLowBounds, xUpperBounds, stopCriteria, out info);
-        }
-
-
-
-
-
-
-        public int NonLinLeastSqProbWithBC_solve(
-                                            ref double[] devFuncValues,
-                                            double[,] fJacobianMatrix,
-                                            out int RCI_Request)
-        {
-            return NonLinLeastSqProbWithBCNative.dtrnlspbc_solve(ref solverHandle, ref devFuncValues, fJacobianMatrix, out RCI_Request);
-        }
-
-
-
-
-
-        public int NonLinLeastSqProbWithBC_get(
-                                            ref int iterationsCount,
-                                            ref int stopCriterion,
-                                            ref double initialPositionResidual,
-                                            ref double solutionPositionResidual)
-        {
-            return NonLinLeastSqProbWithBCNative.dtrnlspbc_get(ref solverHandle, out iterationsCount, out stopCriterion,
-                out initialPositionResidual, out solutionPositionResidual);
-        }
-
-
-
-
-        public int NonLinLeastSqProbWithBC_delete()
+        private int DeleteAndFreeBuffers()
         {
             int res = NonLinLeastSqProbWithBCNative.dtrnlspbc_delete(ref solverHandle);
             NonLinLeastSqProbWithBCNative.mkl_free_buffers();
             return res;
         }
+
+
+        public void Dispose()
+        {
+            DeleteAndFreeBuffers();
+        }
+
+
     }
 
 
@@ -241,16 +370,16 @@ namespace MKLwrapper
         #endregion intel dtrnlspbc_init description
         [DllImport("mkl_rt.dll", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true, SetLastError = false)]
         internal static extern int dtrnlspbc_init(
-                                out IntPtr handle,
-                                int xLength,
-                                int fLength,
-                                double[] xInitialGuess,
-                                double[] xLowBounds,
-                                double[] xUpperBounds,
-                                double[] stopCriteria,
-                                int iterMaxCount,
-                                int trialIterMaxCount,
-                                double trustRegionInitialSize);
+                                ref IntPtr handle,
+                                ref int xLength,
+                                ref int fLength,
+                                IntPtr xInitialGuess,
+                                IntPtr xLowBounds,
+                                IntPtr xUpperBounds,
+                                IntPtr stopCriteria,
+                                ref int iterMaxCount,
+                                ref int trialIterMaxCount,
+                                ref double trustRegionInitialSize);
 
 
         #region intel dtrnlspbc_check description
@@ -307,14 +436,14 @@ namespace MKLwrapper
         [DllImport("mkl_rt.dll", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true, SetLastError = false)]
         internal static extern int dtrnlspbc_check(
                                 ref IntPtr handle,
-                                int xLength,
-                                int fLength,
-                                double[,] fJacobianMatrix,
-                                double[] devFuncValues,
-                                double[] xLowBounds,
-                                double[] xUpperBounds,
-                                double[] stopCriteria,
-                                out int[] info);
+                                ref int xLength,
+                                ref int fLength,
+                                IntPtr fJacobianMatrix,
+                                IntPtr devFuncValues,
+                                IntPtr xLowBounds,
+                                IntPtr xUpperBounds,
+                                IntPtr stopCriteria,
+                                [In, Out] int[] info);
 
 
 
@@ -368,9 +497,9 @@ namespace MKLwrapper
         [DllImport("mkl_rt.dll", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true, SetLastError = false)]
         internal static extern int dtrnlspbc_solve(
                                 ref IntPtr handle,
-                                ref double[] devFuncValues,
-                                double[,] fJacobianMatrix,
-                                out int RCI_Request);
+                                [In, Out] IntPtr devFuncValues,
+                                [In] IntPtr fJacobianMatrix,
+                                ref int RCI_Request);
 
 
 
@@ -414,10 +543,10 @@ namespace MKLwrapper
         [DllImport("mkl_rt.dll", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true, SetLastError = false)]
         internal static extern int dtrnlspbc_get(
                                 ref IntPtr handle,
-                                out int iterationsCount,
-                                out int stopCriterion,
-                                out double initialPositionResidual,
-                                out double solutionPositionResidual);
+                                ref int iterationsCount,
+                                ref int stopCriterion,
+                                ref double initialPositionResidual,
+                                ref double solutionPositionResidual);
 
 
 

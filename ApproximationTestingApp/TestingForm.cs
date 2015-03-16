@@ -16,6 +16,8 @@ using SkyImagesAnalyzerLibraries;
 using Emgu.CV;
 using Emgu.CV.Structure;
 using System.CodeDom.Compiler;
+using MathNet.Numerics.LinearAlgebra;
+using MathNet.Numerics.Optimization;
 using Microsoft.CSharp;
 using MKLwrapper;
 
@@ -56,80 +58,28 @@ namespace ApproximationTestingApp
         {
             dataFilePrefix = tbDataFilePrefix.Text + "_";
 
+
+            string[] csvFilesInfo = Directory.GetFiles(CurrentDir, "*_dataMinimumPhi.csv");
+            if (csvFilesInfo.Count() == 0)
+            {
+                ThreadSafeOperations.SetTextTB(tbLog,
+                    Environment.NewLine + "Couldn`t find any proper csv file in directory:" + Environment.NewLine +
+                    CurrentDir + Environment.NewLine, true);
+                return;
+            }
+            else
+            {
+                dataFilePrefix = Path.GetFileName(csvFilesInfo[0]).Replace("_dataMinimumPhi.csv", "") + "_";
+            }
+
+
             theForm = new FunctionRepresentationForm("test function");
             theForm.Show();
 
 
-            #region // отрисовка статистики и аппроксимации Median vs perc5 по данным файла
-            //StreamReader sr = new StreamReader(CurrentDir + "2007-polarstern-CanonA640-stats.dat");
-            //string dataString = sr.ReadToEnd();
-            //string[] dataLines = dataString.Split('\n');
-            //sr.Close();
-            //sr.Dispose();
-            //List<double> perc5List = new List<double>();
-            //List<double> medianList = new List<double>();
-            //foreach (string dataLine in dataLines)
-            //{
-            //    string[] lineSunbstring = dataLine.Split(',');
-            //    double currentMedian = 0.0d;
-            //    double currentPerc5 = 0.0d;
-
-            //    try
-            //    {
-            //        currentMedian = Convert.ToDouble(lineSunbstring[1].Replace(".", ","));
-            //        currentPerc5 = Convert.ToDouble(lineSunbstring[2].Replace(".", ","));
-            //    }
-            //    catch (Exception)
-            //    {
-            //        continue;
-            //    }
-            //    perc5List.Add(currentPerc5);
-            //    medianList.Add(currentMedian);
-            //}
-            #endregion // отрисовка статистики и аппроксимации Median vs perc5 по данным файла
+            
 
             #region аппроксимация для определения зависимости положения минимума по радиальному направлению от угла
-
-            #region //read data
-            //string xDataString = ()ServiceTools.ReadDataFromCSV(CurrentDir + dataFilePrefix + "dataMinimumPhi.csv");
-            //string[] xDataSubstrings = xDataString.Split('\n');
-            //List<double> xDataValuesList = new List<double>();
-            //foreach (string xDataSubstring in xDataSubstrings)
-            //{
-            //    if (xDataSubstring != "") xDataValuesList.Add(Convert.ToDouble(xDataSubstring.Replace(".", ",")));
-            //}
-
-
-
-            //string yDataString = ServiceTools.ReadTextFromFile(CurrentDir + dataFilePrefix + "dataMinimumR.csv");
-            //string[] yDataSubstrings = yDataString.Split('\n');
-            //List<double> yDataValuesList = new List<double>();
-            //foreach (string yDataSubstring in yDataSubstrings)
-            //{
-            //    if (yDataSubstring != "") yDataValuesList.Add(Convert.ToDouble(yDataSubstring.Replace(".", ",")));
-            //}
-
-
-            //sr = new StreamReader(CurrentDir + dataFilePrefix + "dataWeights.csv");
-            //string wDataString = sr.ReadToEnd();
-            //string[] wDataSubstrings = wDataString.Split('\n');
-            //List<double> wDataValuesList = new List<double>();
-            //foreach (string wDataSubstring in wDataSubstrings)
-            //{
-            //    if (wDataSubstring != "") wDataValuesList.Add(Convert.ToDouble(wDataSubstring.Replace(".", ",")));
-            //}
-
-
-            //sr = new StreamReader(CurrentDir + dataFilePrefix + "approximationInitialParameters.csv");
-            //string pDataString = sr.ReadToEnd();
-            //string[] pDataSubstrings = pDataString.Split('\n');
-            //List<double> pDataValuesList = new List<double>();
-            //foreach (string pDataSubstring in pDataSubstrings)
-            //{
-            //    if (pDataSubstring != "") pDataValuesList.Add(Convert.ToDouble(pDataSubstring.Replace(".", ",")));
-            //}
-            //dvCurrentParameters = DenseVector.OfEnumerable(pDataValuesList);
-            #endregion //read data
             xData = (DenseVector)ServiceTools.ReadDataFromCSV(CurrentDir + dataFilePrefix + "dataMinimumPhi.csv");
             funcData = (DenseVector)ServiceTools.ReadDataFromCSV(CurrentDir + dataFilePrefix + "dataMinimumR.csv");
             dvFuncWeights = (DenseVector)ServiceTools.ReadDataFromCSV(CurrentDir + dataFilePrefix + "dataWeights.csv");
@@ -152,28 +102,6 @@ namespace ApproximationTestingApp
 
             #endregion
 
-            #region // отрисовка статистики и аппроксимации Median vs perc5 по данным файла
-            //DenseVector dvDataDistribution = DenseVector.OfEnumerable(perc5List);
-            //DenseVector dvDataSpace = DenseVector.OfEnumerable(medianList);
-            //int polynomeOrder = 21;
-            //DenseVector approxPolyKoeffs = DataAnalysis.NPolynomeApproximationLessSquareMethod(dvDataDistribution, dvDataSpace, null, polynomeOrder);
-
-            //Func<DenseVector, double, double> theFunctionToShow = DataAnalysis.PolynomeValue;
-
-            //theForm.theRepresentingFunctions.Add(theFunctionToShow);
-            //theForm.parameters.Add(approxPolyKoeffs);
-            //theForm.lineColors.Add(new Bgr(Color.Magenta));
-
-            //theForm.dvScatterXSpace = (DenseVector)dvDataSpace.Clone();
-            //theForm.dvScatterFuncValues = (DenseVector)dvDataDistribution.Clone();
-            //theForm.xSpaceMin = theForm.dvScatterXSpace.Values.Min();
-            //theForm.xSpaceMax = theForm.dvScatterXSpace.Values.Max();
-            //theForm.overallFuncMin = theForm.dvScatterFuncValues.Values.Min();
-            //theForm.overallFuncMax = theForm.dvScatterFuncValues.Values.Max();
-
-            //ThreadSafeOperations.SetTextTB(tbLog, ServiceTools.densevectorToString(approxPolyKoeffs), true);
-            #endregion // отрисовка статистики Median-perc5 по данным файла
-
 
             theForm.theRepresentingFunctions.Add(theFunctionToShow);
             theForm.scaleFunctionValuesToMax.Add(false);
@@ -184,7 +112,8 @@ namespace ApproximationTestingApp
             theForm.lineColors.Add(new Bgr(Color.Magenta));
             theForm.lineColors.Add(new Bgr(Color.Black)); // для той, которая будет аппроксимацией
 
-            ThreadSafeOperations.SetTextTB(tbLog, ServiceTools.densevectorToString(dvCurrentParameters), true);
+            ThreadSafeOperations.SetTextTB(tbLog,
+                Environment.NewLine + ServiceTools.densevectorToString(dvCurrentParameters) + Environment.NewLine, true);
 
 
             #region //      отфильтровать значения по статстике за пределами 3s
@@ -241,7 +170,7 @@ namespace ApproximationTestingApp
             
             string str2show = "" + theForm.theRepresentingFunctions[0].ToString() + Environment.NewLine;
             str2show += theForm.parameters[0].ToString();
-            ThreadSafeOperations.SetTextTB(tbLog, str2show, true);
+            ThreadSafeOperations.SetTextTB(tbLog, Environment.NewLine + str2show + Environment.NewLine, true);
         }
 
 
@@ -316,7 +245,8 @@ namespace ApproximationTestingApp
                 return;
             }
 
-            ThreadSafeOperations.SetTextTB(tbLog, ServiceTools.densevectorToString(dvCurrentParameters), false);
+            ThreadSafeOperations.SetTextTB(tbLog,
+                Environment.NewLine + ServiceTools.densevectorToString(dvCurrentParameters) + Environment.NewLine, false);
 
             theApproximationFunction = (dvParametersLocal, x) =>
             {
@@ -359,8 +289,10 @@ namespace ApproximationTestingApp
                 theForm.parameters[theForm.parameters.Count - 1] = dvCurrentParameters;
                 theForm.lineColors[theForm.lineColors.Count - 1] = new Bgr(Color.DarkOrange);
                 theForm.Represent();
-                
-                ThreadSafeOperations.SetTextTB(tbLog, ServiceTools.densevectorToString(dvCurrentParameters), false);
+
+                ThreadSafeOperations.SetTextTB(tbLog,
+                    Environment.NewLine + ServiceTools.densevectorToString(dvCurrentParameters) + Environment.NewLine,
+                    false);
                 lblStatus.Text = stepsCount.ToString();
             }
 
@@ -377,7 +309,9 @@ namespace ApproximationTestingApp
             theForm.lineColors.Add(new Bgr(Color.Green));
             theForm.Represent();
 
-            ThreadSafeOperations.SetTextTB(tbLog, "DONE" + Environment.NewLine + ServiceTools.densevectorToString(dvCurrentParameters), false);
+            ThreadSafeOperations.SetTextTB(tbLog,
+                Environment.NewLine + "DONE" + Environment.NewLine +
+                ServiceTools.densevectorToString(dvCurrentParameters) + Environment.NewLine, false);
         }
 
 
@@ -572,7 +506,8 @@ namespace ApproximationTestingApp
             theForm.parameters.Add(dvCurrentParameters);
             theForm.lineColors.Add(new Bgr(Color.Magenta));
 
-            ThreadSafeOperations.SetTextTB(tbLog, ServiceTools.densevectorToString(dvCurrentParameters), true);
+            ThreadSafeOperations.SetTextTB(tbLog,
+                Environment.NewLine + ServiceTools.densevectorToString(dvCurrentParameters) + Environment.NewLine, true);
 
             theForm.dvScatterXSpace = xData.Copy();
             theForm.dvScatterFuncValues = funcData.Copy();
@@ -582,7 +517,7 @@ namespace ApproximationTestingApp
 
             string str2show = "" + theForm.theRepresentingFunctions[0].ToString() + Environment.NewLine;
             str2show += theForm.parameters[0].ToString();
-            ThreadSafeOperations.SetTextTB(tbLog, str2show, true);
+            ThreadSafeOperations.SetTextTB(tbLog, Environment.NewLine + str2show + Environment.NewLine, true);
         }
 
 
@@ -597,7 +532,8 @@ namespace ApproximationTestingApp
                 return;
             }
 
-            ThreadSafeOperations.SetTextTB(tbLog, ServiceTools.densevectorToString(dvCurrentParameters), false);
+            ThreadSafeOperations.SetTextTB(tbLog,
+                Environment.NewLine + ServiceTools.densevectorToString(dvCurrentParameters) + Environment.NewLine, false);
 
 
             #region //obsolete
@@ -701,11 +637,13 @@ namespace ApproximationTestingApp
             theFformLinSolv.lineColors.Add(new Bgr(Color.Black));
             theFformLinSolv.Show();
             theFformLinSolv.Represent();
-            
 
-            
 
-            ThreadSafeOperations.SetTextTB(tbLog, "DONE" + Environment.NewLine + ServiceTools.densevectorToString(dvCurrentParameters), false);
+
+
+            ThreadSafeOperations.SetTextTB(tbLog,
+                Environment.NewLine + "DONE" + Environment.NewLine +
+                ServiceTools.densevectorToString(dvCurrentParameters) + Environment.NewLine, true);
         }
 
 
@@ -764,12 +702,244 @@ namespace ApproximationTestingApp
 
 
 
+
+
+
         #region MKL optimization test
 
-        private BackgroundWorker bgwMKLapproximationWorker;
+        //private BackgroundWorker bgwMKLapproximationWorker;
         private void btnInitDataForintelMKL_Click(object sender, EventArgs e)
         {
-            dataFilePrefix = rtbDataFilesPrefixMKL.Text + "_";
+            List<string> lDataFilePrefixes = new List<string>() { rtbDataFilesPrefixMKL.Text + "_" };
+            
+
+            theApproximationFunction = (parametersListLoc, x) =>
+            {
+                double d1 = parametersListLoc[0];
+                double d2 = parametersListLoc[1];
+                double r = parametersListLoc[2];
+                double phi0 = parametersListLoc[3];
+                return d1 * Math.Cos(x - phi0) + Math.Sqrt(r * r - d2 * d2 * Math.Pow(Math.Sin(x - phi0), 2.0d));
+            };
+
+
+            if (!File.Exists(CurrentDir + lDataFilePrefixes[0] + "dataMinimumPhi.csv"))
+            {
+                string[] csvFilesInfo = Directory.GetFiles(CurrentDir, "*_dataMinimumPhi.csv");
+                if (csvFilesInfo.Count() == 0)
+                {
+                    ThreadSafeOperations.SetTextTB(tbLog, Environment.NewLine +
+                        "Couldn`t find any proper csv file in directory:" + Environment.NewLine + CurrentDir + Environment.NewLine, true);
+                    return;
+                }
+                else
+                {
+                    lDataFilePrefixes = new List<string>(csvFilesInfo);
+                    lDataFilePrefixes =
+                        lDataFilePrefixes.ConvertAll(
+                            str => Path.GetFileName(str).Replace("_dataMinimumPhi.csv", "") + "_");
+
+                }
+            }
+
+            foreach (string prefix in lDataFilePrefixes)
+            {
+                xData = (DenseVector)ServiceTools.ReadDataFromCSV(CurrentDir + prefix + "dataMinimumPhi.csv");
+                funcData = (DenseVector)ServiceTools.ReadDataFromCSV(CurrentDir + prefix + "dataMinimumR.csv");
+                dvFuncWeights = (DenseVector)ServiceTools.ReadDataFromCSV(CurrentDir + prefix + "dataWeights.csv");
+                dvCurrentParameters =
+                    (DenseVector)
+                        ServiceTools.ReadDataFromCSV(CurrentDir + prefix + "approximationInitialParameters.csv");
+
+                #region Добавим интерполированные данные, чтобы решение не разносило
+
+                double shift = xData[0];
+                DenseVector dvTmpXdataShited = (DenseVector)xData.Map(d => d - shift);
+                dvTmpXdataShited = DenseVector.OfEnumerable(dvTmpXdataShited.Concat(DenseVector.Create(1, 2.0d * Math.PI)));
+                DenseVector dvTmpParameters = dvCurrentParameters.Copy();
+                dvTmpParameters[3] = dvTmpParameters[3] - shift;
+                funcData =
+                    DenseVector.OfEnumerable(
+                        funcData.Concat(DenseVector.Create(1, theApproximationFunction(dvTmpParameters, 2.0d * Math.PI))));
+                DenseVector dvGaps = DenseVector.Create(dvTmpXdataShited.Count - 1, i => dvTmpXdataShited[i + 1] - dvTmpXdataShited[i]);
+                int num = Convert.ToInt32(2.0d * Math.PI / dvGaps.AbsoluteMinimum());
+                // итерационно добавляем точки посередине пропусков длиной более (2*PI/num)*20
+                double maxGap = 30.0d * 2.0d * Math.PI / (double)num;
+                while (dvGaps.AbsoluteMaximum() > maxGap)
+                {
+                    int maxGapIdx = dvGaps.AbsoluteMaximumIndex();
+                    List<double> tmpXData = new List<double>(dvTmpXdataShited);
+                    List<double> tmpFuncData = new List<double>(funcData);
+                    double newXvalue = (dvTmpXdataShited[maxGapIdx] + dvTmpXdataShited[maxGapIdx + 1]) / 2.0d;
+                    double newFuncValue = theApproximationFunction(dvTmpParameters, newXvalue);
+                    tmpXData.Insert(maxGapIdx + 1, newXvalue);
+                    tmpFuncData.Insert(maxGapIdx + 1, newFuncValue);
+                    dvTmpXdataShited = DenseVector.OfEnumerable(tmpXData);
+                    funcData = DenseVector.OfEnumerable(tmpFuncData);
+
+                    dvGaps = DenseVector.Create(dvTmpXdataShited.Count - 1, i => dvTmpXdataShited[i + 1] - dvTmpXdataShited[i]);
+                }
+                xData = (DenseVector)dvTmpXdataShited.Map(d => d + shift);
+                List<double> tmpXData2 = new List<double>(xData);
+                tmpXData2.RemoveAt(tmpXData2.Count - 1);
+                xData = DenseVector.OfEnumerable(tmpXData2);
+                List<double> tmpFuncData2 = new List<double>(funcData);
+                tmpFuncData2.RemoveAt(tmpFuncData2.Count - 1);
+                funcData = DenseVector.OfEnumerable(tmpFuncData2);
+                #endregion Добавим интерполированные данные, чтобы решение не разносило
+
+
+
+
+
+
+
+
+                FunctionRepresentationForm MKLform = new FunctionRepresentationForm("test function");
+                MKLform.Show();
+                MKLform.theRepresentingFunctions.Add(theApproximationFunction);
+                MKLform.scaleFunctionValuesToMax.Add(false);
+                MKLform.theRepresentingFunctions.Add(theApproximationFunction); // для той, которая будет аппроксимацией
+                MKLform.scaleFunctionValuesToMax.Add(false);
+                MKLform.parameters.Add(dvCurrentParameters);
+                MKLform.parameters.Add(dvCurrentParameters); // для той, которая будет аппроксимацией
+                MKLform.lineColors.Add(new Bgr(Color.Magenta));
+                MKLform.lineColors.Add(new Bgr(Color.Black)); // для той, которая будет аппроксимацией
+
+                ThreadSafeOperations.SetTextTB(tbLog,
+                    Environment.NewLine + ServiceTools.densevectorToString(dvCurrentParameters) + Environment.NewLine, true);
+
+                MKLform.dvScatterXSpace = xData.Copy();
+                MKLform.dvScatterFuncValues = funcData.Copy();
+
+                MKLform.xSpaceMin = MKLform.dvScatterXSpace.Min() - (MKLform.dvScatterXSpace.Max() - MKLform.dvScatterXSpace.Min()) / 5.0d;
+                MKLform.xSpaceMax = MKLform.dvScatterXSpace.Max() + (MKLform.dvScatterXSpace.Max() - MKLform.dvScatterXSpace.Min()) / 5.0d;
+
+
+                if (MKLform.xSpaceMax - MKLform.xSpaceMin < 2.0d * Math.PI)
+                    MKLform.xSpaceMax = MKLform.xSpaceMin + 2.0d * Math.PI;
+
+
+                MKLform.Represent();
+
+
+                string str2show = "" + MKLform.theRepresentingFunctions[0].ToString() + Environment.NewLine;
+                str2show += MKLform.parameters[0].ToString();
+                ThreadSafeOperations.SetTextTB(tbLog, Environment.NewLine + str2show + Environment.NewLine, true);
+
+
+
+
+
+
+
+                stepsCount = 0;
+                //if (bgwMKLapproximationWorker != null)
+                //{
+                //    if (bgwMKLapproximationWorker.IsBusy)
+                //    {
+                //        bgwMKLapproximationWorker.CancelAsync();
+                //        return;
+                //    }
+                //}
+
+
+                ThreadSafeOperations.SetTextTB(tbLog,
+                    Environment.NewLine + ServiceTools.densevectorToString(dvCurrentParameters) + Environment.NewLine, false);
+
+                DoWorkEventArgs args = new DoWorkEventArgs(new object[]{ dvCurrentParameters, MKLform });
+
+                BackgroundWorker bgwMKLapproximationWorker = new BackgroundWorker();
+                bgwMKLapproximationWorker.DoWork += bgwMKLapproximationWorker_DoWork;
+                bgwMKLapproximationWorker.RunWorkerCompleted += bgwMKLapproximationWorker_RunWorkerCompleted;
+
+                bgwMKLapproximationWorker.RunWorkerAsync(args);
+            }
+
+            
+        }
+        
+
+
+
+
+        
+
+
+        void bgwMKLapproximationWorker_DoWork(object sender, DoWorkEventArgs e)
+        {
+            BackgroundWorker SelfWorker = sender as BackgroundWorker;
+            object[] args = (object[])(((DoWorkEventArgs)(e.Argument)).Argument);
+            DenseVector dvParameters = ((DenseVector)args[0]).Copy();
+            FunctionRepresentationForm MKLform = args[1] as FunctionRepresentationForm;
+
+            DenseVector dvLowerBounds = DenseVector.Create(dvParameters.Count, 0.0d);
+            DenseVector dvUpperBounds = DenseVector.Create(dvParameters.Count, idx =>
+            {
+                if ((idx >= 0) && (idx < 3))
+                {
+                    return 2.0d*dvParameters[2];
+                }
+                else return 2.0d*Math.PI;
+            });
+
+            NonLinLeastSqProbWithBC solver = new NonLinLeastSqProbWithBC();
+            solver.mSpaceVector = xData.Copy();
+            solver.mFittingValuesVector = funcData.Copy();
+            solver.nXspacePoint = dvParameters.Copy();
+            solver.lowerBoundConstraints = dvLowerBounds;
+            solver.upperBoundConstraints = dvUpperBounds;
+            solver.fittingFunction =
+                (paramsVector, xValue) => theApproximationFunction(DenseVector.OfEnumerable(paramsVector), xValue);
+            dvParameters = DenseVector.OfEnumerable(solver.SolveOptimizationProblem());
+
+            //dvCurrentParameters = theApproximator.Approximation_ILOptimizerConstrained(dvParameters, 1.0e-10d);
+            e.Result = new object[] { dvParameters, MKLform };
+        }
+
+
+
+        void bgwMKLapproximationWorker_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
+        {
+            object[] bgwResult = e.Result as object[];
+            dvCurrentParameters = bgwResult[0] as DenseVector;
+
+            FunctionRepresentationForm MKLform = bgwResult[1] as FunctionRepresentationForm;
+            MKLform.theRepresentingFunctions.Add(theApproximationFunction);
+            MKLform.scaleFunctionValuesToMax.Add(false);
+            MKLform.parameters.Add(dvCurrentParameters);
+            MKLform.lineColors.Add(new Bgr(Color.Magenta));
+            MKLform.Represent();
+
+            ThreadSafeOperations.SetTextTB(tbLog,
+                Environment.NewLine + "DONE" + Environment.NewLine +
+                ServiceTools.densevectorToString(dvCurrentParameters) + Environment.NewLine, true);
+        }
+        #endregion MKL optimization test
+
+
+
+
+
+
+
+
+        #region MathNet optimization test
+        private BackgroundWorker bgwMathNetApproximationWorker;
+        private void btnInitDataForintelMathNet_Click(object sender, EventArgs e)
+        {
+            dataFilePrefix = rtbDataFilesPrefixMathNet.Text + "_";
+
+            theApproximationFunction = (parametersListLoc, x) =>
+            {
+                double d1 = parametersListLoc[0];
+                double d2 = parametersListLoc[1];
+                double r = parametersListLoc[2];
+                double phi0 = parametersListLoc[3];
+                return d1 * Math.Cos(x - phi0) + Math.Sqrt(r * r - d2 * d2 * Math.Pow(Math.Sin(x - phi0), 2.0d));
+            };
+
+
 
             theForm = new FunctionRepresentationForm("test function");
             theForm.Show();
@@ -779,8 +949,8 @@ namespace ApproximationTestingApp
                 string[] csvFilesInfo = Directory.GetFiles(CurrentDir, "*_dataMinimumPhi.csv");
                 if (csvFilesInfo.Count() == 0)
                 {
-                    ThreadSafeOperations.SetTextTB(tbLog,
-                        "Couldn`t find any proper csv file in directory:" + Environment.NewLine + CurrentDir, true);
+                    ThreadSafeOperations.SetTextTB(tbLog, Environment.NewLine +
+                        "Couldn`t find any proper csv file in directory:" + Environment.NewLine + CurrentDir + Environment.NewLine, true);
                     return;
                 }
                 else
@@ -799,14 +969,43 @@ namespace ApproximationTestingApp
 
 
 
-            theApproximationFunction = (parametersListLoc, x) =>
+            #region Добавим интерполированные данные, чтобы решение не разносило
+
+            double shift = xData[0];
+            DenseVector dvTmpXdataShited = (DenseVector)xData.Map(d => d - shift);
+            dvTmpXdataShited = DenseVector.OfEnumerable(dvTmpXdataShited.Concat(DenseVector.Create(1, 2.0d * Math.PI)));
+            DenseVector dvTmpParameters = dvCurrentParameters.Copy();
+            dvTmpParameters[3] = dvTmpParameters[3] - shift;
+            funcData =
+                DenseVector.OfEnumerable(
+                    funcData.Concat(DenseVector.Create(1, theApproximationFunction(dvTmpParameters, 2.0d * Math.PI))));
+            DenseVector dvGaps = DenseVector.Create(dvTmpXdataShited.Count - 1, i => dvTmpXdataShited[i + 1] - dvTmpXdataShited[i]);
+            int num = Convert.ToInt32(2.0d * Math.PI / dvGaps.AbsoluteMinimum());
+            // итерационно добавляем точки посередине пропусков длиной более (2*PI/num)*20
+            double maxGap = 30.0d * 2.0d * Math.PI / (double)num;
+            while (dvGaps.AbsoluteMaximum() > maxGap)
             {
-                double d1 = parametersListLoc[0];
-                double d2 = parametersListLoc[1];
-                double r = parametersListLoc[2];
-                double phi0 = parametersListLoc[3];
-                return d1 * Math.Cos(x - phi0) + Math.Sqrt(r * r - d2 * d2 * Math.Pow(Math.Sin(x - phi0), 2.0d));
-            };
+                int maxGapIdx = dvGaps.AbsoluteMaximumIndex();
+                List<double> tmpXData = new List<double>(dvTmpXdataShited);
+                List<double> tmpFuncData = new List<double>(funcData);
+                double newXvalue = (dvTmpXdataShited[maxGapIdx] + dvTmpXdataShited[maxGapIdx + 1]) / 2.0d;
+                double newFuncValue = theApproximationFunction(dvTmpParameters, newXvalue);
+                tmpXData.Insert(maxGapIdx + 1, newXvalue);
+                tmpFuncData.Insert(maxGapIdx + 1, newFuncValue);
+                dvTmpXdataShited = DenseVector.OfEnumerable(tmpXData);
+                funcData = DenseVector.OfEnumerable(tmpFuncData);
+
+                dvGaps = DenseVector.Create(dvTmpXdataShited.Count - 1, i => dvTmpXdataShited[i + 1] - dvTmpXdataShited[i]);
+            }
+            xData = (DenseVector)dvTmpXdataShited.Map(d => d + shift);
+            List<double> tmpXData2 = new List<double>(xData);
+            tmpXData2.RemoveAt(tmpXData2.Count - 1);
+            xData = DenseVector.OfEnumerable(tmpXData2);
+            List<double> tmpFuncData2 = new List<double>(funcData);
+            tmpFuncData2.RemoveAt(tmpFuncData2.Count - 1);
+            funcData = DenseVector.OfEnumerable(tmpFuncData2);
+            #endregion Добавим интерполированные данные, чтобы решение не разносило
+
 
 
             theForm.theRepresentingFunctions.Add(theApproximationFunction);
@@ -818,7 +1017,7 @@ namespace ApproximationTestingApp
             theForm.lineColors.Add(new Bgr(Color.Magenta));
             theForm.lineColors.Add(new Bgr(Color.Black)); // для той, которая будет аппроксимацией
 
-            ThreadSafeOperations.SetTextTB(tbLog, ServiceTools.densevectorToString(dvCurrentParameters), true);
+            ThreadSafeOperations.SetTextTB(tbLog, Environment.NewLine + ServiceTools.densevectorToString(dvCurrentParameters) + Environment.NewLine, true);
 
             theForm.dvScatterXSpace = xData.Copy();
             theForm.dvScatterFuncValues = funcData.Copy();
@@ -836,67 +1035,124 @@ namespace ApproximationTestingApp
 
             string str2show = "" + theForm.theRepresentingFunctions[0].ToString() + Environment.NewLine;
             str2show += theForm.parameters[0].ToString();
-            ThreadSafeOperations.SetTextTB(tbLog, str2show, true);
+            ThreadSafeOperations.SetTextTB(tbLog, Environment.NewLine + str2show + Environment.NewLine, true);
         }
-        
 
 
 
 
-        private void btnApproximateMKL_Click(object sender, EventArgs e)
+
+        private void btnApproximateMathNet_Click(object sender, EventArgs e)
         {
             stepsCount = 0;
-            if (bgwMKLapproximationWorker != null)
+            if (bgwMathNetApproximationWorker != null)
             {
-                if (bgwMKLapproximationWorker.IsBusy)
+                if (bgwMathNetApproximationWorker.IsBusy)
                 {
-                    bgwMKLapproximationWorker.CancelAsync();
+                    bgwMathNetApproximationWorker.CancelAsync();
                     return;
                 }
             }
-            
 
-            ThreadSafeOperations.SetTextTB(tbLog, ServiceTools.densevectorToString(dvCurrentParameters), false);
 
-            approxParametersCondition = new List<Func<DenseVector, double, double>>();
-            approxParametersCondition.Add((dvPar, x) => -dvPar[0]);
-            approxParametersCondition.Add((dvPar, x) => -dvPar[1]);
-            approxParametersCondition.Add((dvPar, x) => -dvPar[2]);
-            approxParametersCondition.Add((dvPar, x) => dvPar[0] - dvPar[2]);
-            approxParametersCondition.Add((dvPar, x) => dvPar[1] - dvPar[2]);
-            DoWorkEventArgs args = new DoWorkEventArgs(new object[]{dvCurrentParameters});
+            ThreadSafeOperations.SetTextTB(tbLog, Environment.NewLine + ServiceTools.densevectorToString(dvCurrentParameters) + Environment.NewLine, false);
 
-            bgwMKLapproximationWorker = new BackgroundWorker();
-            bgwMKLapproximationWorker.DoWork += bgwMKLapproximationWorker_DoWork;
-            bgwMKLapproximationWorker.RunWorkerCompleted += bgwMKLapproximationWorker_RunWorkerCompleted;
+            DoWorkEventArgs args = new DoWorkEventArgs(new object[] { dvCurrentParameters });
 
-            bgwMKLapproximationWorker.RunWorkerAsync(args);
+            bgwMathNetApproximationWorker = new BackgroundWorker();
+            bgwMathNetApproximationWorker.DoWork += bgwMathNetapproximationWorker_DoWork;
+            bgwMathNetApproximationWorker.RunWorkerCompleted += bgwMathNetapproximationWorker_RunWorkerCompleted;
+
+            bgwMathNetApproximationWorker.RunWorkerAsync(args);
         }
 
-        
 
 
-        void bgwMKLapproximationWorker_DoWork(object sender, DoWorkEventArgs e)
+
+        void bgwMathNetapproximationWorker_DoWork(object sender, DoWorkEventArgs e)
         {
             BackgroundWorker SelfWorker = sender as BackgroundWorker;
             object[] args = (object[])(((DoWorkEventArgs)(e.Argument)).Argument);
             DenseVector dvParameters = ((DenseVector)args[0]).Copy();
 
-            NonLinLeastSqProbWoConstraints solver = new NonLinLeastSqProbWoConstraints();
-            solver.mSpaceVector = xData.Copy();
-            solver.mFittingValuesVector = funcData.Copy();
-            solver.nXspacePoint = dvParameters.Copy();
-            solver.fittingFunction =
-                (paramsVector, xValue) => theApproximationFunction(DenseVector.OfEnumerable(paramsVector), xValue);
-            dvParameters = DenseVector.OfEnumerable(solver.SolveOptimizationProblem());
+            //DenseVector dvLowerBounds = DenseVector.Create(dvParameters.Count, 0.0d);
+            //DenseVector dvUpperBounds = DenseVector.Create(dvParameters.Count, idx =>
+            //{
+            //    if ((idx >= 0) && (idx < 3))
+            //    {
+            //        return 2.0d * dvParameters[2];
+            //    }
+            //    else return 2.0d * Math.PI;
+            //});
 
-            //dvCurrentParameters = theApproximator.Approximation_ILOptimizerConstrained(dvParameters, 1.0e-10d);
+            double[] parVect = dvParameters.ToArray();
+
+            MpFunc func = (pVect, fVec, dVec, additionalParameters) =>
+            {
+                Dictionary<string, DenseVector> addPar = additionalParameters as Dictionary<string, DenseVector>;
+                DenseVector dvXspace = addPar["xSpaceValues"];
+                DenseVector dvYfittingValues = addPar["yFittingDataValues"];
+                DenseVector dvFvals = (DenseVector) dvXspace.Map(dXval => theApproximationFunction(pVect, dXval));
+                dvFvals = dvFvals - dvYfittingValues;
+                for (int i = 0; i < dvFvals.Count; i++)
+                {
+                    fVec[i] = dvFvals[i];
+                }
+
+                return 1;
+            };
+
+            Dictionary<string, DenseVector> dictAdditionalParameters = new Dictionary<string, DenseVector>();
+            dictAdditionalParameters.Add("xSpaceValues", xData);
+            dictAdditionalParameters.Add("yFittingDataValues", funcData);
+            MpResult MpRes = new MpResult(dvParameters.Count);
+            MpConfig config = new MpConfig();
+            config.xtol = 1.0e-8d;
+            config.covtol = 1.0e-8d;
+            config.ftol = 1.0e-8d;
+
+            List<ParameterConstraint> lConstraints = new List<ParameterConstraint>();
+            /*
+             * double d1 = parametersListLoc[0];
+             * double d2 = parametersListLoc[1];
+             * double r = parametersListLoc[2];
+             * double phi0 = parametersListLoc[3];
+             */
+            lConstraints.Add(new ParameterConstraint()
+            {
+                isFixed = 0,
+                limited = new int[] { 1, 1},
+                limits = new double[] { 0.0d, 2.0d * dvParameters[2] }
+            });
+            lConstraints.Add(new ParameterConstraint()
+            {
+                isFixed = 0,
+                limited = new int[] { 1, 1 },
+                limits = new double[] { 0.0d, 2.0d * dvParameters[2] }
+            });
+            lConstraints.Add(new ParameterConstraint()
+            {
+                isFixed = 0,
+                limited = new int[] { 1, 1 },
+                limits = new double[] { 0.0d, 2.0d * dvParameters[2] }
+            });
+            lConstraints.Add(new ParameterConstraint()
+            {
+                isFixed = 0,
+                limited = new int[] { 0, 0 }
+            });
+
+            int result = MpFit.Solve(func, funcData.Count, dvParameters.Count, parVect, lConstraints.ToArray(), config, dictAdditionalParameters,
+                ref MpRes);
+
+            dvParameters = DenseVector.OfEnumerable(parVect);
+            
             e.Result = new object[] { dvParameters };
         }
 
 
 
-        void bgwMKLapproximationWorker_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
+        void bgwMathNetapproximationWorker_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
         {
             object[] bgwResult = e.Result as object[];
             dvCurrentParameters = bgwResult[0] as DenseVector;
@@ -908,8 +1164,8 @@ namespace ApproximationTestingApp
             theForm.lineColors.Add(new Bgr(Color.Green));
             theForm.Represent();
 
-            ThreadSafeOperations.SetTextTB(tbLog, "DONE" + Environment.NewLine + ServiceTools.densevectorToString(dvCurrentParameters), false);
+            ThreadSafeOperations.SetTextTB(tbLog, Environment.NewLine + "DONE" + Environment.NewLine + ServiceTools.densevectorToString(dvCurrentParameters) + Environment.NewLine, true);
         }
-        #endregion MKL optimization test
+        #endregion MathNet optimization test
     }
 }

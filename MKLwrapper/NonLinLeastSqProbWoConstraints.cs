@@ -42,38 +42,10 @@ namespace MKLwrapper
 
         public NonLinLeastSqProbWoConstraints()
         {
-            //solverHandle = Marshal.AllocHGlobal(Marshal.NumParamBytes(System.Reflection.MethodInfo.GetMethodFromHandle(NonLinLeastSqProbWoConstraintsNative.dtrnlsp_init)));
             solverHandle = new IntPtr();
         }
 
 
-
-
-
-        //private double[] ObjectiveFunctionalArrayForJacobianMatrixCalc(double[] xPoint)
-        //{
-        //    List<double> funcValuesList = new List<double>();
-        //    foreach (double spacePoint in mSpaceVector)
-        //    {
-        //        funcValuesList.Add(fittingFunction(xPoint, spacePoint));
-        //    }
-        //
-        //    return funcValuesList.ToArray();
-        //}
-
-
-
-        //private Func<double[], double>[] ObjectiveFunctionalArrayForJacobianMatrixCalc(double[] xPoint)
-        //{
-        //    List<Func<double[], double>> funcList = new List<Func<double[], double>>();
-        //
-        //    foreach (double spacePoint in mSpaceVector)
-        //    {
-        //        funcList.Add(xPt => fittingFunction(xPt, spacePoint));
-        //    }
-        //
-        //    return funcList.ToArray();
-        //}
 
 
 
@@ -92,7 +64,7 @@ namespace MKLwrapper
 
 
 
-        public IEnumerable<double> SolveOptimizationProblem(double precision = 1.0e-5d)
+        public IEnumerable<double> SolveOptimizationProblem(double precision = 1.0e-8d)
         {
             if (mSpaceVector == null)
             {
@@ -129,7 +101,6 @@ namespace MKLwrapper
             double[] x = nXspacePoint.ToArray();
             double[] fVec = ObjectiveFunctional(x).ToArray();
             double[,] fJacobi = new double[m, n];
-            NumericalJacobian jacobCalculator = new NumericalJacobian();
             for (int i = 0; i < m; i++)
             {
                 for (int j = 0; j < n; j++)
@@ -146,7 +117,7 @@ namespace MKLwrapper
                         (IntPtr) xPtr, eps, ref iter1, ref iter2, ref rs);
                     if (init_res != MKLwrapper.DEFINE.TR_SUCCESS)
                     {
-                        Delete();
+                        DeleteAndFreeBuffers();
                         return x;
                     }
 
@@ -156,19 +127,15 @@ namespace MKLwrapper
 
                     if (check_res != MKLwrapper.DEFINE.TR_SUCCESS)
                     {
-                        Delete();
+                        DeleteAndFreeBuffers();
                         return x;
                     }
                     else
                     {
-                        if (check_info[0] != 0 || // The handle is not valid.
-                            check_info[1] != 0 || // The fjac array is not valid.
-                            check_info[2] != 0 || // The fvec array is not valid.
-                            check_info[3] != 0    // The eps array is not valid.
-                            )
+                        if (check_info.Sum() > 0)
                         {
                             resultStatus = "input parameters aren`t valid.";
-                            Delete();
+                            DeleteAndFreeBuffers();
                             return nXspacePoint;
                         }
                     }
@@ -182,7 +149,7 @@ namespace MKLwrapper
                         if (solve_res != MKLwrapper.DEFINE.TR_SUCCESS)
                         {
                             resultStatus = "error in dtrnlsp_solve";
-                            Delete();
+                            DeleteAndFreeBuffers();
                             return nXspacePoint;
                         }
 
@@ -201,15 +168,6 @@ namespace MKLwrapper
 
                         if (RCI_Request == 2)
                         {
-                            //Func<double[], double>[] fArray = new Func<double[], double>[m];
-                            //for (int i = 0; i < m; i++)
-                            //{
-                            //    double currSpacePointVal = mSpaceVector.ElementAt(i);
-                            //    fArray[i] = xVec => fittingFunction(xVec, currSpacePointVal);
-                            //}
-                            //
-                            //double[,] tmpNewJacobi = jacobCalculator.Evaluate(fArray, x);
-
                             JacobianMatrixCalc jCalculator = new JacobianMatrixCalc();
                             jCalculator.mSpaceVector = (new List<double>(mSpaceVector)).ToArray();
                             jCalculator.mFittingValuesVector = (new List<double>(mFittingValuesVector)).ToArray();
@@ -239,7 +197,7 @@ namespace MKLwrapper
             if (NonLinLeastSqProbWoConstraintsNative.dtrnlsp_get(ref solverHandle, ref iterationsMade, ref stopCriterion, ref r1, ref r2) != MKLwrapper.DEFINE.TR_SUCCESS)
             {
                 resultStatus = "error in dtrnlsp_get";
-                Delete();
+                DeleteAndFreeBuffers();
                 return x;
             }
 
@@ -266,7 +224,7 @@ namespace MKLwrapper
 
 
 
-        private int Delete()
+        private int DeleteAndFreeBuffers()
         {
             int res = NonLinLeastSqProbWoConstraintsNative.dtrnlsp_delete(ref solverHandle);
             NonLinLeastSqProbWoConstraintsNative.mkl_free_buffers();
@@ -276,7 +234,7 @@ namespace MKLwrapper
 
         public void Dispose()
         {
-            Delete();
+            DeleteAndFreeBuffers();
         }
     }
 
