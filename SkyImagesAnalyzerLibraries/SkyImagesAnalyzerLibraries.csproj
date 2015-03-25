@@ -317,6 +317,11 @@
     </COMReference>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\MKLwrapper\MKLwrapper.csproj">
+      <Project>{4b32fbed-9adb-43e3-a7dc-cf1ff1230d91}</Project>
+      <Name>MKLwrapper</Name>
+      <Private>False</Private>
+    </ProjectReference>
     <ProjectReference Include="..\MRG.Controls.UI\MRG.Controls.UI.csproj">
       <Project>{48e18b56-4c37-4d69-aba7-429c42b45aac}</Project>
       <Name>MRG.Controls.UI</Name>

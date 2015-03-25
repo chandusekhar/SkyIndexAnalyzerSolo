@@ -100,6 +100,38 @@ namespace SkyImagesAnalyzerLibraries
 
 
 
+
+
+        public static string SaveVectorDataAsImagePlot(this IEnumerable<double> enumSource, string fileName, SequencesDrawingVariants variant = SequencesDrawingVariants.circles)
+        {
+            if (fileName != "")
+            {
+                try
+                {
+                    MultipleScatterAndFunctionsRepresentation plotter = new MultipleScatterAndFunctionsRepresentation(2560, 1600);
+                    DenseVector xSpace = DenseVector.Create(enumSource.Count(), idx => (double)idx);
+                    DenseVector funcValues = DenseVector.OfEnumerable(enumSource);
+                    plotter.dvScatterXSpace.Add(xSpace);
+                    plotter.dvScatterFuncValues.Add(funcValues);
+                    plotter.scatterDrawingVariants.Add(variant);
+                    plotter.scatterLineColors.Add(new Bgr(Color.Green));
+                    plotter.Represent();
+                    plotter.SaveToImage(fileName);
+                    return fileName;
+                }
+                catch (Exception ex)
+                {
+                    return "";
+                }
+            }
+            return "";
+        }
+
+
+
+
+
+
         public static DictionaryBindingList<TKey, TValue>
             ToBindingList<TKey, TValue>(this IDictionary<TKey, TValue> data)
         {
@@ -151,24 +183,24 @@ namespace SkyImagesAnalyzerLibraries
                 dmKernel = DenseMatrix.Create(2 * kernelHalfWidth + 1, 2 * kernelHalfWidth + 1, (r, c) =>
                 {
                     double curDist =
-                        (new PointD(r - (double) kernelHalfWidth, c - (double) kernelHalfWidth)).Distance(
+                        (new PointD(r - (double)kernelHalfWidth, c - (double)kernelHalfWidth)).Distance(
                             new PointD(0.0d, 0.0d));
                     return Math.Cos(curDist * Math.PI / (2.0d * maxL));
                 });
             }
             else if (kernelType == StandardConvolutionKernels.gauss)
             {
-                dmKernel = DenseMatrix.Create(2*kernelHalfWidth + 1, 2*kernelHalfWidth + 1, (r, c) =>
+                dmKernel = DenseMatrix.Create(2 * kernelHalfWidth + 1, 2 * kernelHalfWidth + 1, (r, c) =>
                 {
                     double curDist =
-                        (new PointD(r - (double) kernelHalfWidth, c - (double) kernelHalfWidth)).Distance(
+                        (new PointD(r - (double)kernelHalfWidth, c - (double)kernelHalfWidth)).Distance(
                             new PointD(0.0d, 0.0d));
-                    return Math.Exp(-curDist*curDist/(2.0d*(maxL/3.0d)));
+                    return Math.Exp(-curDist * curDist / (2.0d * (maxL / 3.0d)));
                 });
             }
             else if (kernelType == StandardConvolutionKernels.flat)
             {
-                dmKernel = DenseMatrix.Create(2*kernelHalfWidth + 1, 2*kernelHalfWidth + 1, 1.0d);
+                dmKernel = DenseMatrix.Create(2 * kernelHalfWidth + 1, 2 * kernelHalfWidth + 1, 1.0d);
             }
             else if (kernelType == StandardConvolutionKernels.linear)
             {
@@ -179,7 +211,7 @@ namespace SkyImagesAnalyzerLibraries
                         (new PointD(r - (double)kernelHalfWidth, c - (double)kernelHalfWidth)).Distance(
                             new PointD(0.0d, 0.0d));
 
-                    return Math.Max(1.0d - curDist*(1.0d/(double) kernelHalfWidth), 0.0d);
+                    return Math.Max(1.0d - curDist * (1.0d / (double)kernelHalfWidth), 0.0d);
                 });
             }
             else if (kernelType == StandardConvolutionKernels.bilinear)
@@ -190,13 +222,13 @@ namespace SkyImagesAnalyzerLibraries
                         (new PointD(r - (double)kernelHalfWidth, c - (double)kernelHalfWidth)).Distance(
                             new PointD(0.0d, 0.0d));
 
-                    return Math.Max(1.0d - curDist*curDist*(1.0d/(double) (kernelHalfWidth*kernelHalfWidth)), 0.0d);
+                    return Math.Max(1.0d - curDist * curDist * (1.0d / (double)(kernelHalfWidth * kernelHalfWidth)), 0.0d);
                 });
             }
 
             double kernelSum = dmKernel.Values.Sum();
-            dmKernel.MapInplace(dval => dval/kernelSum);
-            
+            dmKernel.MapInplace(dval => dval / kernelSum);
+
             return dmSource.Conv2(dmKernel);
         }
 
@@ -403,7 +435,7 @@ namespace SkyImagesAnalyzerLibraries
 
         public static double Abs(this DenseVector dv)
         {
-            return Math.Sqrt(dv*dv);
+            return Math.Sqrt(dv * dv);
         }
 
 
@@ -411,6 +443,15 @@ namespace SkyImagesAnalyzerLibraries
         public static DenseVector Copy(this DenseVector dv)
         {
             return DenseVector.OfEnumerable(dv.Values);
+        }
+
+
+
+
+        public static bool SaveDataToCSV(this DenseVector dv, string fileName)
+        {
+            ServiceTools.logToTextFile(fileName, ServiceTools.densevectorToString(dv));
+            return true;
         }
     }
 

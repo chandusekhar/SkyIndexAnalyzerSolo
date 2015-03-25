@@ -14,7 +14,7 @@
   </table>
   <table>
     <key>BatchProcessingDirectory</key>
-    <value>D:\_gulevlab\SkyImagesAnalysis_appData\AI45\sky-images\</value>
+    <value>D:\_gulevlab\SkyImagesAnalysis_appData\patent-samples\ID2\</value>
   </table>
   <table>
     <key>GermanCloudSkySeparationValue</key>
@@ -62,11 +62,11 @@
   </table>
   <table>
     <key>DefaultDataFilesLocation</key>
-    <value>D:\_gulevlab\SkyImagesAnalysis_appData\AI45\sky-images-result\</value>
+    <value>D:\_gulevlab\SkyImagesAnalysis_appData\patent-samples\result.2015-03-25\</value>
   </table>
   <table>
     <key>GrIxDefaultSkyCloudMarginWithoutSun</key>
-    <value>0,9</value>
+    <value>0,7</value>
   </table>
   <table>
     <key>JapanCloudSkySeparationValue</key>

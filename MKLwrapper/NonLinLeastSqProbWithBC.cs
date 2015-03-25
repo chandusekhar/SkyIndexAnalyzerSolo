@@ -9,13 +9,13 @@ using System.Security;
 
 namespace MKLwrapper
 {
-    public sealed class NonLinLeastSqProbWithBC : IDisposable
+    public sealed class NonLinLeastSqProbWithBC<SpacePointsType> : IDisposable
     {
         private IntPtr solverHandle;
-        public IEnumerable<double> mSpaceVector = null;
+        public IEnumerable<SpacePointsType> mSpaceVector = null;
         public IEnumerable<double> mFittingValuesVector = null;
         public IEnumerable<double> nXspacePoint = null;
-        public Func<IEnumerable<double>, double, double> fittingFunction = null;
+        public Func<IEnumerable<double>, SpacePointsType, double> fittingFunction = null;
         public IEnumerable<double> lowerBoundConstraints = null;
         public IEnumerable<double> upperBoundConstraints = null;
 
@@ -117,9 +117,9 @@ namespace MKLwrapper
 
         private IEnumerable<double> ObjectiveFunctional(IEnumerable<double> xPoint)
         {
-            List<double> lFittingFunctionValues = new List<double>(mSpaceVector);
-            lFittingFunctionValues =
-                lFittingFunctionValues.ConvertAll(nSpacePointVal => fittingFunction(xPoint, nSpacePointVal));
+            List<SpacePointsType> lFittingSpacePointsValues = new List<SpacePointsType>(mSpaceVector);
+            List<double> lFittingFunctionValues =
+                lFittingSpacePointsValues.ConvertAll<double>(nSpacePointVal => fittingFunction(xPoint, nSpacePointVal));
             lFittingFunctionValues =
                 new List<double>(lFittingFunctionValues.Zip(mFittingValuesVector,
                     (funcValue, fittingValue) => funcValue - fittingValue));
@@ -161,7 +161,7 @@ namespace MKLwrapper
                 return null;
             }
 
-            int m = mSpaceVector.Count();
+            int m = mFittingValuesVector.Count();
             int n = nXspacePoint.Count();
             double[] eps = new double[6] { precision, precision, precision, precision, precision, precision };
             int iter1 = 100000;
@@ -245,8 +245,9 @@ namespace MKLwrapper
                         if (RCI_Request == 2)
                         {
                             JacobianMatrixCalc jCalculator = new JacobianMatrixCalc();
-                            jCalculator.mSpaceVector = (new List<double>(mSpaceVector)).ToArray();
-                            jCalculator.mFittingValuesVector = (new List<double>(mFittingValuesVector)).ToArray();
+                            //jCalculator.mSpaceVector = (new List<double>(mSpaceVector)).ToArray();
+                            //jCalculator.mFittingValuesVector = (new List<double>(mFittingValuesVector)).ToArray();
+                            jCalculator.mPointsSetLength = mFittingValuesVector.Count();
                             jCalculator.nXspacePoint = (new List<double>(x)).ToArray();
                             jCalculator.objectiveFunction = xPoint => ObjectiveFunctional(xPoint).ToArray();
                             double[,] tmpNewJacobi = jCalculator.SolveJacobianMatrix(precision);

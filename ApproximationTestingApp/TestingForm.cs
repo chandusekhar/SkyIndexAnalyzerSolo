@@ -786,6 +786,7 @@ namespace ApproximationTestingApp
                 List<double> tmpFuncData2 = new List<double>(funcData);
                 tmpFuncData2.RemoveAt(tmpFuncData2.Count - 1);
                 funcData = DenseVector.OfEnumerable(tmpFuncData2);
+
                 #endregion Добавим интерполированные данные, чтобы решение не разносило
 
 
@@ -883,7 +884,7 @@ namespace ApproximationTestingApp
                 else return 2.0d*Math.PI;
             });
 
-            NonLinLeastSqProbWithBC solver = new NonLinLeastSqProbWithBC();
+            NonLinLeastSqProbWithBC<double> solver = new NonLinLeastSqProbWithBC<double>();
             solver.mSpaceVector = xData.Copy();
             solver.mFittingValuesVector = funcData.Copy();
             solver.nXspacePoint = dvParameters.Copy();

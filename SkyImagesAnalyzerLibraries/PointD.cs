@@ -219,6 +219,18 @@ namespace SkyImagesAnalyzerLibraries
             return PointD.Subtract(pt, sz);
         }
 
+
+
+
+        [TargetedPatchingOptOut("Performance critical to inline this type of method across NGen image boundaries")]
+        public static PointD operator -(PointD pt, PointD pt0)
+        {
+            return pt + new double[]{-pt0.X, -pt0.Y};
+        }
+
+
+
+
         /// <summary>
         /// Смещает точка <see cref="T:System.Drawing.PointD"/> на указанный размер <see cref="T:System.Drawing.SizeD"/>.
         /// </summary>

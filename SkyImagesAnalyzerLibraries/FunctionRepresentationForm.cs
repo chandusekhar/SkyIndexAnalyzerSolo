@@ -462,7 +462,7 @@ namespace SkyImagesAnalyzerLibraries
         {
             if (filename == "") return;
 
-            theImage.Bitmap.Save(filename, System.Drawing.Imaging.ImageFormat.Png);
+            theImage.Save(filename);
         }
 
 

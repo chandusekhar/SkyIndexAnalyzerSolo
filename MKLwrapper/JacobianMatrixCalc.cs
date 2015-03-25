@@ -11,8 +11,9 @@ namespace MKLwrapper
     public sealed class JacobianMatrixCalc : IDisposable
     {
         private IntPtr jacSolverHandle;
-        public IEnumerable<double> mSpaceVector = null;
-        public IEnumerable<double> mFittingValuesVector = null;
+        // public IEnumerable<double> mSpaceVector = null;
+        // public IEnumerable<double> mFittingValuesVector = null;
+        public int mPointsSetLength = 0;
         public IEnumerable<double> nXspacePoint = null;
         public Func<double[], double[]> objectiveFunction = null;
         public string resultStatus = "";
@@ -44,7 +45,9 @@ namespace MKLwrapper
 
         public double[,] SolveJacobianMatrix(double prec)
         {
-            int m = mSpaceVector.Count();
+            // int m = mSpaceVector.Count();
+            // int m = mFittingValuesVector.Count();
+            int m = mPointsSetLength;
             int n = nXspacePoint.Count();
             double eps = prec;
             int RCI_Request = 0;

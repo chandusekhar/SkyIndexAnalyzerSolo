@@ -145,7 +145,7 @@ namespace SkyImagesAnalyzerLibraries
 
             double cosPhi = dx / r;
             double ang = Math.Acos(cosPhi);
-            if (dy < 0) ang = 2.0d * Math.PI - ang;
+            if (dy > 0.0d) ang = 2.0d * Math.PI - ang;
             this.phi = ang;
         }
 
@@ -360,6 +360,18 @@ namespace SkyImagesAnalyzerLibraries
             double dy = decartPointD2.Y - decartPointD1.Y;
             return Math.Sqrt(dx * dx + dy * dy);
         }
+
+
+
+
+        public PointD PointD()
+        {
+            PointD decartPointD = new PointD();
+            decartPointD.X = R * Math.Cos(Phi);
+            decartPointD.Y = R * Math.Sin(Phi);
+            return decartPointD;
+        }
+
 
 
 

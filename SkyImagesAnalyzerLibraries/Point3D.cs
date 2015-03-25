@@ -132,7 +132,7 @@ namespace SkyImagesAnalyzerLibraries
         {
             this.x = x;
             this.y = y;
-            this.y = z;
+            this.z = z;
             this.nullPoint = false;
         }
 
@@ -149,7 +149,7 @@ namespace SkyImagesAnalyzerLibraries
 
 
 
-        public static Point3D nullPointD()
+        public static Point3D nullPoint3D()
         {
             Point3D pt = new Point3D();
             pt.IsNull = true;
@@ -412,9 +412,17 @@ namespace SkyImagesAnalyzerLibraries
 
 
 
-        public double DistanceToLine3D(LineDescription3D l1)
+        public double Distance(LineDescription3D l1)
         {
             return l1.Distance(this);
+        }
+
+
+
+
+        public double Distance(Plane3D plane)
+        {
+            return plane.Distance(this);
         }
 
 

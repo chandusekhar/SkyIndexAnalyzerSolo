@@ -309,7 +309,7 @@ namespace SkyImagesAnalyzerLibraries
             double sum = 0.0d;
             for (int i = n; i < dvPolynomeKoeffs.Count; i++)
             {
-                sum += dvPolynomeKoeffs[i] * Math.Pow(arg, i - n) * MathNet.Numerics.Combinatorics.Variations(i, i) / MathNet.Numerics.Combinatorics.Variations(i-n, i-n);
+                sum += dvPolynomeKoeffs[i] * Math.Pow(arg, i - n) * MathNet.Numerics.Combinatorics.Variations(i, i) / MathNet.Numerics.Combinatorics.Variations(i - n, i - n);
             }
 
             return sum;
@@ -338,7 +338,15 @@ namespace SkyImagesAnalyzerLibraries
         public static DenseVector DataVectorizedExcludingValues(DenseMatrix dmData, double markerExcludingValue = 0.0d)
         {
             List<double> listOfData = new List<double>(dmData.Values);
-            listOfData.RemoveAll(x => x == markerExcludingValue);
+            if (double.IsNaN(markerExcludingValue))
+            {
+                listOfData.RemoveAll(double.IsNaN);
+            }
+            else
+            {
+                listOfData.RemoveAll(x => x == markerExcludingValue);
+            }
+
             if (listOfData.Count == 0)
             {
                 return null;
@@ -585,21 +593,21 @@ namespace SkyImagesAnalyzerLibraries
 
 
 
-        public static PointD PtdPolarToDecart(PointPolar polarPointD, PointD centerDecart, double zeroAngleInDecart)
+        public static PointD PtdPolarToCartesian(PointPolar polarPointD, PointD centerCartesian, double zeroAngleInCartesian)
         {
-            PointD decartPointD = new PointD();
-            decartPointD.X = polarPointD.R * Math.Cos(polarPointD.Phi + zeroAngleInDecart) + centerDecart.X;
-            decartPointD.Y = -polarPointD.R * Math.Sin(polarPointD.Phi + zeroAngleInDecart) + centerDecart.Y;
-            return decartPointD;
+            PointD cartesianPointD = new PointD();
+            cartesianPointD.X = polarPointD.R * Math.Cos(polarPointD.Phi + zeroAngleInCartesian) + centerCartesian.X;
+            cartesianPointD.Y = -polarPointD.R * Math.Sin(polarPointD.Phi + zeroAngleInCartesian) + centerCartesian.Y;
+            return cartesianPointD;
         }
 
 
 
 
-        public static PointD PtdPolarToDecart(PointPolar polarPointD, PointD centerDecart, PointD zeroAnglePointInDecart)
+        public static PointD PtdPolarToCartesian(PointPolar polarPointD, PointD centerCartesian, PointD zeroAnglePointInCartesian)
         {
-            double diffX = zeroAnglePointInDecart.X - centerDecart.X;
-            double diffY = zeroAnglePointInDecart.Y - centerDecart.Y;
+            double diffX = zeroAnglePointInCartesian.X - centerCartesian.X;
+            double diffY = zeroAnglePointInCartesian.Y - centerCartesian.Y;
             double zeroAnglePointR = Math.Sqrt(diffX * diffX + diffY * diffY);
             double zeroAngle = 0.0d;
             if (zeroAnglePointR != 0.0d)
@@ -609,8 +617,8 @@ namespace SkyImagesAnalyzerLibraries
             }
 
             PointD decartPointD = new PointD();
-            decartPointD.X = polarPointD.R * Math.Cos(polarPointD.Phi + zeroAngle) + centerDecart.X;
-            decartPointD.Y = -polarPointD.R * Math.Sin(polarPointD.Phi + zeroAngle) + centerDecart.Y;
+            decartPointD.X = polarPointD.R * Math.Cos(polarPointD.Phi + zeroAngle) + centerCartesian.X;
+            decartPointD.Y = -polarPointD.R * Math.Sin(polarPointD.Phi + zeroAngle) + centerCartesian.Y;
             return decartPointD;
         }
 
@@ -619,79 +627,109 @@ namespace SkyImagesAnalyzerLibraries
 
 
 
-
-        public static DenseMatrix DecartToPolar(DenseMatrix dmData, PointD centerPoint, int angleGridNodesCount = 144)
+        /// <summary>
+        /// Cartesians to polar.
+        /// </summary>
+        /// <param name="dmData">input densematrix data.</param>
+        /// <param name="centerPoint">The center point of new polar system - in old cartesian coordinate system.</param>
+        /// <param name="dmMask">The mask matrix.</param>
+        /// <param name="angleGridNodesCount">The angle grid nodes count.</param>
+        /// <returns>MathNet.Numerics.LinearAlgebra.Double.DenseMatrix.</returns>
+        /// todo: регулировать размер сетки для свертки по гауссу
+        public static DenseMatrix CartesianToPolar(DenseMatrix dmData, PointD centerPoint, DenseMatrix dmMask, int angleGridNodesCount = 144)
         {
             double angleValueDiff = 2 * Math.PI / (angleGridNodesCount - 1);
 
 
 
             DenseMatrix dmDistances = DenseMatrix.Create(dmData.RowCount, dmData.ColumnCount,
-                new Func<int, int, double>(
-                    (row, column) =>
-                    {
-                        double dy = row - centerPoint.Y;
-                        double dx = column - centerPoint.X;
-                        return Math.Sqrt(dx * dx + dy * dy);
-                    }));
+                (r, c) => centerPoint.Distance(new PointD(c, r)));
+            dmDistances = (DenseMatrix)dmDistances.PointwiseMultiply(dmMask);
             double maxDistance = dmDistances.Values.Maximum();
             int distanceNodesCount = Convert.ToInt32(maxDistance) + 1;
-            DenseMatrix dmCountOfElementsSummedToThePolarPointValue = DenseMatrix.Create(angleGridNodesCount, distanceNodesCount,
-                new Func<int, int, double>((row, col) => 0.0d));
+            DenseMatrix dmCountOfElementsSummedToThePolarPointValue = DenseMatrix.Create(angleGridNodesCount,
+                distanceNodesCount, 0.0d);
 
 
             DenseMatrix dmAngles = DenseMatrix.Create(dmData.RowCount, dmData.ColumnCount,
-                new Func<int, int, double>(
-                    (row, column) =>
-                    {
-                        double dx = (double)column - centerPoint.X;
-                        double dy = (double)row - centerPoint.Y;
-                        double r = dmDistances[row, column];
-                        double cosPhi = dx / r;
-                        double phi = Math.Acos(cosPhi);
-                        if (dy > 0) phi = 2.0d * Math.PI - phi;
-                        return phi;
-                    }));
-
-
-            //double distanceValueDiff = dmDistances.Values.Maximum() / (distanceGridNodesCount - 1);
-
-            DenseMatrix dmOutData = DenseMatrix.Create(angleGridNodesCount, distanceNodesCount, new Func<int, int, double>((row, column) => 0.0d));
-            //dmDistancesToSunCenter = DenseMatrix.Create(angleGridNodesCount, distanceNodesCount,
-            //    new Func<int, int, double>(
-            //        (angleRow, distanceCol) => (double)distanceCol));
-
-            for (int decartRow = 0; decartRow < dmData.RowCount; decartRow++)
-            {
-                for (int decartCol = 0; decartCol < dmData.ColumnCount; decartCol++)
+                (row, column) =>
                 {
-                    double currAngle = dmAngles[decartRow, decartCol];
-                    double currDistance = dmDistances[decartRow, decartCol];
+                    double dx = (double)column - centerPoint.X;
+                    double dy = (double)row - centerPoint.Y;
+                    double r = dmDistances[row, column];
+                    if (r == 0.0d)
+                    {
+                        return 0.0d;
+                    }
+                    double cosPhi = dx / r;
+                    double phi = Math.Acos(cosPhi);
+                    if (dy > 0) phi = 2.0d * Math.PI - phi;
+                    return phi;
+                });
+            dmAngles = (DenseMatrix) dmAngles.PointwiseMultiply(dmMask);
+
+
+            DenseMatrix dmOutData = DenseMatrix.Create(angleGridNodesCount, distanceNodesCount, 0.0d);
+
+            //Vector2D vCenterPoint = new Vector2D(centerPoint);
+            //DenseMatrix dmSmoothed = dmData.Conv2(StandardConvolutionKernels.gauss, 7);
+            //int cartesianRowCount = dmSmoothed.RowCount;
+            //int cartesianColCount = dmSmoothed.ColumnCount;
+            //DenseMatrix dmOutData = DenseMatrix.Create(angleGridNodesCount, distanceNodesCount, (row, col) =>
+            //{
+            //    PointPolar ptPolCurrPoint = new PointPolar((double) col, (double) row*angleValueDiff);
+            //    PointD ptdCurrPoint = (ptPolCurrPoint.PointD() + vCenterPoint).ToPointD();
+            //    int cartesianRow = Convert.ToInt32(ptdCurrPoint.Y);
+            //    int cartesianCol = Convert.ToInt32(ptdCurrPoint.X);
+            //    if ((cartesianRow < 0) || (cartesianRow >= cartesianRowCount) || (cartesianCol < 0) ||
+            //        (cartesianCol >= cartesianColCount))
+            //    {
+            //        return 0.0d;
+            //    }
+            //    else
+            //        return dmSmoothed[cartesianRow, cartesianCol];
+            //});
+
+
+            for (int cartesianRow = 0; cartesianRow < dmData.RowCount; cartesianRow++)
+            {
+                for (int cartesianCol = 0; cartesianCol < dmData.ColumnCount; cartesianCol++)
+                {
+                    double currAngle = dmAngles[cartesianRow, cartesianCol];
+                    double currDistance = dmDistances[cartesianRow, cartesianCol];
+                    if (dmMask[cartesianRow, cartesianCol] == 0.0d)
+                    {
+                        continue;
+                    }
                     int angleRow = Convert.ToInt32(currAngle / angleValueDiff);
                     int distanceCol = Convert.ToInt32(currDistance);
-                    dmOutData[angleRow, distanceCol] += dmData[decartRow, decartCol];
-                    if (dmData[decartRow, decartCol] != 0.0d) dmCountOfElementsSummedToThePolarPointValue[angleRow, distanceCol] += 1.0d;
+                    dmOutData[angleRow, distanceCol] += dmData[cartesianRow, cartesianCol];
+                    if (dmMask[cartesianRow, cartesianCol] > 0.0d)
+                        dmCountOfElementsSummedToThePolarPointValue[angleRow, distanceCol] += 1.0d;
                 }
             }
 
-            dmCountOfElementsSummedToThePolarPointValue.MapInplace(x => (x == 0.0d) ? (1.0d) : (x));
+            dmCountOfElementsSummedToThePolarPointValue.MapInplace(x => (x == 0.0d) ? (0.0d) : (1.0d/x));
 
-            dmOutData = (DenseMatrix)dmOutData.PointwiseDivide(dmCountOfElementsSummedToThePolarPointValue);
-            dmOutData.MapInplace(new Func<double, double>(x => (x == 0.0d) ? (1.0d) : (x)));
-
-
-
+            dmOutData = (DenseMatrix)dmOutData.PointwiseMultiply(dmCountOfElementsSummedToThePolarPointValue);
+            dmOutData.MapInplace(x => (x == 0.0d) ? (1.0d) : (x));
 
 
             //сгладим
             foreach (Tuple<int, MathNet.Numerics.LinearAlgebra.Vector<double>> tplRowVectorAndIndex in dmOutData.EnumerateRowsIndexed())
             {
                 DenseVector currVector = (DenseVector)tplRowVectorAndIndex.Item2;
-                //currVector = ExponentialMovingAverage(currVector, 3, 0.4d);
-                currVector = currVector.Conv(StandardConvolutionKernels.gauss, 3);
-                dmOutData.SetRow(tplRowVectorAndIndex.Item1, currVector.ToArray());
-            }
+                DenseVector currVectorSmoothed = currVector.Conv(StandardConvolutionKernels.gauss, 5);
+                // и восстановим краевые значения
+                for (int i = 0; i < 5; i++)
+                {
+                    currVectorSmoothed[i] = currVector[i];
+                    currVectorSmoothed[currVectorSmoothed.Count - i - 1] = currVector[currVector.Count - i - 1];
+                }
 
+                dmOutData.SetRow(tplRowVectorAndIndex.Item1, currVectorSmoothed.ToArray());
+            }
+            
 
             return dmOutData;
         }
@@ -703,7 +741,7 @@ namespace SkyImagesAnalyzerLibraries
 
 
 
-        public static DenseMatrix PolarToDecart(DenseMatrix dmDataPolar, PointD sunCenter, int dimX, int dimY)
+        public static DenseMatrix PolarToCartesian(DenseMatrix dmDataPolar, PointD sunCenter, int dimX, int dimY)
         {
             int distancePoints = dmDataPolar.ColumnCount;
             int anglePoints = dmDataPolar.RowCount;
@@ -761,83 +799,125 @@ namespace SkyImagesAnalyzerLibraries
         /// 2 - columns (distance)
         /// </param>
         /// <returns>DenseMatrix.</returns>
-        public static DenseMatrix GetLocalMinimumsDistribution(DenseMatrix dmFieldData, PointD sunCenterPoint, PointD imageCenterPoint, double imageRadius, int imageHeight, double imageCircleCropFactor = 0.9d, int dimensionNumber = 1)
+        //public static DenseMatrix GetLocalMinimumsDistribution(DenseMatrix dmFieldData, PointD sunCenterPoint, PointD imageCenterPoint, double imageRadius, int imageHeight, double imageCircleCropFactor = 0.9d, int dimensionNumber = 1)
+        public static List<Point3D> GetLocalMinimumsDistribution(DenseMatrix dmFieldData, RoundData sunDiskData, RoundData imageRoundData, int imageHeight, double imageCircleCropFactor = 0.9d)
         {
-            DenseMatrix dmFieldminimumsData = DenseMatrix.Create(dmFieldData.RowCount, dmFieldData.ColumnCount,
-                new Func<int, int, double>((row, column) => 0.0d));
+            // DenseMatrix dmFieldminimumsData = DenseMatrix.Create(dmFieldData.RowCount, dmFieldData.ColumnCount, 0.0d);
+            List<Point3D> lRetPoints = new List<Point3D>();
+
+            double imageRadius = imageRoundData.DRadius;
+            PointD imageCenterPoint = imageRoundData.pointDCircleCenter();
+            PointPolar imageCenterPointRelatedToSunCenter = new PointPolar(imageCenterPoint - sunDiskData.pointDCircleCenter(), true);
+            double distanceSunCenterToImageCenter = PointD.Distance(imageCenterPoint, sunDiskData.pointDCircleCenter());
 
 
-            if (dimensionNumber == 1)
+            #region // obsolete
+            //if (dimensionNumber == 1)
+            //{
+            #endregion // obsolete
+            for (int i = 0; i < dmFieldData.RowCount; i++)
             {
-                for (int i = 0; i < dmFieldData.RowCount; i++)
+                bool itsTheCropCase = false;
+                //если направлени на кроп кадра - то не берем в расмотрение
+                double currentAngle = ((double)i / (double)(dmFieldData.RowCount - 1)) * 2.0d * Math.PI;
+
+                LineDescription2D line, lineMargin;
+                if (currentAngle < Math.PI)
                 {
-                    bool itsTheCropCase = false;
-                    //если направлени на кроп кадра - то не берем в расмотрение
-                    double currentAngle = ((double)i / (double)dmFieldData.RowCount) * 2 * Math.PI;
-                    if (Math.Tan(currentAngle) == 0.0d)
-                    {
-                        itsTheCropCase = false;
-                    }
-                    if (currentAngle < Math.PI)
-                    {
-                        //верхняя половина, смотрим направление на y=0.0d
-                        double yMargin = 0.0d;
-                        double xMargin = sunCenterPoint.X + (yMargin - sunCenterPoint.Y) / Math.Tan(currentAngle);
-                        double dx = xMargin - imageCenterPoint.X;
-                        double dy = yMargin - imageCenterPoint.Y;
-                        if (Math.Sqrt(dx * dx + dy * dy) < imageRadius) itsTheCropCase = true;
-                    }
-                    else
-                    {
-                        //нижняя половина, смотрим направление на y=imageHeight
-                        double yMargin = (double)imageHeight;
-                        double xMargin = sunCenterPoint.X + (yMargin - sunCenterPoint.Y) / Math.Tan(currentAngle);
-                        double dx = xMargin - imageCenterPoint.X;
-                        double dy = yMargin - imageCenterPoint.Y;
-                        if (Math.Sqrt(dx * dx + dy * dy) < imageRadius) itsTheCropCase = true;
-                    }
-                    //Если слишком близко к краю изображения - тоже исключаем. Минимум должен лежать не ближе 1/15
-
-
-
-                    DenseMatrix dmSlicedDataMatrix = (DenseMatrix)dmFieldData.SubMatrix(i, 1, 0, dmFieldData.ColumnCount);
-                    DenseVector dvSlicedDataVector = DenseVector.OfEnumerable(dmSlicedDataMatrix.Values);
-                    dvSlicedDataVector.MapInplace(new Func<double, double>(x => (x == 0.0d) ? (1.0d) : (x)));
-                    double minValue = dvSlicedDataVector.Minimum();
-                    int minValueIndex = dvSlicedDataVector.MinimumIndex();
-
-                    if (!itsTheCropCase) dmFieldminimumsData[i, minValueIndex] = minValue;
-                    else continue;
-                    //{
-                    //    int theFirstIndex = dvSlicedDataVector.Count - 1;
-                    //    //найдем крайний индекс со значимым значением поля
-                    //    for (int j = dvSlicedDataVector.Count-1; j > 0; j--)
-                    //    {
-                    //        if (dvSlicedDataVector[j] < 1.0d)
-                    //        {
-                    //            theFirstIndex = dvSlicedDataVector.Count - 1 - theFirstIndex;
-                    //            break;
-                    //        }
-                    //    }
-                    //
-                    //    if ((theFirstIndex - minValueIndex) < 2) continue;
-                    //    else dmFieldminimumsData[i, minValueIndex] = minValue;
-                    //}
+                    //верхняя половина, смотрим направление на y=0.0d
+                    line = new LineDescription2D(sunDiskData.pointDCircleCenter(),
+                        new Vector2D(Math.Cos(currentAngle), -Math.Sin(currentAngle)));
+                    lineMargin = new LineDescription2D(new PointD(0.0d, 0.0d), new Vector2D(1.0d, 0.0d));
                 }
-            }
-            else if (dimensionNumber == 2)
-            {
-                for (int i = 0; i < dmFieldData.ColumnCount; i++)
+                else
                 {
-                    DenseMatrix dmSlicedDataMatrix = (DenseMatrix)dmFieldData.SubMatrix(0, dmFieldData.RowCount, i, 1);
-                    DenseVector dvSlicedDataVector = DenseVector.OfEnumerable(dmSlicedDataMatrix.Values);
-                    dvSlicedDataVector.MapInplace(new Func<double, double>(x => (x == 0.0d) ? (1.0d) : (x)));
-                    double minValue = dvSlicedDataVector.Minimum();
-                    int minValueIndex = dvSlicedDataVector.MinimumIndex();
-                    dmFieldminimumsData[minValueIndex, i] = minValue;
+                    line = new LineDescription2D(sunDiskData.pointDCircleCenter(),
+                        new Vector2D(Math.Cos(currentAngle), Math.Sin(currentAngle)));
+                    lineMargin = new LineDescription2D(new PointD(0.0d, imageHeight), new Vector2D(1.0d, 0.0d));
                 }
+
+                PointD crossPointD = LineDescription2D.CrossPoint(line, lineMargin);
+                if (crossPointD.Distance(imageCenterPoint) < imageRadius)
+                {
+                    itsTheCropCase = true;
+                }
+
+                #region // obsolete
+                //double yMargin = 0.0d;
+                //double xMargin = sunCenterPoint.X + (yMargin - sunCenterPoint.Y) / Math.Tan(currentAngle);
+                //double dx = xMargin - imageCenterPoint.X;
+                //double dy = yMargin - imageCenterPoint.Y;
+                //if (Math.Sqrt(dx * dx + dy * dy) < imageRadius) itsTheCropCase = true;
+                #endregion // obsolete
+
+                #region //obsolete
+                //else
+                //{
+                //    //нижняя половина, смотрим направление на y=imageHeight
+                //    double yMargin = (double)imageHeight;
+                //    double xMargin = sunCenterPoint.X + (yMargin - sunCenterPoint.Y) / Math.Tan(currentAngle);
+                //    double dx = xMargin - imageCenterPoint.X;
+                //    double dy = yMargin - imageCenterPoint.Y;
+                //    if (Math.Sqrt(dx * dx + dy * dy) < imageRadius) itsTheCropCase = true;
+                //}
+                #endregion //obsolete
+                //Если слишком близко к краю изображения - тоже исключаем. Минимум должен лежать не ближе, например, 1/15
+
+
+
+                //DenseMatrix dmSlicedDataMatrix = (DenseMatrix)dmFieldData.SubMatrix(i, 1, 0, dmFieldData.ColumnCount);
+                DenseVector dvRowDataVector = (DenseVector)dmFieldData.EnumerateRows().ElementAt(i);
+                #region // debug plotting
+                //dvRowDataVector.SaveVectorDataAsImagePlot(
+                //    "D:\\_gulevlab\\SkyImagesAnalysis_appData\\patent-samples\\result.2015-03-24\\img-2014-09-20T16-03-58devID1\\dvRowDataVector-plot-image-" +
+                //    i.ToString("D03") + "-step1.png");
+                #endregion // debug plotting
+                dvRowDataVector.MapIndexedInplace((idx, x) => ((x == 0.0d) || (idx < sunDiskData.DRadius * 1.5d)) ? (1.0d) : (x));
+                #region // debug plotting
+                //dvRowDataVector.SaveVectorDataAsImagePlot(
+                //    "D:\\_gulevlab\\SkyImagesAnalysis_appData\\patent-samples\\result.2015-03-24\\img-2014-09-20T16-03-58devID1\\dvRowDataVector-plot-image-" +
+                //    i.ToString("D03") + "-step2.png");
+                #endregion // debug plotting
+                double phiFromImageCenterToDirection = imageCenterPointRelatedToSunCenter.Phi - currentAngle;
+                double distanceToImageMargin = distanceSunCenterToImageCenter * Math.Cos(phiFromImageCenterToDirection) +
+                                               Math.Sqrt(imageRadius * imageRadius -
+                                                         distanceSunCenterToImageCenter * distanceSunCenterToImageCenter *
+                                                         Math.Sin(phiFromImageCenterToDirection) *
+                                                         Math.Sin(phiFromImageCenterToDirection));
+                dvRowDataVector.MapIndexedInplace(
+                    (idx, x) => ((double)idx / distanceToImageMargin >= imageCircleCropFactor) ? (1.0d) : (x));
+                #region // debug plotting
+                //dvRowDataVector.SaveVectorDataAsImagePlot(
+                //    "D:\\_gulevlab\\SkyImagesAnalysis_appData\\patent-samples\\result.2015-03-24\\img-2014-09-20T16-03-58devID1\\dvRowDataVector-plot-image-" +
+                //    i.ToString("D03") + "-step3.png");
+                #endregion // debug plotting
+                double minValue = dvRowDataVector.Minimum();
+                int minValueIndex = dvRowDataVector.MinimumIndex();
+
+                //if (!itsTheCropCase) dmFieldminimumsData[i, minValueIndex] = minValue;
+                if ((!itsTheCropCase) && ((double)minValueIndex > sunDiskData.DRadius))
+                    lRetPoints.Add(new Point3D(currentAngle, minValueIndex, minValue));
+                else continue;
             }
-            return dmFieldminimumsData;
+
+            #region // obsolete
+            //}
+            //else if (dimensionNumber == 2)
+            //{
+            //    for (int i = 0; i < dmFieldData.ColumnCount; i++)
+            //    {
+            //        DenseMatrix dmSlicedDataMatrix = (DenseMatrix)dmFieldData.SubMatrix(0, dmFieldData.RowCount, i, 1);
+            //        DenseVector dvSlicedDataVector = DenseVector.OfEnumerable(dmSlicedDataMatrix.Values);
+            //        dvSlicedDataVector.MapInplace(new Func<double, double>(x => (x == 0.0d) ? (1.0d) : (x)));
+            //        double minValue = dvSlicedDataVector.Minimum();
+            //        int minValueIndex = dvSlicedDataVector.MinimumIndex();
+            //        dmFieldminimumsData[minValueIndex, i] = minValue;
+            //    }
+            //}
+            #endregion // obsolete
+
+            //return dmFieldminimumsData;
+            return lRetPoints;
         }
 
 
@@ -867,22 +947,22 @@ namespace SkyImagesAnalyzerLibraries
             double timeSamplingIntervalsMean = stats.Mean;
             double timesamplingIntervalsStdDev = stats.StandardDeviation;
 
-            for (int i = 0; i < timeSamplingSeconds.Count-1; i++)
+            for (int i = 0; i < timeSamplingSeconds.Count - 1; i++)
             {
                 double currTimeSample = timeSamplingSeconds[i + 1] - timeSamplingSeconds[i];
-                if (currTimeSample/timeSamplingIntervalsMean > 2.0d)
+                if (currTimeSample / timeSamplingIntervalsMean > 2.0d)
                 {
                     //надо интерполировать данные в этом интервале
-                    int nIntervals = Convert.ToInt32(currTimeSample/timeSamplingIntervalsMean);
-                    double newCurrTimeInterval = currTimeSample/(double) nIntervals;
+                    int nIntervals = Convert.ToInt32(currTimeSample / timeSamplingIntervalsMean);
+                    double newCurrTimeInterval = currTimeSample / (double)nIntervals;
                     List<double> listTimeValuesToInsert = new List<double>();
                     List<double> listDataValuesToInsert = new List<double>();
 
                     double startValue = dvInputData[i];
-                    double endValue = dvInputData[i+1];
-                    for (int j = 0; j < nIntervals-1; j++)
+                    double endValue = dvInputData[i + 1];
+                    for (int j = 0; j < nIntervals - 1; j++)
                     {
-                        listRetTimeSampling.Add(timeSamplingSeconds[i] + j*newCurrTimeInterval);
+                        listRetTimeSampling.Add(timeSamplingSeconds[i] + j * newCurrTimeInterval);
                         listRetData.Add(startValue + ((endValue - startValue) / (double)(nIntervals)) * (double)j);
                     }
 
@@ -912,7 +992,7 @@ namespace SkyImagesAnalyzerLibraries
             for (int i = 0; i < nLeft + nRight + 1; i++)
             {
                 int currNLeft = (i <= nLeft) ? (i) : (nLeft);
-                int currNRight = (i <= nLeft)?(nRight):(nLeft+nRight - i);
+                int currNRight = (i <= nLeft) ? (nRight) : (nLeft + nRight - i);
 
                 Dictionary<int, double> currKoeffsDict = SavGolFilterKoefficients(currNLeft, currNRight, 0, 6);
 

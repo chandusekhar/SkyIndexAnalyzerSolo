@@ -1440,7 +1440,16 @@ namespace SkyImagesAnalyzer
                     classificator.cloudSkySeparationValue =
                         Convert.ToDouble(defaultProperties["JapanCloudSkySeparationValue"]);
                     classificator.sourceImageFileName = fInfo.FullName;
-                    classificator.Classify();
+                    try
+                    {
+                        classificator.Classify();
+                    }
+                    catch (Exception ex)
+                    {
+                        theLogWindow = ServiceTools.LogAText(theLogWindow,
+                            Environment.NewLine + Environment.NewLine + "=== === ERROR classifying with method: " +
+                            classificator.ClassificationMethod + " === ===" + Environment.NewLine + Environment.NewLine);
+                    }
                     classificator.resultingStatusMessages = "";
                     bitmapSI = new Bitmap(classificator.PreviewBitmap);
                     ServiceTools.FlushMemory();
@@ -1467,7 +1476,16 @@ namespace SkyImagesAnalyzer
                     classificator.cloudSkySeparationValue =
                         Convert.ToDouble(defaultProperties["GermanCloudSkySeparationValue"]);
                     classificator.sourceImageFileName = fInfo.FullName;
-                    classificator.Classify();
+                    try
+                    {
+                        classificator.Classify();
+                    }
+                    catch (Exception ex)
+                    {
+                        theLogWindow = ServiceTools.LogAText(theLogWindow,
+                            Environment.NewLine + Environment.NewLine + "=== === ERROR classifying with method: " +
+                            classificator.ClassificationMethod + " === ===" + Environment.NewLine + Environment.NewLine);
+                    }
                     classificator.resultingStatusMessages = "";
                     bitmapSI = new Bitmap(classificator.PreviewBitmap);
                     ServiceTools.FlushMemory();
@@ -1494,7 +1512,16 @@ namespace SkyImagesAnalyzer
                     classificator.theStdDevMarginValueDefiningSkyCloudSeparation =
                         Convert.ToDouble(defaultProperties["GrIxDefaultSkyCloudMarginWithoutSun"]);
                     classificator.sourceImageFileName = fInfo.FullName;
-                    classificator.Classify();
+                    try
+                    {
+                        classificator.Classify();
+                    }
+                    catch (Exception ex)
+                    {
+                        theLogWindow = ServiceTools.LogAText(theLogWindow,
+                            Environment.NewLine + Environment.NewLine + "=== === ERROR classifying with method: " +
+                            classificator.ClassificationMethod + " === ===" + Environment.NewLine + Environment.NewLine);
+                    }
                     classificator.resultingStatusMessages = "";
                     bitmapSI = new Bitmap(classificator.PreviewBitmap);
                     ServiceTools.FlushMemory();

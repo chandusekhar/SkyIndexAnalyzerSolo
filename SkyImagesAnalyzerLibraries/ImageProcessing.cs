@@ -8,6 +8,7 @@ using System;
 using System.Drawing;
 using System.Linq;
 using MathNet.Numerics.LinearAlgebra.Double;
+using MKLwrapper;
 
 
 namespace SkyImagesAnalyzerLibraries
@@ -514,10 +515,8 @@ namespace SkyImagesAnalyzerLibraries
                 double centerX = dvParameters[0];
                 double centerY = dvParameters[1];
                 double r = dvParameters[2];
-                double diffX = pt.X - centerX;
-                double diffY = pt.Y - centerY;
-                double diff = r - Math.Sqrt(diffX * diffX + diffY * diffY);
-                return diff;
+                PointD ptdCenter = new PointD(centerX, centerY);
+                return (r - pt.Distance(ptdCenter));
             };
 
             List<double> parametersList = new List<double>();
@@ -525,14 +524,24 @@ namespace SkyImagesAnalyzerLibraries
             parametersList.Add(((double)tmpMaskImage.Height)/2.0d);
             parametersList.Add(((double)tmpMaskImage.Width) / 2.0d);
             DenseVector dvInitialParameters = DenseVector.OfEnumerable(parametersList);
-            DenseVector initialParametersIncremnt = DenseVector.Create(dvInitialParameters.Count, (i => 1.0d));
 
-            GradientDescentApproximator approximator = new GradientDescentApproximator(pointsList, minimizingFunc);
-            DenseVector approximatedParameters = approximator.ApproximationGradientDescent2DPt(dvInitialParameters, initialParametersIncremnt, 0.000001d);
-
-            RoundData imageMarginsRoundParametres2 = new RoundData(approximatedParameters[0], approximatedParameters[1], approximatedParameters[2]);
+            //DenseVector initialParametersIncremnt = DenseVector.Create(dvInitialParameters.Count, (i => 1.0d));
+            //
+            //GradientDescentApproximator approximator = new GradientDescentApproximator(pointsList, minimizingFunc);
+            //DenseVector approximatedParameters = approximator.ApproximationGradientDescent2DPt(dvInitialParameters, initialParametersIncremnt, 0.000001d);
+            double[] dvLowerBoundsConstraints = {0.0d, 0.0d, 0.0d};
+            double[] dvUpperBoundsConstraints = {tmpMaskImage.Width, tmpMaskImage.Height, tmpMaskImage.Width/2.0d};
+            NonLinLeastSqProbWithBC<PointD> approximator = new NonLinLeastSqProbWithBC<PointD>();
+            approximator.nXspacePoint = dvInitialParameters.Copy();
+            approximator.mFittingValuesVector = DenseVector.Create(pointsList.Count, 0.0d);
+            approximator.mSpaceVector = pointsList;
+            approximator.fittingFunction = (iEnumVec, ptD) => minimizingFunc(DenseVector.OfEnumerable(iEnumVec), ptD);
+            approximator.lowerBoundConstraints = dvLowerBoundsConstraints;
+            approximator.upperBoundConstraints = dvUpperBoundsConstraints;
             
-            imageRD = imageMarginsRoundParametres2;
+            List<double> approximatedParameters = new List<double>(approximator.SolveOptimizationProblem());
+
+            imageRD = new RoundData(approximatedParameters[0], approximatedParameters[1], approximatedParameters[2]);
         }
 
 
