@@ -14,7 +14,7 @@
   </table>
   <table>
     <key>BatchProcessingDirectory</key>
-    <value>D:\_gulevlab\SkyImagesAnalysis_appData\patent-samples\ID2\</value>
+    <value>D:\_gulevlab\SkyImagesAnalysis_appData\sun-position-calc-test\</value>
   </table>
   <table>
     <key>GermanCloudSkySeparationValue</key>
@@ -62,7 +62,7 @@
   </table>
   <table>
     <key>DefaultDataFilesLocation</key>
-    <value>D:\_gulevlab\SkyImagesAnalysis_appData\patent-samples\result.2015-03-25\</value>
+    <value>D:\_gulevlab\SkyImagesAnalysis_appData\sun-position-calc-test\result\</value>
   </table>
   <table>
     <key>GrIxDefaultSkyCloudMarginWithoutSun</key>

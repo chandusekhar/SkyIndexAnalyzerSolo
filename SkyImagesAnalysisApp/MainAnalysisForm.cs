@@ -13,6 +13,7 @@ using Emgu.CV;
 using Emgu.CV.Structure;
 using MathNet.Numerics.Statistics;
 using SkyImagesAnalyzerLibraries;
+using SolarPositioning;
 
 
 namespace SkyImagesAnalyzer
@@ -3161,9 +3162,114 @@ namespace SkyImagesAnalyzer
             // попробовать по получившейся форме поля найти положение солнца
         }
 
+        private void btnCalcSunPosition_Click(object sender, EventArgs e)
+        {
+            if (imagetoadd == null)
+            {
+                theLogWindow = ServiceTools.LogAText(theLogWindow, "Не загружено изображение для обработки!", true);
+                return;
+            }
+
+
+            FileInfo finfoOriginalFile = new FileInfo(ImageFileName);
+
+            defaultProperties["DefaultDataFilesLocation"] = defaultProperties["DefaultDataFilesLocation"] +
+                                                            Path.GetFileNameWithoutExtension(finfoOriginalFile.Name) +
+                                                            "\\";
+            
+            string defaultOutputDataDirectory = (string)defaultProperties["DefaultDataFilesLocation"];
 
 
 
+            Image anImage = Image.FromFile(ImageFileName);
+            ImageInfo newIInfo = new ImageInfo(anImage);
+            theLogWindow = ServiceTools.LogAText(theLogWindow, "processing file " + ImageFileName + Environment.NewLine);
+            int minute = 0;
+            String dateTime = (String)newIInfo.getValueByKey("ExifDTOrig");
+            if (dateTime == null)
+            {
+                //попробуем вытащить из имени файла
+                string strDateTime = Path.GetFileName(ImageFileName);
+                strDateTime = strDateTime.Substring(4, 19);
+                dateTime = strDateTime;
+            }
+
+            DateTime curDateTime = DateTime.UtcNow;
+
+            try
+            {
+                curDateTime = DateTimeOfString(dateTime);
+                theLogWindow = ServiceTools.LogAText(theLogWindow, "picture got date/time: " + curDateTime.ToString("s"));
+            }
+            catch (Exception)
+            {
+                theLogWindow = ServiceTools.LogAText(theLogWindow,
+                    "couldn`t get picture get date/time for file: " + Environment.NewLine + ImageFileName);
+                return;
+            }
+            curDateTime = DateTime.SpecifyKind(curDateTime, DateTimeKind.Utc);
+
+
+            string currPath = Path.GetDirectoryName(ImageFileName);
+            string[] xmlFileNames = Directory.GetFiles(currPath, "*" + curDateTime.ToString("s").Replace(":", "-") + "*.xml");
+            if (xmlFileNames.Count() != 1)
+            {
+                theLogWindow = ServiceTools.LogAText(theLogWindow, "the concurrent data file undefined." +
+                                                                   Environment.NewLine + "Found " + xmlFileNames.Count() +
+                                                                   " appropriate XML files: " + xmlFileNames.ToString() +
+                                                                   Environment.NewLine);
+                return;
+            }
+
+            string xmlFileName = xmlFileNames[0];
+            Dictionary<string, object> dictSavedData = ServiceTools.ReadDictionaryFromXML(xmlFileName);
+            GPSdata gps = new GPSdata((string) dictSavedData["GPSdata"], GPSdatasources.CloudCamArduinoGPS);
+            //curDateTime = DateTime.UtcNow;
+            //curDateTime = DateTime.SpecifyKind(curDateTime, DateTimeKind.Local);
+            double lat = gps.LatDec;
+            // double lat = 55.755826; // - Moscow
+            double lon = gps.LonDec;
+            // double lon = 37.6173; // - Moscow
+
+            //int TimeZone = Convert.ToInt32((lon/Math.Abs(lon))*Math.Floor(Math.Abs(lon*24.0d/360.0d)));
+            //curDateTime = curDateTime.AddHours(TimeZone);
+
+            AzimuthZenithAngle sunPosition = SPA.CalculateSolarPosition(curDateTime, lat, lon, 0.0d,
+                Convert.ToDouble(dictSavedData["PressurePa"])/100.0d, 11.0d);
+            //AzimuthZenithAngle sunPosition = SPA.CalculateSolarPosition(curDateTime, lat, lon, 156.0d, 1010.0d, 11.0d);
+
+            theLogWindow = ServiceTools.LogAText(theLogWindow, "SPA sun position: " + sunPosition);
+
+
+            AzimuthZenithAngle sunPositionPSA = PSA.calculateSolarPosition(curDateTime, lat, lon);
+            theLogWindow = ServiceTools.LogAText(theLogWindow, "PSA sun position for " + curDateTime.ToString("s") + ": " + sunPositionPSA);
+
+
+            SPAext spaCalcExt = new SPAext(curDateTime.Year, curDateTime.Month, curDateTime.Day, curDateTime.Hour,
+                curDateTime.Minute, curDateTime.Second, (float)lon, (float) lat);
+            int res = spaCalcExt.spa_calculate();
+            AzimuthZenithAngle sunPositionSPAext = new AzimuthZenithAngle(spaCalcExt.spa.azimuth, spaCalcExt.spa.zenith);
+            theLogWindow = ServiceTools.LogAText(theLogWindow, "SPA ext sun position for " + curDateTime.ToString("s") + ": " + sunPositionSPAext);
+
+            //for (int i = -12; i < 13; i++)
+            //{
+            //    DateTime dtShifted = curDateTime.AddHours(i);
+            //    AzimuthZenithAngle sunPositionPSAshifted = PSA.calculateSolarPosition(dtShifted, lat, lon);
+            //    theLogWindow = ServiceTools.LogAText(theLogWindow, "PSA sun position for " + curDateTime.ToString("s") + ": " + sunPositionPSAshifted);
+            //}
+
+
+
+            //ImageProcessing imgP = new ImageProcessing(imagetoadd, true);
+            //Image imgRes = (Image)imgP.significantMaskImageOctLined.Bitmap;
+
+
+
+        }
+
+
+
+        
     }
 
 

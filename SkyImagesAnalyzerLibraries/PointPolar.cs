@@ -150,6 +150,7 @@ namespace SkyImagesAnalyzerLibraries
         }
 
 
+
         public PointPolar(Point p1)
         {
             this.r = (double)p1.X;

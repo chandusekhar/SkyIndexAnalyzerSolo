@@ -46,15 +46,12 @@
             this.switchCollectingDataMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.настройкиСбораДанныхToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
-            this.rbtnClassMethodGrIx = new System.Windows.Forms.RadioButton();
             this.label8 = new System.Windows.Forms.Label();
             this.button1 = new System.Windows.Forms.Button();
             this.открытьФайлToolStripMenuItem = new System.Windows.Forms.Button();
             this.обработатьToolStripMenuItem = new System.Windows.Forms.Button();
             this.DetectEdgesButton = new System.Windows.Forms.Button();
             this.lblClassificationMethod = new System.Windows.Forms.Label();
-            this.rbtnClassMethodJapan = new System.Windows.Forms.RadioButton();
-            this.rbtnClassMethodUS = new System.Windows.Forms.RadioButton();
             this.richTextBox1 = new System.Windows.Forms.RichTextBox();
             this.button2 = new System.Windows.Forms.Button();
             this.btnProperties = new System.Windows.Forms.Button();
@@ -66,14 +63,18 @@
             this.btnDensityProcessing = new System.Windows.Forms.Button();
             this.btnSortImagesByClasses = new System.Windows.Forms.Button();
             this.btnTestSunDetection2015 = new System.Windows.Forms.Button();
-            this.bgwProcessDirectoryOfImages = new System.ComponentModel.BackgroundWorker();
-            this.bgwSunDetectionOnly = new System.ComponentModel.BackgroundWorker();
             this.lblResultTitle = new System.Windows.Forms.Label();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
-            this.groupBox2 = new System.Windows.Forms.GroupBox();
-            this.rbtnShowDensity = new System.Windows.Forms.RadioButton();
-            this.rbtnClusterizePoints = new System.Windows.Forms.RadioButton();
             this.rbtnSaveClustering = new System.Windows.Forms.RadioButton();
+            this.rbtnClusterizePoints = new System.Windows.Forms.RadioButton();
+            this.rbtnShowDensity = new System.Windows.Forms.RadioButton();
+            this.groupBox2 = new System.Windows.Forms.GroupBox();
+            this.rbtnClassMethodGrIx = new System.Windows.Forms.RadioButton();
+            this.rbtnClassMethodJapan = new System.Windows.Forms.RadioButton();
+            this.rbtnClassMethodUS = new System.Windows.Forms.RadioButton();
+            this.bgwProcessDirectoryOfImages = new System.ComponentModel.BackgroundWorker();
+            this.bgwSunDetectionOnly = new System.ComponentModel.BackgroundWorker();
+            this.btnCalcSunPosition = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.trackBar1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
@@ -305,6 +306,7 @@
             this.tableLayoutPanel1.Controls.Add(this.lblResultTitle, 0, 1);
             this.tableLayoutPanel1.Controls.Add(this.groupBox1, 8, 4);
             this.tableLayoutPanel1.Controls.Add(this.groupBox2, 4, 13);
+            this.tableLayoutPanel1.Controls.Add(this.btnCalcSunPosition, 6, 0);
             this.tableLayoutPanel1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tableLayoutPanel1.Location = new System.Drawing.Point(0, 0);
             this.tableLayoutPanel1.Margin = new System.Windows.Forms.Padding(0);
@@ -334,20 +336,6 @@
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 5.376343F));
             this.tableLayoutPanel1.Size = new System.Drawing.Size(1408, 826);
             this.tableLayoutPanel1.TabIndex = 0;
-            // 
-            // rbtnClassMethodGrIx
-            // 
-            this.rbtnClassMethodGrIx.AutoSize = true;
-            this.rbtnClassMethodGrIx.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.rbtnClassMethodGrIx.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.rbtnClassMethodGrIx.Location = new System.Drawing.Point(7, 81);
-            this.rbtnClassMethodGrIx.Margin = new System.Windows.Forms.Padding(4);
-            this.rbtnClassMethodGrIx.Name = "rbtnClassMethodGrIx";
-            this.rbtnClassMethodGrIx.Size = new System.Drawing.Size(117, 29);
-            this.rbtnClassMethodGrIx.TabIndex = 50;
-            this.rbtnClassMethodGrIx.Text = "GrIx SAIL";
-            this.rbtnClassMethodGrIx.UseVisualStyleBackColor = true;
-            this.rbtnClassMethodGrIx.CheckedChanged += new System.EventHandler(this.rbtnClassMethodNew_CheckedChanged);
             // 
             // label8
             // 
@@ -441,35 +429,6 @@
             this.lblClassificationMethod.TabIndex = 45;
             this.lblClassificationMethod.Text = "Classification method:";
             this.lblClassificationMethod.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-            // 
-            // rbtnClassMethodJapan
-            // 
-            this.rbtnClassMethodJapan.AutoSize = true;
-            this.rbtnClassMethodJapan.Checked = true;
-            this.rbtnClassMethodJapan.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.rbtnClassMethodJapan.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.rbtnClassMethodJapan.Location = new System.Drawing.Point(7, 1);
-            this.rbtnClassMethodJapan.Margin = new System.Windows.Forms.Padding(4);
-            this.rbtnClassMethodJapan.Name = "rbtnClassMethodJapan";
-            this.rbtnClassMethodJapan.Size = new System.Drawing.Size(199, 29);
-            this.rbtnClassMethodJapan.TabIndex = 46;
-            this.rbtnClassMethodJapan.TabStop = true;
-            this.rbtnClassMethodJapan.Text = "(R-B)/(R+B)   (Jap)";
-            this.rbtnClassMethodJapan.UseVisualStyleBackColor = true;
-            this.rbtnClassMethodJapan.CheckedChanged += new System.EventHandler(this.rbtnClassMethodJapan_CheckedChanged);
-            // 
-            // rbtnClassMethodUS
-            // 
-            this.rbtnClassMethodUS.AutoSize = true;
-            this.rbtnClassMethodUS.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.rbtnClassMethodUS.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.rbtnClassMethodUS.Location = new System.Drawing.Point(7, 41);
-            this.rbtnClassMethodUS.Margin = new System.Windows.Forms.Padding(4);
-            this.rbtnClassMethodUS.Name = "rbtnClassMethodUS";
-            this.rbtnClassMethodUS.Size = new System.Drawing.Size(116, 29);
-            this.rbtnClassMethodUS.TabIndex = 47;
-            this.rbtnClassMethodUS.Text = "B/R  (US)";
-            this.rbtnClassMethodUS.UseVisualStyleBackColor = true;
             // 
             // richTextBox1
             // 
@@ -641,14 +600,6 @@
             this.btnTestSunDetection2015.UseVisualStyleBackColor = false;
             this.btnTestSunDetection2015.Click += new System.EventHandler(this.btnTestSunDetection2015_Click);
             // 
-            // bgwProcessDirectoryOfImages
-            // 
-            this.bgwProcessDirectoryOfImages.WorkerReportsProgress = true;
-            this.bgwProcessDirectoryOfImages.WorkerSupportsCancellation = true;
-            this.bgwProcessDirectoryOfImages.DoWork += new System.ComponentModel.DoWorkEventHandler(this.backgroundWorker2_DoWork);
-            this.bgwProcessDirectoryOfImages.ProgressChanged += new System.ComponentModel.ProgressChangedEventHandler(this.backgroundWorker2_ProgressChanged);
-            this.bgwProcessDirectoryOfImages.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(this.backgroundWorker2_RunWorkerCompleted);
-            // 
             // lblResultTitle
             // 
             this.lblResultTitle.AutoSize = true;
@@ -676,19 +627,27 @@
             this.groupBox1.TabIndex = 66;
             this.groupBox1.TabStop = false;
             // 
-            // groupBox2
+            // rbtnSaveClustering
             // 
-            this.tableLayoutPanel1.SetColumnSpan(this.groupBox2, 3);
-            this.groupBox2.Controls.Add(this.rbtnClassMethodGrIx);
-            this.groupBox2.Controls.Add(this.rbtnClassMethodJapan);
-            this.groupBox2.Controls.Add(this.rbtnClassMethodUS);
-            this.groupBox2.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.groupBox2.Location = new System.Drawing.Point(375, 499);
-            this.groupBox2.Name = "groupBox2";
-            this.tableLayoutPanel1.SetRowSpan(this.groupBox2, 3);
-            this.groupBox2.Size = new System.Drawing.Size(273, 114);
-            this.groupBox2.TabIndex = 67;
-            this.groupBox2.TabStop = false;
+            this.rbtnSaveClustering.AutoSize = true;
+            this.rbtnSaveClustering.Font = new System.Drawing.Font("Microsoft Sans Serif", 13.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.rbtnSaveClustering.Location = new System.Drawing.Point(6, 87);
+            this.rbtnSaveClustering.Name = "rbtnSaveClustering";
+            this.rbtnSaveClustering.Size = new System.Drawing.Size(240, 33);
+            this.rbtnSaveClustering.TabIndex = 2;
+            this.rbtnSaveClustering.Text = "and save clustering";
+            this.rbtnSaveClustering.UseVisualStyleBackColor = true;
+            // 
+            // rbtnClusterizePoints
+            // 
+            this.rbtnClusterizePoints.AutoSize = true;
+            this.rbtnClusterizePoints.Font = new System.Drawing.Font("Microsoft Sans Serif", 13.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.rbtnClusterizePoints.Location = new System.Drawing.Point(6, 48);
+            this.rbtnClusterizePoints.Name = "rbtnClusterizePoints";
+            this.rbtnClusterizePoints.Size = new System.Drawing.Size(182, 33);
+            this.rbtnClusterizePoints.TabIndex = 1;
+            this.rbtnClusterizePoints.Text = "and clusterize";
+            this.rbtnClusterizePoints.UseVisualStyleBackColor = true;
             // 
             // rbtnShowDensity
             // 
@@ -703,27 +662,85 @@
             this.rbtnShowDensity.Text = "show diagram";
             this.rbtnShowDensity.UseVisualStyleBackColor = true;
             // 
-            // rbtnClusterizePoints
+            // groupBox2
             // 
-            this.rbtnClusterizePoints.AutoSize = true;
-            this.rbtnClusterizePoints.Font = new System.Drawing.Font("Microsoft Sans Serif", 13.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.rbtnClusterizePoints.Location = new System.Drawing.Point(6, 48);
-            this.rbtnClusterizePoints.Name = "rbtnClusterizePoints";
-            this.rbtnClusterizePoints.Size = new System.Drawing.Size(182, 33);
-            this.rbtnClusterizePoints.TabIndex = 1;
-            this.rbtnClusterizePoints.Text = "and clusterize";
-            this.rbtnClusterizePoints.UseVisualStyleBackColor = true;
+            this.tableLayoutPanel1.SetColumnSpan(this.groupBox2, 3);
+            this.groupBox2.Controls.Add(this.rbtnClassMethodGrIx);
+            this.groupBox2.Controls.Add(this.rbtnClassMethodJapan);
+            this.groupBox2.Controls.Add(this.rbtnClassMethodUS);
+            this.groupBox2.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.groupBox2.Location = new System.Drawing.Point(375, 499);
+            this.groupBox2.Name = "groupBox2";
+            this.tableLayoutPanel1.SetRowSpan(this.groupBox2, 3);
+            this.groupBox2.Size = new System.Drawing.Size(273, 114);
+            this.groupBox2.TabIndex = 67;
+            this.groupBox2.TabStop = false;
             // 
-            // rbtnSaveClustering
+            // rbtnClassMethodGrIx
             // 
-            this.rbtnSaveClustering.AutoSize = true;
-            this.rbtnSaveClustering.Font = new System.Drawing.Font("Microsoft Sans Serif", 13.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.rbtnSaveClustering.Location = new System.Drawing.Point(6, 87);
-            this.rbtnSaveClustering.Name = "rbtnSaveClustering";
-            this.rbtnSaveClustering.Size = new System.Drawing.Size(240, 33);
-            this.rbtnSaveClustering.TabIndex = 2;
-            this.rbtnSaveClustering.Text = "and save clustering";
-            this.rbtnSaveClustering.UseVisualStyleBackColor = true;
+            this.rbtnClassMethodGrIx.AutoSize = true;
+            this.rbtnClassMethodGrIx.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.rbtnClassMethodGrIx.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.rbtnClassMethodGrIx.Location = new System.Drawing.Point(7, 81);
+            this.rbtnClassMethodGrIx.Margin = new System.Windows.Forms.Padding(4);
+            this.rbtnClassMethodGrIx.Name = "rbtnClassMethodGrIx";
+            this.rbtnClassMethodGrIx.Size = new System.Drawing.Size(117, 29);
+            this.rbtnClassMethodGrIx.TabIndex = 50;
+            this.rbtnClassMethodGrIx.Text = "GrIx SAIL";
+            this.rbtnClassMethodGrIx.UseVisualStyleBackColor = true;
+            this.rbtnClassMethodGrIx.CheckedChanged += new System.EventHandler(this.rbtnClassMethodNew_CheckedChanged);
+            // 
+            // rbtnClassMethodJapan
+            // 
+            this.rbtnClassMethodJapan.AutoSize = true;
+            this.rbtnClassMethodJapan.Checked = true;
+            this.rbtnClassMethodJapan.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.rbtnClassMethodJapan.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.rbtnClassMethodJapan.Location = new System.Drawing.Point(7, 1);
+            this.rbtnClassMethodJapan.Margin = new System.Windows.Forms.Padding(4);
+            this.rbtnClassMethodJapan.Name = "rbtnClassMethodJapan";
+            this.rbtnClassMethodJapan.Size = new System.Drawing.Size(199, 29);
+            this.rbtnClassMethodJapan.TabIndex = 46;
+            this.rbtnClassMethodJapan.TabStop = true;
+            this.rbtnClassMethodJapan.Text = "(R-B)/(R+B)   (Jap)";
+            this.rbtnClassMethodJapan.UseVisualStyleBackColor = true;
+            this.rbtnClassMethodJapan.CheckedChanged += new System.EventHandler(this.rbtnClassMethodJapan_CheckedChanged);
+            // 
+            // rbtnClassMethodUS
+            // 
+            this.rbtnClassMethodUS.AutoSize = true;
+            this.rbtnClassMethodUS.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.rbtnClassMethodUS.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.rbtnClassMethodUS.Location = new System.Drawing.Point(7, 41);
+            this.rbtnClassMethodUS.Margin = new System.Windows.Forms.Padding(4);
+            this.rbtnClassMethodUS.Name = "rbtnClassMethodUS";
+            this.rbtnClassMethodUS.Size = new System.Drawing.Size(116, 29);
+            this.rbtnClassMethodUS.TabIndex = 47;
+            this.rbtnClassMethodUS.Text = "B/R  (US)";
+            this.rbtnClassMethodUS.UseVisualStyleBackColor = true;
+            // 
+            // bgwProcessDirectoryOfImages
+            // 
+            this.bgwProcessDirectoryOfImages.WorkerReportsProgress = true;
+            this.bgwProcessDirectoryOfImages.WorkerSupportsCancellation = true;
+            this.bgwProcessDirectoryOfImages.DoWork += new System.ComponentModel.DoWorkEventHandler(this.backgroundWorker2_DoWork);
+            this.bgwProcessDirectoryOfImages.ProgressChanged += new System.ComponentModel.ProgressChangedEventHandler(this.backgroundWorker2_ProgressChanged);
+            this.bgwProcessDirectoryOfImages.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(this.backgroundWorker2_RunWorkerCompleted);
+            // 
+            // btnCalcSunPosition
+            // 
+            this.btnCalcSunPosition.BackColor = System.Drawing.SystemColors.ControlLight;
+            this.tableLayoutPanel1.SetColumnSpan(this.btnCalcSunPosition, 3);
+            this.btnCalcSunPosition.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.btnCalcSunPosition.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnCalcSunPosition.Font = new System.Drawing.Font("Microsoft Sans Serif", 13.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.btnCalcSunPosition.Location = new System.Drawing.Point(561, 3);
+            this.btnCalcSunPosition.Name = "btnCalcSunPosition";
+            this.btnCalcSunPosition.Size = new System.Drawing.Size(273, 74);
+            this.btnCalcSunPosition.TabIndex = 68;
+            this.btnCalcSunPosition.Text = "Check sun position";
+            this.btnCalcSunPosition.UseVisualStyleBackColor = false;
+            this.btnCalcSunPosition.Click += new System.EventHandler(this.btnCalcSunPosition_Click);
             // 
             // MainAnalysisForm
             // 
@@ -805,6 +822,7 @@
         private System.Windows.Forms.RadioButton rbtnSaveClustering;
         private System.Windows.Forms.RadioButton rbtnClusterizePoints;
         private System.Windows.Forms.RadioButton rbtnShowDensity;
+        private System.Windows.Forms.Button btnCalcSunPosition;
     }
 }
 
