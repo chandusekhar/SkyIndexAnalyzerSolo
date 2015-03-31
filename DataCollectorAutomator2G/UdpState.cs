@@ -3,7 +3,7 @@ using System.Net.Sockets;
 //using System.Linq;
 
 
-namespace SkyImagesAnalyzerLibraries
+namespace DataCollectorAutomator
 {
     public class UdpState
     {

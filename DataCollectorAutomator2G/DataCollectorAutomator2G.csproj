@@ -104,6 +104,7 @@
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
       <DependentUpon>Settings.settings</DependentUpon>
     </Compile>
+    <Compile Include="UdpState.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="AccelerometerDataRepresentingForm.resx">

@@ -20,20 +20,51 @@ namespace SolarPositioning
             this.azimuth = azimuth;
         }
 
-        public double getZenithAngle()
+        public double ZenithAngle
         {
-            return zenithAngle;
+            get { return zenithAngle; }
         }
 
-        public double getAzimuth()
+
+        public double ZenithAngleRad
         {
-            return azimuth;
+            get { return (Math.PI*zenithAngle/180.0d); }
         }
+
+
+
+        public double ElevationAngle
+        {
+            get { return 90.0d - zenithAngle; }
+        }
+
+
+
+        public double ElevationAngleRad
+        {
+            get { return Math.PI*ElevationAngle/180.0d; }
+        }
+
+
+
+        public double Azimuth
+        {
+            get { return azimuth; }
+        }
+
+
+
+        public double AzimuthRad
+        {
+            get { return Math.PI*azimuth/180.0d; }
+        }
+
+
 
         public override string ToString()
         {
             string outStr = string.Format("azimuth {0:N} deg, zenith angle {1:N} deg", azimuth, zenithAngle);
-            outStr += Environment.NewLine + "elevation angle " + (90.0 - zenithAngle).ToString() + " deg";
+            outStr += Environment.NewLine + "elevation angle " + ElevationAngle + " deg";
             return outStr;
         }
     }

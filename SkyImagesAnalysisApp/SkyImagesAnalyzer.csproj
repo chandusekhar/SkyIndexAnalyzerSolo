@@ -296,6 +296,11 @@
     </COMReference>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\IoffeVesselDataReader\IoffeVesselDataReader.csproj">
+      <Project>{664d7e9d-2f92-4d4e-945d-a6e3a9b8b9c4}</Project>
+      <Name>IoffeVesselDataReader</Name>
+      <Private>False</Private>
+    </ProjectReference>
     <ProjectReference Include="..\MRG.Controls.UI\MRG.Controls.UI.csproj">
       <Project>{48e18b56-4c37-4d69-aba7-429c42b45aac}</Project>
       <Name>MRG.Controls.UI</Name>

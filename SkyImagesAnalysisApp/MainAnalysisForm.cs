@@ -11,6 +11,7 @@ using System.Threading;
 using System.Reflection;
 using Emgu.CV;
 using Emgu.CV.Structure;
+using IoffeVesselDataReader;
 using MathNet.Numerics.Statistics;
 using SkyImagesAnalyzerLibraries;
 using SolarPositioning;
@@ -3162,109 +3163,118 @@ namespace SkyImagesAnalyzer
             // попробовать по получившейся форме поля найти положение солнца
         }
 
+
+
         private void btnCalcSunPosition_Click(object sender, EventArgs e)
         {
-            if (imagetoadd == null)
+            DateTime curDateTime = DateTime.UtcNow;
+            if (imagetoadd != null)
+            {
+
+                FileInfo finfoOriginalFile = new FileInfo(ImageFileName);
+
+                defaultProperties["DefaultDataFilesLocation"] = defaultProperties["DefaultDataFilesLocation"] +
+                                                                Path.GetFileNameWithoutExtension(finfoOriginalFile.Name) +
+                                                                "\\";
+
+                string defaultOutputDataDirectory = (string) defaultProperties["DefaultDataFilesLocation"];
+
+
+
+                Image anImage = Image.FromFile(ImageFileName);
+                ImageInfo newIInfo = new ImageInfo(anImage);
+                theLogWindow = ServiceTools.LogAText(theLogWindow,
+                    "processing file " + ImageFileName + Environment.NewLine);
+                int minute = 0;
+                String dateTime = (String) newIInfo.getValueByKey("ExifDTOrig");
+                if (dateTime == null)
+                {
+                    //попробуем вытащить из имени файла
+                    string strDateTime = Path.GetFileName(ImageFileName);
+                    strDateTime = strDateTime.Substring(4, 19);
+                    dateTime = strDateTime;
+                }
+
+
+
+                try
+                {
+                    curDateTime = DateTimeOfString(dateTime);
+                    theLogWindow = ServiceTools.LogAText(theLogWindow,
+                        "picture got date/time: " + curDateTime.ToString("s"));
+                }
+                catch (Exception)
+                {
+                    theLogWindow = ServiceTools.LogAText(theLogWindow,
+                        "couldn`t get picture get date/time for file: " + Environment.NewLine + ImageFileName);
+                    return;
+                }
+                curDateTime = DateTime.SpecifyKind(curDateTime, DateTimeKind.Utc);
+
+
+                string currPath = Path.GetDirectoryName(ImageFileName);
+                string[] xmlFileNames = Directory.GetFiles(currPath,
+                    "*" + curDateTime.ToString("s").Replace(":", "-") + "*.xml");
+                if (xmlFileNames.Count() != 1)
+                {
+                    theLogWindow = ServiceTools.LogAText(theLogWindow, "the concurrent data file undefined." +
+                                                                       Environment.NewLine + "Found " +
+                                                                       xmlFileNames.Count() +
+                                                                       " appropriate XML files: " +
+                                                                       xmlFileNames.ToString() +
+                                                                       Environment.NewLine);
+                    return;
+                }
+
+                string xmlFileName = xmlFileNames[0];
+                Dictionary<string, object> dictSavedData = ServiceTools.ReadDictionaryFromXML(xmlFileName);
+                GPSdata gps = new GPSdata((string) dictSavedData["GPSdata"], GPSdatasources.CloudCamArduinoGPS);
+                double lat = gps.LatDec;
+                // double lat = 55.755826; // - Moscow
+                double lon = gps.LonDec;
+                // double lon = 37.6173; // - Moscow
+
+                SPA spaCalcExt = new SPA(curDateTime.Year, curDateTime.Month, curDateTime.Day, curDateTime.Hour,
+                    curDateTime.Minute, curDateTime.Second, (float) lon, (float) lat,
+                    (float) SPAConst.DeltaT(curDateTime),
+                    0.0f, 0.0f, Convert.ToSingle(dictSavedData["PressurePa"])/100.0f);
+                int res = spaCalcExt.spa_calculate();
+                AzimuthZenithAngle sunPositionSPAext = new AzimuthZenithAngle(spaCalcExt.spa.azimuth,
+                    spaCalcExt.spa.zenith);
+                theLogWindow = ServiceTools.LogAText(theLogWindow,
+                    "SPA ext sun position for " + curDateTime.ToString("s") + ": " + sunPositionSPAext);
+
+
+                ImageProcessing imgP = new ImageProcessing(imagetoadd, true);
+                Image<Bgr, byte> imgRes = imgP.significantMaskImageOctLined;
+                RoundData sunZenithCircle = imgP.imageRD.Copy();
+                sunZenithCircle.DRadius *= (sunPositionSPAext.ZenithAngle/90.0d);
+                imgRes.Draw(sunZenithCircle.CircleF(), new Bgr(Color.Orange), 3);
+                imgRes.Save(defaultOutputDataDirectory + Path.GetFileNameWithoutExtension(ImageFileName) +
+                            "-sun-detection-001.jpg");
+                ServiceTools.ShowPicture(imgRes, Path.GetFileNameWithoutExtension(ImageFileName));
+            }
+            else
             {
                 theLogWindow = ServiceTools.LogAText(theLogWindow, "Не загружено изображение для обработки!", true);
-                return;
             }
 
 
-            FileInfo finfoOriginalFile = new FileInfo(ImageFileName);
-
-            defaultProperties["DefaultDataFilesLocation"] = defaultProperties["DefaultDataFilesLocation"] +
-                                                            Path.GetFileNameWithoutExtension(finfoOriginalFile.Name) +
-                                                            "\\";
-            
-            string defaultOutputDataDirectory = (string)defaultProperties["DefaultDataFilesLocation"];
-
-
-
-            Image anImage = Image.FromFile(ImageFileName);
-            ImageInfo newIInfo = new ImageInfo(anImage);
-            theLogWindow = ServiceTools.LogAText(theLogWindow, "processing file " + ImageFileName + Environment.NewLine);
-            int minute = 0;
-            String dateTime = (String)newIInfo.getValueByKey("ExifDTOrig");
-            if (dateTime == null)
+            //string navFilesPath =
+            //    "D:\\_gulevlab\\SkyImagesAnalysis_appData\\images_complete\\IOFFE\\NIKON-D80\\IOFFE-Mission34-Marina-2011\\data-meteo-nav\\";
+            string navFilesPath =
+                "D:\\_gulevlab\\SkyImagesAnalysis_appData\\images_complete\\IOFFE\\NIKON-D80\\IOFFE-Mission34-Marina-2011\\";
+            string[] sNavFilenames = Directory.GetFiles(navFilesPath);
+            if (sNavFilenames.Count() == 0)
             {
-                //попробуем вытащить из имени файла
-                string strDateTime = Path.GetFileName(ImageFileName);
-                strDateTime = strDateTime.Substring(4, 19);
-                dateTime = strDateTime;
+                theLogWindow = ServiceTools.LogAText(theLogWindow, "Не найдено файлов данных навигации", true);
             }
-
-            DateTime curDateTime = DateTime.UtcNow;
-
-            try
+            else
             {
-                curDateTime = DateTimeOfString(dateTime);
-                theLogWindow = ServiceTools.LogAText(theLogWindow, "picture got date/time: " + curDateTime.ToString("s"));
+                string strFileName = sNavFilenames[0];
+                bool dataHasBeenRead = IoffeVesselNavDataReader.ReadNavFile(strFileName);
+                theLogWindow = ServiceTools.LogAText(theLogWindow, "файл навигации прочитан: " + dataHasBeenRead, true);
             }
-            catch (Exception)
-            {
-                theLogWindow = ServiceTools.LogAText(theLogWindow,
-                    "couldn`t get picture get date/time for file: " + Environment.NewLine + ImageFileName);
-                return;
-            }
-            curDateTime = DateTime.SpecifyKind(curDateTime, DateTimeKind.Utc);
-
-
-            string currPath = Path.GetDirectoryName(ImageFileName);
-            string[] xmlFileNames = Directory.GetFiles(currPath, "*" + curDateTime.ToString("s").Replace(":", "-") + "*.xml");
-            if (xmlFileNames.Count() != 1)
-            {
-                theLogWindow = ServiceTools.LogAText(theLogWindow, "the concurrent data file undefined." +
-                                                                   Environment.NewLine + "Found " + xmlFileNames.Count() +
-                                                                   " appropriate XML files: " + xmlFileNames.ToString() +
-                                                                   Environment.NewLine);
-                return;
-            }
-
-            string xmlFileName = xmlFileNames[0];
-            Dictionary<string, object> dictSavedData = ServiceTools.ReadDictionaryFromXML(xmlFileName);
-            GPSdata gps = new GPSdata((string) dictSavedData["GPSdata"], GPSdatasources.CloudCamArduinoGPS);
-            //curDateTime = DateTime.UtcNow;
-            //curDateTime = DateTime.SpecifyKind(curDateTime, DateTimeKind.Local);
-            double lat = gps.LatDec;
-            // double lat = 55.755826; // - Moscow
-            double lon = gps.LonDec;
-            // double lon = 37.6173; // - Moscow
-
-            //int TimeZone = Convert.ToInt32((lon/Math.Abs(lon))*Math.Floor(Math.Abs(lon*24.0d/360.0d)));
-            //curDateTime = curDateTime.AddHours(TimeZone);
-
-            AzimuthZenithAngle sunPosition = SPA.CalculateSolarPosition(curDateTime, lat, lon, 0.0d,
-                Convert.ToDouble(dictSavedData["PressurePa"])/100.0d, 11.0d);
-            //AzimuthZenithAngle sunPosition = SPA.CalculateSolarPosition(curDateTime, lat, lon, 156.0d, 1010.0d, 11.0d);
-
-            theLogWindow = ServiceTools.LogAText(theLogWindow, "SPA sun position: " + sunPosition);
-
-
-            AzimuthZenithAngle sunPositionPSA = PSA.calculateSolarPosition(curDateTime, lat, lon);
-            theLogWindow = ServiceTools.LogAText(theLogWindow, "PSA sun position for " + curDateTime.ToString("s") + ": " + sunPositionPSA);
-
-
-            SPAext spaCalcExt = new SPAext(curDateTime.Year, curDateTime.Month, curDateTime.Day, curDateTime.Hour,
-                curDateTime.Minute, curDateTime.Second, (float)lon, (float) lat);
-            int res = spaCalcExt.spa_calculate();
-            AzimuthZenithAngle sunPositionSPAext = new AzimuthZenithAngle(spaCalcExt.spa.azimuth, spaCalcExt.spa.zenith);
-            theLogWindow = ServiceTools.LogAText(theLogWindow, "SPA ext sun position for " + curDateTime.ToString("s") + ": " + sunPositionSPAext);
-
-            //for (int i = -12; i < 13; i++)
-            //{
-            //    DateTime dtShifted = curDateTime.AddHours(i);
-            //    AzimuthZenithAngle sunPositionPSAshifted = PSA.calculateSolarPosition(dtShifted, lat, lon);
-            //    theLogWindow = ServiceTools.LogAText(theLogWindow, "PSA sun position for " + curDateTime.ToString("s") + ": " + sunPositionPSAshifted);
-            //}
-
-
-
-            //ImageProcessing imgP = new ImageProcessing(imagetoadd, true);
-            //Image imgRes = (Image)imgP.significantMaskImageOctLined.Bitmap;
-
-
-
         }
 
 

@@ -8,7 +8,6 @@ using MathNet.Numerics.LinearAlgebra.Double;
 using MathNet.Numerics.Statistics;
 using MathNet.Numerics;
 using MathNet.Numerics.Interpolation;
-//using MathNet.Numerics.Interpolation.Algorithms;
 using MathNet.Numerics.Random;
 
 namespace SkyImagesAnalyzerLibraries

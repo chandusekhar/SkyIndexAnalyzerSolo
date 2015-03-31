@@ -161,6 +161,7 @@
       <DependentUpon>PropertiesEditor.cs</DependentUpon>
     </Compile>
     <Compile Include="PropertyHelper.cs" />
+    <Compile Include="RoundData.cs" />
     <Compile Include="SectionDescription.cs" />
     <Compile Include="SectionRequestForm.cs">
       <SubType>Form</SubType>
@@ -235,7 +236,6 @@
     </Compile>
     <Compile Include="ThreadSafeOperations.cs" />
     <Compile Include="TimeSeries.cs" />
-    <Compile Include="UdpState.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Field3Drepresentation.resx">
