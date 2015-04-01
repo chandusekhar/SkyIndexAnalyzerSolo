@@ -280,15 +280,53 @@ namespace MKLwrapper
 
             DeleteAndFreeBuffers();
 
+            // stopCriterion
+            // 1               The algorithm has exceeded the maximum number of iterations
+            // 2               Δ < eps(1)
+            // 3               ||F(x)||_2 < eps(2)
+            // 4               The Jacobian matrix is singular.
+            //                 ||J(x)(1:m,j)||_2 < eps(3), j = 1, ..., n
+            // 5               ||s||_2 < eps(4)
+            // 6               ||F(x)||_2 - ||F(x) - J(x)s||_2 < eps(5)
+
+            resultStatus = "stopping criterion reached: ";
+            switch (stopCriterion)
+            {
+                case 1:
+                    resultStatus += "The algorithm has exceeded the maximum number of iterations";
+                    break;
+                case 2:
+                    resultStatus += "Δ < precision(1)";
+                    break;
+                case 3:
+                    resultStatus += "||F(x)||_2 < precision(2)";
+                    break;
+                case 4:
+                    resultStatus += "The Jacobian matrix is singular";
+                    break;
+                case 5:
+                    resultStatus += "||s||_2 < precision(4)";
+                    break;
+                case 6:
+                    resultStatus += "||F(x)||_2 - ||F(x) - J(x)s||_2 < precision(5)";
+                    break;
+                default:
+                    break;
+
+            }
 
             if (r2 < precision)
             {
-                resultStatus = "optimization passed successfully";
+                resultStatus += Environment.NewLine + "optimization passed successfully" +
+                                Environment.NewLine + "precision reached: " + r2 +
+                                Environment.NewLine + "precision needed : " + precision;
                 return x;
             }
             else
             {
-                resultStatus = "optimization failed";
+                resultStatus += Environment.NewLine + "optimization failed" +
+                                Environment.NewLine + "precision reached: " + r2 +
+                                Environment.NewLine + "precision needed : " + precision;
                 return x;
             }
         }

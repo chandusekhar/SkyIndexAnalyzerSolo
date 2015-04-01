@@ -57,11 +57,11 @@ namespace SolarPositioning
         private static int[] b_subcount = { 5, 2 };
         private static int[] r_subcount = { 40, 10, 6, 2, 1 };
 
-        public static double[][][] L_TERMS = SPAConst.TERMS_L;
-        public static double[][][] B_TERMS = SPAConst.TERMS_B;
-        public static double[][][] R_TERMS = SPAConst.TERMS_R;
-        public static double[][] Y_TERMS = SPAConst.TERMS_Y;
-        public static double[][] PE_TERMS = SPAConst.TERMS_PE;
+        public static double[][][] L_TERMS = SPAConst.L_TERMS;
+        public static double[][][] B_TERMS = SPAConst.B_TERMS;
+        public static double[][][] R_TERMS = SPAConst.R_TERMS;
+        public static double[][] Y_TERMS = SPAConst.Y_TERMS;
+        public static double[][] PE_TERMS = SPAConst.PE_TERMS;
 
 
         public SPA(
@@ -222,30 +222,30 @@ namespace SolarPositioning
 
 
 
-        private int validate_inputs(SPAData spa)
+        private int validate_inputs(ref SPAData spa_validate)
         {
-            if ((spa.year < -2000) || (spa.year > 6000)) return 1;
-            if ((spa.month < 1) || (spa.month > 12)) return 2;
-            if ((spa.day < 1) || (spa.day > 31)) return 3;
-            if ((spa.hour < 0) || (spa.hour > 24)) return 4;
-            if ((spa.minute < 0) || (spa.minute > 59)) return 5;
-            if ((spa.second < 0) || (spa.second > 59)) return 6;
-            if ((spa.pressure < 0) || (spa.pressure > 5000)) return 12;
-            if ((spa.temperature <= -273) || (spa.temperature > 6000)) return 13;
-            if ((spa.hour == 24) && (spa.minute > 0)) return 5;
-            if ((spa.hour == 24) && (spa.second > 0)) return 6;
+            if ((spa_validate.year < -2000) || (spa_validate.year > 6000)) return 1;
+            if ((spa_validate.month < 1) || (spa_validate.month > 12)) return 2;
+            if ((spa_validate.day < 1) || (spa_validate.day > 31)) return 3;
+            if ((spa_validate.hour < 0) || (spa_validate.hour > 24)) return 4;
+            if ((spa_validate.minute < 0) || (spa_validate.minute > 59)) return 5;
+            if ((spa_validate.second < 0) || (spa_validate.second > 59)) return 6;
+            if ((spa_validate.pressure < 0) || (spa_validate.pressure > 5000)) return 12;
+            if ((spa_validate.temperature <= -273) || (spa_validate.temperature > 6000)) return 13;
+            if ((spa_validate.hour == 24) && (spa_validate.minute > 0)) return 5;
+            if ((spa_validate.hour == 24) && (spa_validate.second > 0)) return 6;
 
-            if (fabs(spa.delta_t) > 8000) return 7;
-            if (fabs(spa.timezone) > 12) return 8;
-            if (fabs(spa.longitude) > 180) return 9;
-            if (fabs(spa.latitude) > 90) return 10;
-            if (fabs(spa.atmos_refract) > 5) return 16;
-            if (spa.elevation < -6500000) return 11;
+            if (fabs(spa_validate.delta_t) > 8000) return 7;
+            if (fabs(spa_validate.timezone) > 12) return 8;
+            if (fabs(spa_validate.longitude) > 180) return 9;
+            if (fabs(spa_validate.latitude) > 90) return 10;
+            if (fabs(spa_validate.atmos_refract) > 5) return 16;
+            if (spa_validate.elevation < -6500000) return 11;
 
-            if ((spa.function == SPAFunctionType.SPA_ZA_INC) || (spa.function == SPAFunctionType.SPA_ALL))
+            if ((spa_validate.function == SPAFunctionType.SPA_ZA_INC) || (spa_validate.function == SPAFunctionType.SPA_ALL))
             {
-                if (fabs(spa.slope) > 360) return 14;
-                if (fabs(spa.azm_rotation) > 360) return 15;
+                if (fabs(spa_validate.slope) > 360) return 14;
+                if (fabs(spa_validate.azm_rotation) > 360) return 15;
             }
 
             return 0;
@@ -321,7 +321,7 @@ namespace SolarPositioning
             for (i = 0; i < count; i++)
                 sum += term_sum[i] * Math.Pow(jme, i);
 
-            sum /= 1.0e8;
+            sum /= 1.0e+8;
 
             return sum;
         }
@@ -413,7 +413,7 @@ namespace SolarPositioning
         }
 
 
-        private void nutation_longitude_and_obliquity(double jce, double[] x, double del_psi, double del_epsilon)
+        private void nutation_longitude_and_obliquity(double jce, double[] x, ref double del_psi, ref double del_epsilon)
         {
             int i;
             double xy_term_sum, sum_psi = 0, sum_epsilon = 0;
@@ -498,7 +498,7 @@ namespace SolarPositioning
 
 
         private void sun_right_ascension_parallax_and_topocentric_dec(float latitude, float elevation, double xi,
-                                double h, double delta, double delta_alpha, double delta_prime)
+                                double h, double delta, ref double delta_alpha, ref double delta_prime)
         {
             double lat_rad = deg2rad(latitude);
             double xi_rad = deg2rad(xi);
@@ -618,7 +618,7 @@ namespace SolarPositioning
             return h0;
         }
 
-        private void approx_sun_rise_and_set(double[] m_rts, double h0)
+        private void approx_sun_rise_and_set(ref double[] m_rts, double h0)
         {
             double h0_dfrac = h0 / 360.0;
 
@@ -656,49 +656,49 @@ namespace SolarPositioning
 
 
 
-        private void calculate_geocentric_sun_right_ascension_and_declination(SPAData spa)
+        private void calculate_geocentric_sun_right_ascension_and_declination(ref SPAData spa_calc)
         {
             double[] x = new double[TERM_X_COUNT];
 
-            spa.jc = julian_century(spa.jd);
+            spa_calc.jc = julian_century(spa_calc.jd);
 
-            spa.jde = julian_ephemeris_day(spa.jd, spa.delta_t);
-            spa.jce = julian_ephemeris_century(spa.jde);
-            spa.jme = julian_ephemeris_millennium(spa.jce);
+            spa_calc.jde = julian_ephemeris_day(spa_calc.jd, spa_calc.delta_t);
+            spa_calc.jce = julian_ephemeris_century(spa_calc.jde);
+            spa_calc.jme = julian_ephemeris_millennium(spa_calc.jce);
 
-            spa.l = earth_heliocentric_longitude(spa.jme);
-            spa.b = earth_heliocentric_latitude(spa.jme);
-            spa.r = earth_radius_vector(spa.jme);
+            spa_calc.l = earth_heliocentric_longitude(spa_calc.jme);
+            spa_calc.b = earth_heliocentric_latitude(spa_calc.jme);
+            spa_calc.r = earth_radius_vector(spa_calc.jme);
 
-            spa.theta = geocentric_longitude(spa.l);
-            spa.beta = geocentric_latitude(spa.b);
+            spa_calc.theta = geocentric_longitude(spa_calc.l);
+            spa_calc.beta = geocentric_latitude(spa_calc.b);
 
-            x[TERM_X0] = spa.x0 = mean_elongation_moon_sun(spa.jce);
-            x[TERM_X1] = spa.x1 = mean_anomaly_sun(spa.jce);
-            x[TERM_X2] = spa.x2 = mean_anomaly_moon(spa.jce);
-            x[TERM_X3] = spa.x3 = argument_latitude_moon(spa.jce);
-            x[TERM_X4] = spa.x4 = ascending_longitude_moon(spa.jce);
+            x[TERM_X0] = spa_calc.x0 = mean_elongation_moon_sun(spa_calc.jce);
+            x[TERM_X1] = spa_calc.x1 = mean_anomaly_sun(spa_calc.jce);
+            x[TERM_X2] = spa_calc.x2 = mean_anomaly_moon(spa_calc.jce);
+            x[TERM_X3] = spa_calc.x3 = argument_latitude_moon(spa_calc.jce);
+            x[TERM_X4] = spa_calc.x4 = ascending_longitude_moon(spa_calc.jce);
 
-            nutation_longitude_and_obliquity(spa.jce, x, spa.del_psi, spa.del_epsilon);
+            nutation_longitude_and_obliquity(spa_calc.jce, x, ref spa_calc.del_psi, ref spa_calc.del_epsilon);
 
-            spa.epsilon0 = ecliptic_mean_obliquity(spa.jme);
-            spa.epsilon = ecliptic_true_obliquity(spa.del_epsilon, spa.epsilon0);
+            spa_calc.epsilon0 = ecliptic_mean_obliquity(spa_calc.jme);
+            spa_calc.epsilon = ecliptic_true_obliquity(spa_calc.del_epsilon, spa_calc.epsilon0);
 
-            spa.del_tau = aberration_correction(spa.r);
-            spa.lamda = apparent_sun_longitude(spa.theta, spa.del_psi, spa.del_tau);
-            spa.nu0 = greenwich_mean_sidereal_time(spa.jd, spa.jc);
-            spa.nu = greenwich_sidereal_time(spa.nu0, spa.del_psi, spa.epsilon);
+            spa_calc.del_tau = aberration_correction(spa_calc.r);
+            spa_calc.lamda = apparent_sun_longitude(spa_calc.theta, spa_calc.del_psi, spa_calc.del_tau);
+            spa_calc.nu0 = greenwich_mean_sidereal_time(spa_calc.jd, spa_calc.jc);
+            spa_calc.nu = greenwich_sidereal_time(spa_calc.nu0, spa_calc.del_psi, spa_calc.epsilon);
 
-            spa.alpha = geocentric_sun_right_ascension(spa.lamda, spa.epsilon, spa.beta);
-            spa.delta = geocentric_sun_declination(spa.beta, spa.epsilon, spa.lamda);
+            spa_calc.alpha = geocentric_sun_right_ascension(spa_calc.lamda, spa_calc.epsilon, spa_calc.beta);
+            spa_calc.delta = geocentric_sun_declination(spa_calc.beta, spa_calc.epsilon, spa_calc.lamda);
         }
 
 
 
 
-        private void calculate_eot_and_sun_rise_transit_set(SPAData spa)
+        private void calculate_eot_and_sun_rise_transit_set(ref SPAData spa_calc)
         {
-            SPAData sun_rts = spa;
+            SPAData sun_rts = spa_calc;
             double nu, m, h0, n;
             double[] alpha = new double[JD_COUNT];
             double[] delta = new double[JD_COUNT];
@@ -708,12 +708,12 @@ namespace SolarPositioning
             double[] alpha_prime = new double[SUN_COUNT];
             double[] delta_prime = new double[SUN_COUNT];
             double[] h_prime = new double[SUN_COUNT];
-            double h0_prime = -1 * (SUN_RADIUS + spa.atmos_refract);
+            double h0_prime = -1 * (SUN_RADIUS + spa_calc.atmos_refract);
             int i;
 
 
-            m = sun_mean_longitude(spa.jme);
-            spa.eot = eot(m, spa.alpha, spa.del_psi, spa.epsilon);
+            m = sun_mean_longitude(spa_calc.jme);
+            spa_calc.eot = eot(m, spa_calc.alpha, spa_calc.del_psi, spa_calc.epsilon);
 
             sun_rts.hour = sun_rts.minute = sun_rts.second = 0;
 
@@ -722,56 +722,56 @@ namespace SolarPositioning
             sun_rts.jd = julian_day(sun_rts.year, sun_rts.month, sun_rts.day,
                                      sun_rts.hour, sun_rts.minute, sun_rts.second, sun_rts.timezone);
 
-            calculate_geocentric_sun_right_ascension_and_declination(sun_rts);
+            calculate_geocentric_sun_right_ascension_and_declination(ref sun_rts);
             nu = sun_rts.nu;
 
             sun_rts.delta_t = 0;
             sun_rts.jd--;
             for (i = 0; i < JD_COUNT; i++)
             {
-                calculate_geocentric_sun_right_ascension_and_declination(sun_rts);
+                calculate_geocentric_sun_right_ascension_and_declination(ref sun_rts);
                 alpha[i] = sun_rts.alpha;
                 delta[i] = sun_rts.delta;
                 sun_rts.jd++;
             }
 
-            m_rts[SUN_TRANSIT] = approx_sun_transit_time(alpha[JD_ZERO], spa.longitude, nu);
-            h0 = sun_hour_angle_at_rise_set(spa.latitude, delta[JD_ZERO], h0_prime);
+            m_rts[SUN_TRANSIT] = approx_sun_transit_time(alpha[JD_ZERO], spa_calc.longitude, nu);
+            h0 = sun_hour_angle_at_rise_set(spa_calc.latitude, delta[JD_ZERO], h0_prime);
 
             if (h0 >= 0)
             {
 
-                approx_sun_rise_and_set(m_rts, h0);
+                approx_sun_rise_and_set(ref m_rts, h0);
 
                 for (i = 0; i < SUN_COUNT; i++)
                 {
 
                     nu_rts[i] = nu + 360.985647 * m_rts[i];
 
-                    n = m_rts[i] + spa.delta_t / 86400.0;
+                    n = m_rts[i] + spa_calc.delta_t / 86400.0;
                     alpha_prime[i] = rts_alpha_delta_prime(alpha, n);
                     delta_prime[i] = rts_alpha_delta_prime(delta, n);
 
-                    h_prime[i] = limit_degrees180pm(nu_rts[i] + spa.longitude - alpha_prime[i]);
+                    h_prime[i] = limit_degrees180pm(nu_rts[i] + spa_calc.longitude - alpha_prime[i]);
 
-                    h_rts[i] = rts_sun_altitude(spa.latitude, delta_prime[i], h_prime[i]);
+                    h_rts[i] = rts_sun_altitude(spa_calc.latitude, delta_prime[i], h_prime[i]);
                 }
 
-                spa.srha = h_prime[SUN_RISE];
-                spa.ssha = h_prime[SUN_SET];
-                spa.sta = h_rts[SUN_TRANSIT];
+                spa_calc.srha = h_prime[SUN_RISE];
+                spa_calc.ssha = h_prime[SUN_SET];
+                spa_calc.sta = h_rts[SUN_TRANSIT];
 
-                spa.suntransit = dayfrac_to_local_hr(m_rts[SUN_TRANSIT] - h_prime[SUN_TRANSIT] / 360.0,
-                                                      spa.timezone);
+                spa_calc.suntransit = dayfrac_to_local_hr(m_rts[SUN_TRANSIT] - h_prime[SUN_TRANSIT] / 360.0,
+                                                      spa_calc.timezone);
 
-                spa.sunrise = dayfrac_to_local_hr(sun_rise_and_set(m_rts, h_rts, delta_prime,
-                                  spa.latitude, h_prime, h0_prime, SUN_RISE), spa.timezone);
+                spa_calc.sunrise = dayfrac_to_local_hr(sun_rise_and_set(m_rts, h_rts, delta_prime,
+                                  spa_calc.latitude, h_prime, h0_prime, SUN_RISE), spa_calc.timezone);
 
-                spa.sunset = dayfrac_to_local_hr(sun_rise_and_set(m_rts, h_rts, delta_prime,
-                                  spa.latitude, h_prime, h0_prime, SUN_SET), spa.timezone);
+                spa_calc.sunset = dayfrac_to_local_hr(sun_rise_and_set(m_rts, h_rts, delta_prime,
+                                  spa_calc.latitude, h_prime, h0_prime, SUN_SET), spa_calc.timezone);
 
             }
-            else spa.srha = spa.ssha = spa.sta = spa.suntransit = spa.sunrise = spa.sunset = -99999;
+            else spa_calc.srha = spa_calc.ssha = spa_calc.sta = spa_calc.suntransit = spa_calc.sunrise = spa_calc.sunset = -99999;
 
         }
 
@@ -781,20 +781,20 @@ namespace SolarPositioning
         {
             int result;
 
-            result = validate_inputs(spa);
+            result = validate_inputs(ref spa);
 
             if (result == 0)
             {
                 spa.jd = julian_day(spa.year, spa.month, spa.day,
                                       spa.hour, spa.minute, spa.second, spa.timezone);
 
-                calculate_geocentric_sun_right_ascension_and_declination(spa);
+                calculate_geocentric_sun_right_ascension_and_declination(ref spa);
 
                 spa.h = observer_hour_angle(spa.nu, spa.longitude, spa.alpha);
                 spa.xi = sun_equatorial_horizontal_parallax(spa.r);
 
                 sun_right_ascension_parallax_and_topocentric_dec(spa.latitude, spa.elevation, spa.xi,
-                                            spa.h, spa.delta, spa.del_alpha, spa.delta_prime);
+                                            spa.h, spa.delta, ref spa.del_alpha, ref spa.delta_prime);
 
                 spa.alpha_prime = topocentric_sun_right_ascension(spa.alpha, spa.del_alpha);
                 spa.h_prime = topocentric_local_hour_angle(spa.h, spa.del_alpha);
@@ -814,7 +814,7 @@ namespace SolarPositioning
                                                               spa.azm_rotation, spa.slope);
 
                 if ((spa.function == SPAFunctionType.SPA_ZA_RTS) || (spa.function == SPAFunctionType.SPA_ALL))
-                    calculate_eot_and_sun_rise_transit_set(spa);
+                    calculate_eot_and_sun_rise_transit_set(ref spa);
             }
 
             return result;

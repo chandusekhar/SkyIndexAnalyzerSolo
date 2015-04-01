@@ -14,7 +14,7 @@
   </table>
   <table>
     <key>BatchProcessingDirectory</key>
-    <value>D:\_gulevlab\SkyImagesAnalysis_appData\sun-position-calc-test\</value>
+    <value>D:\_gulevlab\SkyImagesAnalysis_appData\AI45\sky-images\</value>
   </table>
   <table>
     <key>GermanCloudSkySeparationValue</key>
@@ -62,11 +62,11 @@
   </table>
   <table>
     <key>DefaultDataFilesLocation</key>
-    <value>D:\_gulevlab\SkyImagesAnalysis_appData\sun-position-calc-test\result\</value>
+    <value>D:\_gulevlab\SkyImagesAnalysis_appData\AI45\sky-images-result\</value>
   </table>
   <table>
     <key>GrIxDefaultSkyCloudMarginWithoutSun</key>
-    <value>0,7</value>
+    <value>0,9</value>
   </table>
   <table>
     <key>JapanCloudSkySeparationValue</key>
@@ -75,5 +75,9 @@
   <table>
     <key>DefaultMedianPerc5StatsXMLFile</key>
     <value>D:\_gulevlab\SkyImagesAnalysis_appData\AI45-total\ID1\stats\statsWithFNames.xml</value>
+  </table>
+  <table>
+    <key>IoffeMeteoNavFilesDirectory</key>
+    <value>D:\_gulevlab\SkyImagesAnalysis_appData\images_complete\IOFFE\NIKON-D80\IOFFE-Mission34-Marina-2011\data-meteo-nav\</value>
   </table>
 </DataSet>

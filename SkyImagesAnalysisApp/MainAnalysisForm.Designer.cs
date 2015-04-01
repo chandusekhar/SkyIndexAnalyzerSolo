@@ -72,9 +72,10 @@
             this.rbtnClassMethodGrIx = new System.Windows.Forms.RadioButton();
             this.rbtnClassMethodJapan = new System.Windows.Forms.RadioButton();
             this.rbtnClassMethodUS = new System.Windows.Forms.RadioButton();
+            this.btnCalcSunPosition = new System.Windows.Forms.Button();
             this.bgwProcessDirectoryOfImages = new System.ComponentModel.BackgroundWorker();
             this.bgwSunDetectionOnly = new System.ComponentModel.BackgroundWorker();
-            this.btnCalcSunPosition = new System.Windows.Forms.Button();
+            this.button5 = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.trackBar1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
@@ -307,6 +308,7 @@
             this.tableLayoutPanel1.Controls.Add(this.groupBox1, 8, 4);
             this.tableLayoutPanel1.Controls.Add(this.groupBox2, 4, 13);
             this.tableLayoutPanel1.Controls.Add(this.btnCalcSunPosition, 6, 0);
+            this.tableLayoutPanel1.Controls.Add(this.button5, 9, 0);
             this.tableLayoutPanel1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tableLayoutPanel1.Location = new System.Drawing.Point(0, 0);
             this.tableLayoutPanel1.Margin = new System.Windows.Forms.Padding(0);
@@ -719,14 +721,6 @@
             this.rbtnClassMethodUS.Text = "B/R  (US)";
             this.rbtnClassMethodUS.UseVisualStyleBackColor = true;
             // 
-            // bgwProcessDirectoryOfImages
-            // 
-            this.bgwProcessDirectoryOfImages.WorkerReportsProgress = true;
-            this.bgwProcessDirectoryOfImages.WorkerSupportsCancellation = true;
-            this.bgwProcessDirectoryOfImages.DoWork += new System.ComponentModel.DoWorkEventHandler(this.backgroundWorker2_DoWork);
-            this.bgwProcessDirectoryOfImages.ProgressChanged += new System.ComponentModel.ProgressChangedEventHandler(this.backgroundWorker2_ProgressChanged);
-            this.bgwProcessDirectoryOfImages.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(this.backgroundWorker2_RunWorkerCompleted);
-            // 
             // btnCalcSunPosition
             // 
             this.btnCalcSunPosition.BackColor = System.Drawing.SystemColors.ControlLight;
@@ -741,6 +735,27 @@
             this.btnCalcSunPosition.Text = "Check sun position";
             this.btnCalcSunPosition.UseVisualStyleBackColor = false;
             this.btnCalcSunPosition.Click += new System.EventHandler(this.btnCalcSunPosition_Click);
+            // 
+            // bgwProcessDirectoryOfImages
+            // 
+            this.bgwProcessDirectoryOfImages.WorkerReportsProgress = true;
+            this.bgwProcessDirectoryOfImages.WorkerSupportsCancellation = true;
+            this.bgwProcessDirectoryOfImages.DoWork += new System.ComponentModel.DoWorkEventHandler(this.backgroundWorker2_DoWork);
+            this.bgwProcessDirectoryOfImages.ProgressChanged += new System.ComponentModel.ProgressChangedEventHandler(this.backgroundWorker2_ProgressChanged);
+            this.bgwProcessDirectoryOfImages.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(this.backgroundWorker2_RunWorkerCompleted);
+            // 
+            // button5
+            // 
+            this.button5.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.button5.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.button5.Font = new System.Drawing.Font("Microsoft Sans Serif", 13.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.button5.Location = new System.Drawing.Point(840, 3);
+            this.button5.Name = "button5";
+            this.button5.Size = new System.Drawing.Size(87, 74);
+            this.button5.TabIndex = 69;
+            this.button5.Text = "XLS SUN";
+            this.button5.UseVisualStyleBackColor = true;
+            this.button5.Click += new System.EventHandler(this.button5_Click);
             // 
             // MainAnalysisForm
             // 
@@ -823,6 +838,7 @@
         private System.Windows.Forms.RadioButton rbtnClusterizePoints;
         private System.Windows.Forms.RadioButton rbtnShowDensity;
         private System.Windows.Forms.Button btnCalcSunPosition;
+        private System.Windows.Forms.Button button5;
     }
 }
 

@@ -3211,36 +3211,96 @@ namespace SkyImagesAnalyzer
                 }
                 curDateTime = DateTime.SpecifyKind(curDateTime, DateTimeKind.Utc);
 
-
+                GPSdata neededGPSdata = new GPSdata();
                 string currPath = Path.GetDirectoryName(ImageFileName);
                 string[] xmlFileNames = Directory.GetFiles(currPath,
-                    "*" + curDateTime.ToString("s").Replace(":", "-") + "*.xml");
-                if (xmlFileNames.Count() != 1)
+                    "*" + curDateTime.ToString("s").Substring(0, 13).Replace(":", "-") + "*.xml"); // с точностью до часа
+                if (xmlFileNames.Count() > 0)
                 {
-                    theLogWindow = ServiceTools.LogAText(theLogWindow, "the concurrent data file undefined." +
-                                                                       Environment.NewLine + "Found " +
-                                                                       xmlFileNames.Count() +
-                                                                       " appropriate XML files: " +
-                                                                       xmlFileNames.ToString() +
-                                                                       Environment.NewLine);
-                    return;
+                    List<GPSdata> lReadGPSdata = new List<GPSdata>();
+                    foreach (string xmlFileName in xmlFileNames)
+                    {
+                        Dictionary<string, object> dictSavedData = ServiceTools.ReadDictionaryFromXML(xmlFileName);
+                        GPSdata gps = new GPSdata((string)dictSavedData["GPSdata"], GPSdatasources.CloudCamArduinoGPS);
+                        lReadGPSdata.Add(gps);
+                    }
+                    lReadGPSdata.Sort((gpsRecord1, gpsRecord2) =>
+                    {
+                        double dev1 = Math.Abs((gpsRecord1.dateTimeUTC - curDateTime).TotalMilliseconds);
+                        double dev2 = Math.Abs((gpsRecord2.dateTimeUTC - curDateTime).TotalMilliseconds);
+                        return (dev1 >= dev2) ? (1) : (-1);
+                    });
+                    neededGPSdata = lReadGPSdata[0];
+                    
+                    
+                }
+                else
+                {
+                    //string navFilesPath =
+                    //    "D:\\_gulevlab\\SkyImagesAnalysis_appData\\images_complete\\IOFFE\\NIKON-D80\\IOFFE-Mission34-Marina-2011\\data-meteo-nav\\";
+                    string navFilesPath = defaultProperties["IoffeMeteoNavFilesDirectory"] as string;
+                    List<IoffeVesselDualNavDataConverted> lAllNavData = new List<IoffeVesselDualNavDataConverted>();
+
+                    string[] sNavFilenames = Directory.GetFiles(navFilesPath, "*.nv2");
+                    if (sNavFilenames.Count() == 0)
+                    {
+                        theLogWindow = ServiceTools.LogAText(theLogWindow, "Не найдено файлов данных навигации", true);
+                        return;
+                    }
+                    else
+                    {
+                        foreach (string navFilename in sNavFilenames)
+                        {
+                            Tuple<DateTime, DateTime> timeSpan =
+                                IoffeVesselNavDataReader.GetNavFileDateTimeMargins(navFilename);
+                            if (timeSpan == null)
+                            {
+                                continue;
+                            }
+
+                            if ((curDateTime < timeSpan.Item1) || (curDateTime > timeSpan.Item2))
+                            {
+                                continue;
+                            }
+
+                            List<IoffeVesselDualNavDataConverted> dataHasBeenRead = IoffeVesselNavDataReader.ReadNavFile(navFilename);
+                            if (dataHasBeenRead == null)
+                            {
+                                continue;
+                            }
+                            theLogWindow = ServiceTools.LogAText(theLogWindow, "файл навигации прочитан: " + navFilename, true);
+                            Application.DoEvents();
+                            lAllNavData.AddRange(dataHasBeenRead);
+                        }
+                    }
+
+                    lAllNavData.Sort((gpsRecord1, gpsRecord2) =>
+                    {
+                        double dev1 = Math.Abs((gpsRecord1.gps.dateTimeUTC - curDateTime).TotalMilliseconds);
+                        double dev2 = Math.Abs((gpsRecord2.gps.dateTimeUTC - curDateTime).TotalMilliseconds);
+                        return (dev1 >= dev2) ? (1) : (-1);
+                    });
+                    neededGPSdata = lAllNavData[0].gps;
                 }
 
-                string xmlFileName = xmlFileNames[0];
-                Dictionary<string, object> dictSavedData = ServiceTools.ReadDictionaryFromXML(xmlFileName);
-                GPSdata gps = new GPSdata((string) dictSavedData["GPSdata"], GPSdatasources.CloudCamArduinoGPS);
-                double lat = gps.LatDec;
+                double lat = neededGPSdata.LatDec;
                 // double lat = 55.755826; // - Moscow
-                double lon = gps.LonDec;
+                double lon = neededGPSdata.LonDec;
                 // double lon = 37.6173; // - Moscow
 
-                SPA spaCalcExt = new SPA(curDateTime.Year, curDateTime.Month, curDateTime.Day, curDateTime.Hour,
+
+
+
+                
+
+
+
+                SPA spaCalc = new SPA(curDateTime.Year, curDateTime.Month, curDateTime.Day, curDateTime.Hour,
                     curDateTime.Minute, curDateTime.Second, (float) lon, (float) lat,
-                    (float) SPAConst.DeltaT(curDateTime),
-                    0.0f, 0.0f, Convert.ToSingle(dictSavedData["PressurePa"])/100.0f);
-                int res = spaCalcExt.spa_calculate();
-                AzimuthZenithAngle sunPositionSPAext = new AzimuthZenithAngle(spaCalcExt.spa.azimuth,
-                    spaCalcExt.spa.zenith);
+                    (float) SPAConst.DeltaT(curDateTime));
+                int res = spaCalc.spa_calculate();
+                AzimuthZenithAngle sunPositionSPAext = new AzimuthZenithAngle(spaCalc.spa.azimuth,
+                    spaCalc.spa.zenith);
                 theLogWindow = ServiceTools.LogAText(theLogWindow,
                     "SPA ext sun position for " + curDateTime.ToString("s") + ": " + sunPositionSPAext);
 
@@ -3258,23 +3318,17 @@ namespace SkyImagesAnalyzer
             {
                 theLogWindow = ServiceTools.LogAText(theLogWindow, "Не загружено изображение для обработки!", true);
             }
+        }
 
 
-            //string navFilesPath =
-            //    "D:\\_gulevlab\\SkyImagesAnalysis_appData\\images_complete\\IOFFE\\NIKON-D80\\IOFFE-Mission34-Marina-2011\\data-meteo-nav\\";
-            string navFilesPath =
-                "D:\\_gulevlab\\SkyImagesAnalysis_appData\\images_complete\\IOFFE\\NIKON-D80\\IOFFE-Mission34-Marina-2011\\";
-            string[] sNavFilenames = Directory.GetFiles(navFilesPath);
-            if (sNavFilenames.Count() == 0)
-            {
-                theLogWindow = ServiceTools.LogAText(theLogWindow, "Не найдено файлов данных навигации", true);
-            }
-            else
-            {
-                string strFileName = sNavFilenames[0];
-                bool dataHasBeenRead = IoffeVesselNavDataReader.ReadNavFile(strFileName);
-                theLogWindow = ServiceTools.LogAText(theLogWindow, "файл навигации прочитан: " + dataHasBeenRead, true);
-            }
+
+
+
+        private void button5_Click(object sender, EventArgs e)
+        {
+            SunElevationTest sunElTestForm = new SunElevationTest();
+            sunElTestForm.defaultProperties = defaultProperties;
+            sunElTestForm.Show();
         }
 
 

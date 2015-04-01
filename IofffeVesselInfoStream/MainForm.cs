@@ -417,8 +417,8 @@ namespace IofffeVesselInfoStream
                         ThreadSafeOperations.SetTextTB(tbGPSlonValue, actualGPSdata.lon.ToString() + actualGPSdata.lonHemisphere, false);
                         ThreadSafeOperations.SetTextTB(tbGPSDateTimeValue, actualGPSdata.dateTimeUTC.ToString("u").Replace("Z", ""), false);
 
-                        double sunHeight = actualGPSdata.SunAlt();
-                        //ThreadSafeOperations.SetTextTB(tbSunAltValue, sunHeight.ToString(), false);
+                        // double sunHeight = actualGPSdata.SunAlt();
+                        // ThreadSafeOperations.SetTextTB(tbSunAltValue, sunHeight.ToString(), false);
 
                         if (actualGPSdata.dataSource == GPSdatasources.IOFFEvesselDataServer)
                         {

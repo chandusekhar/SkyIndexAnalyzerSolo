@@ -43,10 +43,9 @@
             this.btnApproxEvenlop = new System.Windows.Forms.Button();
             this.btnInitAndApproximateTestMKL = new System.Windows.Forms.Button();
             this.rtbDataFilesPrefixMKL = new System.Windows.Forms.RichTextBox();
-            this.btnInitDataForintelMathNet = new System.Windows.Forms.Button();
-            this.btnApproximateMathNet = new System.Windows.Forms.Button();
-            this.rtbDataFilesPrefixMathNet = new System.Windows.Forms.RichTextBox();
             this.tbDataFilePrefix = new System.Windows.Forms.RichTextBox();
+            this.btnReadWeibullData = new System.Windows.Forms.Button();
+            this.rtbDataFilePath = new System.Windows.Forms.RichTextBox();
             this.tableLayoutPanel1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -91,13 +90,13 @@
             this.tableLayoutPanel1.SetColumnSpan(this.tbLog, 5);
             this.tbLog.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tbLog.Font = new System.Drawing.Font("Courier New", 13.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.tbLog.Location = new System.Drawing.Point(4, 254);
+            this.tbLog.Location = new System.Drawing.Point(4, 304);
             this.tbLog.Margin = new System.Windows.Forms.Padding(4);
             this.tbLog.Multiline = true;
             this.tbLog.Name = "tbLog";
             this.tableLayoutPanel1.SetRowSpan(this.tbLog, 4);
             this.tbLog.ScrollBars = System.Windows.Forms.ScrollBars.Both;
-            this.tbLog.Size = new System.Drawing.Size(1472, 809);
+            this.tbLog.Size = new System.Drawing.Size(1472, 759);
             this.tbLog.TabIndex = 2;
             // 
             // lblStatus
@@ -133,7 +132,7 @@
             this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 20F));
             this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 20F));
             this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 20F));
-            this.tableLayoutPanel1.Controls.Add(this.tbLog, 0, 5);
+            this.tableLayoutPanel1.Controls.Add(this.tbLog, 0, 6);
             this.tableLayoutPanel1.Controls.Add(this.button1, 0, 1);
             this.tableLayoutPanel1.Controls.Add(this.btnTestApprox, 2, 1);
             this.tableLayoutPanel1.Controls.Add(this.lblStatus, 4, 2);
@@ -146,15 +145,15 @@
             this.tableLayoutPanel1.Controls.Add(this.btnApproxEvenlop, 2, 2);
             this.tableLayoutPanel1.Controls.Add(this.btnInitAndApproximateTestMKL, 0, 3);
             this.tableLayoutPanel1.Controls.Add(this.rtbDataFilesPrefixMKL, 3, 3);
-            this.tableLayoutPanel1.Controls.Add(this.btnInitDataForintelMathNet, 0, 4);
-            this.tableLayoutPanel1.Controls.Add(this.btnApproximateMathNet, 2, 4);
-            this.tableLayoutPanel1.Controls.Add(this.rtbDataFilesPrefixMathNet, 1, 4);
             this.tableLayoutPanel1.Controls.Add(this.tbDataFilePrefix, 1, 1);
+            this.tableLayoutPanel1.Controls.Add(this.btnReadWeibullData, 0, 5);
+            this.tableLayoutPanel1.Controls.Add(this.rtbDataFilePath, 3, 5);
             this.tableLayoutPanel1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tableLayoutPanel1.Location = new System.Drawing.Point(0, 0);
             this.tableLayoutPanel1.Margin = new System.Windows.Forms.Padding(4);
             this.tableLayoutPanel1.Name = "tableLayoutPanel1";
-            this.tableLayoutPanel1.RowCount = 9;
+            this.tableLayoutPanel1.RowCount = 10;
+            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 50F));
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 50F));
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 50F));
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 50F));
@@ -276,43 +275,6 @@
             this.rtbDataFilesPrefixMKL.TabIndex = 24;
             this.rtbDataFilesPrefixMKL.Text = "";
             // 
-            // btnInitDataForintelMathNet
-            // 
-            this.btnInitDataForintelMathNet.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.btnInitDataForintelMathNet.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnInitDataForintelMathNet.Font = new System.Drawing.Font("Microsoft Sans Serif", 13.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnInitDataForintelMathNet.Location = new System.Drawing.Point(3, 203);
-            this.btnInitDataForintelMathNet.Name = "btnInitDataForintelMathNet";
-            this.btnInitDataForintelMathNet.Size = new System.Drawing.Size(290, 44);
-            this.btnInitDataForintelMathNet.TabIndex = 26;
-            this.btnInitDataForintelMathNet.Text = "init data for MathNet";
-            this.btnInitDataForintelMathNet.UseVisualStyleBackColor = true;
-            this.btnInitDataForintelMathNet.Click += new System.EventHandler(this.btnInitDataForintelMathNet_Click);
-            // 
-            // btnApproximateMathNet
-            // 
-            this.tableLayoutPanel1.SetColumnSpan(this.btnApproximateMathNet, 2);
-            this.btnApproximateMathNet.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.btnApproximateMathNet.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnApproximateMathNet.Font = new System.Drawing.Font("Microsoft Sans Serif", 13.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnApproximateMathNet.Location = new System.Drawing.Point(595, 203);
-            this.btnApproximateMathNet.Name = "btnApproximateMathNet";
-            this.btnApproximateMathNet.Size = new System.Drawing.Size(586, 44);
-            this.btnApproximateMathNet.TabIndex = 27;
-            this.btnApproximateMathNet.Text = "test optimizer with MathNet";
-            this.btnApproximateMathNet.UseVisualStyleBackColor = true;
-            this.btnApproximateMathNet.Click += new System.EventHandler(this.btnApproximateMathNet_Click);
-            // 
-            // rtbDataFilesPrefixMathNet
-            // 
-            this.rtbDataFilesPrefixMathNet.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.rtbDataFilesPrefixMathNet.Font = new System.Drawing.Font("Microsoft Sans Serif", 13.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.rtbDataFilesPrefixMathNet.Location = new System.Drawing.Point(299, 203);
-            this.rtbDataFilesPrefixMathNet.Name = "rtbDataFilesPrefixMathNet";
-            this.rtbDataFilesPrefixMathNet.Size = new System.Drawing.Size(290, 44);
-            this.rtbDataFilesPrefixMathNet.TabIndex = 28;
-            this.rtbDataFilesPrefixMathNet.Text = "";
-            // 
             // tbDataFilePrefix
             // 
             this.tbDataFilePrefix.Dock = System.Windows.Forms.DockStyle.Fill;
@@ -322,6 +284,31 @@
             this.tbDataFilePrefix.Size = new System.Drawing.Size(290, 44);
             this.tbDataFilePrefix.TabIndex = 29;
             this.tbDataFilePrefix.Text = "";
+            // 
+            // btnReadWeibullData
+            // 
+            this.tableLayoutPanel1.SetColumnSpan(this.btnReadWeibullData, 3);
+            this.btnReadWeibullData.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.btnReadWeibullData.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnReadWeibullData.Font = new System.Drawing.Font("Microsoft Sans Serif", 13.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.btnReadWeibullData.Location = new System.Drawing.Point(3, 253);
+            this.btnReadWeibullData.Name = "btnReadWeibullData";
+            this.btnReadWeibullData.Size = new System.Drawing.Size(882, 44);
+            this.btnReadWeibullData.TabIndex = 30;
+            this.btnReadWeibullData.Text = "read and approximate Weibull";
+            this.btnReadWeibullData.UseVisualStyleBackColor = true;
+            this.btnReadWeibullData.Click += new System.EventHandler(this.btnReadWeibullData_Click);
+            // 
+            // rtbDataFilePath
+            // 
+            this.rtbDataFilePath.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.rtbDataFilePath.Font = new System.Drawing.Font("Microsoft Sans Serif", 13.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.rtbDataFilePath.Location = new System.Drawing.Point(891, 253);
+            this.rtbDataFilePath.Name = "rtbDataFilePath";
+            this.rtbDataFilePath.ScrollBars = System.Windows.Forms.RichTextBoxScrollBars.None;
+            this.rtbDataFilePath.Size = new System.Drawing.Size(290, 44);
+            this.rtbDataFilePath.TabIndex = 31;
+            this.rtbDataFilePath.Text = "D:\\_gulevlab\\Weibull-Gavr\\test.dat";
             // 
             // TestingForm
             // 
@@ -358,10 +345,9 @@
         private System.Windows.Forms.Button btnApproxEvenlop;
         private System.Windows.Forms.Button btnInitAndApproximateTestMKL;
         private System.Windows.Forms.RichTextBox rtbDataFilesPrefixMKL;
-        private System.Windows.Forms.Button btnInitDataForintelMathNet;
-        private System.Windows.Forms.Button btnApproximateMathNet;
-        private System.Windows.Forms.RichTextBox rtbDataFilesPrefixMathNet;
         private System.Windows.Forms.RichTextBox tbDataFilePrefix;
+        private System.Windows.Forms.Button btnReadWeibullData;
+        private System.Windows.Forms.RichTextBox rtbDataFilePath;
     }
 }
 

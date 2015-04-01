@@ -1446,29 +1446,30 @@ namespace SkyImagesAnalyzerLibraries
 
 
 
-
-        public double SunAlt()
-        {
-            double tetha = (360.0d / ((DateTime.IsLeapYear(dateTimeUTC.Year)) ? (366.0d) : (365.0d))) / ((double)dateTimeUTC.DayOfYear);
-            double SunDelt = 0.006918d - 0.399912d * Math.Cos(tetha) + 0.070257d * Math.Sin(tetha) -
-                             0.006758d * Math.Cos(2.0d * tetha) + 0.000908d * Math.Sin(2.0d * tetha);
-
-
-            DateTime tloc = dateTimeUTC.AddHours((LonDec - LonDec % 15) / 15);
-            double tm = tloc.Hour + tloc.Minute / 60.0d + tloc.Second / 3600.0d;
-            double dt = 0.0172d + 0.4281d * Math.Cos(tetha) - 7.3515d * Math.Sin(tetha) - 3.3495d * Math.Cos(2.0d * tetha) -
-                        9.3619d * Math.Sin(2.0d * tetha);
-            dt = dt / 60.0d;
-            double t0 = tm + dt;
-            double sunTau = 15.0d * (t0 - 12.0d);
-            sunTau = Math.PI * sunTau / 180.0d;
-
-            double sinHsun = Math.Sin(LatDec * Math.PI / 180.0d) * Math.Sin(SunDelt) +
-                             Math.Cos(LatDec * Math.PI / 180.0d) * Math.Cos(SunDelt) * Math.Cos(sunTau);
-            double sunHeight = Math.Asin(sinHsun);
-            sunHeight = 180.0d * sunHeight / Math.PI;
-            return sunHeight;
-        }
+        #region // obsolete - use SolarPositioning instead
+        //public double SunAlt()
+        //{
+        //    double tetha = (360.0d / ((DateTime.IsLeapYear(dateTimeUTC.Year)) ? (366.0d) : (365.0d))) / ((double)dateTimeUTC.DayOfYear);
+        //    double SunDelt = 0.006918d - 0.399912d * Math.Cos(tetha) + 0.070257d * Math.Sin(tetha) -
+        //                     0.006758d * Math.Cos(2.0d * tetha) + 0.000908d * Math.Sin(2.0d * tetha);
+        //
+        //
+        //    DateTime tloc = dateTimeUTC.AddHours((LonDec - LonDec % 15) / 15);
+        //    double tm = tloc.Hour + tloc.Minute / 60.0d + tloc.Second / 3600.0d;
+        //    double dt = 0.0172d + 0.4281d * Math.Cos(tetha) - 7.3515d * Math.Sin(tetha) - 3.3495d * Math.Cos(2.0d * tetha) -
+        //                9.3619d * Math.Sin(2.0d * tetha);
+        //    dt = dt / 60.0d;
+        //    double t0 = tm + dt;
+        //    double sunTau = 15.0d * (t0 - 12.0d);
+        //    sunTau = Math.PI * sunTau / 180.0d;
+        //
+        //    double sinHsun = Math.Sin(LatDec * Math.PI / 180.0d) * Math.Sin(SunDelt) +
+        //                     Math.Cos(LatDec * Math.PI / 180.0d) * Math.Cos(SunDelt) * Math.Cos(sunTau);
+        //    double sunHeight = Math.Asin(sinHsun);
+        //    sunHeight = 180.0d * sunHeight / Math.PI;
+        //    return sunHeight;
+        //}
+        #endregion // obsolete - use SolarPositioning instead
     }
 
 

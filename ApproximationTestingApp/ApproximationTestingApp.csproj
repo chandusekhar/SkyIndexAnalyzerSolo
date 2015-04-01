@@ -135,11 +135,6 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\MathNetNumOptimization\MathNetNumOptimization.csproj">
-      <Project>{44d54048-6629-4c3c-8d96-ccb2a616d890}</Project>
-      <Name>MathNetNumOptimization</Name>
-      <Private>False</Private>
-    </ProjectReference>
     <ProjectReference Include="..\MKLwrapper\MKLwrapper.csproj">
       <Project>{4b32fbed-9adb-43e3-a7dc-cf1ff1230d91}</Project>
       <Name>MKLwrapper</Name>
