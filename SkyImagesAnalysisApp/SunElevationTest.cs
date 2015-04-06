@@ -57,7 +57,7 @@ namespace SkyImagesAnalyzer
             try
             {
                 xlApp = new Microsoft.Office.Interop.Excel.Application();
-                xlApp.Visible = false;
+                xlApp.Visible = true;
                 wb = xlApp.Workbooks.Open(fName, Type.Missing, false);
                 ws = wb.Sheets[1];
             }
@@ -69,24 +69,33 @@ namespace SkyImagesAnalyzer
 
             List<Tuple<int, SunElevationTestDataRecord>> lRecords = new List<Tuple<int, SunElevationTestDataRecord>>();
             int rowIdx = 2;
+            double dDataTimeRead = 0.0d;
             while (true)
             {
                 DateTime dtVal;
                 try
                 {
                     Range rngDT = ws.Cells[rowIdx, 1];
-                    double d = (double)(rngDT.Value2);
-                    if (d == 0.0d)
+                    var dDataTimeReadValue = rngDT.Value2;
+                    if (dDataTimeReadValue == null)
                     {
+                        CloseAll();
                         break;
                     }
-                    dtVal = DateTime.FromOADate(d);
+                    dDataTimeRead = (double)(dDataTimeReadValue);
+                    if (dDataTimeRead == 0.0d)
+                    {
+                        CloseAll();
+                        break;
+                    }
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
-                    CloseAll();
-                    break;
+                    //CloseAll();
+                    rowIdx++;
+                    continue;
                 }
+                dtVal = DateTime.FromOADate(dDataTimeRead);
                 
 
 
@@ -104,8 +113,9 @@ namespace SkyImagesAnalyzer
                 }
                 catch (Exception)
                 {
-                    CloseAll();
-                    break;
+                    //CloseAll();
+                    rowIdx++;
+                    continue;
                 }
                 
 
@@ -121,10 +131,11 @@ namespace SkyImagesAnalyzer
                     }
                     lonVal = (double)(rngLonVal);
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
-                    CloseAll();
-                    break;
+                    //CloseAll();
+                    rowIdx++;
+                    continue;
                 }
                 
 
@@ -141,10 +152,13 @@ namespace SkyImagesAnalyzer
                     }
                     sunAltTestVal = (double)(rngSunAltTestVal);
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
-                    CloseAll();
-                    break;
+                    theLogWindow = ServiceTools.LogAText(theLogWindow,
+                        ex.Message + Environment.NewLine + "for read sun elevation value at row " + rowIdx);
+                    //CloseAll();
+                    rowIdx++;
+                    continue;
                 }
                 
 
