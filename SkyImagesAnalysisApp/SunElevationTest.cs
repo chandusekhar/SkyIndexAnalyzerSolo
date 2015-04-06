@@ -73,18 +73,26 @@ namespace SkyImagesAnalyzer
             while (true)
             {
                 DateTime dtVal;
+                SunElevationTestDataRecord currRec = new SunElevationTestDataRecord();
+
+                System.Windows.Forms.Application.DoEvents();
+
                 try
                 {
                     Range rngDT = ws.Cells[rowIdx, 1];
                     var dDataTimeReadValue = rngDT.Value2;
                     if (dDataTimeReadValue == null)
                     {
+                        theLogWindow = ServiceTools.LogAText(theLogWindow,
+                            "date-time value at row " + rowIdx + " is empty. Stopping reading.");
                         CloseAll();
                         break;
                     }
                     dDataTimeRead = (double)(dDataTimeReadValue);
                     if (dDataTimeRead == 0.0d)
                     {
+                        theLogWindow = ServiceTools.LogAText(theLogWindow,
+                            "date-time value at row " + rowIdx + " is empty. Stopping reading.");
                         CloseAll();
                         break;
                     }
@@ -92,117 +100,155 @@ namespace SkyImagesAnalyzer
                 catch (Exception ex)
                 {
                     //CloseAll();
+                    theLogWindow = ServiceTools.LogAText(theLogWindow, "=====================");
+                    theLogWindow = ServiceTools.LogAText(theLogWindow,
+                        ex.Message + Environment.NewLine + "for date-time value at row " + rowIdx);
+                    theLogWindow = ServiceTools.LogAText(theLogWindow, "=====================");
+                    lRecords.Add(new Tuple<int, SunElevationTestDataRecord>(rowIdx, currRec));
                     rowIdx++;
                     continue;
                 }
                 dtVal = DateTime.FromOADate(dDataTimeRead);
-                
+                currRec.Dt = dtVal;
 
 
-                double latVal;
+
+                double latVal = 0.0d;
                 try
                 {
                     Range rngLat = ws.Cells[rowIdx, 2];
                     var rngLatVal = rngLat.Value2;
                     if (rngLatVal == null)
                     {
-                        rowIdx++;
-                        continue;
+                        theLogWindow = ServiceTools.LogAText(theLogWindow,
+                            "latitude value at row " + rowIdx + " is empty");
+                        //rowIdx++;
+                        //continue;
                     }
-                    latVal = (double)(rngLatVal);
+                    else
+                    {
+                        latVal = (double)(rngLatVal);
+                        currRec.latDec = latVal;
+                    }
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
                     //CloseAll();
+                    theLogWindow = ServiceTools.LogAText(theLogWindow, "=====================");
+                    theLogWindow = ServiceTools.LogAText(theLogWindow,
+                        ex.Message + Environment.NewLine + "for latitude value at row " + rowIdx);
+                    theLogWindow = ServiceTools.LogAText(theLogWindow, "=====================");
+                    lRecords.Add(new Tuple<int, SunElevationTestDataRecord>(rowIdx, currRec));
                     rowIdx++;
                     continue;
                 }
                 
+                
 
-                double lonVal;
+                double lonVal = 0.0d;
                 try
                 {
                     Range rngLon = ws.Cells[rowIdx, 3];
                     var rngLonVal = rngLon.Value2;
                     if (rngLonVal == null)
                     {
-                        rowIdx++;
-                        continue;
+                        theLogWindow = ServiceTools.LogAText(theLogWindow,
+                            "longitude value at row " + rowIdx + " is empty");
+                        //rowIdx++;
+                        //continue;
                     }
-                    lonVal = (double)(rngLonVal);
+                    else
+                    {
+                        lonVal = (double)(rngLonVal);
+                        currRec.lonDec = lonVal;
+                    }
                 }
                 catch (Exception ex)
                 {
                     //CloseAll();
+                    theLogWindow = ServiceTools.LogAText(theLogWindow, "=====================");
+                    theLogWindow = ServiceTools.LogAText(theLogWindow,
+                        ex.Message + Environment.NewLine + "for longitude value at row " + rowIdx);
+                    theLogWindow = ServiceTools.LogAText(theLogWindow, "=====================");
+                    lRecords.Add(new Tuple<int, SunElevationTestDataRecord>(rowIdx, currRec));
                     rowIdx++;
                     continue;
                 }
                 
 
 
-                double sunAltTestVal;
+
+                double sunAltTestVal = 0.0d;
                 try
                 {
                     Range rngSunAltTest = ws.Cells[rowIdx, 4];
                     var rngSunAltTestVal = rngSunAltTest.Value2;
                     if (rngSunAltTestVal == null)
                     {
-                        rowIdx++;
-                        continue;
+                        theLogWindow = ServiceTools.LogAText(theLogWindow,
+                            "testing sun elevation value at row " + rowIdx + " is empty");
+                        //rowIdx++;
+                        //continue;
                     }
-                    sunAltTestVal = (double)(rngSunAltTestVal);
+                    else
+                    {
+                        sunAltTestVal = (double)(rngSunAltTestVal);
+                        currRec.SunElevTest = sunAltTestVal;
+                    }
                 }
                 catch (Exception ex)
                 {
+                    theLogWindow = ServiceTools.LogAText(theLogWindow, "=====================");
                     theLogWindow = ServiceTools.LogAText(theLogWindow,
                         ex.Message + Environment.NewLine + "for read sun elevation value at row " + rowIdx);
+                    theLogWindow = ServiceTools.LogAText(theLogWindow, "=====================");
                     //CloseAll();
+                    lRecords.Add(new Tuple<int, SunElevationTestDataRecord>(rowIdx, currRec));
                     rowIdx++;
                     continue;
                 }
                 
-
-
-                SunElevationTestDataRecord currRec = new SunElevationTestDataRecord()
-                {
-                    dt = dtVal,
-                    LatDec = latVal,
-                    LonDec = lonVal,
-                    sunElevTest = sunAltTestVal
-                };
+                
 
                 ThreadSafeOperations.SetText(lblLoadingStatus, "loading " + rowIdx + " row", false);
-                System.Windows.Forms.Application.DoEvents();
 
                 lRecords.Add(new Tuple<int, SunElevationTestDataRecord>(rowIdx, currRec));
 
                 rowIdx++;
-
-                //if (rowIdx >= 100)
-                //{
-                //    break;
-                //}
             }
+
+
 
             List<double> lDeviations = new List<double>();
             string outFName = Path.GetDirectoryName(fName) + "\\" + Path.GetFileNameWithoutExtension(fName) + "-output.txt";
+
+            ServiceTools.logToTextFile(outFName, SunElevationTestDataRecord.TableFieldsHeader() + Environment.NewLine, true);
 
             foreach (Tuple<int, SunElevationTestDataRecord> tpl in lRecords)
             {
                 rowIdx = tpl.Item1;
                 SunElevationTestDataRecord currRec = tpl.Item2;
 
-                SPA spaCalc = new SPA(currRec.dt.Year, currRec.dt.Month, currRec.dt.Day, currRec.dt.Hour,
-                    currRec.dt.Minute, currRec.dt.Second, (float)currRec.LonDec, (float)currRec.LatDec,
-                    (float)SPAConst.DeltaT(currRec.dt));
-                int res = spaCalc.spa_calculate();
-                AzimuthZenithAngle sunPositionSPAext = new AzimuthZenithAngle(spaCalc.spa.azimuth,
-                    spaCalc.spa.zenith);
-                currRec.sunElevCalc = sunPositionSPAext.ElevationAngle;
+                if (currRec.WhetherAllValuesHasBeenRead)
+                {
+                    SPA spaCalc = new SPA(currRec.Dt.Year, currRec.Dt.Month, currRec.Dt.Day, currRec.Dt.Hour,
+                        currRec.Dt.Minute, currRec.Dt.Second, (float) currRec.lonDec, (float) currRec.latDec,
+                        (float) SPAConst.DeltaT(currRec.Dt));
+                    int res = spaCalc.spa_calculate();
+                    AzimuthZenithAngle sunPositionSPAext = new AzimuthZenithAngle(spaCalc.spa.azimuth,
+                        spaCalc.spa.zenith);
+                    currRec.SunElevCalc = sunPositionSPAext.ElevationAngle;
 
-                lDeviations.Add(currRec.sunElevCalc - currRec.sunElevTest);
+                    lDeviations.Add(currRec.SunElevCalc - currRec.SunElevTest);
 
-                ServiceTools.logToTextFile(outFName, currRec.ToString() + Environment.NewLine, true);
+                    ServiceTools.logToTextFile(outFName, currRec.ToString() + Environment.NewLine, true);
+                }
+                else
+                {
+                    ServiceTools.logToTextFile(outFName, currRec.ToString() + Environment.NewLine, true);
+                }
+
+                
             }
 
             
@@ -239,22 +285,115 @@ namespace SkyImagesAnalyzer
 
 
 
-    internal struct SunElevationTestDataRecord
+    internal class SunElevationTestDataRecord
     {
-        public DateTime dt;
-        public double LatDec;
-        public double LonDec;
-        public double sunElevTest;
-        public double sunElevCalc;
+        private DateTime dt;
+        private bool dtHasBeenSet = false;
+        private double LatDec;
+        private bool LatDecHasBeenSet = false;
+        private double LonDec;
+        private bool LonDecHasBeenSet = false;
+        private double sunElevTest;
+        private bool sunElevTestHasBeenSet = false;
+        private double sunElevCalc;
+        private bool sunElevCalcHasBeenSet = false;
+
+
+
+
+        public bool WhetherAllValuesHasBeenRead
+        {
+            get
+            {
+                return dtHasBeenSet && LatDecHasBeenSet && LonDecHasBeenSet && sunElevTestHasBeenSet;
+            }
+        }
+
+
+
+        public DateTime Dt
+        {
+            get { return dt; }
+            set
+            {
+                dt = value;
+                if ((dt.Minute == 59) && (dt.Second == 59))
+                {
+                    dt = dt.AddSeconds(1.0d);
+                }
+                dtHasBeenSet = true;
+            }
+        }
+
+
+
+        public double latDec
+        {
+            get { return LatDec; }
+            set
+            {
+                LatDec = value;
+                LatDecHasBeenSet = true;
+            }
+        }
+
+
+
+        public double lonDec
+        {
+            get { return LonDec; }
+            set
+            {
+                LonDec = value;
+                LonDecHasBeenSet = true;
+            }
+        }
+
+
+
+        public double SunElevTest
+        {
+            get { return sunElevTest; }
+            set
+            {
+                sunElevTest = value;
+                sunElevTestHasBeenSet = true;
+            }
+        }
+
+
+
+        public double SunElevCalc
+        {
+            get { return sunElevCalc; }
+            set
+            {
+                sunElevCalc = value;
+                sunElevCalcHasBeenSet = true;
+            }
+        }
+
 
 
         public override string ToString()
         {
-            string str = dt.ToString("s") + ";";
-            str += LatDec.ToString() + ";";
-            str += LonDec.ToString() + ";";
-            str += sunElevTest.ToString() + ";";
-            str += sunElevCalc.ToString() + ";";
+            string str = ((dtHasBeenSet) ? (dt.ToString("s")) : ("")) + ";";
+            str += ((LatDecHasBeenSet) ? (LatDec.ToString()) : ("")) + ";";
+            str += ((LonDecHasBeenSet)?(LonDec.ToString()):("")) + ";";
+            str += ((sunElevTestHasBeenSet)?(sunElevTest.ToString()):("")) + ";";
+            str += ((sunElevCalcHasBeenSet)?(sunElevCalc.ToString()):("")) + ";";
+            return str;
+        }
+
+
+
+        public static string TableFieldsHeader()
+        {
+            string str = "Date,time;";
+            str += "lat(deg);";
+            str += "lon(deg);";
+            str += "testing sun elevation (deg);";
+            str += "calculated sun elevation (deg);";
             return str;
         }
     }
