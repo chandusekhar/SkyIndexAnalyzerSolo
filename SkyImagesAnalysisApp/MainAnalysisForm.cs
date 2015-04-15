@@ -1748,7 +1748,7 @@ namespace SkyImagesAnalyzer
             }
             else if (rbtnClassMethodUS.Checked)
             {
-                classificator.ClassificationMethod = ClassificationMethods.Greek;
+                classificator.ClassificationMethod = ClassificationMethods.US;
             }
             else if (rbtnClassMethodGrIx.Checked)
             {
@@ -1900,7 +1900,21 @@ namespace SkyImagesAnalyzer
         {
             if (rbtnClassMethodJapan.Checked)
             {
-                tunedSIMargin = tunedSIMarginDefault;
+                //tunedSIMargin = tunedSIMarginDefault;
+                tunedSIMargin = Convert.ToDouble(defaultProperties["JapanCloudSkySeparationValue"]);
+                ThreadSafeOperations.MoveTrackBar(trackBar1, (int)(tunedSIMargin * 100.0));
+                trackBar1_Scroll(null, null);
+            }
+        }
+
+
+
+        private void rbtnClassMethodUS_CheckedChanged(object sender, EventArgs e)
+        {
+            if (rbtnClassMethodUS.Checked)
+            {
+                //tunedSIMargin = tunedSIMarginDefault;
+                tunedSIMargin = Convert.ToDouble(defaultProperties["GermanCloudSkySeparationValue"]);
                 ThreadSafeOperations.MoveTrackBar(trackBar1, (int)(tunedSIMargin * 100.0));
                 trackBar1_Scroll(null, null);
             }
@@ -3330,8 +3344,6 @@ namespace SkyImagesAnalyzer
             sunElTestForm.defaultProperties = defaultProperties;
             sunElTestForm.Show();
         }
-
-
 
         
     }

@@ -310,7 +310,7 @@ namespace SkyImagesAnalyzerLibraries
 
             localPreviewBitmap = previewImage.Bitmap;
         }
-        #endregion классификация методом из японских публикаций
+        #endregion классификация методом из американской публикации
 
 
 

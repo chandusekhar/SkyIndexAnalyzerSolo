@@ -73,9 +73,9 @@
             this.rbtnClassMethodJapan = new System.Windows.Forms.RadioButton();
             this.rbtnClassMethodUS = new System.Windows.Forms.RadioButton();
             this.btnCalcSunPosition = new System.Windows.Forms.Button();
+            this.button5 = new System.Windows.Forms.Button();
             this.bgwProcessDirectoryOfImages = new System.ComponentModel.BackgroundWorker();
             this.bgwSunDetectionOnly = new System.ComponentModel.BackgroundWorker();
-            this.button5 = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.trackBar1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
@@ -96,10 +96,9 @@
             // 
             this.tableLayoutPanel1.SetColumnSpan(this.pbUniversalProgressBar, 15);
             this.pbUniversalProgressBar.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.pbUniversalProgressBar.Location = new System.Drawing.Point(4, 653);
-            this.pbUniversalProgressBar.Margin = new System.Windows.Forms.Padding(4);
+            this.pbUniversalProgressBar.Location = new System.Drawing.Point(3, 531);
             this.pbUniversalProgressBar.Name = "pbUniversalProgressBar";
-            this.pbUniversalProgressBar.Size = new System.Drawing.Size(1400, 25);
+            this.pbUniversalProgressBar.Size = new System.Drawing.Size(1050, 21);
             this.pbUniversalProgressBar.TabIndex = 25;
             // 
             // StatusLabel
@@ -107,10 +106,10 @@
             this.StatusLabel.AutoSize = true;
             this.tableLayoutPanel1.SetColumnSpan(this.StatusLabel, 15);
             this.StatusLabel.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.StatusLabel.Location = new System.Drawing.Point(4, 617);
-            this.StatusLabel.Margin = new System.Windows.Forms.Padding(4, 1, 4, 0);
+            this.StatusLabel.Location = new System.Drawing.Point(3, 502);
+            this.StatusLabel.Margin = new System.Windows.Forms.Padding(3, 1, 3, 0);
             this.StatusLabel.Name = "StatusLabel";
-            this.StatusLabel.Size = new System.Drawing.Size(1400, 32);
+            this.StatusLabel.Size = new System.Drawing.Size(1050, 26);
             this.StatusLabel.TabIndex = 24;
             this.StatusLabel.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
@@ -121,10 +120,9 @@
             this.tableLayoutPanel1.SetColumnSpan(this.label5, 4);
             this.label5.Dock = System.Windows.Forms.DockStyle.Fill;
             this.label5.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.label5.Location = new System.Drawing.Point(4, 410);
-            this.label5.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.label5.Location = new System.Drawing.Point(3, 335);
             this.label5.Name = "label5";
-            this.label5.Size = new System.Drawing.Size(364, 33);
+            this.label5.Size = new System.Drawing.Size(274, 27);
             this.label5.TabIndex = 22;
             this.label5.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             // 
@@ -134,10 +132,9 @@
             this.button4.Dock = System.Windows.Forms.DockStyle.Fill;
             this.button4.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.button4.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.button4.Location = new System.Drawing.Point(1120, 447);
-            this.button4.Margin = new System.Windows.Forms.Padding(4);
+            this.button4.Location = new System.Drawing.Point(843, 365);
             this.button4.Name = "button4";
-            this.button4.Size = new System.Drawing.Size(85, 45);
+            this.button4.Size = new System.Drawing.Size(64, 37);
             this.button4.TabIndex = 20;
             this.button4.Text = "OK";
             this.button4.UseVisualStyleBackColor = false;
@@ -147,11 +144,10 @@
             // 
             this.tableLayoutPanel1.SetColumnSpan(this.trackBar1, 8);
             this.trackBar1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.trackBar1.Location = new System.Drawing.Point(376, 447);
-            this.trackBar1.Margin = new System.Windows.Forms.Padding(4);
+            this.trackBar1.Location = new System.Drawing.Point(283, 365);
             this.trackBar1.Maximum = 100;
             this.trackBar1.Name = "trackBar1";
-            this.trackBar1.Size = new System.Drawing.Size(736, 45);
+            this.trackBar1.Size = new System.Drawing.Size(554, 37);
             this.trackBar1.TabIndex = 18;
             this.trackBar1.Value = 10;
             this.trackBar1.Scroll += new System.EventHandler(this.trackBar1_Scroll);
@@ -165,10 +161,9 @@
             this.label1.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.tableLayoutPanel1.SetColumnSpan(this.label1, 4);
             this.label1.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label1.Location = new System.Drawing.Point(4, 443);
-            this.label1.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.label1.Location = new System.Drawing.Point(3, 362);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(364, 53);
+            this.label1.Size = new System.Drawing.Size(274, 43);
             this.label1.TabIndex = 14;
             this.label1.Text = "Подстройка (SI):";
             this.label1.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
@@ -179,10 +174,9 @@
             this.tableLayoutPanel1.SetColumnSpan(this.label2, 2);
             this.label2.Dock = System.Windows.Forms.DockStyle.Fill;
             this.label2.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label2.Location = new System.Drawing.Point(1213, 443);
-            this.label2.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.label2.Location = new System.Drawing.Point(913, 362);
             this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(191, 53);
+            this.label2.Size = new System.Drawing.Size(140, 43);
             this.label2.TabIndex = 15;
             this.label2.Text = "0.10";
             this.label2.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
@@ -192,11 +186,10 @@
             this.pictureBox2.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
             this.tableLayoutPanel1.SetColumnSpan(this.pictureBox2, 4);
             this.pictureBox2.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.pictureBox2.Location = new System.Drawing.Point(1027, 117);
-            this.pictureBox2.Margin = new System.Windows.Forms.Padding(4);
+            this.pictureBox2.Location = new System.Drawing.Point(773, 95);
             this.pictureBox2.Name = "pictureBox2";
             this.tableLayoutPanel1.SetRowSpan(this.pictureBox2, 9);
-            this.pictureBox2.Size = new System.Drawing.Size(377, 289);
+            this.pictureBox2.Size = new System.Drawing.Size(280, 237);
             this.pictureBox2.TabIndex = 11;
             this.pictureBox2.TabStop = false;
             this.pictureBox2.Click += new System.EventHandler(this.pictureBox2_Click);
@@ -206,11 +199,10 @@
             this.pictureBox1.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
             this.tableLayoutPanel1.SetColumnSpan(this.pictureBox1, 4);
             this.pictureBox1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.pictureBox1.Location = new System.Drawing.Point(4, 117);
-            this.pictureBox1.Margin = new System.Windows.Forms.Padding(4);
+            this.pictureBox1.Location = new System.Drawing.Point(3, 95);
             this.pictureBox1.Name = "pictureBox1";
             this.tableLayoutPanel1.SetRowSpan(this.pictureBox1, 9);
-            this.pictureBox1.Size = new System.Drawing.Size(364, 289);
+            this.pictureBox1.Size = new System.Drawing.Size(274, 237);
             this.pictureBox1.TabIndex = 10;
             this.pictureBox1.TabStop = false;
             this.pictureBox1.Click += new System.EventHandler(this.pictureBox1_Click);
@@ -227,7 +219,7 @@
             // оПрограммеToolStripMenuItem
             // 
             this.оПрограммеToolStripMenuItem.Name = "оПрограммеToolStripMenuItem";
-            this.оПрограммеToolStripMenuItem.Size = new System.Drawing.Size(173, 24);
+            this.оПрограммеToolStripMenuItem.Size = new System.Drawing.Size(149, 22);
             this.оПрограммеToolStripMenuItem.Text = "О программе";
             this.оПрограммеToolStripMenuItem.Click += new System.EventHandler(this.оПрограммеToolStripMenuItem_Click);
             // 
@@ -244,19 +236,19 @@
             // getDataToolStripMenuItem
             // 
             this.getDataToolStripMenuItem.Name = "getDataToolStripMenuItem";
-            this.getDataToolStripMenuItem.Size = new System.Drawing.Size(322, 24);
+            this.getDataToolStripMenuItem.Size = new System.Drawing.Size(265, 22);
             this.getDataToolStripMenuItem.Text = "Получить данные GPS";
             // 
             // switchCollectingDataMenuItem
             // 
             this.switchCollectingDataMenuItem.Name = "switchCollectingDataMenuItem";
-            this.switchCollectingDataMenuItem.Size = new System.Drawing.Size(322, 24);
+            this.switchCollectingDataMenuItem.Size = new System.Drawing.Size(265, 22);
             this.switchCollectingDataMenuItem.Text = "Начать сбор данных всех датчиков";
             // 
             // настройкиСбораДанныхToolStripMenuItem
             // 
             this.настройкиСбораДанныхToolStripMenuItem.Name = "настройкиСбораДанныхToolStripMenuItem";
-            this.настройкиСбораДанныхToolStripMenuItem.Size = new System.Drawing.Size(322, 24);
+            this.настройкиСбораДанныхToolStripMenuItem.Size = new System.Drawing.Size(265, 22);
             this.настройкиСбораДанныхToolStripMenuItem.Text = "Сбор данных";
             this.настройкиСбораДанныхToolStripMenuItem.Click += new System.EventHandler(this.настройкиСбораДанныхToolStripMenuItem_Click);
             // 
@@ -314,7 +306,7 @@
             this.tableLayoutPanel1.Margin = new System.Windows.Forms.Padding(0);
             this.tableLayoutPanel1.Name = "tableLayoutPanel1";
             this.tableLayoutPanel1.RowCount = 22;
-            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 80F));
+            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 65F));
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 5.376343F));
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 5.376343F));
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 5.376343F));
@@ -327,16 +319,16 @@
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 5.376343F));
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 5.376343F));
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 8.602148F));
-            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 40F));
-            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 40F));
-            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 40F));
+            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 32F));
+            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 32F));
+            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 32F));
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 5.376343F));
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 5.376343F));
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 5.376343F));
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 5.376343F));
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 5.376343F));
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 5.376343F));
-            this.tableLayoutPanel1.Size = new System.Drawing.Size(1408, 826);
+            this.tableLayoutPanel1.Size = new System.Drawing.Size(1056, 671);
             this.tableLayoutPanel1.TabIndex = 0;
             // 
             // label8
@@ -344,10 +336,9 @@
             this.label8.AutoSize = true;
             this.tableLayoutPanel1.SetColumnSpan(this.label8, 11);
             this.label8.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.label8.Location = new System.Drawing.Point(376, 410);
-            this.label8.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.label8.Location = new System.Drawing.Point(283, 335);
             this.label8.Name = "label8";
-            this.label8.Size = new System.Drawing.Size(1028, 33);
+            this.label8.Size = new System.Drawing.Size(770, 27);
             this.label8.TabIndex = 30;
             // 
             // button1
@@ -357,11 +348,11 @@
             this.button1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.button1.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.button1.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.button1.Location = new System.Drawing.Point(0, 715);
+            this.button1.Location = new System.Drawing.Point(0, 582);
             this.button1.Margin = new System.Windows.Forms.Padding(0);
             this.button1.Name = "button1";
             this.tableLayoutPanel1.SetRowSpan(this.button1, 3);
-            this.button1.Size = new System.Drawing.Size(372, 111);
+            this.button1.Size = new System.Drawing.Size(280, 89);
             this.button1.TabIndex = 32;
             this.button1.Text = "Обработка директории: (cloud cover)";
             this.button1.UseVisualStyleBackColor = false;
@@ -374,10 +365,9 @@
             this.открытьФайлToolStripMenuItem.Dock = System.Windows.Forms.DockStyle.Fill;
             this.открытьФайлToolStripMenuItem.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.открытьФайлToolStripMenuItem.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.открытьФайлToolStripMenuItem.Location = new System.Drawing.Point(4, 4);
-            this.открытьФайлToolStripMenuItem.Margin = new System.Windows.Forms.Padding(4);
+            this.открытьФайлToolStripMenuItem.Location = new System.Drawing.Point(3, 3);
             this.открытьФайлToolStripMenuItem.Name = "открытьФайлToolStripMenuItem";
-            this.открытьФайлToolStripMenuItem.Size = new System.Drawing.Size(178, 72);
+            this.открытьФайлToolStripMenuItem.Size = new System.Drawing.Size(134, 59);
             this.открытьФайлToolStripMenuItem.TabIndex = 34;
             this.открытьФайлToolStripMenuItem.Text = "Открыть файл";
             this.открытьФайлToolStripMenuItem.UseVisualStyleBackColor = false;
@@ -390,10 +380,9 @@
             this.обработатьToolStripMenuItem.Dock = System.Windows.Forms.DockStyle.Fill;
             this.обработатьToolStripMenuItem.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.обработатьToolStripMenuItem.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.обработатьToolStripMenuItem.Location = new System.Drawing.Point(190, 4);
-            this.обработатьToolStripMenuItem.Margin = new System.Windows.Forms.Padding(4);
+            this.обработатьToolStripMenuItem.Location = new System.Drawing.Point(143, 3);
             this.обработатьToolStripMenuItem.Name = "обработатьToolStripMenuItem";
-            this.обработатьToolStripMenuItem.Size = new System.Drawing.Size(178, 72);
+            this.обработатьToolStripMenuItem.Size = new System.Drawing.Size(134, 59);
             this.обработатьToolStripMenuItem.TabIndex = 35;
             this.обработатьToolStripMenuItem.Text = "Обработать";
             this.обработатьToolStripMenuItem.UseVisualStyleBackColor = false;
@@ -406,10 +395,9 @@
             this.DetectEdgesButton.Dock = System.Windows.Forms.DockStyle.Fill;
             this.DetectEdgesButton.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.DetectEdgesButton.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.DetectEdgesButton.Location = new System.Drawing.Point(376, 4);
-            this.DetectEdgesButton.Margin = new System.Windows.Forms.Padding(4);
+            this.DetectEdgesButton.Location = new System.Drawing.Point(283, 3);
             this.DetectEdgesButton.Name = "DetectEdgesButton";
-            this.DetectEdgesButton.Size = new System.Drawing.Size(178, 72);
+            this.DetectEdgesButton.Size = new System.Drawing.Size(134, 59);
             this.DetectEdgesButton.TabIndex = 43;
             this.DetectEdgesButton.Text = "Разметка по октам";
             this.DetectEdgesButton.UseVisualStyleBackColor = false;
@@ -423,11 +411,10 @@
             this.lblClassificationMethod.Dock = System.Windows.Forms.DockStyle.Fill;
             this.lblClassificationMethod.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.lblClassificationMethod.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lblClassificationMethod.Location = new System.Drawing.Point(4, 496);
-            this.lblClassificationMethod.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.lblClassificationMethod.Location = new System.Drawing.Point(3, 405);
             this.lblClassificationMethod.Name = "lblClassificationMethod";
             this.tableLayoutPanel1.SetRowSpan(this.lblClassificationMethod, 3);
-            this.lblClassificationMethod.Size = new System.Drawing.Size(364, 120);
+            this.lblClassificationMethod.Size = new System.Drawing.Size(274, 96);
             this.lblClassificationMethod.TabIndex = 45;
             this.lblClassificationMethod.Text = "Classification method:";
             this.lblClassificationMethod.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
@@ -436,11 +423,10 @@
             // 
             this.tableLayoutPanel1.SetColumnSpan(this.richTextBox1, 15);
             this.richTextBox1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.richTextBox1.Location = new System.Drawing.Point(4, 686);
-            this.richTextBox1.Margin = new System.Windows.Forms.Padding(4);
+            this.richTextBox1.Location = new System.Drawing.Point(3, 558);
             this.richTextBox1.Multiline = false;
             this.richTextBox1.Name = "richTextBox1";
-            this.richTextBox1.Size = new System.Drawing.Size(1400, 25);
+            this.richTextBox1.Size = new System.Drawing.Size(1050, 21);
             this.richTextBox1.TabIndex = 48;
             this.richTextBox1.Text = "";
             // 
@@ -451,10 +437,9 @@
             this.button2.Dock = System.Windows.Forms.DockStyle.Fill;
             this.button2.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.button2.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.button2.Location = new System.Drawing.Point(934, 4);
-            this.button2.Margin = new System.Windows.Forms.Padding(4);
+            this.button2.Location = new System.Drawing.Point(703, 3);
             this.button2.Name = "button2";
-            this.button2.Size = new System.Drawing.Size(271, 72);
+            this.button2.Size = new System.Drawing.Size(204, 59);
             this.button2.TabIndex = 49;
             this.button2.Text = "Ручной анализ цветности";
             this.button2.UseVisualStyleBackColor = false;
@@ -466,10 +451,9 @@
             this.btnProperties.Dock = System.Windows.Forms.DockStyle.Fill;
             this.btnProperties.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnProperties.Image = global::SkyImagesAnalyzer.Properties.Resources.process;
-            this.btnProperties.Location = new System.Drawing.Point(1213, 4);
-            this.btnProperties.Margin = new System.Windows.Forms.Padding(4);
+            this.btnProperties.Location = new System.Drawing.Point(913, 3);
             this.btnProperties.Name = "btnProperties";
-            this.btnProperties.Size = new System.Drawing.Size(85, 72);
+            this.btnProperties.Size = new System.Drawing.Size(64, 59);
             this.btnProperties.TabIndex = 52;
             this.btnProperties.UseVisualStyleBackColor = false;
             this.btnProperties.Click += new System.EventHandler(this.btnProperties_Click);
@@ -481,11 +465,10 @@
             this.button3.Dock = System.Windows.Forms.DockStyle.Fill;
             this.button3.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.button3.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.button3.Location = new System.Drawing.Point(376, 117);
-            this.button3.Margin = new System.Windows.Forms.Padding(4);
+            this.button3.Location = new System.Drawing.Point(283, 95);
             this.button3.Name = "button3";
             this.tableLayoutPanel1.SetRowSpan(this.button3, 2);
-            this.button3.Size = new System.Drawing.Size(271, 58);
+            this.button3.Size = new System.Drawing.Size(204, 48);
             this.button3.TabIndex = 53;
             this.button3.Text = "GrIx histogram";
             this.button3.UseVisualStyleBackColor = false;
@@ -497,10 +480,9 @@
             this.btnAbout.Dock = System.Windows.Forms.DockStyle.Fill;
             this.btnAbout.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnAbout.Image = global::SkyImagesAnalyzer.Properties.Resources.info;
-            this.btnAbout.Location = new System.Drawing.Point(1306, 4);
-            this.btnAbout.Margin = new System.Windows.Forms.Padding(4);
+            this.btnAbout.Location = new System.Drawing.Point(983, 3);
             this.btnAbout.Name = "btnAbout";
-            this.btnAbout.Size = new System.Drawing.Size(98, 72);
+            this.btnAbout.Size = new System.Drawing.Size(70, 59);
             this.btnAbout.TabIndex = 57;
             this.btnAbout.UseVisualStyleBackColor = false;
             this.btnAbout.Click += new System.EventHandler(this.btnAbout_Click);
@@ -512,11 +494,11 @@
             this.btnTest1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.btnTest1.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnTest1.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnTest1.Location = new System.Drawing.Point(372, 715);
+            this.btnTest1.Location = new System.Drawing.Point(280, 582);
             this.btnTest1.Margin = new System.Windows.Forms.Padding(0);
             this.btnTest1.Name = "btnTest1";
             this.tableLayoutPanel1.SetRowSpan(this.btnTest1, 2);
-            this.btnTest1.Size = new System.Drawing.Size(558, 66);
+            this.btnTest1.Size = new System.Drawing.Size(420, 54);
             this.btnTest1.TabIndex = 59;
             this.btnTest1.Text = "Collect statistics (5perc and Median valus over images set)";
             this.btnTest1.UseVisualStyleBackColor = false;
@@ -529,11 +511,11 @@
             this.btnProcessDirectorySI.Dock = System.Windows.Forms.DockStyle.Fill;
             this.btnProcessDirectorySI.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnProcessDirectorySI.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnProcessDirectorySI.Location = new System.Drawing.Point(930, 715);
+            this.btnProcessDirectorySI.Location = new System.Drawing.Point(700, 582);
             this.btnProcessDirectorySI.Margin = new System.Windows.Forms.Padding(0);
             this.btnProcessDirectorySI.Name = "btnProcessDirectorySI";
             this.tableLayoutPanel1.SetRowSpan(this.btnProcessDirectorySI, 3);
-            this.btnProcessDirectorySI.Size = new System.Drawing.Size(478, 111);
+            this.btnProcessDirectorySI.Size = new System.Drawing.Size(356, 89);
             this.btnProcessDirectorySI.TabIndex = 60;
             this.btnProcessDirectorySI.Text = "Обработка директории (только SkyIndex)";
             this.btnProcessDirectorySI.UseVisualStyleBackColor = false;
@@ -546,10 +528,11 @@
             this.btnShowMedianPerc5Diagram.Dock = System.Windows.Forms.DockStyle.Fill;
             this.btnShowMedianPerc5Diagram.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnShowMedianPerc5Diagram.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnShowMedianPerc5Diagram.Location = new System.Drawing.Point(654, 116);
+            this.btnShowMedianPerc5Diagram.Location = new System.Drawing.Point(492, 94);
+            this.btnShowMedianPerc5Diagram.Margin = new System.Windows.Forms.Padding(2);
             this.btnShowMedianPerc5Diagram.Name = "btnShowMedianPerc5Diagram";
             this.tableLayoutPanel1.SetRowSpan(this.btnShowMedianPerc5Diagram, 2);
-            this.btnShowMedianPerc5Diagram.Size = new System.Drawing.Size(366, 60);
+            this.btnShowMedianPerc5Diagram.Size = new System.Drawing.Size(276, 50);
             this.btnShowMedianPerc5Diagram.TabIndex = 61;
             this.btnShowMedianPerc5Diagram.Text = "Show at median-5perc diagram";
             this.btnShowMedianPerc5Diagram.UseVisualStyleBackColor = false;
@@ -562,10 +545,11 @@
             this.btnDensityProcessing.Dock = System.Windows.Forms.DockStyle.Fill;
             this.btnDensityProcessing.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnDensityProcessing.Font = new System.Drawing.Font("Microsoft Sans Serif", 13.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnDensityProcessing.Location = new System.Drawing.Point(375, 182);
+            this.btnDensityProcessing.Location = new System.Drawing.Point(282, 148);
+            this.btnDensityProcessing.Margin = new System.Windows.Forms.Padding(2);
             this.btnDensityProcessing.Name = "btnDensityProcessing";
             this.tableLayoutPanel1.SetRowSpan(this.btnDensityProcessing, 4);
-            this.btnDensityProcessing.Size = new System.Drawing.Size(366, 126);
+            this.btnDensityProcessing.Size = new System.Drawing.Size(276, 104);
             this.btnDensityProcessing.TabIndex = 62;
             this.btnDensityProcessing.Text = "Show density (m;p5),\r\nclusterize points\r\nsave clusters data\r\n";
             this.btnDensityProcessing.UseVisualStyleBackColor = false;
@@ -578,9 +562,10 @@
             this.btnSortImagesByClasses.Dock = System.Windows.Forms.DockStyle.Fill;
             this.btnSortImagesByClasses.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnSortImagesByClasses.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnSortImagesByClasses.Location = new System.Drawing.Point(375, 784);
+            this.btnSortImagesByClasses.Location = new System.Drawing.Point(282, 638);
+            this.btnSortImagesByClasses.Margin = new System.Windows.Forms.Padding(2);
             this.btnSortImagesByClasses.Name = "btnSortImagesByClasses";
-            this.btnSortImagesByClasses.Size = new System.Drawing.Size(552, 39);
+            this.btnSortImagesByClasses.Size = new System.Drawing.Size(416, 31);
             this.btnSortImagesByClasses.TabIndex = 63;
             this.btnSortImagesByClasses.Text = "Sort images by classes";
             this.btnSortImagesByClasses.UseVisualStyleBackColor = false;
@@ -593,10 +578,11 @@
             this.btnTestSunDetection2015.Dock = System.Windows.Forms.DockStyle.Fill;
             this.btnTestSunDetection2015.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnTestSunDetection2015.Font = new System.Drawing.Font("Microsoft Sans Serif", 13.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnTestSunDetection2015.Location = new System.Drawing.Point(375, 314);
+            this.btnTestSunDetection2015.Location = new System.Drawing.Point(282, 256);
+            this.btnTestSunDetection2015.Margin = new System.Windows.Forms.Padding(2);
             this.btnTestSunDetection2015.Name = "btnTestSunDetection2015";
             this.tableLayoutPanel1.SetRowSpan(this.btnTestSunDetection2015, 3);
-            this.btnTestSunDetection2015.Size = new System.Drawing.Size(645, 93);
+            this.btnTestSunDetection2015.Size = new System.Drawing.Size(486, 77);
             this.btnTestSunDetection2015.TabIndex = 64;
             this.btnTestSunDetection2015.Text = "sun detection jan`2015\r\n(пока не работает)";
             this.btnTestSunDetection2015.UseVisualStyleBackColor = false;
@@ -608,9 +594,10 @@
             this.tableLayoutPanel1.SetColumnSpan(this.lblResultTitle, 4);
             this.lblResultTitle.Dock = System.Windows.Forms.DockStyle.Fill;
             this.lblResultTitle.Font = new System.Drawing.Font("Microsoft Sans Serif", 16.2F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lblResultTitle.Location = new System.Drawing.Point(3, 80);
+            this.lblResultTitle.Location = new System.Drawing.Point(2, 65);
+            this.lblResultTitle.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.lblResultTitle.Name = "lblResultTitle";
-            this.lblResultTitle.Size = new System.Drawing.Size(366, 33);
+            this.lblResultTitle.Size = new System.Drawing.Size(276, 27);
             this.lblResultTitle.TabIndex = 65;
             this.lblResultTitle.Text = "source image";
             this.lblResultTitle.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
@@ -622,10 +609,12 @@
             this.groupBox1.Controls.Add(this.rbtnClusterizePoints);
             this.groupBox1.Controls.Add(this.rbtnShowDensity);
             this.groupBox1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.groupBox1.Location = new System.Drawing.Point(747, 182);
+            this.groupBox1.Location = new System.Drawing.Point(562, 148);
+            this.groupBox1.Margin = new System.Windows.Forms.Padding(2);
             this.groupBox1.Name = "groupBox1";
+            this.groupBox1.Padding = new System.Windows.Forms.Padding(2);
             this.tableLayoutPanel1.SetRowSpan(this.groupBox1, 4);
-            this.groupBox1.Size = new System.Drawing.Size(273, 126);
+            this.groupBox1.Size = new System.Drawing.Size(206, 104);
             this.groupBox1.TabIndex = 66;
             this.groupBox1.TabStop = false;
             // 
@@ -633,9 +622,10 @@
             // 
             this.rbtnSaveClustering.AutoSize = true;
             this.rbtnSaveClustering.Font = new System.Drawing.Font("Microsoft Sans Serif", 13.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.rbtnSaveClustering.Location = new System.Drawing.Point(6, 87);
+            this.rbtnSaveClustering.Location = new System.Drawing.Point(4, 71);
+            this.rbtnSaveClustering.Margin = new System.Windows.Forms.Padding(2);
             this.rbtnSaveClustering.Name = "rbtnSaveClustering";
-            this.rbtnSaveClustering.Size = new System.Drawing.Size(240, 33);
+            this.rbtnSaveClustering.Size = new System.Drawing.Size(190, 28);
             this.rbtnSaveClustering.TabIndex = 2;
             this.rbtnSaveClustering.Text = "and save clustering";
             this.rbtnSaveClustering.UseVisualStyleBackColor = true;
@@ -644,9 +634,10 @@
             // 
             this.rbtnClusterizePoints.AutoSize = true;
             this.rbtnClusterizePoints.Font = new System.Drawing.Font("Microsoft Sans Serif", 13.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.rbtnClusterizePoints.Location = new System.Drawing.Point(6, 48);
+            this.rbtnClusterizePoints.Location = new System.Drawing.Point(4, 39);
+            this.rbtnClusterizePoints.Margin = new System.Windows.Forms.Padding(2);
             this.rbtnClusterizePoints.Name = "rbtnClusterizePoints";
-            this.rbtnClusterizePoints.Size = new System.Drawing.Size(182, 33);
+            this.rbtnClusterizePoints.Size = new System.Drawing.Size(144, 28);
             this.rbtnClusterizePoints.TabIndex = 1;
             this.rbtnClusterizePoints.Text = "and clusterize";
             this.rbtnClusterizePoints.UseVisualStyleBackColor = true;
@@ -656,9 +647,10 @@
             this.rbtnShowDensity.AutoSize = true;
             this.rbtnShowDensity.Checked = true;
             this.rbtnShowDensity.Font = new System.Drawing.Font("Microsoft Sans Serif", 13.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.rbtnShowDensity.Location = new System.Drawing.Point(6, 9);
+            this.rbtnShowDensity.Location = new System.Drawing.Point(4, 7);
+            this.rbtnShowDensity.Margin = new System.Windows.Forms.Padding(2);
             this.rbtnShowDensity.Name = "rbtnShowDensity";
-            this.rbtnShowDensity.Size = new System.Drawing.Size(185, 33);
+            this.rbtnShowDensity.Size = new System.Drawing.Size(146, 28);
             this.rbtnShowDensity.TabIndex = 0;
             this.rbtnShowDensity.TabStop = true;
             this.rbtnShowDensity.Text = "show diagram";
@@ -671,10 +663,12 @@
             this.groupBox2.Controls.Add(this.rbtnClassMethodJapan);
             this.groupBox2.Controls.Add(this.rbtnClassMethodUS);
             this.groupBox2.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.groupBox2.Location = new System.Drawing.Point(375, 499);
+            this.groupBox2.Location = new System.Drawing.Point(282, 407);
+            this.groupBox2.Margin = new System.Windows.Forms.Padding(2);
             this.groupBox2.Name = "groupBox2";
+            this.groupBox2.Padding = new System.Windows.Forms.Padding(2);
             this.tableLayoutPanel1.SetRowSpan(this.groupBox2, 3);
-            this.groupBox2.Size = new System.Drawing.Size(273, 114);
+            this.groupBox2.Size = new System.Drawing.Size(206, 92);
             this.groupBox2.TabIndex = 67;
             this.groupBox2.TabStop = false;
             // 
@@ -683,10 +677,9 @@
             this.rbtnClassMethodGrIx.AutoSize = true;
             this.rbtnClassMethodGrIx.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.rbtnClassMethodGrIx.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.rbtnClassMethodGrIx.Location = new System.Drawing.Point(7, 81);
-            this.rbtnClassMethodGrIx.Margin = new System.Windows.Forms.Padding(4);
+            this.rbtnClassMethodGrIx.Location = new System.Drawing.Point(5, 66);
             this.rbtnClassMethodGrIx.Name = "rbtnClassMethodGrIx";
-            this.rbtnClassMethodGrIx.Size = new System.Drawing.Size(117, 29);
+            this.rbtnClassMethodGrIx.Size = new System.Drawing.Size(96, 24);
             this.rbtnClassMethodGrIx.TabIndex = 50;
             this.rbtnClassMethodGrIx.Text = "GrIx SAIL";
             this.rbtnClassMethodGrIx.UseVisualStyleBackColor = true;
@@ -698,10 +691,9 @@
             this.rbtnClassMethodJapan.Checked = true;
             this.rbtnClassMethodJapan.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.rbtnClassMethodJapan.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.rbtnClassMethodJapan.Location = new System.Drawing.Point(7, 1);
-            this.rbtnClassMethodJapan.Margin = new System.Windows.Forms.Padding(4);
+            this.rbtnClassMethodJapan.Location = new System.Drawing.Point(5, 1);
             this.rbtnClassMethodJapan.Name = "rbtnClassMethodJapan";
-            this.rbtnClassMethodJapan.Size = new System.Drawing.Size(199, 29);
+            this.rbtnClassMethodJapan.Size = new System.Drawing.Size(158, 24);
             this.rbtnClassMethodJapan.TabIndex = 46;
             this.rbtnClassMethodJapan.TabStop = true;
             this.rbtnClassMethodJapan.Text = "(R-B)/(R+B)   (Jap)";
@@ -713,13 +705,13 @@
             this.rbtnClassMethodUS.AutoSize = true;
             this.rbtnClassMethodUS.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.rbtnClassMethodUS.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.rbtnClassMethodUS.Location = new System.Drawing.Point(7, 41);
-            this.rbtnClassMethodUS.Margin = new System.Windows.Forms.Padding(4);
+            this.rbtnClassMethodUS.Location = new System.Drawing.Point(5, 33);
             this.rbtnClassMethodUS.Name = "rbtnClassMethodUS";
-            this.rbtnClassMethodUS.Size = new System.Drawing.Size(116, 29);
+            this.rbtnClassMethodUS.Size = new System.Drawing.Size(94, 24);
             this.rbtnClassMethodUS.TabIndex = 47;
-            this.rbtnClassMethodUS.Text = "B/R  (US)";
+            this.rbtnClassMethodUS.Text = "R/B  (US)";
             this.rbtnClassMethodUS.UseVisualStyleBackColor = true;
+            this.rbtnClassMethodUS.CheckedChanged += new System.EventHandler(this.rbtnClassMethodUS_CheckedChanged);
             // 
             // btnCalcSunPosition
             // 
@@ -728,13 +720,28 @@
             this.btnCalcSunPosition.Dock = System.Windows.Forms.DockStyle.Fill;
             this.btnCalcSunPosition.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnCalcSunPosition.Font = new System.Drawing.Font("Microsoft Sans Serif", 13.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnCalcSunPosition.Location = new System.Drawing.Point(561, 3);
+            this.btnCalcSunPosition.Location = new System.Drawing.Point(422, 2);
+            this.btnCalcSunPosition.Margin = new System.Windows.Forms.Padding(2);
             this.btnCalcSunPosition.Name = "btnCalcSunPosition";
-            this.btnCalcSunPosition.Size = new System.Drawing.Size(273, 74);
+            this.btnCalcSunPosition.Size = new System.Drawing.Size(206, 61);
             this.btnCalcSunPosition.TabIndex = 68;
             this.btnCalcSunPosition.Text = "Check sun position";
             this.btnCalcSunPosition.UseVisualStyleBackColor = false;
             this.btnCalcSunPosition.Click += new System.EventHandler(this.btnCalcSunPosition_Click);
+            // 
+            // button5
+            // 
+            this.button5.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.button5.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.button5.Font = new System.Drawing.Font("Microsoft Sans Serif", 13.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.button5.Location = new System.Drawing.Point(632, 2);
+            this.button5.Margin = new System.Windows.Forms.Padding(2);
+            this.button5.Name = "button5";
+            this.button5.Size = new System.Drawing.Size(66, 61);
+            this.button5.TabIndex = 69;
+            this.button5.Text = "XLS SUN";
+            this.button5.UseVisualStyleBackColor = true;
+            this.button5.Click += new System.EventHandler(this.button5_Click);
             // 
             // bgwProcessDirectoryOfImages
             // 
@@ -744,29 +751,15 @@
             this.bgwProcessDirectoryOfImages.ProgressChanged += new System.ComponentModel.ProgressChangedEventHandler(this.backgroundWorker2_ProgressChanged);
             this.bgwProcessDirectoryOfImages.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(this.backgroundWorker2_RunWorkerCompleted);
             // 
-            // button5
-            // 
-            this.button5.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.button5.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.button5.Font = new System.Drawing.Font("Microsoft Sans Serif", 13.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.button5.Location = new System.Drawing.Point(840, 3);
-            this.button5.Name = "button5";
-            this.button5.Size = new System.Drawing.Size(87, 74);
-            this.button5.TabIndex = 69;
-            this.button5.Text = "XLS SUN";
-            this.button5.UseVisualStyleBackColor = true;
-            this.button5.Click += new System.EventHandler(this.button5_Click);
-            // 
             // MainAnalysisForm
             // 
             this.AllowDrop = true;
-            this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
+            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1408, 826);
+            this.ClientSize = new System.Drawing.Size(1056, 671);
             this.Controls.Add(this.tableLayoutPanel1);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.KeyPreview = true;
-            this.Margin = new System.Windows.Forms.Padding(4);
             this.Name = "MainAnalysisForm";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
             this.Text = "Sky images analysis";
