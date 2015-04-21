@@ -14,7 +14,7 @@
   </table>
   <table>
     <key>BatchProcessingDirectory</key>
-    <value>D:\_gulevlab\SkyImagesAnalysis_appData\article-4p-2015\</value>
+    <value>D:\_gulevlab\SkyImagesAnalysis_appData\AI45-with-concurrent-data\input\</value>
   </table>
   <table>
     <key>GermanCloudSkySeparationValue</key>
@@ -54,7 +54,7 @@
   </table>
   <table>
     <key>DefaultMaxImageSize</key>
-    <value>1920</value>
+    <value>1024</value>
   </table>
   <table>
     <key>DefaultScalingFactor</key>
@@ -62,7 +62,7 @@
   </table>
   <table>
     <key>DefaultDataFilesLocation</key>
-    <value>D:\_gulevlab\SkyImagesAnalysis_appData\article-4p-2015\result\</value>
+    <value>D:\_gulevlab\SkyImagesAnalysis_appData\AI45-with-concurrent-data\output\</value>
   </table>
   <table>
     <key>GrIxDefaultSkyCloudMarginWithoutSun</key>
@@ -74,7 +74,7 @@
   </table>
   <table>
     <key>DefaultMedianPerc5StatsXMLFile</key>
-    <value>D:\_gulevlab\SkyImagesAnalysis_appData\clustering-tests\images_complete-2007-polarstern-CanonA640\median-perc5-stats.xml</value>
+    <value>D:\_gulevlab\SkyImagesAnalysis_appData\AI45-total\ID1\stats\statsWithFNames.xml</value>
   </table>
   <table>
     <key>IoffeMeteoNavFilesDirectory</key>

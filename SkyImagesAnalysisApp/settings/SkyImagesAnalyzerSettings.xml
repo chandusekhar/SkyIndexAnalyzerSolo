@@ -76,4 +76,8 @@
     <key>DefaultMedianPerc5StatsXMLFile</key>
     <value>D:\_gulevlab\SkyImagesAnalysis_appData\AI45-total\ID1\stats\statsWithFNames.xml</value>
   </table>
+  <table>
+    <key>IoffeMeteoNavFilesDirectory</key>
+    <value>D:\_gulevlab\SkyImagesAnalysis_appData\images_complete\IOFFE\NIKON-D80\IOFFE-Mission34-Marina-2011\data-meteo-nav\</value>
+  </table>
 </DataSet>

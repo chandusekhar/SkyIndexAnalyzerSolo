@@ -5,12 +5,12 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("FilesFilteringApp")]
+[assembly: AssemblyTitle("GPSdataCorrector")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("HP")]
-[assembly: AssemblyProduct("FilesFilteringApp")]
-[assembly: AssemblyCopyright("Copyright © M.Krinitsky 2013")]
+[assembly: AssemblyCompany("")]
+[assembly: AssemblyProduct("GPSdataCorrector")]
+[assembly: AssemblyCopyright("Copyright ©  2015")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
@@ -20,7 +20,7 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid("8546aef3-546d-484d-913d-aa147cad2b5b")]
+[assembly: Guid("90451198-2538-403c-a2e3-e05605b3da54")]
 
 // Version information for an assembly consists of the following four values:
 //

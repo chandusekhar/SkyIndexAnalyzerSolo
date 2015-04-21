@@ -73,6 +73,8 @@ namespace SkyImagesAnalyzerLibraries
             }
         }
 
+
+
         public static void SetTextTB(System.Windows.Forms.TextBox textbox, string text, bool AppendMode)
         {
             if (textbox == null)
@@ -98,6 +100,36 @@ namespace SkyImagesAnalyzerLibraries
 
             }
         }
+
+
+
+        public static void SetTextTB(System.Windows.Forms.RichTextBox textbox, string text, bool AppendMode)
+        {
+            if (textbox == null)
+            {
+                return;
+            }
+
+            if (textbox.InvokeRequired)
+            {
+                SetTextTBCallback d = SetTextTB;
+                textbox.Invoke(d, new object[] { textbox, text, AppendMode });
+            }
+            else
+            {
+                if (AppendMode)
+                {
+                    textbox.Text = text + textbox.Text;
+                }
+                else
+                {
+                    textbox.Text = text;
+                }
+
+            }
+        }
+
+
 
         public static void UpdateProgressBar(System.Windows.Forms.ProgressBar ProgressBarControl, int PBvalue)
         {

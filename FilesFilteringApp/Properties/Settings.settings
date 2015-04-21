@@ -3,10 +3,13 @@
   <Profiles />
   <Settings>
     <Setting Name="FromPath" Type="System.String" Scope="User">
-      <Value Profile="(Default)">E:\АИ-44\result\pics\convert\jpg-all\v01\</Value>
+      <Value Profile="(Default)">D:\_gulevlab\SkyImagesAnalysis_appData\AI45-total\ID1\</Value>
     </Setting>
     <Setting Name="ToPath" Type="System.String" Scope="User">
-      <Value Profile="(Default)">E:\АИ-44\result\pics\convert\jpg-all\v01-selected\</Value>
+      <Value Profile="(Default)">D:\_gulevlab\SkyImagesAnalysis_appData\AI45-with-concurrent-data\input\</Value>
+    </Setting>
+    <Setting Name="FromConcurrentPath" Type="System.String" Scope="User">
+      <Value Profile="(Default)">D:\_gulevlab\SkyImagesAnalysis_appData\AI45-total\ID1\concurrentdata\</Value>
     </Setting>
   </Settings>
 </SettingsFile>

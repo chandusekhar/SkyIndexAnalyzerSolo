@@ -3179,6 +3179,8 @@ namespace SkyImagesAnalyzer
 
 
 
+
+
         private void btnCalcSunPosition_Click(object sender, EventArgs e)
         {
             DateTime curDateTime = DateTime.UtcNow;
@@ -3235,7 +3237,10 @@ namespace SkyImagesAnalyzer
                     foreach (string xmlFileName in xmlFileNames)
                     {
                         Dictionary<string, object> dictSavedData = ServiceTools.ReadDictionaryFromXML(xmlFileName);
-                        GPSdata gps = new GPSdata((string)dictSavedData["GPSdata"], GPSdatasources.CloudCamArduinoGPS);
+                        //GPSdata gps = new GPSdata((string)dictSavedData["GPSdata"], GPSdatasources.CloudCamArduinoGPS);
+                        GPSdata gps =
+                            new GPSdata(new double[]
+                            {Convert.ToDouble(dictSavedData["GPSLat"]), Convert.ToDouble(dictSavedData["GPSLon"])});
                         lReadGPSdata.Add(gps);
                     }
                     lReadGPSdata.Sort((gpsRecord1, gpsRecord2) =>
@@ -3344,8 +3349,6 @@ namespace SkyImagesAnalyzer
             sunElTestForm.defaultProperties = defaultProperties;
             sunElTestForm.Show();
         }
-
-        
     }
 
 

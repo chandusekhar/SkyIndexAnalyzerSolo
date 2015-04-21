@@ -7,6 +7,8 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
+using SkyImagesAnalyzerLibraries;
+
 //using SkyImagesAnalyzerLibraries;
 
 namespace IoffeVesselDataReader
@@ -30,12 +32,13 @@ namespace IoffeVesselDataReader
 
 
 
-    public struct IoffeVesselDualNavDataConverted
+    public class IoffeVesselDualNavDataConverted
     {
         public DateTime dateTime;
         public SkyImagesAnalyzerLibraries.GPSdata gps;
         public double Course;
     }
+
 
 
 
@@ -85,33 +88,46 @@ namespace IoffeVesselDataReader
         {
             string dateStr = navData.DateGPS.ToString();
             string timeStr = navData.curtime.ToString("D4");
-            DateTime dt;
-            if (navData.curtime >= 2400)
-            {
-                int daysToAdd = 0;
-                while (navData.curtime >= 2400)
-                {
-                    navData.curtime -= 2400;
-                    daysToAdd++;
-                }
-                timeStr = (navData.curtime).ToString("D4");
-                dt = new DateTime(2000 + Convert.ToInt32(dateStr.Substring(dateStr.Length - 2, 2)),
-                    Convert.ToInt32(dateStr.Substring(dateStr.Length - 4, 2)),
-                    Convert.ToInt32(dateStr.Substring(0, dateStr.Length - 4)),
-                    Convert.ToInt32(timeStr.Substring(0, 2)),
-                    Convert.ToInt32(timeStr.Substring(2, 2)),
-                    0);
-                dt = dt.AddDays(daysToAdd);
-            }
-            else
-            {
-                dt = new DateTime(2000 + Convert.ToInt32(dateStr.Substring(dateStr.Length - 2, 2)),
-                    Convert.ToInt32(dateStr.Substring(dateStr.Length - 4, 2)),
-                    Convert.ToInt32(dateStr.Substring(0, dateStr.Length - 4)),
-                    Convert.ToInt32(timeStr.Substring(0, 2)),
-                    Convert.ToInt32(timeStr.Substring(2, 2)),
-                    0);
-            }
+
+            int sec = Convert.ToInt32(timeStr.Substring(timeStr.Length - 2));
+            timeStr = timeStr.Substring(0, timeStr.Length - 2);
+            int min = Convert.ToInt32(timeStr.Substring(timeStr.Length - 2));
+            timeStr = timeStr.Substring(0, timeStr.Length - 2);
+            int hour = (timeStr.Length > 0) ? (Convert.ToInt32(timeStr)) : (0);
+
+            int year = 2000 + Convert.ToInt32(dateStr.Substring(dateStr.Length-2, 2));
+            dateStr = dateStr.Substring(0, dateStr.Length - 2);
+            int month = Convert.ToInt32(dateStr.Substring(dateStr.Length - 2, 2));
+            dateStr = dateStr.Substring(0, dateStr.Length - 2);
+            int day = Convert.ToInt32(dateStr);
+
+            DateTime dt = new DateTime(year, month, day, hour, min, sec, DateTimeKind.Utc);
+            //if (navData.curtime >= 2400)
+            //{
+            //    int daysToAdd = 0;
+            //    while (navData.curtime >= 2400)
+            //    {
+            //        navData.curtime -= 2400;
+            //        daysToAdd++;
+            //    }
+            //    timeStr = (navData.curtime).ToString("D4");
+            //    dt = new DateTime(2000 + Convert.ToInt32(dateStr.Substring(dateStr.Length - 2, 2)),
+            //        Convert.ToInt32(dateStr.Substring(dateStr.Length - 4, 2)),
+            //        Convert.ToInt32(dateStr.Substring(0, dateStr.Length - 4)),
+            //        Convert.ToInt32(timeStr.Substring(0, 2)),
+            //        Convert.ToInt32(timeStr.Substring(2, 2)),
+            //        0);
+            //    dt = dt.AddDays(daysToAdd);
+            //}
+            //else
+            //{
+            //    dt = new DateTime(2000 + Convert.ToInt32(dateStr.Substring(dateStr.Length - 2, 2)),
+            //        Convert.ToInt32(dateStr.Substring(dateStr.Length - 4, 2)),
+            //        Convert.ToInt32(dateStr.Substring(0, dateStr.Length - 4)),
+            //        Convert.ToInt32(timeStr.Substring(0, 2)),
+            //        Convert.ToInt32(timeStr.Substring(2, 2)),
+            //        0);
+            //}
             return dt;
         }
 
@@ -163,63 +179,6 @@ namespace IoffeVesselDataReader
                 }
             }
 
-
-            #region // obsolete - too slooooowwwwww
-            //FieldInfo[] fInfoList = typeof(IoffeVesselDualNavData).GetFields();
-
-            //while (true)
-            //{
-            //    IoffeVesselDualNavData curRecord = new IoffeVesselDualNavData();
-            //    foreach (FieldInfo fldInfo in fInfoList)
-            //    {
-            //        if (fldInfo.FieldType == typeof(int))
-            //        {
-            //            try
-            //            {
-            //                int value = reader.ReadInt32();
-            //                fldInfo.SetValue(curRecord, value);
-            //            }
-            //            catch (Exception ex)
-            //            {
-            //                break;
-            //            }
-
-            //        }
-            //        if (fldInfo.FieldType == typeof(float))
-            //        {
-            //            try
-            //            {
-            //                float value = reader.ReadSingle();
-            //                fldInfo.SetValue(curRecord, value);
-            //            }
-            //            catch (Exception ex)
-            //            {
-            //                break;
-            //            }
-            //        }
-            //        if (fldInfo.FieldType == typeof(char))
-            //        {
-            //            try
-            //            {
-            //                char value = reader.ReadChar();
-            //                fldInfo.SetValue(curRecord, value);
-            //            }
-            //            catch (Exception ex)
-            //            {
-            //                break;
-            //            }
-            //        }
-
-            //        if (fldInfo.Name == "SimLon")
-            //        {
-            //            // пропустить два байта
-            //            reader.Read();
-            //            reader.Read();
-            //        }
-            //    }
-            //    lFileNavData.Add(curRecord);
-            //}
-            #endregion // obsolete - too slooooowwwwww
 
 
             List<IoffeVesselDualNavDataConverted> lRetList = lFileNavData.ConvertAll(navData =>
@@ -282,6 +241,74 @@ namespace IoffeVesselDataReader
 
             return lRetList;
         }
+
+
+
+
+
+        public static IoffeVesselDualNavDataConverted GetNavDataByDatetime(string navDataFilesPath, DateTime dt)
+        {
+            if (navDataFilesPath == "")
+            {
+                return null;
+            }
+            else if (!Directory.Exists(navDataFilesPath))
+            {
+                return null;
+            }
+
+            TimeSpan span = new TimeSpan(0, 2, 0);
+
+
+            List<IoffeVesselDualNavDataConverted> lAllNavData = new List<IoffeVesselDualNavDataConverted>();
+            string[] sNavFilenames = Directory.GetFiles(navDataFilesPath, "*.nv2", SearchOption.AllDirectories);
+            if (!sNavFilenames.Any())
+            {
+                return null;
+            }
+
+            foreach (string navFilename in sNavFilenames)
+            {
+                Tuple<DateTime, DateTime> timeSpan =
+                    IoffeVesselNavDataReader.GetNavFileDateTimeMargins(navFilename);
+                if (timeSpan == null)
+                {
+                    continue;
+                }
+
+                if ((dt < timeSpan.Item1) || (dt > timeSpan.Item2))
+                {
+                    continue;
+                }
+
+                List<IoffeVesselDualNavDataConverted> dataHasBeenRead = IoffeVesselNavDataReader.ReadNavFile(navFilename);
+                if (dataHasBeenRead == null)
+                {
+                    continue;
+                }
+                lAllNavData.AddRange(dataHasBeenRead);
+            }
+
+            if (!lAllNavData.Any())
+            {
+                return null;
+            }
+
+            lAllNavData.Sort((gpsRecord1, gpsRecord2) =>
+            {
+                double dev1 = Math.Abs((gpsRecord1.gps.dateTimeUTC - dt).TotalMilliseconds);
+                double dev2 = Math.Abs((gpsRecord2.gps.dateTimeUTC - dt).TotalMilliseconds);
+                return (dev1 >= dev2) ? (1) : (-1);
+            });
+            IoffeVesselDualNavDataConverted retData = new IoffeVesselDualNavDataConverted()
+            {
+                dateTime = lAllNavData[0].dateTime,
+                gps = lAllNavData[0].gps,
+            };
+
+            return retData;
+        }
+
 
 
 
