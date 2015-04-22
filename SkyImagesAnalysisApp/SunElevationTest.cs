@@ -18,6 +18,12 @@ using MathNet.Numerics.Statistics;
 
 namespace SkyImagesAnalyzer
 {
+    /// <summary>
+    /// Class SunElevationTest.
+    /// В этой форме осуществляется тестирование данных склонения солнца, записанных в сводном xls-файле протоколов
+    /// метеонаблюдений рейсов.
+    /// Результирующий файл представляет собой csv-ACII файл, расположенный рядом с файлом xls
+    /// </summary>
     public partial class SunElevationTest : Form
     {
         private LogWindow theLogWindow = null;

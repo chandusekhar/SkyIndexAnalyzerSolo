@@ -14,7 +14,7 @@
   </table>
   <table>
     <key>BatchProcessingDirectory</key>
-    <value>D:\_gulevlab\SkyImagesAnalysis_appData\AI45\sky-images\</value>
+    <value>D:\_gulevlab\SkyImagesAnalysis_appData\AI45-with-concurrent-data\input\</value>
   </table>
   <table>
     <key>GermanCloudSkySeparationValue</key>
@@ -62,7 +62,7 @@
   </table>
   <table>
     <key>DefaultDataFilesLocation</key>
-    <value>D:\_gulevlab\SkyImagesAnalysis_appData\AI45\sky-images-result\</value>
+    <value>D:\_gulevlab\SkyImagesAnalysis_appData\AI45-with-concurrent-data\output\</value>
   </table>
   <table>
     <key>GrIxDefaultSkyCloudMarginWithoutSun</key>
@@ -78,6 +78,6 @@
   </table>
   <table>
     <key>IoffeMeteoNavFilesDirectory</key>
-    <value>D:\_gulevlab\SkyImagesAnalysis_appData\images_complete\IOFFE\NIKON-D80\IOFFE-Mission34-Marina-2011\data-meteo-nav\</value>
+    <value>D:\_gulevlab\SkyImagesAnalysis_appData\AI45-with-concurrent-data\input\meteo-nav-data\</value>
   </table>
 </DataSet>

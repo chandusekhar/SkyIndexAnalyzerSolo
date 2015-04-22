@@ -76,6 +76,7 @@
             this.button5 = new System.Windows.Forms.Button();
             this.bgwProcessDirectoryOfImages = new System.ComponentModel.BackgroundWorker();
             this.bgwSunDetectionOnly = new System.ComponentModel.BackgroundWorker();
+            this.btnAnalyzeCameraPositioning = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.trackBar1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
@@ -294,7 +295,7 @@
             this.tableLayoutPanel1.Controls.Add(this.DetectEdgesButton, 4, 0);
             this.tableLayoutPanel1.Controls.Add(this.lblClassificationMethod, 0, 13);
             this.tableLayoutPanel1.Controls.Add(this.richTextBox1, 0, 18);
-            this.tableLayoutPanel1.Controls.Add(this.button2, 10, 0);
+            this.tableLayoutPanel1.Controls.Add(this.button2, 11, 0);
             this.tableLayoutPanel1.Controls.Add(this.btnProperties, 13, 0);
             this.tableLayoutPanel1.Controls.Add(this.button3, 4, 2);
             this.tableLayoutPanel1.Controls.Add(this.btnAbout, 14, 0);
@@ -308,7 +309,8 @@
             this.tableLayoutPanel1.Controls.Add(this.groupBox1, 8, 4);
             this.tableLayoutPanel1.Controls.Add(this.groupBox2, 4, 13);
             this.tableLayoutPanel1.Controls.Add(this.btnCalcSunPosition, 6, 0);
-            this.tableLayoutPanel1.Controls.Add(this.button5, 9, 0);
+            this.tableLayoutPanel1.Controls.Add(this.button5, 8, 0);
+            this.tableLayoutPanel1.Controls.Add(this.btnAnalyzeCameraPositioning, 9, 0);
             this.tableLayoutPanel1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tableLayoutPanel1.Location = new System.Drawing.Point(0, 0);
             this.tableLayoutPanel1.Margin = new System.Windows.Forms.Padding(0);
@@ -336,6 +338,7 @@
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 5.681819F));
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 5.681819F));
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 5.681819F));
+            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 20F));
             this.tableLayoutPanel1.Size = new System.Drawing.Size(1408, 826);
             this.tableLayoutPanel1.TabIndex = 0;
             // 
@@ -447,14 +450,14 @@
             // button2
             // 
             this.button2.BackColor = System.Drawing.SystemColors.ControlLight;
-            this.tableLayoutPanel1.SetColumnSpan(this.button2, 3);
+            this.tableLayoutPanel1.SetColumnSpan(this.button2, 2);
             this.button2.Dock = System.Windows.Forms.DockStyle.Fill;
             this.button2.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.button2.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.button2.Location = new System.Drawing.Point(934, 4);
+            this.button2.Location = new System.Drawing.Point(1027, 4);
             this.button2.Margin = new System.Windows.Forms.Padding(4);
             this.button2.Name = "button2";
-            this.button2.Size = new System.Drawing.Size(271, 72);
+            this.button2.Size = new System.Drawing.Size(178, 72);
             this.button2.TabIndex = 49;
             this.button2.Text = "Ручной анализ цветности";
             this.button2.UseVisualStyleBackColor = false;
@@ -736,14 +739,14 @@
             // btnCalcSunPosition
             // 
             this.btnCalcSunPosition.BackColor = System.Drawing.SystemColors.ControlLight;
-            this.tableLayoutPanel1.SetColumnSpan(this.btnCalcSunPosition, 3);
+            this.tableLayoutPanel1.SetColumnSpan(this.btnCalcSunPosition, 2);
             this.btnCalcSunPosition.Dock = System.Windows.Forms.DockStyle.Fill;
             this.btnCalcSunPosition.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnCalcSunPosition.Font = new System.Drawing.Font("Microsoft Sans Serif", 13.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.btnCalcSunPosition.Location = new System.Drawing.Point(561, 2);
             this.btnCalcSunPosition.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.btnCalcSunPosition.Name = "btnCalcSunPosition";
-            this.btnCalcSunPosition.Size = new System.Drawing.Size(273, 76);
+            this.btnCalcSunPosition.Size = new System.Drawing.Size(180, 76);
             this.btnCalcSunPosition.TabIndex = 68;
             this.btnCalcSunPosition.Text = "Check sun position";
             this.btnCalcSunPosition.UseVisualStyleBackColor = false;
@@ -751,16 +754,17 @@
             // 
             // button5
             // 
+            this.button5.BackColor = System.Drawing.SystemColors.ControlLight;
             this.button5.Dock = System.Windows.Forms.DockStyle.Fill;
             this.button5.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.button5.Font = new System.Drawing.Font("Microsoft Sans Serif", 13.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.button5.Location = new System.Drawing.Point(840, 2);
+            this.button5.Location = new System.Drawing.Point(747, 2);
             this.button5.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.button5.Name = "button5";
             this.button5.Size = new System.Drawing.Size(87, 76);
             this.button5.TabIndex = 69;
             this.button5.Text = "XLS SUN";
-            this.button5.UseVisualStyleBackColor = true;
+            this.button5.UseVisualStyleBackColor = false;
             this.button5.Click += new System.EventHandler(this.button5_Click);
             // 
             // bgwProcessDirectoryOfImages
@@ -770,6 +774,21 @@
             this.bgwProcessDirectoryOfImages.DoWork += new System.ComponentModel.DoWorkEventHandler(this.backgroundWorker2_DoWork);
             this.bgwProcessDirectoryOfImages.ProgressChanged += new System.ComponentModel.ProgressChangedEventHandler(this.backgroundWorker2_ProgressChanged);
             this.bgwProcessDirectoryOfImages.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(this.backgroundWorker2_RunWorkerCompleted);
+            // 
+            // btnAnalyzeCameraPositioning
+            // 
+            this.btnAnalyzeCameraPositioning.BackColor = System.Drawing.SystemColors.ControlLight;
+            this.tableLayoutPanel1.SetColumnSpan(this.btnAnalyzeCameraPositioning, 2);
+            this.btnAnalyzeCameraPositioning.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.btnAnalyzeCameraPositioning.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnAnalyzeCameraPositioning.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.btnAnalyzeCameraPositioning.Location = new System.Drawing.Point(840, 3);
+            this.btnAnalyzeCameraPositioning.Name = "btnAnalyzeCameraPositioning";
+            this.btnAnalyzeCameraPositioning.Size = new System.Drawing.Size(180, 74);
+            this.btnAnalyzeCameraPositioning.TabIndex = 70;
+            this.btnAnalyzeCameraPositioning.Text = "Analyze camera positioning";
+            this.btnAnalyzeCameraPositioning.UseVisualStyleBackColor = false;
+            this.btnAnalyzeCameraPositioning.Click += new System.EventHandler(this.btnAnalyzeCameraPositioning_Click);
             // 
             // MainAnalysisForm
             // 
@@ -853,6 +872,7 @@
         private System.Windows.Forms.RadioButton rbtnShowDensity;
         private System.Windows.Forms.Button btnCalcSunPosition;
         private System.Windows.Forms.Button button5;
+        private System.Windows.Forms.Button btnAnalyzeCameraPositioning;
     }
 }
 

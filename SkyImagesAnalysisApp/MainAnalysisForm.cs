@@ -100,7 +100,7 @@ namespace SkyImagesAnalyzer
 
 
 
-        
+
 
 
 
@@ -1731,7 +1731,7 @@ namespace SkyImagesAnalyzer
             //currImageRedChannelMap = null;
             #endregion
 
-            
+
             DateTime beginNew = DateTime.Now;
             //classificator = new SkyCloudClassification(imagetoadd, pictureBox2, pbUniversalProgressBar, textBox1);
 
@@ -1775,19 +1775,19 @@ namespace SkyImagesAnalyzer
             classificator.defaultOutputDataDirectory = defaultOutputDataDirectory;
             theLogWindow = ServiceTools.LogAText(theLogWindow, DateTime.Now.ToString() + Environment.NewLine, true);
             classificator.theLogWindow = theLogWindow;
-            
+
             BackgroundWorker bgwClassifyWorker = new BackgroundWorker();
             classificator.SelfWorker = bgwClassifyWorker;
             bgwClassifyWorker.DoWork += new DoWorkEventHandler((obj, args) =>
             {
-                SkyCloudClassification bgwClassificator = (SkyCloudClassification) ((object[])args.Argument)[0];
+                SkyCloudClassification bgwClassificator = (SkyCloudClassification)((object[])args.Argument)[0];
                 bgwClassificator.Classify();
-                args.Result = new object[] {bgwClassificator};
+                args.Result = new object[] { bgwClassificator };
             });
 
             bgwClassifyWorker.RunWorkerCompleted += new RunWorkerCompletedEventHandler((obj, args) =>
             {
-                object[] objArgs = (object[]) (args.Result);
+                object[] objArgs = (object[])(args.Result);
 
                 SkyCloudClassification bgwClassificator = (SkyCloudClassification)objArgs[0];
 
@@ -1840,7 +1840,7 @@ namespace SkyImagesAnalyzer
                 ServiceTools.FlushMemory(null, "");
             });
 
-            object[] bgwArgs = new object[] {classificator};
+            object[] bgwArgs = new object[] { classificator };
 
             bgwClassifyWorker.RunWorkerAsync(bgwArgs);
         }
@@ -3055,7 +3055,7 @@ namespace SkyImagesAnalyzer
 
                 if (dmDensityField[row, col] < dDensityMinThreshold)
                 {
-                    args.Result = new object[] {currentBgwID};
+                    args.Result = new object[] { currentBgwID };
                     return;
                 }
 
@@ -3184,159 +3184,152 @@ namespace SkyImagesAnalyzer
         private void btnCalcSunPosition_Click(object sender, EventArgs e)
         {
             DateTime curDateTime = DateTime.UtcNow;
-            if (imagetoadd != null)
+            if (imagetoadd == null)
             {
+                theLogWindow = ServiceTools.LogAText(theLogWindow, "Не загружено изображение для обработки!", true);
+                return;
+            }
 
-                FileInfo finfoOriginalFile = new FileInfo(ImageFileName);
+            FileInfo finfoOriginalFile = new FileInfo(ImageFileName);
 
-                defaultProperties["DefaultDataFilesLocation"] = defaultProperties["DefaultDataFilesLocation"] +
-                                                                Path.GetFileNameWithoutExtension(finfoOriginalFile.Name) +
-                                                                "\\";
+            defaultProperties["DefaultDataFilesLocation"] = defaultProperties["DefaultDataFilesLocation"] +
+                                                            Path.GetFileNameWithoutExtension(finfoOriginalFile.Name) +
+                                                            "\\";
 
-                string defaultOutputDataDirectory = (string) defaultProperties["DefaultDataFilesLocation"];
+            string defaultOutputDataDirectory = (string)defaultProperties["DefaultDataFilesLocation"];
+            ServiceTools.CheckIfDirectoryExists(defaultOutputDataDirectory);
+
+
+            Image anImage = Image.FromFile(ImageFileName);
+            ImageInfo newIInfo = new ImageInfo(anImage);
+            theLogWindow = ServiceTools.LogAText(theLogWindow,
+                "processing file " + ImageFileName + Environment.NewLine);
+            int minute = 0;
+            String dateTime = (String)newIInfo.getValueByKey("ExifDTOrig");
+            if (dateTime == null)
+            {
+                //попробуем вытащить из имени файла
+                string strDateTime = Path.GetFileName(ImageFileName);
+                strDateTime = strDateTime.Substring(4, 19);
+                dateTime = strDateTime;
+            }
 
 
 
-                Image anImage = Image.FromFile(ImageFileName);
-                ImageInfo newIInfo = new ImageInfo(anImage);
+            try
+            {
+                curDateTime = DateTimeOfString(dateTime);
                 theLogWindow = ServiceTools.LogAText(theLogWindow,
-                    "processing file " + ImageFileName + Environment.NewLine);
-                int minute = 0;
-                String dateTime = (String) newIInfo.getValueByKey("ExifDTOrig");
-                if (dateTime == null)
-                {
-                    //попробуем вытащить из имени файла
-                    string strDateTime = Path.GetFileName(ImageFileName);
-                    strDateTime = strDateTime.Substring(4, 19);
-                    dateTime = strDateTime;
-                }
-
-
-
-                try
-                {
-                    curDateTime = DateTimeOfString(dateTime);
-                    theLogWindow = ServiceTools.LogAText(theLogWindow,
-                        "picture got date/time: " + curDateTime.ToString("s"));
-                }
-                catch (Exception)
-                {
-                    theLogWindow = ServiceTools.LogAText(theLogWindow,
-                        "couldn`t get picture get date/time for file: " + Environment.NewLine + ImageFileName);
-                    return;
-                }
-                curDateTime = DateTime.SpecifyKind(curDateTime, DateTimeKind.Utc);
-
-                GPSdata neededGPSdata = new GPSdata();
-                string currPath = Path.GetDirectoryName(ImageFileName);
-                string[] xmlFileNames = Directory.GetFiles(currPath,
-                    "*" + curDateTime.ToString("s").Substring(0, 13).Replace(":", "-") + "*.xml"); // с точностью до часа
-                if (xmlFileNames.Count() > 0)
-                {
-                    List<GPSdata> lReadGPSdata = new List<GPSdata>();
-                    foreach (string xmlFileName in xmlFileNames)
-                    {
-                        Dictionary<string, object> dictSavedData = ServiceTools.ReadDictionaryFromXML(xmlFileName);
-                        //GPSdata gps = new GPSdata((string)dictSavedData["GPSdata"], GPSdatasources.CloudCamArduinoGPS);
-                        GPSdata gps =
-                            new GPSdata(new double[]
-                            {Convert.ToDouble(dictSavedData["GPSLat"]), Convert.ToDouble(dictSavedData["GPSLon"])});
-                        lReadGPSdata.Add(gps);
-                    }
-                    lReadGPSdata.Sort((gpsRecord1, gpsRecord2) =>
-                    {
-                        double dev1 = Math.Abs((gpsRecord1.dateTimeUTC - curDateTime).TotalMilliseconds);
-                        double dev2 = Math.Abs((gpsRecord2.dateTimeUTC - curDateTime).TotalMilliseconds);
-                        return (dev1 >= dev2) ? (1) : (-1);
-                    });
-                    neededGPSdata = lReadGPSdata[0];
-                    
-                    
-                }
-                else
-                {
-                    //string navFilesPath =
-                    //    "D:\\_gulevlab\\SkyImagesAnalysis_appData\\images_complete\\IOFFE\\NIKON-D80\\IOFFE-Mission34-Marina-2011\\data-meteo-nav\\";
-                    string navFilesPath = defaultProperties["IoffeMeteoNavFilesDirectory"] as string;
-                    List<IoffeVesselDualNavDataConverted> lAllNavData = new List<IoffeVesselDualNavDataConverted>();
-
-                    string[] sNavFilenames = Directory.GetFiles(navFilesPath, "*.nv2");
-                    if (sNavFilenames.Count() == 0)
-                    {
-                        theLogWindow = ServiceTools.LogAText(theLogWindow, "Не найдено файлов данных навигации", true);
-                        return;
-                    }
-                    else
-                    {
-                        foreach (string navFilename in sNavFilenames)
-                        {
-                            Tuple<DateTime, DateTime> timeSpan =
-                                IoffeVesselNavDataReader.GetNavFileDateTimeMargins(navFilename);
-                            if (timeSpan == null)
-                            {
-                                continue;
-                            }
-
-                            if ((curDateTime < timeSpan.Item1) || (curDateTime > timeSpan.Item2))
-                            {
-                                continue;
-                            }
-
-                            List<IoffeVesselDualNavDataConverted> dataHasBeenRead = IoffeVesselNavDataReader.ReadNavFile(navFilename);
-                            if (dataHasBeenRead == null)
-                            {
-                                continue;
-                            }
-                            theLogWindow = ServiceTools.LogAText(theLogWindow, "файл навигации прочитан: " + navFilename, true);
-                            Application.DoEvents();
-                            lAllNavData.AddRange(dataHasBeenRead);
-                        }
-                    }
-
-                    lAllNavData.Sort((gpsRecord1, gpsRecord2) =>
-                    {
-                        double dev1 = Math.Abs((gpsRecord1.gps.dateTimeUTC - curDateTime).TotalMilliseconds);
-                        double dev2 = Math.Abs((gpsRecord2.gps.dateTimeUTC - curDateTime).TotalMilliseconds);
-                        return (dev1 >= dev2) ? (1) : (-1);
-                    });
-                    neededGPSdata = lAllNavData[0].gps;
-                }
-
-                double lat = neededGPSdata.LatDec;
-                // double lat = 55.755826; // - Moscow
-                double lon = neededGPSdata.LonDec;
-                // double lon = 37.6173; // - Moscow
-
-
-
-
-                
-
-
-
-                SPA spaCalc = new SPA(curDateTime.Year, curDateTime.Month, curDateTime.Day, curDateTime.Hour,
-                    curDateTime.Minute, curDateTime.Second, (float) lon, (float) lat,
-                    (float) SPAConst.DeltaT(curDateTime));
-                int res = spaCalc.spa_calculate();
-                AzimuthZenithAngle sunPositionSPAext = new AzimuthZenithAngle(spaCalc.spa.azimuth,
-                    spaCalc.spa.zenith);
+                    "picture got date/time: " + curDateTime.ToString("s"));
+            }
+            catch (Exception)
+            {
                 theLogWindow = ServiceTools.LogAText(theLogWindow,
-                    "SPA ext sun position for " + curDateTime.ToString("s") + ": " + sunPositionSPAext);
+                    "couldn`t get picture get date/time for file: " + Environment.NewLine + ImageFileName);
+                return;
+            }
+            curDateTime = DateTime.SpecifyKind(curDateTime, DateTimeKind.Utc);
+
+            GPSdata neededGPSdata = new GPSdata();
+            string currPath = Path.GetDirectoryName(ImageFileName);
+            string[] xmlFileNames = Directory.GetFiles(currPath,
+                "*data*" + curDateTime.ToString("s").Substring(0, 13).Replace(":", "-") + "*.xml"); // с точностью до часа
+            if (xmlFileNames.Count() > 0)
+            {
+                List<GPSdata> lReadGPSdata = new List<GPSdata>();
+                foreach (string xmlFileName in xmlFileNames)
+                {
+                    Dictionary<string, object> dictSavedData = ServiceTools.ReadDictionaryFromXML(xmlFileName);
+                    //GPSdata gps = new GPSdata((string)dictSavedData["GPSdata"], GPSdatasources.CloudCamArduinoGPS);
+                    GPSdata gps =
+                        new GPSdata(new double[] { Convert.ToDouble(dictSavedData["GPSLat"]), Convert.ToDouble(dictSavedData["GPSLon"]) });
+                    lReadGPSdata.Add(gps);
+                }
+                lReadGPSdata.Sort((gpsRecord1, gpsRecord2) =>
+                {
+                    double dev1 = Math.Abs((gpsRecord1.dateTimeUTC - curDateTime).TotalMilliseconds);
+                    double dev2 = Math.Abs((gpsRecord2.dateTimeUTC - curDateTime).TotalMilliseconds);
+                    return (dev1 >= dev2) ? (1) : (-1);
+                });
+                neededGPSdata = lReadGPSdata[0];
 
 
-                ImageProcessing imgP = new ImageProcessing(imagetoadd, true);
-                Image<Bgr, byte> imgRes = imgP.significantMaskImageOctLined;
-                RoundData sunZenithCircle = imgP.imageRD.Copy();
-                sunZenithCircle.DRadius *= (sunPositionSPAext.ZenithAngle/90.0d);
-                imgRes.Draw(sunZenithCircle.CircleF(), new Bgr(Color.Orange), 3);
-                imgRes.Save(defaultOutputDataDirectory + Path.GetFileNameWithoutExtension(ImageFileName) +
-                            "-sun-detection-001.jpg");
-                ServiceTools.ShowPicture(imgRes, Path.GetFileNameWithoutExtension(ImageFileName));
             }
             else
             {
-                theLogWindow = ServiceTools.LogAText(theLogWindow, "Не загружено изображение для обработки!", true);
+                //string navFilesPath =
+                //    "D:\\_gulevlab\\SkyImagesAnalysis_appData\\images_complete\\IOFFE\\NIKON-D80\\IOFFE-Mission34-Marina-2011\\data-meteo-nav\\";
+                string navFilesPath = defaultProperties["IoffeMeteoNavFilesDirectory"] as string;
+                List<IoffeVesselDualNavDataConverted> lAllNavData = new List<IoffeVesselDualNavDataConverted>();
+
+                string[] sNavFilenames = Directory.GetFiles(navFilesPath, "*.nv2");
+                if (sNavFilenames.Count() == 0)
+                {
+                    theLogWindow = ServiceTools.LogAText(theLogWindow, "Не найдено файлов данных навигации", true);
+                    return;
+                }
+                else
+                {
+                    foreach (string navFilename in sNavFilenames)
+                    {
+                        Tuple<DateTime, DateTime> timeSpan =
+                            IoffeVesselNavDataReader.GetNavFileDateTimeMargins(navFilename);
+                        if (timeSpan == null)
+                        {
+                            continue;
+                        }
+
+                        if ((curDateTime < timeSpan.Item1) || (curDateTime > timeSpan.Item2))
+                        {
+                            continue;
+                        }
+
+                        List<IoffeVesselDualNavDataConverted> dataHasBeenRead = IoffeVesselNavDataReader.ReadNavFile(navFilename);
+                        if (dataHasBeenRead == null)
+                        {
+                            continue;
+                        }
+                        theLogWindow = ServiceTools.LogAText(theLogWindow, "файл навигации прочитан: " + navFilename, true);
+                        Application.DoEvents();
+                        lAllNavData.AddRange(dataHasBeenRead);
+                    }
+                }
+
+                lAllNavData.Sort((gpsRecord1, gpsRecord2) =>
+                {
+                    double dev1 = Math.Abs((gpsRecord1.gps.dateTimeUTC - curDateTime).TotalMilliseconds);
+                    double dev2 = Math.Abs((gpsRecord2.gps.dateTimeUTC - curDateTime).TotalMilliseconds);
+                    return (dev1 >= dev2) ? (1) : (-1);
+                });
+                neededGPSdata = lAllNavData[0].gps;
             }
+
+            double lat = neededGPSdata.LatDec;
+            // double lat = 55.755826; // - Moscow
+            double lon = neededGPSdata.LonDec;
+            // double lon = 37.6173; // - Moscow
+
+
+
+
+            SPA spaCalc = new SPA(curDateTime.Year, curDateTime.Month, curDateTime.Day, curDateTime.Hour,
+                curDateTime.Minute, curDateTime.Second, (float)lon, (float)lat,
+                (float)SPAConst.DeltaT(curDateTime));
+            int res = spaCalc.spa_calculate();
+            AzimuthZenithAngle sunPositionSPAext = new AzimuthZenithAngle(spaCalc.spa.azimuth,
+                spaCalc.spa.zenith);
+            theLogWindow = ServiceTools.LogAText(theLogWindow,
+                "SPA ext sun position for " + curDateTime.ToString("s") + ": " + sunPositionSPAext);
+
+
+            ImageProcessing imgP = new ImageProcessing(imagetoadd, true);
+            Image<Bgr, byte> imgRes = imgP.significantMaskImageOctLined;
+            RoundData sunZenithCircle = imgP.imageRD.Copy();
+            sunZenithCircle.DRadius *= (sunPositionSPAext.ZenithAngle / 90.0d);
+            imgRes.Draw(sunZenithCircle.CircleF(), new Bgr(Color.Orange), 3);
+            imgRes.Save(defaultOutputDataDirectory + Path.GetFileNameWithoutExtension(ImageFileName) +
+                        "-sun-detection-001.jpg");
+            ServiceTools.ShowPicture(imgRes, Path.GetFileNameWithoutExtension(ImageFileName));
         }
 
 
@@ -3348,6 +3341,29 @@ namespace SkyImagesAnalyzer
             SunElevationTest sunElTestForm = new SunElevationTest();
             sunElTestForm.defaultProperties = defaultProperties;
             sunElTestForm.Show();
+        }
+
+
+
+
+
+
+
+
+        /// <summary>
+        /// Handles the Click event of the btnAnalyzeCameraPositioning control.
+        /// Просчитывает статистику по расположению солнечного диска на изображениях с целью определения ориентации камеры относительно судна.
+        /// Для этого используются эмпирически (вручную, в файлах *-SunDiskInfo.xml) указанные данные о положении солнечного диска на снимке
+        /// и данные о положении и ориентации (GPS & heading) судна, которые дают исходные данные для рассчета азимутального и зенитного угла
+        /// расположения солнца.
+        /// Отклонение должно оказаться относительно узко распределенным и в среднем дать угол поворота оси снимков камеры относительно оси судна,
+        /// определяющей heading.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        private void btnAnalyzeCameraPositioning_Click(object sender, EventArgs e)
+        {
+
         }
     }
 
