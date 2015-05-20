@@ -9,10 +9,17 @@ namespace SolarPositioning
     /// <summary>
     /// A simple wrapper class for keeping an azimuth/zenith angle pair of values.
     /// </summary>
+    [Serializable]
     public class AzimuthZenithAngle
     {
         private double azimuth;
         private double zenithAngle;
+
+
+        public AzimuthZenithAngle()
+        {
+        }
+
 
         public AzimuthZenithAngle(double azimuth, double zenithAngle)
         {

@@ -53,7 +53,8 @@ namespace IoffeVesselDataReader
                 return null;
             }
             
-            BinaryReader reader = new BinaryReader(File.Open(InputFilename, FileMode.Open));
+
+            BinaryReader reader = new BinaryReader(File.Open(InputFilename, FileMode.Open, FileAccess.Read, FileShare.Read));
             char[] dualmode = reader.ReadChars(4);
             if (new string(dualmode) != "Dual")
             {
@@ -140,7 +141,7 @@ namespace IoffeVesselDataReader
             {
                 return null;
             }
-            BinaryReader reader = new BinaryReader(File.Open(InputFilename, FileMode.Open));
+            BinaryReader reader = new BinaryReader(File.Open(InputFilename, FileMode.Open, FileAccess.Read, FileShare.Read));
             char[] dualmode = reader.ReadChars(4);
             if (new string(dualmode) != "Dual")
             {

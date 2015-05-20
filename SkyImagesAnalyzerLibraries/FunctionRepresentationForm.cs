@@ -50,6 +50,17 @@ namespace SkyImagesAnalyzerLibraries
             currentDescription = description;
         }
 
+
+
+
+        public bool ForceFuncLimits { get; set; }
+        public double ForcedFuncMaxValue { get; set; }
+        public double ForcedFuncMinValue { get; set; }
+
+
+
+
+
         private void FunctionRepresentationForm_KeyPress(object sender, KeyPressEventArgs e)
         {
             if (e.KeyChar == 27)//escape key
@@ -65,14 +76,24 @@ namespace SkyImagesAnalyzerLibraries
             {
                 if (theRepresentingFunctions.Count > 0)
                 {
-                    double ySpaceGap = 0.2d * (dvScatterFuncValues.Max() - dvScatterFuncValues.Min());
+                    if (ForceFuncLimits)
+                    {
+                        double ySpaceGap = 0.2d * (ForcedFuncMaxValue - ForcedFuncMinValue);
 
-                    overallFuncMax = ((dvScatterFuncValues.Max() + ySpaceGap) > overallFuncMax)
-                        ? (dvScatterFuncValues.Max() + ySpaceGap)
-                        : (overallFuncMax);
-                    overallFuncMin = ((dvScatterFuncValues.Min() - ySpaceGap) < overallFuncMin)
-                        ? (dvScatterFuncValues.Min() - ySpaceGap)
-                        : (overallFuncMin);
+                        overallFuncMax = ForcedFuncMaxValue + ySpaceGap;
+                        overallFuncMin = ForcedFuncMinValue - ySpaceGap;
+                    }
+                    else
+                    {
+                        double ySpaceGap = 0.2d * (dvScatterFuncValues.Max() - dvScatterFuncValues.Min());
+
+                        overallFuncMax = ((dvScatterFuncValues.Max() + ySpaceGap) > overallFuncMax)
+                            ? (dvScatterFuncValues.Max() + ySpaceGap)
+                            : (overallFuncMax);
+                        overallFuncMin = ((dvScatterFuncValues.Min() - ySpaceGap) < overallFuncMin)
+                            ? (dvScatterFuncValues.Min() - ySpaceGap)
+                            : (overallFuncMin);
+                    }
 
                     //double xSpaceGap = 0.2d * (dvScatterXSpace.Max() - dvScatterXSpace.Min());
 
@@ -91,10 +112,20 @@ namespace SkyImagesAnalyzerLibraries
                 }
                 else
                 {
-                    double ySpaceGap = 0.2d * (dvScatterFuncValues.Max() - dvScatterFuncValues.Min());
+                    
 
-                    overallFuncMax = dvScatterFuncValues.Max() + ySpaceGap;
-                    overallFuncMin = dvScatterFuncValues.Min() - ySpaceGap;
+                    if (ForceFuncLimits)
+                    {
+                        double ySpaceGap = 0.2d * (ForcedFuncMaxValue - ForcedFuncMinValue);
+                        overallFuncMax = ForcedFuncMaxValue + ySpaceGap;
+                        overallFuncMin = ForcedFuncMinValue - ySpaceGap;
+                    }
+                    else
+                    {
+                        double ySpaceGap = 0.2d * (dvScatterFuncValues.Max() - dvScatterFuncValues.Min());
+                        overallFuncMax = dvScatterFuncValues.Max() + ySpaceGap;
+                        overallFuncMin = dvScatterFuncValues.Min() - ySpaceGap;
+                    }
 
                     //double xSpaceGap = 0.2d * (dvScatterXSpace.Max() - dvScatterXSpace.Min());
 
@@ -149,8 +180,11 @@ namespace SkyImagesAnalyzerLibraries
                 DenseVector dvFuncValues = DenseVector.Create(xValuesCount, new Func<int, double>(j => theRepresentingFunction(currentParametersList, dvXSpaceValues[j])));
                 double funcMax = dvFuncValues.Max();
                 double funcMin = dvFuncValues.Min();
-                overallFuncMax = (funcMax > overallFuncMax) ? (funcMax) : (overallFuncMax);
-                overallFuncMin = (funcMin < overallFuncMin) ? (funcMin) : (overallFuncMin);
+                if (!ForceFuncLimits)
+                {
+                    overallFuncMax = (funcMax > overallFuncMax) ? (funcMax) : (overallFuncMax);
+                    overallFuncMin = (funcMin < overallFuncMin) ? (funcMin) : (overallFuncMin);
+                }
             }
 
 

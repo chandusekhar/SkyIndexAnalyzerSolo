@@ -218,9 +218,39 @@ namespace SkyImagesAnalyzer
                 form1.dvScatterXSpace = DenseVector.OfEnumerable(dataArrayRotated.ConvertAll<double>(tpl => tpl.Item1));
                 form1.dvScatterFuncValues =
                     DenseVector.OfEnumerable(dataArrayRotated.ConvertAll<double>(tpl => tpl.Item2));
+
+                if ((rtbMinValuesLimit.Text != "") && (rtbMaxValuesLimit.Text != ""))
+                {
+                    form1.ForcedFuncMinValue = Convert.ToDouble(rtbMinValuesLimit.Text.Replace(".", ","));
+                    form1.ForcedFuncMaxValue = Convert.ToDouble(rtbMaxValuesLimit.Text.Replace(".", ","));
+                    form1.ForceFuncLimits = true;
+                }
+
+                
+                if (rbtnShowByDots.Checked)
+                {
+                    form1.scatterFuncDrawingVariant = SequencesDrawingVariants.circles;
+                }
+                else if (rbtnShowByLine.Checked)
+                {
+                    form1.scatterFuncDrawingVariant = SequencesDrawingVariants.polyline;
+                }
+                
                 form1.Show();
                 form1.Represent();
             }
+        }
+
+
+
+
+
+        private void btnOpenAsImage_Click(object sender, EventArgs e)
+        {
+            // repaint
+            RaisePaintEvent(null, null);
+            Image<Bgr, byte> currShowingImage = currImage.Copy();
+            ServiceTools.ShowPicture(currShowingImage, "");
         }
     }
 }

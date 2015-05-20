@@ -60,6 +60,10 @@ namespace SkyImagesAnalyzerLibraries
             }
         }
 
+
+
+
+
         private void btnOK_Click(object sender, EventArgs e)
         {
             this.DialogResult = DialogResult.OK;
@@ -74,7 +78,7 @@ namespace SkyImagesAnalyzerLibraries
             ThreadSafeOperations.SetText(lblTitle, ptRealPosition.ToString() + "  down  " + currMouseActionRegime, false);
 
             ptMouseDown = ptRealPosition;
-            switch (ptRealPosition.IsPointInsideCircle(sunDiskPositionAndSize))
+            switch (ptRealPosition.IsPointInsideCircle(sunDiskPositionAndSize, 10.0d))
             {
                 case -1:
                     currMouseActionRegime = MouseActionsRegime.DrawingSunDisk;

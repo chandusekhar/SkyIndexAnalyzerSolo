@@ -115,6 +115,7 @@
   <ItemGroup>
     <Compile Include="ArithmeticsOnImages.cs" />
     <Compile Include="ColorScheme.cs" />
+    <Compile Include="CommonTools.cs" />
     <Compile Include="Constants.cs" />
     <Compile Include="ContourAnalysisBasics.cs" />
     <Compile Include="Extensions.cs" />

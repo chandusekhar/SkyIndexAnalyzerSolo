@@ -35,7 +35,7 @@ namespace SkyImagesAnalyzerLibraries
             CalculateQuantiles();
         }
 
-        public HistogramDataAndProperties(DenseVector data, int countOfBins)
+        public HistogramDataAndProperties(DenseVector data, int countOfBins = 10)
         {
             dvData = (DenseVector)data.Clone();
             binsCount = countOfBins;

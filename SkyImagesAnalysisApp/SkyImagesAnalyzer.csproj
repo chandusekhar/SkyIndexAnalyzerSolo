@@ -181,6 +181,7 @@
     <Compile Include="AboutBox1.Designer.cs">
       <DependentUpon>AboutBox1.cs</DependentUpon>
     </Compile>
+    <Compile Include="CameraPositioningDataCollector.cs" />
     <Compile Include="EventsDensityAnalysisForm.cs">
       <SubType>Form</SubType>
     </Compile>

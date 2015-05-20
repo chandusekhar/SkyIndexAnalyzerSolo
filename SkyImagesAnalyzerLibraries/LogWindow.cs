@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -13,15 +14,78 @@ namespace SkyImagesAnalyzerLibraries
 {
     public partial class LogWindow : Form
     {
+        private class LinesToDisplay
+        {
+            public string textLine = "";
+            public bool appendMode = true;
+        }
+
+        private ConcurrentQueue<LinesToDisplay> cqLinesToLog = new ConcurrentQueue<LinesToDisplay>();
+        private BackgroundWorker bgwQueueOutputWorker = new BackgroundWorker();
+
+
         public LogWindow()
         {
             InitializeComponent();
+
+            bgwQueueOutputWorker.WorkerSupportsCancellation = true;
+            bgwQueueOutputWorker.DoWork += bgwQueueOutputWorker_DoWork;
+            bgwQueueOutputWorker.RunWorkerAsync();
+        }
+
+
+        void bgwQueueOutputWorker_DoWork(object sender, DoWorkEventArgs e)
+        {
+            BackgroundWorker thisWorker = sender as BackgroundWorker;
+
+            while (true)
+            {
+                if (thisWorker.CancellationPending)
+                {
+                    break;
+                }
+
+                try
+                {
+                    if (cqLinesToLog.Count > 0)
+                    {
+                        while (cqLinesToLog.Count > 0)
+                        {
+                            LinesToDisplay currLine = new LinesToDisplay();
+                            while (!cqLinesToLog.TryDequeue(out currLine))
+                            {
+                                Application.DoEvents();
+                                Thread.Sleep(0);
+                            }
+                            ThreadSafeOperations.SetTextTB(textBox1, currLine.textLine, currLine.appendMode);
+                            Application.DoEvents();
+                            Thread.Sleep(0);
+                        }
+                    }
+                    else
+                    {
+                        Application.DoEvents();
+                        Thread.Sleep(0);
+                        continue;
+                    }
+                }
+                catch (Exception)
+                {
+                    Application.DoEvents();
+                    Thread.Sleep(0);
+                    continue;
+                }
+            }
         }
 
 
         public void LogAText(string theText, bool appendMode = true)
         {
-            ThreadSafeOperations.SetTextTB(textBox1, theText + Environment.NewLine, appendMode);
+            cqLinesToLog.Enqueue(new LinesToDisplay()
+            {
+                appendMode = appendMode,
+                textLine = theText + Environment.NewLine,
+            });
         }
 
         /// <summary>
@@ -34,6 +98,7 @@ namespace SkyImagesAnalyzerLibraries
         {
             if (e.KeyChar == 27)//escape key
             {
+                bgwQueueOutputWorker.CancelAsync();
                 this.Close();
             }
         }
@@ -57,6 +122,17 @@ namespace SkyImagesAnalyzerLibraries
                 ThreadSafeOperations.SetTextTB(textBox1, "", false);
             }
         }
+
+
+
+
+        protected override void OnClosing(CancelEventArgs e)
+        {
+            bgwQueueOutputWorker.CancelAsync();
+
+            base.OnClosing(e);
+        }
+
 
 
 

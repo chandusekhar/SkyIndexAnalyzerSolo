@@ -1170,6 +1170,15 @@ namespace SkyImagesAnalyzerLibraries
 
 
 
+
+        public string HRString()
+        {
+            return "" + Math.Abs(Lat) + latHemisphere + ", " + Math.Abs(Lon) + lonHemisphere;
+        }
+
+
+
+
         private void parseGPSstring()
         {
             string[] strValues = GPSstring.Split(',');

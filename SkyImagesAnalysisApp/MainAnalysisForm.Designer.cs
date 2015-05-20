@@ -50,7 +50,7 @@
             this.button1 = new System.Windows.Forms.Button();
             this.открытьФайлToolStripMenuItem = new System.Windows.Forms.Button();
             this.обработатьToolStripMenuItem = new System.Windows.Forms.Button();
-            this.DetectEdgesButton = new System.Windows.Forms.Button();
+            this.btnMarkOctas = new System.Windows.Forms.Button();
             this.lblClassificationMethod = new System.Windows.Forms.Label();
             this.richTextBox1 = new System.Windows.Forms.RichTextBox();
             this.button2 = new System.Windows.Forms.Button();
@@ -65,18 +65,19 @@
             this.btnTestSunDetection2015 = new System.Windows.Forms.Button();
             this.lblResultTitle = new System.Windows.Forms.Label();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
-            this.rbtnSaveClustering = new System.Windows.Forms.RadioButton();
-            this.rbtnClusterizePoints = new System.Windows.Forms.RadioButton();
-            this.rbtnShowDensity = new System.Windows.Forms.RadioButton();
+            this.cbxSaveClustering = new System.Windows.Forms.CheckBox();
+            this.cbxClusterizePoints = new System.Windows.Forms.CheckBox();
+            this.cbxShowDensity = new System.Windows.Forms.CheckBox();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
             this.rbtnClassMethodGrIx = new System.Windows.Forms.RadioButton();
             this.rbtnClassMethodJapan = new System.Windows.Forms.RadioButton();
             this.rbtnClassMethodUS = new System.Windows.Forms.RadioButton();
             this.btnCalcSunPosition = new System.Windows.Forms.Button();
             this.button5 = new System.Windows.Forms.Button();
+            this.btnCollectCameraPositioningData = new System.Windows.Forms.Button();
             this.bgwProcessDirectoryOfImages = new System.ComponentModel.BackgroundWorker();
             this.bgwSunDetectionOnly = new System.ComponentModel.BackgroundWorker();
-            this.btnAnalyzeCameraPositioning = new System.Windows.Forms.Button();
+            this.cbxForceExistingSunInformation = new System.Windows.Forms.CheckBox();
             ((System.ComponentModel.ISupportInitialize)(this.trackBar1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
@@ -292,7 +293,7 @@
             this.tableLayoutPanel1.Controls.Add(this.button1, 0, 19);
             this.tableLayoutPanel1.Controls.Add(this.открытьФайлToolStripMenuItem, 0, 0);
             this.tableLayoutPanel1.Controls.Add(this.обработатьToolStripMenuItem, 2, 0);
-            this.tableLayoutPanel1.Controls.Add(this.DetectEdgesButton, 4, 0);
+            this.tableLayoutPanel1.Controls.Add(this.btnMarkOctas, 4, 0);
             this.tableLayoutPanel1.Controls.Add(this.lblClassificationMethod, 0, 13);
             this.tableLayoutPanel1.Controls.Add(this.richTextBox1, 0, 18);
             this.tableLayoutPanel1.Controls.Add(this.button2, 11, 0);
@@ -300,7 +301,7 @@
             this.tableLayoutPanel1.Controls.Add(this.button3, 4, 2);
             this.tableLayoutPanel1.Controls.Add(this.btnAbout, 14, 0);
             this.tableLayoutPanel1.Controls.Add(this.btnTest1, 4, 19);
-            this.tableLayoutPanel1.Controls.Add(this.btnProcessDirectorySI, 10, 19);
+            this.tableLayoutPanel1.Controls.Add(this.btnProcessDirectorySI, 8, 19);
             this.tableLayoutPanel1.Controls.Add(this.btnShowMedianPerc5Diagram, 7, 2);
             this.tableLayoutPanel1.Controls.Add(this.btnDensityProcessing, 4, 4);
             this.tableLayoutPanel1.Controls.Add(this.btnSortImagesByClasses, 4, 21);
@@ -309,8 +310,9 @@
             this.tableLayoutPanel1.Controls.Add(this.groupBox1, 8, 4);
             this.tableLayoutPanel1.Controls.Add(this.groupBox2, 4, 13);
             this.tableLayoutPanel1.Controls.Add(this.btnCalcSunPosition, 6, 0);
-            this.tableLayoutPanel1.Controls.Add(this.button5, 8, 0);
-            this.tableLayoutPanel1.Controls.Add(this.btnAnalyzeCameraPositioning, 9, 0);
+            this.tableLayoutPanel1.Controls.Add(this.button5, 9, 0);
+            this.tableLayoutPanel1.Controls.Add(this.btnCollectCameraPositioningData, 8, 21);
+            this.tableLayoutPanel1.Controls.Add(this.cbxForceExistingSunInformation, 7, 14);
             this.tableLayoutPanel1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tableLayoutPanel1.Location = new System.Drawing.Point(0, 0);
             this.tableLayoutPanel1.Margin = new System.Windows.Forms.Padding(0);
@@ -402,21 +404,21 @@
             this.обработатьToolStripMenuItem.UseVisualStyleBackColor = false;
             this.обработатьToolStripMenuItem.Click += new System.EventHandler(this.button2_Click_1);
             // 
-            // DetectEdgesButton
+            // btnMarkOctas
             // 
-            this.DetectEdgesButton.BackColor = System.Drawing.SystemColors.ControlLight;
-            this.tableLayoutPanel1.SetColumnSpan(this.DetectEdgesButton, 2);
-            this.DetectEdgesButton.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.DetectEdgesButton.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.DetectEdgesButton.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.DetectEdgesButton.Location = new System.Drawing.Point(376, 4);
-            this.DetectEdgesButton.Margin = new System.Windows.Forms.Padding(4);
-            this.DetectEdgesButton.Name = "DetectEdgesButton";
-            this.DetectEdgesButton.Size = new System.Drawing.Size(178, 72);
-            this.DetectEdgesButton.TabIndex = 43;
-            this.DetectEdgesButton.Text = "Разметка по октам";
-            this.DetectEdgesButton.UseVisualStyleBackColor = false;
-            this.DetectEdgesButton.Click += new System.EventHandler(this.DetectEdgesButton_Click);
+            this.btnMarkOctas.BackColor = System.Drawing.SystemColors.ControlLight;
+            this.tableLayoutPanel1.SetColumnSpan(this.btnMarkOctas, 2);
+            this.btnMarkOctas.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.btnMarkOctas.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnMarkOctas.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.btnMarkOctas.Location = new System.Drawing.Point(376, 4);
+            this.btnMarkOctas.Margin = new System.Windows.Forms.Padding(4);
+            this.btnMarkOctas.Name = "btnMarkOctas";
+            this.btnMarkOctas.Size = new System.Drawing.Size(178, 72);
+            this.btnMarkOctas.TabIndex = 43;
+            this.btnMarkOctas.Text = "Разметка по октам";
+            this.btnMarkOctas.UseVisualStyleBackColor = false;
+            this.btnMarkOctas.Click += new System.EventHandler(this.btnMarkOctas_Click);
             // 
             // lblClassificationMethod
             // 
@@ -511,7 +513,7 @@
             // btnTest1
             // 
             this.btnTest1.BackColor = System.Drawing.SystemColors.ControlLight;
-            this.tableLayoutPanel1.SetColumnSpan(this.btnTest1, 6);
+            this.tableLayoutPanel1.SetColumnSpan(this.btnTest1, 4);
             this.btnTest1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.btnTest1.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnTest1.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
@@ -519,7 +521,7 @@
             this.btnTest1.Margin = new System.Windows.Forms.Padding(0);
             this.btnTest1.Name = "btnTest1";
             this.tableLayoutPanel1.SetRowSpan(this.btnTest1, 2);
-            this.btnTest1.Size = new System.Drawing.Size(558, 64);
+            this.btnTest1.Size = new System.Drawing.Size(372, 64);
             this.btnTest1.TabIndex = 59;
             this.btnTest1.Text = "Collect statistics (5perc and Median valus over images set)";
             this.btnTest1.UseVisualStyleBackColor = false;
@@ -528,15 +530,15 @@
             // btnProcessDirectorySI
             // 
             this.btnProcessDirectorySI.BackColor = System.Drawing.SystemColors.ControlLight;
-            this.tableLayoutPanel1.SetColumnSpan(this.btnProcessDirectorySI, 5);
+            this.tableLayoutPanel1.SetColumnSpan(this.btnProcessDirectorySI, 7);
             this.btnProcessDirectorySI.Dock = System.Windows.Forms.DockStyle.Fill;
             this.btnProcessDirectorySI.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnProcessDirectorySI.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnProcessDirectorySI.Location = new System.Drawing.Point(930, 715);
+            this.btnProcessDirectorySI.Location = new System.Drawing.Point(744, 715);
             this.btnProcessDirectorySI.Margin = new System.Windows.Forms.Padding(0);
             this.btnProcessDirectorySI.Name = "btnProcessDirectorySI";
-            this.tableLayoutPanel1.SetRowSpan(this.btnProcessDirectorySI, 3);
-            this.btnProcessDirectorySI.Size = new System.Drawing.Size(478, 111);
+            this.tableLayoutPanel1.SetRowSpan(this.btnProcessDirectorySI, 2);
+            this.btnProcessDirectorySI.Size = new System.Drawing.Size(664, 64);
             this.btnProcessDirectorySI.TabIndex = 60;
             this.btnProcessDirectorySI.Text = "Обработка директории (только SkyIndex)";
             this.btnProcessDirectorySI.UseVisualStyleBackColor = false;
@@ -579,14 +581,14 @@
             // btnSortImagesByClasses
             // 
             this.btnSortImagesByClasses.BackColor = System.Drawing.SystemColors.ControlLight;
-            this.tableLayoutPanel1.SetColumnSpan(this.btnSortImagesByClasses, 6);
+            this.tableLayoutPanel1.SetColumnSpan(this.btnSortImagesByClasses, 4);
             this.btnSortImagesByClasses.Dock = System.Windows.Forms.DockStyle.Fill;
             this.btnSortImagesByClasses.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnSortImagesByClasses.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.btnSortImagesByClasses.Location = new System.Drawing.Point(375, 781);
             this.btnSortImagesByClasses.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.btnSortImagesByClasses.Name = "btnSortImagesByClasses";
-            this.btnSortImagesByClasses.Size = new System.Drawing.Size(552, 43);
+            this.btnSortImagesByClasses.Size = new System.Drawing.Size(366, 43);
             this.btnSortImagesByClasses.TabIndex = 63;
             this.btnSortImagesByClasses.Text = "Sort images by classes";
             this.btnSortImagesByClasses.UseVisualStyleBackColor = false;
@@ -625,9 +627,9 @@
             // groupBox1
             // 
             this.tableLayoutPanel1.SetColumnSpan(this.groupBox1, 3);
-            this.groupBox1.Controls.Add(this.rbtnSaveClustering);
-            this.groupBox1.Controls.Add(this.rbtnClusterizePoints);
-            this.groupBox1.Controls.Add(this.rbtnShowDensity);
+            this.groupBox1.Controls.Add(this.cbxSaveClustering);
+            this.groupBox1.Controls.Add(this.cbxClusterizePoints);
+            this.groupBox1.Controls.Add(this.cbxShowDensity);
             this.groupBox1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.groupBox1.Location = new System.Drawing.Point(747, 196);
             this.groupBox1.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
@@ -638,43 +640,42 @@
             this.groupBox1.TabIndex = 66;
             this.groupBox1.TabStop = false;
             // 
-            // rbtnSaveClustering
+            // cbxSaveClustering
             // 
-            this.rbtnSaveClustering.AutoSize = true;
-            this.rbtnSaveClustering.Font = new System.Drawing.Font("Microsoft Sans Serif", 13.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.rbtnSaveClustering.Location = new System.Drawing.Point(5, 87);
-            this.rbtnSaveClustering.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
-            this.rbtnSaveClustering.Name = "rbtnSaveClustering";
-            this.rbtnSaveClustering.Size = new System.Drawing.Size(240, 33);
-            this.rbtnSaveClustering.TabIndex = 2;
-            this.rbtnSaveClustering.Text = "and save clustering";
-            this.rbtnSaveClustering.UseVisualStyleBackColor = true;
+            this.cbxSaveClustering.AutoSize = true;
+            this.cbxSaveClustering.Checked = true;
+            this.cbxSaveClustering.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.cbxSaveClustering.Font = new System.Drawing.Font("Microsoft Sans Serif", 13.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.cbxSaveClustering.Location = new System.Drawing.Point(5, 90);
+            this.cbxSaveClustering.Name = "cbxSaveClustering";
+            this.cbxSaveClustering.Size = new System.Drawing.Size(247, 33);
+            this.cbxSaveClustering.TabIndex = 5;
+            this.cbxSaveClustering.Text = "save clustering data";
+            this.cbxSaveClustering.UseVisualStyleBackColor = true;
             // 
-            // rbtnClusterizePoints
+            // cbxClusterizePoints
             // 
-            this.rbtnClusterizePoints.AutoSize = true;
-            this.rbtnClusterizePoints.Font = new System.Drawing.Font("Microsoft Sans Serif", 13.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.rbtnClusterizePoints.Location = new System.Drawing.Point(5, 48);
-            this.rbtnClusterizePoints.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
-            this.rbtnClusterizePoints.Name = "rbtnClusterizePoints";
-            this.rbtnClusterizePoints.Size = new System.Drawing.Size(182, 33);
-            this.rbtnClusterizePoints.TabIndex = 1;
-            this.rbtnClusterizePoints.Text = "and clusterize";
-            this.rbtnClusterizePoints.UseVisualStyleBackColor = true;
+            this.cbxClusterizePoints.AutoSize = true;
+            this.cbxClusterizePoints.Checked = true;
+            this.cbxClusterizePoints.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.cbxClusterizePoints.Font = new System.Drawing.Font("Microsoft Sans Serif", 13.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.cbxClusterizePoints.Location = new System.Drawing.Point(5, 47);
+            this.cbxClusterizePoints.Name = "cbxClusterizePoints";
+            this.cbxClusterizePoints.Size = new System.Drawing.Size(265, 33);
+            this.cbxClusterizePoints.TabIndex = 4;
+            this.cbxClusterizePoints.Text = "perform clusterization";
+            this.cbxClusterizePoints.UseVisualStyleBackColor = true;
             // 
-            // rbtnShowDensity
+            // cbxShowDensity
             // 
-            this.rbtnShowDensity.AutoSize = true;
-            this.rbtnShowDensity.Checked = true;
-            this.rbtnShowDensity.Font = new System.Drawing.Font("Microsoft Sans Serif", 13.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.rbtnShowDensity.Location = new System.Drawing.Point(5, 9);
-            this.rbtnShowDensity.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
-            this.rbtnShowDensity.Name = "rbtnShowDensity";
-            this.rbtnShowDensity.Size = new System.Drawing.Size(185, 33);
-            this.rbtnShowDensity.TabIndex = 0;
-            this.rbtnShowDensity.TabStop = true;
-            this.rbtnShowDensity.Text = "show diagram";
-            this.rbtnShowDensity.UseVisualStyleBackColor = true;
+            this.cbxShowDensity.AutoSize = true;
+            this.cbxShowDensity.Font = new System.Drawing.Font("Microsoft Sans Serif", 13.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.cbxShowDensity.Location = new System.Drawing.Point(5, 10);
+            this.cbxShowDensity.Name = "cbxShowDensity";
+            this.cbxShowDensity.Size = new System.Drawing.Size(190, 33);
+            this.cbxShowDensity.TabIndex = 3;
+            this.cbxShowDensity.Text = "Show diagram";
+            this.cbxShowDensity.UseVisualStyleBackColor = true;
             // 
             // groupBox2
             // 
@@ -739,14 +740,14 @@
             // btnCalcSunPosition
             // 
             this.btnCalcSunPosition.BackColor = System.Drawing.SystemColors.ControlLight;
-            this.tableLayoutPanel1.SetColumnSpan(this.btnCalcSunPosition, 2);
+            this.tableLayoutPanel1.SetColumnSpan(this.btnCalcSunPosition, 3);
             this.btnCalcSunPosition.Dock = System.Windows.Forms.DockStyle.Fill;
             this.btnCalcSunPosition.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnCalcSunPosition.Font = new System.Drawing.Font("Microsoft Sans Serif", 13.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.btnCalcSunPosition.Location = new System.Drawing.Point(561, 2);
             this.btnCalcSunPosition.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.btnCalcSunPosition.Name = "btnCalcSunPosition";
-            this.btnCalcSunPosition.Size = new System.Drawing.Size(180, 76);
+            this.btnCalcSunPosition.Size = new System.Drawing.Size(273, 76);
             this.btnCalcSunPosition.TabIndex = 68;
             this.btnCalcSunPosition.Text = "Check sun position";
             this.btnCalcSunPosition.UseVisualStyleBackColor = false;
@@ -755,17 +756,33 @@
             // button5
             // 
             this.button5.BackColor = System.Drawing.SystemColors.ControlLight;
+            this.tableLayoutPanel1.SetColumnSpan(this.button5, 2);
             this.button5.Dock = System.Windows.Forms.DockStyle.Fill;
             this.button5.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.button5.Font = new System.Drawing.Font("Microsoft Sans Serif", 13.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.button5.Location = new System.Drawing.Point(747, 2);
+            this.button5.Location = new System.Drawing.Point(840, 2);
             this.button5.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.button5.Name = "button5";
-            this.button5.Size = new System.Drawing.Size(87, 76);
+            this.button5.Size = new System.Drawing.Size(180, 76);
             this.button5.TabIndex = 69;
             this.button5.Text = "XLS SUN";
             this.button5.UseVisualStyleBackColor = false;
             this.button5.Click += new System.EventHandler(this.button5_Click);
+            // 
+            // btnCollectCameraPositioningData
+            // 
+            this.btnCollectCameraPositioningData.BackColor = System.Drawing.SystemColors.ControlLight;
+            this.tableLayoutPanel1.SetColumnSpan(this.btnCollectCameraPositioningData, 7);
+            this.btnCollectCameraPositioningData.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.btnCollectCameraPositioningData.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnCollectCameraPositioningData.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.btnCollectCameraPositioningData.Location = new System.Drawing.Point(747, 782);
+            this.btnCollectCameraPositioningData.Name = "btnCollectCameraPositioningData";
+            this.btnCollectCameraPositioningData.Size = new System.Drawing.Size(658, 41);
+            this.btnCollectCameraPositioningData.TabIndex = 71;
+            this.btnCollectCameraPositioningData.Text = "Обработка директории (detect camera positioning)";
+            this.btnCollectCameraPositioningData.UseVisualStyleBackColor = false;
+            this.btnCollectCameraPositioningData.Click += new System.EventHandler(this.btnCollectCameraPositioningData_Click);
             // 
             // bgwProcessDirectoryOfImages
             // 
@@ -775,20 +792,18 @@
             this.bgwProcessDirectoryOfImages.ProgressChanged += new System.ComponentModel.ProgressChangedEventHandler(this.backgroundWorker2_ProgressChanged);
             this.bgwProcessDirectoryOfImages.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(this.backgroundWorker2_RunWorkerCompleted);
             // 
-            // btnAnalyzeCameraPositioning
+            // cbxForceExistingSunInformation
             // 
-            this.btnAnalyzeCameraPositioning.BackColor = System.Drawing.SystemColors.ControlLight;
-            this.tableLayoutPanel1.SetColumnSpan(this.btnAnalyzeCameraPositioning, 2);
-            this.btnAnalyzeCameraPositioning.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.btnAnalyzeCameraPositioning.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnAnalyzeCameraPositioning.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnAnalyzeCameraPositioning.Location = new System.Drawing.Point(840, 3);
-            this.btnAnalyzeCameraPositioning.Name = "btnAnalyzeCameraPositioning";
-            this.btnAnalyzeCameraPositioning.Size = new System.Drawing.Size(180, 74);
-            this.btnAnalyzeCameraPositioning.TabIndex = 70;
-            this.btnAnalyzeCameraPositioning.Text = "Analyze camera positioning";
-            this.btnAnalyzeCameraPositioning.UseVisualStyleBackColor = false;
-            this.btnAnalyzeCameraPositioning.Click += new System.EventHandler(this.btnAnalyzeCameraPositioning_Click);
+            this.cbxForceExistingSunInformation.AutoSize = true;
+            this.tableLayoutPanel1.SetColumnSpan(this.cbxForceExistingSunInformation, 8);
+            this.cbxForceExistingSunInformation.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.cbxForceExistingSunInformation.Font = new System.Drawing.Font("Microsoft Sans Serif", 13.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.cbxForceExistingSunInformation.Location = new System.Drawing.Point(654, 544);
+            this.cbxForceExistingSunInformation.Name = "cbxForceExistingSunInformation";
+            this.cbxForceExistingSunInformation.Size = new System.Drawing.Size(751, 33);
+            this.cbxForceExistingSunInformation.TabIndex = 72;
+            this.cbxForceExistingSunInformation.Text = "Force predetermined sun location information";
+            this.cbxForceExistingSunInformation.UseVisualStyleBackColor = true;
             // 
             // MainAnalysisForm
             // 
@@ -840,16 +855,16 @@
         private System.Windows.Forms.Button button4;
         private System.Windows.Forms.Label label5;
         private System.Windows.Forms.Label StatusLabel;
-        private System.Windows.Forms.ProgressBar pbUniversalProgressBar;
+        public System.Windows.Forms.ProgressBar pbUniversalProgressBar;
         private System.Windows.Forms.Label label8;
         private System.ComponentModel.BackgroundWorker bgwProcessDirectoryOfImages;
         private System.Windows.Forms.Button открытьФайлToolStripMenuItem;
         private System.Windows.Forms.Button обработатьToolStripMenuItem;
         private System.Windows.Forms.Button button1;
         private System.Windows.Forms.ToolStripMenuItem настройкиСбораДанныхToolStripMenuItem;
-        private System.Windows.Forms.Button DetectEdgesButton;
+        private System.Windows.Forms.Button btnMarkOctas;
         private System.Windows.Forms.Label lblClassificationMethod;
-        private System.Windows.Forms.RichTextBox richTextBox1;
+        public System.Windows.Forms.RichTextBox richTextBox1;
         private System.Windows.Forms.Button button2;
         public System.Windows.Forms.RadioButton rbtnClassMethodJapan;
         public System.Windows.Forms.RadioButton rbtnClassMethodUS;
@@ -867,12 +882,13 @@
         private System.Windows.Forms.Label lblResultTitle;
         private System.Windows.Forms.GroupBox groupBox1;
         private System.Windows.Forms.GroupBox groupBox2;
-        private System.Windows.Forms.RadioButton rbtnSaveClustering;
-        private System.Windows.Forms.RadioButton rbtnClusterizePoints;
-        private System.Windows.Forms.RadioButton rbtnShowDensity;
         private System.Windows.Forms.Button btnCalcSunPosition;
         private System.Windows.Forms.Button button5;
-        private System.Windows.Forms.Button btnAnalyzeCameraPositioning;
+        private System.Windows.Forms.Button btnCollectCameraPositioningData;
+        private System.Windows.Forms.CheckBox cbxShowDensity;
+        private System.Windows.Forms.CheckBox cbxSaveClustering;
+        private System.Windows.Forms.CheckBox cbxClusterizePoints;
+        private System.Windows.Forms.CheckBox cbxForceExistingSunInformation;
     }
 }
 

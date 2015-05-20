@@ -9,6 +9,7 @@ using MathNet.Numerics.LinearAlgebra.Double;
 using System.Drawing.Imaging;
 using System.Threading;
 using System.Reflection;
+using System.Xml.Serialization;
 using Emgu.CV;
 using Emgu.CV.Structure;
 using IoffeVesselDataReader;
@@ -1506,6 +1507,7 @@ namespace SkyImagesAnalyzer
                     classificator.LogWindow = theLogWindow;
                     classificator.ParentForm = this;
                     classificator.ClassificationMethod = ClassificationMethods.GrIx;
+                    classificator.forceExistingSunInformation = cbxForceExistingSunInformation.Checked;
                     classificator.isCalculatingUsingBgWorker = true;
                     classificator.SelfWorker = sender as BackgroundWorker;
                     classificator.defaultOutputDataDirectory = (string)defaultProperties["DefaultDataFilesLocation"];
@@ -1596,30 +1598,6 @@ namespace SkyImagesAnalyzer
 
 
 
-
-        static DateTime DateTimeOfString(string strDateTime)
-        {
-            // 2014:07:24 01:07:45
-            DateTime dt = new DateTime(
-                Convert.ToInt32(strDateTime.Substring(0, 4)),
-                Convert.ToInt32(strDateTime.Substring(5, 2)),
-                Convert.ToInt32(strDateTime.Substring(8, 2)),
-                Convert.ToInt32(strDateTime.Substring(11, 2)),
-                Convert.ToInt32(strDateTime.Substring(14, 2)),
-                Convert.ToInt32(strDateTime.Substring(17, 2)));
-            return dt;
-        }
-
-
-        static DateTime RoundToHour(DateTime dt)
-        {
-            long ticks = dt.Ticks + 18000000000;
-            return new DateTime(ticks - ticks % 36000000000);
-        }
-
-
-
-
         /// <summary>
         /// Handles the ProgressChanged event of the bgwProcessDirectoryOfImages.
         /// </summary>
@@ -1659,7 +1637,7 @@ namespace SkyImagesAnalyzer
 
 
 
-
+        #region obsolete trackBar4_Scroll(object sender, EventArgs e)
         //private void trackBar4_Scroll(object sender, EventArgs e)
         //{
         //    //double TrackBarLValue, TrackBarRValue;
@@ -1668,6 +1646,7 @@ namespace SkyImagesAnalyzer
         //    //ThreadSafeOperations.SetText(label10, (TrackBarLValue / 100.0).ToString() + " - " + (TrackBarRValue / 100.0).ToString(), false);
         //    //ProcessingConditionsChanged = true;
         //}
+        #endregion obsolete trackBar4_Scroll(object sender, EventArgs e)
 
 
 
@@ -1682,7 +1661,10 @@ namespace SkyImagesAnalyzer
             //ImgShow.Show();
         }
 
-        private void DetectEdgesButton_Click(object sender, EventArgs e)
+
+
+
+        private void btnMarkOctas_Click(object sender, EventArgs e)
         {
             if (imagetoadd == null)
             {
@@ -1697,15 +1679,13 @@ namespace SkyImagesAnalyzer
 
 
 
+
         private void DetectImageEdgesCircled()
         {
             ImageProcessing imp = new ImageProcessing(imagetoadd, true);
-            //imp.reportingTextBox = textBox1;
-            //imp.getImageOctLined();
             ServiceTools.FlushMemory(null, "");
             pictureBox2Bitmap = new Bitmap(imp.significantMaskImageOctLined.Bitmap);
             Image img2show = (Image)imp.significantMaskImageOctLined.Bitmap;
-            //ServiceTools.ShowPicture(img2show);
             ThreadSafeOperations.UpdatePictureBox(pictureBox2, img2show, true);
         }
 
@@ -1775,6 +1755,7 @@ namespace SkyImagesAnalyzer
             classificator.defaultOutputDataDirectory = defaultOutputDataDirectory;
             theLogWindow = ServiceTools.LogAText(theLogWindow, DateTime.Now.ToString() + Environment.NewLine, true);
             classificator.theLogWindow = theLogWindow;
+            classificator.forceExistingSunInformation = cbxForceExistingSunInformation.Checked;
 
             BackgroundWorker bgwClassifyWorker = new BackgroundWorker();
             classificator.SelfWorker = bgwClassifyWorker;
@@ -2877,23 +2858,23 @@ namespace SkyImagesAnalyzer
 
             List<PointD> lPointsList = lStatsData.ConvertAll<PointD>(statsDatum => new PointD(statsDatum.GrIxStatsMedian, statsDatum.GrIxStatsPerc5));
             EventsDensityAnalysisForm Form1 = new EventsDensityAnalysisForm(lPointsList, defaultProperties, 512);
-            if (rbtnShowDensity.Checked)
+
+
+
+            if (cbxShowDensity.Checked)
             {
                 Form1.Show();
                 Form1.RepresentDensityField3D();
             }
-            else if (rbtnClusterizePoints.Checked)
+
+            if (cbxClusterizePoints.Checked)
             {
-                Form1.Show();
-                Form1.RepresentDensityField3D();
                 Form1.Clusterize();
             }
-            else if (rbtnSaveClustering.Checked)
+
+            if (cbxSaveClustering.Checked && cbxClusterizePoints.Checked)
             {
-                Form1.Show();
-                Form1.RepresentDensityField3D();
-                Form1.Clusterize();
-                Form1.SaveClusteringData(((string)defaultProperties["DefaultDataFilesLocation"]) + "clustering");
+                Form1.SaveClusteringData(((string)defaultProperties["ClusteringXMLDataFilesLocation"]) + "clustering");
             }
         }
 
@@ -2911,8 +2892,9 @@ namespace SkyImagesAnalyzer
                 (List<SkyImageMedianPerc5Data>)
                     ServiceTools.ReadObjectFromXML(strStatsDataFilename, typeof(List<SkyImageMedianPerc5Data>));
 
-            string strDataFilesDir = ((string)defaultProperties["DefaultDataFilesLocation"]);
-            DirectoryInfo dir = new DirectoryInfo(strDataFilesDir);
+            string strClusteringDataFilesDir = ((string)defaultProperties["ClusteringXMLDataFilesLocation"]);
+            //string strDataFilesDir = ((string)defaultProperties["DefaultDataFilesLocation"]);
+            DirectoryInfo dir = new DirectoryInfo(strClusteringDataFilesDir);
 
             // получим условие на точки по умолчанию
             List<SkyImageMedianPerc5Data> lStatsData =
@@ -2930,7 +2912,7 @@ namespace SkyImagesAnalyzer
             if (!dir.Exists)
             {
                 theLogWindow = ServiceTools.LogAText(theLogWindow,
-                    "Операция не выполнена. Не найдена директория:" + Environment.NewLine + strDataFilesDir +
+                    "Операция не выполнена. Не найдена директория:" + Environment.NewLine + strClusteringDataFilesDir +
                     Environment.NewLine, true);
                 return;
             }
@@ -2939,7 +2921,8 @@ namespace SkyImagesAnalyzer
             if (fileListClusteringInfo.Length == 0)
             {
                 theLogWindow = ServiceTools.LogAText(theLogWindow,
-                    "Операция не выполнена. Не найдены описания кластеризации событий median-perc5 в директории:" + Environment.NewLine + strDataFilesDir +
+                    "Операция не выполнена. Не найдены описания кластеризации событий median-perc5 в директории:" +
+                    Environment.NewLine + strClusteringDataFilesDir +
                     Environment.NewLine, true);
                 return;
             }
@@ -3037,6 +3020,9 @@ namespace SkyImagesAnalyzer
                 bgwList.Add(null);
             }
 
+
+
+
             DoWorkEventHandler thisWorkerDoWorkHandler = delegate(object currBGWsender, DoWorkEventArgs args)
             {
                 object[] currBGWarguments = (object[])args.Argument;
@@ -3097,6 +3083,8 @@ namespace SkyImagesAnalyzer
                     currentBgwID
                 };
             };
+
+
 
 
             RunWorkerCompletedEventHandler currWorkCompletedHandler =
@@ -3218,7 +3206,7 @@ namespace SkyImagesAnalyzer
 
             try
             {
-                curDateTime = DateTimeOfString(dateTime);
+                curDateTime = CommonTools.DateTimeOfString(dateTime);
                 theLogWindow = ServiceTools.LogAText(theLogWindow,
                     "picture got date/time: " + curDateTime.ToString("s"));
             }
@@ -3304,6 +3292,9 @@ namespace SkyImagesAnalyzer
                 neededGPSdata = lAllNavData[0].gps;
             }
 
+            theLogWindow = ServiceTools.LogAText(theLogWindow, "GPS: " + neededGPSdata.HRString());
+            theLogWindow = ServiceTools.LogAText(theLogWindow, "GPS: " + neededGPSdata.ToString());
+
             double lat = neededGPSdata.LatDec;
             // double lat = 55.755826; // - Moscow
             double lon = neededGPSdata.LonDec;
@@ -3347,22 +3338,40 @@ namespace SkyImagesAnalyzer
 
 
 
-
-
-
         /// <summary>
-        /// Handles the Click event of the btnAnalyzeCameraPositioning control.
+        /// Handles the Click event of the btnCollectCameraPositioningData control.
         /// Просчитывает статистику по расположению солнечного диска на изображениях с целью определения ориентации камеры относительно судна.
         /// Для этого используются эмпирически (вручную, в файлах *-SunDiskInfo.xml) указанные данные о положении солнечного диска на снимке
         /// и данные о положении и ориентации (GPS & heading) судна, которые дают исходные данные для рассчета азимутального и зенитного угла
         /// расположения солнца.
         /// Отклонение должно оказаться относительно узко распределенным и в среднем дать угол поворота оси снимков камеры относительно оси судна,
         /// определяющей heading.
+        /// Для этого следует предварительно кластеризовать снимки в пространстве median-perc5 и использовать те,
+        /// которые попадают в кластер максимально открытого неба - нижний левый
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        private void btnAnalyzeCameraPositioning_Click(object sender, EventArgs e)
+        private CameraPositioningDataCollector collector;
+        private void btnCollectCameraPositioningData_Click(object sender, EventArgs e)
         {
+            if ((sender as Button).Text != "STOP")
+            {
+                collector = new CameraPositioningDataCollector()
+                {
+                    theLogWindow = this.theLogWindow,
+                    defaultProperties = this.defaultProperties,
+                    ParentForm = this,
+                    defaultPropertiesXMLfileName = this.defaultPropertiesXMLfileName,
+                };
+
+                collector.CollectPositioningData();
+
+                ThreadSafeOperations.ToggleButtonState(sender as Button, true, "STOP", true);
+            }
+
+            
+
+            
 
         }
     }

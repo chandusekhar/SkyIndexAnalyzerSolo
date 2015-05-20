@@ -647,6 +647,37 @@ namespace SkyImagesAnalyzerLibraries
 
 
 
+
+
+        public DenseMatrix eval(String exprString)
+        {
+            ArithmeticsOnImages aoi = new ArithmeticsOnImages();
+            //aoi.MaskImage = significantMaskImage;
+
+            Image<Gray, Byte> imageBlueChannelByte = img2process[0].Copy();
+            Image<Gray, Byte> imageGreenChannelByte = img2process[1].Copy();
+            Image<Gray, Byte> imageRedChannelByte = img2process[2].Copy();
+            imageBlueChannelByte = imageBlueChannelByte.Mul(significantMaskImageCircled);
+            imageRedChannelByte = imageRedChannelByte.Mul(significantMaskImageCircled);
+            imageGreenChannelByte = imageGreenChannelByte.Mul(significantMaskImageCircled);
+            
+            aoi.dmR = DenseMatrixFromImage(imageRedChannelByte);
+            aoi.dmG = DenseMatrixFromImage(imageBlueChannelByte);
+            aoi.dmB = DenseMatrixFromImage(imageGreenChannelByte);
+            aoi.ExprString = exprString;
+            aoi.RPNeval();
+            ServiceTools.FlushMemory();
+            if (evaluatingColorScheme != null)
+                tmpImage = evalResultColored(aoi.dmRes, significantMaskImageBinary, evaluatingColorScheme);
+            ServiceTools.FlushMemory(null, "");
+            return aoi.dmRes;
+        }
+
+
+
+
+
+
         /// <summary>
         /// Colores the densematrix data with colors from the colorscheme
         /// NOTE: the dynamic values used referring the max and min values in the DenseMatrix source
