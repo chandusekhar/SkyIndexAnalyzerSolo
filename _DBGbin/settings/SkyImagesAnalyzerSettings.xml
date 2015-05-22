@@ -14,7 +14,7 @@
   </table>
   <table>
     <key>BatchProcessingDirectory</key>
-    <value>D:\_gulevlab\SkyImagesAnalysis_appData\AI45-with-concurrent-data\input\</value>
+    <value>D:\_gulevlab\SkyImagesAnalysis_appData\AI45-with-concurrent-data\input-test\</value>
   </table>
   <table>
     <key>GermanCloudSkySeparationValue</key>
@@ -50,7 +50,7 @@
   </table>
   <table>
     <key>GrIxProcessingVerbosityLevel</key>
-    <value>0</value>
+    <value>2</value>
   </table>
   <table>
     <key>DefaultMaxImageSize</key>

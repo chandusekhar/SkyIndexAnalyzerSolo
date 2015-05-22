@@ -1735,7 +1735,7 @@ namespace SkyImagesAnalyzer
                 classificator.ParentForm = this;
                 classificator.ClassificationMethod = ClassificationMethods.GrIx;
 
-                classificator.theStdDevMarginValueDefiningSkyCloudSeparation = tunedSIMargin;
+                //classificator.theStdDevMarginValueDefiningSkyCloudSeparation = tunedSIMargin;
             }
 
             if (bgwProcessOneImage.IsBusy)
