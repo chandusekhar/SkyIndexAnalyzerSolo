@@ -1,17 +1,25 @@
 ﻿//#include <CommunicationUtils.h>
 //#include <Fat16.h>
 //#include <Fat16util.h>
-#include <DebugUtils.h>
+//#include <utility.h>
+#include <unwind-cxx.h>
+//#include <system_configuration.h>
+//#include <DebugUtils.h>
 #include <CommunicationUtils.h>
 #include <EEPROM.h>
 #include <Ethernet.h>
 #include <stdlib.h>
 #include <EthernetUdp.h>
-#include <Ethernet.h>
-#include <util.h>
+//#include <Ethernet.h>
+//#include <util.h>
 #include <SPI.h>
 #include <Wire.h>
 #include <SoftwareSerial.h>
+//#include <inc_Vector.ino>
+//#include <StandardCplusplus.h>
+//#include <string>
+//#include <vector>
+//#include <iterator>
 
 #define CurrDevID 2
 
@@ -33,6 +41,9 @@ int accel_z;
 #define RemoteBroadcastPort 4444
 //#define TCP_TX_PACKET_MAX_SIZE 64
 EthernetUDP Udp;
+
+short maxUDPMsgLength = 16;
+
 //EthernetServer ethSrv = EthernetServer(23);
 //EthernetClient ethClnt;
 bool broadcastSensorsData = false;
@@ -46,10 +57,36 @@ bool IP2sendIsSet = false;
 byte ipAddrComp[4] = { 0, 0, 0, 0 };
 
 
-String currentGPSstrBuf = "";
-String GPSstoredString = "";
+//String currentGPSstrBuf = "";
+//String GPSstoredString = "";
+
+String plusSign = String("<+>");
+String plusplusSign = String("<++>");
 
 void(*resetFunc) (void) = 0;
+
+
+
+//template<typename Data>
+//class Vector
+//{
+//	size_t d_size; // Stores no. of actually stored objects
+//	size_t d_capacity; // Stores allocated capacity
+//	Data *d_data; // Stores data
+//public:
+//	Vector() : d_size(0), d_capacity(0), d_data(0) {}; // Default constructor
+//	Vector(Vector const &other) : d_size(other.d_size), d_capacity(other.d_capacity), d_data(0) { d_data = (Data *)malloc(d_capacity*sizeof(Data)); memcpy(d_data, other.d_data, d_size*sizeof(Data)); }; // Copy constuctor
+//	~Vector() { free(d_data); }; // Destructor
+//	Vector &operator=(Vector const &other) { free(d_data); d_size = other.d_size; d_capacity = other.d_capacity; d_data = (Data *)malloc(d_capacity*sizeof(Data)); memcpy(d_data, other.d_data, d_size*sizeof(Data)); return *this; }; // Needed for memory management
+//	void push_back(Data const &x) { if (d_capacity == d_size) resize(); d_data[d_size++] = x; }; // Adds new value. If needed, allocates more space
+//	size_t size() const { return d_size; }; // Size getter
+//	Data const &operator[](size_t idx) const { return d_data[idx]; }; // Const getter
+//	Data &operator[](size_t idx) { return d_data[idx]; }; // Changeable getter
+//private:
+//	void resize() { d_capacity = d_capacity ? d_capacity * 2 : 1; Data *newdata = (Data *)malloc(d_capacity*sizeof(Data)); memcpy(newdata, d_data, d_size * sizeof(Data)); free(d_data); d_data = newdata; };// Allocates double the old space
+//};
+
+
 
 void setup()
 {
@@ -74,10 +111,12 @@ void setup()
 	Wire.begin();
 	delay(5);
 
+	
 	init_sensors();
-
-	init_GPS();
-
+	
+	// test
+	//init_GPS();
+	
 
 	String myIPstr = "my IP: ";
 	for (byte thisByte = 0; thisByte < 4; thisByte++)
@@ -92,75 +131,76 @@ void setup()
 }
 
 
-
-void init_GPS()
-{
-	pinMode(3, OUTPUT);//The default digital driver pins for the GSM and GPS mode
-	pinMode(4, OUTPUT);
-	pinMode(5, OUTPUT);
-	digitalWrite(5, HIGH);
-	delay(1500);
-	digitalWrite(5, LOW);
-
-	digitalWrite(3, LOW);//Enable GSM mode
-	digitalWrite(4, HIGH);//Disable GPS mode
-	delay(2000);
-	Serial.begin(9600);
-	delay(5000);//GPS ready
-
-	UdpBroadcastSend(String("GPS start stage 1"), false);
-	Serial.println("AT");
-	UdpBroadcastSend(String("GPS start stage 1 passed"), false);
-	delay(2000);
-
-	/*UdpBroadcastSend(String("request software version"), false);
-	Serial.println("AT+GSV");
-	UdpBroadcastSend(String("request software version passed"), false);
-	delay(1000);*/
-
-
-	//turn off SLEEP mode
-	UdpBroadcastSend(String("SLEEP mode disabling"), false);
-	Serial.println("AT+CSCLK=0");
-	UdpBroadcastSend(String("SLEEP mode disabling passed"), false);
-	delay(1000);
-
-
-	//turn on GPS power supply
-	UdpBroadcastSend(String("GPS start stage 2"), false);
-	Serial.println("AT+CGPSPWR=1");
-	UdpBroadcastSend(String("GPS start stage 2 passed"), false);
-	delay(1000);
-
-
-	/*UdpBroadcastSend(String("request CGPSOUT"), false);
-	Serial.println("AT+CGPSOUT?");
-	UdpBroadcastSend(String("request CGPSOUT passed"), false);
-	delay(1000);*/
-
-
-	// set GPGGA only NMEA strings
-	/*UdpBroadcastSend(String("GPS start stage 3"), false);
-	Serial.println("AT+CGPSOUT=255");
-	UdpBroadcastSend(String("GPS start stage 3 passed"), false);
-	delay(1000);*/
-
-	//reset GPS in autonomy mode
-	UdpBroadcastSend(String("GPS start stage 4"), false);
-	Serial.println("AT+CGPSRST=1");
-	UdpBroadcastSend(String("GPS start stage 4 passed"), false);
-	delay(1000);
-
-
-
-	digitalWrite(4, LOW);//Enable GPS mode
-	digitalWrite(3, HIGH);//Disable GSM mode
-	delay(2000);
-
-	/*String str2Send = "$GPGGA statement information: ";
-	UdpBroadcastSend(str2Send, false);*/
-}
-
+//
+//void init_GPS()
+//{
+//	//pinMode(3, OUTPUT);//The default digital driver pins for the GSM and GPS mode
+//	//pinMode(4, OUTPUT);
+//	//pinMode(5, OUTPUT);
+//	//digitalWrite(5, HIGH);
+//	//delay(1500);
+//	//digitalWrite(5, LOW);
+//
+//	//digitalWrite(3, LOW);//Enable GSM mode
+//	//digitalWrite(4, HIGH);//Disable GPS mode
+//	//delay(2000);
+//
+//	Serial.begin(9600);
+//	delay(1000);//GPS ready
+//
+//	UdpBroadcastSend(String("GPS start stage 1"), false);
+//	Serial.println("AT");
+//	UdpBroadcastSend(String("GPS start stage 1 passed"), false);
+//	delay(1000);
+//
+//	UdpBroadcastSend(String("request software version"), false);
+//	Serial.println("AT+GSV");
+//	UdpBroadcastSend(String("request software version passed"), false);
+//	delay(1000);
+//
+//
+//	//turn off SLEEP mode
+//	UdpBroadcastSend(String("SLEEP mode disabling"), false);
+//	Serial.println("AT+CSCLK=0");
+//	UdpBroadcastSend(String("SLEEP mode disabling passed"), false);
+//	delay(1000);
+//
+//
+//	//turn on GPS power supply
+//	UdpBroadcastSend(String("GPS start stage 2"), false);
+//	Serial.println("AT+CGPSPWR=1");
+//	UdpBroadcastSend(String("GPS start stage 2 passed"), false);
+//	delay(1000);
+//
+//
+//	/*UdpBroadcastSend(String("request CGPSOUT"), false);
+//	Serial.println("AT+CGPSOUT?");
+//	UdpBroadcastSend(String("request CGPSOUT passed"), false);
+//	delay(1000);*/
+//
+//
+//	// set GPGGA only NMEA strings
+//	/*UdpBroadcastSend(String("GPS start stage 3"), false);
+//	Serial.println("AT+CGPSOUT=255");
+//	UdpBroadcastSend(String("GPS start stage 3 passed"), false);
+//	delay(1000);*/
+//
+//	//reset GPS in autonomy mode
+//	UdpBroadcastSend(String("GPS start stage 4"), false);
+//	Serial.println("AT+CGPSRST=1");
+//	UdpBroadcastSend(String("GPS start stage 4 passed"), false);
+//	delay(1000);
+//
+//
+//
+//	//digitalWrite(4, LOW);//Enable GPS mode
+//	//digitalWrite(3, HIGH);//Disable GSM mode
+//	//delay(2000);
+//
+//	/*String str2Send = "$GPGGA statement information: ";
+//	UdpBroadcastSend(str2Send, false);*/
+//}
+//
 
 
 
@@ -171,6 +211,8 @@ void writeTo(int device, byte address, byte val)
 	Wire.write(val);                 // send value to write
 	Wire.endTransmission();         // end transmission
 }
+
+
 
 
 void init_sensors()
@@ -274,18 +316,18 @@ void loop()
 		}
 
 
-
-		if ((timecntr - GPSTimer >= GPSPeriod) && (broadcastSensorsData))
+		// test
+		/*if ((timecntr - GPSTimer >= GPSPeriod) && (broadcastSensorsData))
 		{
 			reportCurrentGPSdata();
 			GPSTimer = millis();
-		}
+		}*/
 
-
-		if (Serial.available() > 0)
+		
+		/*if (Serial.available() > 0)
 		{
 			serialEvent();
-		}
+		}*/
 	}
 }
 
@@ -317,25 +359,6 @@ bool getUDPmessage(char UDPstr[UDP_TX_PACKET_MAX_SIZE])
 	return true;
 }
 
-
-
-//
-//bool GetTCPmessage(char TCPstr[TCP_TX_PACKET_MAX_SIZE])
-//{
-//	char packetBuffer[TCP_TX_PACKET_MAX_SIZE];
-//	memset(&packetBuffer[0], 0, sizeof(packetBuffer));
-//
-//	ethClnt = ethSrv.available();
-//	if (ethClnt)
-//	{
-//		ethClnt.read(packetBuffer, TCP_TX_PACKET_MAX_SIZE);
-//		String s = String(packetBuffer);
-//		s.trim();
-//		s.toCharArray(TCPstr, TCP_TX_PACKET_MAX_SIZE);
-//		memset(&packetBuffer[0], 0, sizeof(packetBuffer));
-//		return true;
-//	}
-//}
 
 
 
@@ -387,17 +410,17 @@ bool performCommand(int command)
 	}
 
 
-	if (command == 7)
-	{
-		//probeGPSdata();
-		return true;
-	}
+	//if (command == 7)
+	//{
+	//	//probeGPSdata();
+	//	return true;
+	//}
 
-	if (command == 8)
+	/*if (command == 8)
 	{
 		aboutToSendSerialCommand();
 		return true;
-	}
+	}*/
 
 
 	if (command == 9)
@@ -417,12 +440,12 @@ bool performCommand(int command)
 
 
 
-void aboutToSendSerialCommand()
-{
-	UdpBroadcastSend(String("input GPS command"), true);
-	savedCommandExists = true;
-	savedCommand = 8;
-}
+//void aboutToSendSerialCommand()
+//{
+//	UdpBroadcastSend(String("input GPS command"), true);
+//	savedCommandExists = true;
+//	savedCommand = 8;
+//}
 
 
 
@@ -664,91 +687,91 @@ void reportOverallStatus()
 }
 
 
-
-void serialEvent()
-{
-	String gotSerialStr = "";
-	while (Serial.available() > 0)
-	{
-		// get the new byte:
-		char inChar = (char)Serial.read();
-
-		if (inChar == '\n')
-		{
-			// currentGPSstrBuf += gotSerialStr;
-			// ProcessGPSstring();
-			if (gotSerialStr.length() > 0)
-			{
-				UdpBroadcastSend(gotSerialStr, false);
-				gotSerialStr = "";
-				return;
-				break;
-			}
-			continue;
-		}
-		else
-		{
-			gotSerialStr += String(inChar);
-			if (gotSerialStr.length() >= 32)
-			{
-				UdpBroadcastSend(gotSerialStr, false);
-				gotSerialStr = "";
-				return;
-				break;
-			}
-		}
-	}
-
-	/*String str1 = String("Serial event at ") + millis();
-	UdpBroadcastSend(str1, true);*/
-
-	/*gotSerialStr = String("<gps>") + gotSerialStr;
-	UdpBroadcastSend(gotSerialStr, false);*/
-
-	/*currentGPSstrBuf += gotSerialStr;
-	if (currentGPSstrBuf.length() >= 128)
-	{
-	ProcessGPSstring();
-	}*/
-}
-
-
-
-void ProcessGPSstring()
-{
-	if (currentGPSstrBuf.substring(0, 7) == String("$GPGGA,"))
-	{
-		int strLen = currentGPSstrBuf.length();
-
-		if (currentGPSstrBuf.substring(strLen - 3, strLen - 2) != "*")
-		{
-			GPSstoredString = currentGPSstrBuf;
-			//UdpBroadcastSend(currentGPSstrBuf, false);
-		}
-	}
-
-	currentGPSstrBuf = "";
-}
-
-
-
-
-
-bool reportCurrentGPSdata()
-{
-	if (GPSstoredString[0])
-	{
-		if (GPSstoredString.length() >= 32)
-		{
-			GPSstoredString = GPSstoredString.substring(0, 32);
-		}
-		UdpBroadcastSend(GPSstoredString, false);
-		GPSstoredString = "";
-	}
-
-	return 1;
-}
-
+//
+//void serialEvent()
+//{
+//	String gotSerialStr = "";
+//	while (Serial.available() > 0)
+//	{
+//		// get the new byte:
+//		char inChar = (char)Serial.read();
+//
+//		if (inChar == '\n')
+//		{
+//			// currentGPSstrBuf += gotSerialStr;
+//			// ProcessGPSstring();
+//			if (gotSerialStr.length() > 0)
+//			{
+//				UdpBroadcastSend(gotSerialStr, false);
+//				gotSerialStr = "";
+//				return;
+//				break;
+//			}
+//			continue;
+//		}
+//		else
+//		{
+//			gotSerialStr += String(inChar);
+//			if (gotSerialStr.length() >= 32)
+//			{
+//				UdpBroadcastSend(gotSerialStr, false);
+//				gotSerialStr = "";
+//				return;
+//				break;
+//			}
+//		}
+//	}
+//
+//	/*String str1 = String("Serial event at ") + millis();
+//	UdpBroadcastSend(str1, true);*/
+//
+//	/*gotSerialStr = String("<gps>") + gotSerialStr;
+//	UdpBroadcastSend(gotSerialStr, false);*/
+//
+//	/*currentGPSstrBuf += gotSerialStr;
+//	if (currentGPSstrBuf.length() >= 128)
+//	{
+//	ProcessGPSstring();
+//	}*/
+//}
+//
+//
+//
+//void ProcessGPSstring()
+//{
+//	if (currentGPSstrBuf.substring(0, 7) == String("$GPGGA,"))
+//	{
+//		int strLen = currentGPSstrBuf.length();
+//
+//		if (currentGPSstrBuf.substring(strLen - 3, strLen - 2) != "*")
+//		{
+//			GPSstoredString = currentGPSstrBuf;
+//			//UdpBroadcastSend(currentGPSstrBuf, false);
+//		}
+//	}
+//
+//	currentGPSstrBuf = "";
+//}
+//
+//
+//
+//
+//
+//bool reportCurrentGPSdata()
+//{
+//	if (GPSstoredString[0])
+//	{
+//		if (GPSstoredString.length() >= 32)
+//		{
+//			GPSstoredString = GPSstoredString.substring(0, 32);
+//		}
+//		UdpBroadcastSend(GPSstoredString, false);
+//		GPSstoredString = "";
+//	}
+//
+//	return 1;
+//}
+//
 
 
 void reportCurrentIP()
@@ -768,10 +791,12 @@ void reportCurrentIP()
 
 
 
+
+
 //void SerialNote(String messageString)
 //{
-//	char CharReply[32];
-//	messageString.toCharArray(CharReply, 32);
+//	char CharReply[64];
+//	messageString.toCharArray(CharReply, 64);
 //	Serial.println(CharReply);
 //}
 
@@ -779,67 +804,25 @@ void reportCurrentIP()
 
 
 
-bool UdpBroadcastSend(String messageIn, bool replyMessage)
+
+bool UdpBroadcastSendSingleMessage(String messageIn, bool whetherOpenConn = true, bool whetherCloseConn = true)
 {
-	//short RemoteBroadcastPort = 4444;
-	short maxMsgLength = 16;
+	/*Serial.println(F("sending:"));
+	SerialNote(messageIn);*/
+
+	EthernetUDP bcstUDP;
+
+	/*if (whetherOpenConn)
+	{*/
+		Udp.stop();
+		bcstUDP.begin(localPort);
+	//}
+
 	char bcstCharArray[64];
 	memset(&bcstCharArray[0], 0, sizeof(bcstCharArray));
-	Udp.stop();
-	EthernetUDP bcstUDP;
-	bcstUDP.begin(localPort);
-	String msgRest = String(messageIn);
-	String msgSend = "";
-	bool msgSplitted = false;
-	while (msgRest.length() > maxMsgLength)
-	{
-		msgSplitted = true;
-		msgSend = CurrentDevIDString() + msgRest.substring(0, maxMsgLength);
-		msgRest = msgRest.substring(maxMsgLength);
-
-		if (replyMessage)
-		{
-			msgSend = String("<repl>") + msgSend;
-		}
-		msgSend = String("+") + msgSend + String("+");
-		
-		msgSend.toCharArray(bcstCharArray, sizeof(bcstCharArray));
-
-		if (IP2sendIsSet)
-		{
-			IPAddress theIP(ipAddrComp[0], ipAddrComp[1], ipAddrComp[2], ipAddrComp[3]);
-			bcstUDP.beginPacket(theIP, RemoteBroadcastPort);
-		}
-		else
-		{
-			IPAddress bcstIP(255, 255, 255, 255);
-			bcstUDP.beginPacket(bcstIP, RemoteBroadcastPort);
-		}
-		bcstUDP.write(bcstCharArray);
-
-		int packetSended = bcstUDP.endPacket();
-		//bcstUDP.stop();
-		//Udp.begin(localPort);
-
-		if (packetSended == 0)
-		{
-			Serial.print(F("error sending broadcast packet\n"));
-		}
-
-		memset(&bcstCharArray[0], 0, sizeof(bcstCharArray));
-	}
-	msgSend = CurrentDevIDString() + msgRest;
-	if (replyMessage)
-	{
-		msgSend = String("<repl>") + msgSend;
-	}
-	if (msgSplitted)
-	{
-		msgSend = String("+") + msgSend + String("+");
-	}
-	msgSend.toCharArray(bcstCharArray, sizeof(bcstCharArray));
 
 
+	messageIn.toCharArray(bcstCharArray, sizeof(bcstCharArray));
 	if (IP2sendIsSet)
 	{
 		IPAddress theIP(ipAddrComp[0], ipAddrComp[1], ipAddrComp[2], ipAddrComp[3]);
@@ -850,47 +833,99 @@ bool UdpBroadcastSend(String messageIn, bool replyMessage)
 		IPAddress bcstIP(255, 255, 255, 255);
 		bcstUDP.beginPacket(bcstIP, RemoteBroadcastPort);
 	}
-	bcstUDP.write(bcstCharArray);
-	int packetSended = bcstUDP.endPacket();
-	bcstUDP.stop();
-	Udp.begin(localPort);
 
-	if (packetSended == 0)
+	bcstUDP.write(bcstCharArray);
+
+	int packetSended = bcstUDP.endPacket();
+
+	
+	/*if (packetSended == 0)
 	{
 		Serial.print(F("error sending broadcast packet\n"));
-
-	}
+	}*/
+	/*else
+	{
+		Serial.println(F("sent packet successfully\n"));
+	}*/
 
 
 	memset(&bcstCharArray[0], 0, sizeof(bcstCharArray));
 
-	//messageIn = CurrentDevIDString() + messageIn;
+	//if (whetherCloseConn)
+	//{
+		bcstUDP.stop();
+		Udp.begin(localPort);
+	//}
+}
 
 
-	//String message = messageIn.substring(0, 127);
-	//messageIn.toCharArray(bcstCharArray, 128);
 
-	/*if (IP2sendIsSet)
+
+
+
+bool UdpBroadcastSend(String messageIn, bool replyMessage)
+{
+	
+	String msgRest = String(messageIn);
+
+	if (replyMessage)
 	{
-	IPAddress theIP(ipAddrComp[0], ipAddrComp[1], ipAddrComp[2], ipAddrComp[3]);
-	bcstUDP.beginPacket(theIP, RemoteBroadcastPort);
+		msgRest = String("<repl>") + msgRest;
+	}
+
+	bool multipleMessages = (msgRest.length() > maxUDPMsgLength);
+	
+	if (multipleMessages)
+	{
+		String msgBoundleID = String(millis());
+		int msgSubID = 0;
+		while (msgRest.length() > maxUDPMsgLength)
+		{
+			String msg2Send = msgRest.substring(0, maxUDPMsgLength);
+			msg2Send = CurrentDevIDString() + msg2Send;
+
+			//SerialNote(String("msgSubID = ") + String(msgSubID));
+
+			if (msgSubID == 0)
+			{
+				msg2Send = plusplusSign + String("<mid:") + msgBoundleID + String("><sub:") + String(msgSubID) + String(">") + msg2Send + plusSign;
+			}
+			else
+			{
+				msg2Send = plusSign + String("<mid:") + msgBoundleID + String("><sub:") + String(msgSubID) + String(">") + msg2Send + plusSign;
+			}
+			
+			if (msgSubID == 0)
+			{
+				UdpBroadcastSendSingleMessage(msg2Send, true, false);
+			}
+			else
+			{
+				UdpBroadcastSendSingleMessage(msg2Send, false, false);
+			}
+			
+			msgSubID++;
+
+			msgRest = msgRest.substring(maxUDPMsgLength);
+		}
+
+		//остаток
+		if (msgRest.length() > 0)
+		{
+			String msg2Send = plusSign + String("<mid:") + msgBoundleID + String("><sub:") + String(msgSubID) + String(">") + CurrentDevIDString() + msgRest + plusplusSign;
+			UdpBroadcastSendSingleMessage(msg2Send);
+		}
 	}
 	else
 	{
-	IPAddress bcstIP(255, 255, 255, 255);
-	bcstUDP.beginPacket(bcstIP, RemoteBroadcastPort);
+		msgRest = CurrentDevIDString() + msgRest;
+		UdpBroadcastSendSingleMessage(msgRest);
 	}
-	bcstUDP.write(bcstCharArray);
-	int packetSended = bcstUDP.endPacket();
-	bcstUDP.stop();
-	Udp.begin(localPort);
-
-	if (packetSended == 0)
-	{
-	Serial.print(F("error sending broadcast packet\n"));
-
-	}*/
 }
+
+
+
+
 
 
 
@@ -1001,11 +1036,11 @@ void reportFreeRam()
 
 
 
-void reportFreeRamToSerial()
-{
-	Serial.println(F("### free RAM: "));
-	Serial.println(calcFreeRAM());
-}
+//void reportFreeRamToSerial()
+//{
+//	Serial.println(F("### free RAM: "));
+//	Serial.println(calcFreeRAM());
+//}
 
 
 
@@ -1016,87 +1051,3 @@ void probeGPSdata()
 	UdpBroadcastSend(String("requesting current GPS info"), false);
 	Serial.println("AT+CGPSOUT=255");
 }
-
-
-
-
-
-/*
-bool probeGPSdata()
-{
-String GPSstrBuf = "";
-char c = 0;
-SoftwareSerial nss(GPSRXPIN, GPSTXPIN);
-long begin = millis();
-long dt = 0;
-nss.begin(9600);
-bool foundDollarSign = false;
-bool gpggaMarker = false;
-
-while (true)
-{
-dt = millis()-begin;
-if (dt > 10000)
-{
-UdpBroadcastSend(String("=== GPS timeout ==="), true);
-return false;
-}
-
-c = nss.read();
-if (c<1) continue;
-if (c == '$')
-{
-GPSstrBuf = String(c);
-if (!foundDollarSign) foundDollarSign = true;
-continue;
-}
-
-
-if ((foundDollarSign) && (!gpggaMarker))
-{
-GPSstrBuf += c;
-if (GPSstrBuf.length() == 7)
-{
-if (GPSstrBuf.startsWith(String("$GPGGA,")))
-{
-gpggaMarker = true;
-}
-else
-{
-gpggaMarker = false;
-foundDollarSign = false;
-GPSstrBuf = "";
-continue;
-}
-}
-continue;
-}
-
-
-if (c == '\n')
-{
-if (gpggaMarker)
-{
-//the end of right sentence
-break;
-}
-foundDollarSign = false;
-gpggaMarker = false;
-}
-
-if (gpggaMarker)
-{
-GPSstrBuf += String(c);
-if (GPSstrBuf.length() == 128)
-{
-break;
-}
-}
-}
-
-nss.end();
-memset(&currentGPSstrBuf[0], 0, sizeof(currentGPSstrBuf));
-GPSstrBuf.toCharArray(currentGPSstrBuf, 128);
-return true;
-}
-*/

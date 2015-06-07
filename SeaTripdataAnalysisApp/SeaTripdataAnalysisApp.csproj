@@ -47,9 +47,7 @@
     <WarningLevel>4</WarningLevel>
     <UseVSHostingProcess>false</UseVSHostingProcess>
   </PropertyGroup>
-  <PropertyGroup>
-    <NoWin32Manifest>true</NoWin32Manifest>
-  </PropertyGroup>
+  <PropertyGroup />
   <PropertyGroup>
     <StartupObject>SeaTripdataAnalysisApp.Program</StartupObject>
   </PropertyGroup>
@@ -143,6 +141,7 @@
     <ProjectReference Include="..\SkyImagesAnalyzerLibraries\SkyImagesAnalyzerLibraries.csproj">
       <Project>{7beac8e4-e53f-466a-b824-1fe69e60d114}</Project>
       <Name>SkyImagesAnalyzerLibraries</Name>
+      <Private>False</Private>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

@@ -121,6 +121,9 @@ namespace DataCollectorAutomator
 
         private static ConcurrentQueue<IncomingUDPmessageBoundle> cquArduinoUDPCatchedMessages = new ConcurrentQueue<IncomingUDPmessageBoundle>();
 
+        private static ConcurrentBag<IncomingUDPmessagesBoundlesTuple> cbArduinoMessagesTuples =
+            new ConcurrentBag<IncomingUDPmessagesBoundlesTuple>();
+
         //private int sensorsHistoryRepresentingScale = 86400;
         //private SensorsHistoryShowing currRepresentingHistory = SensorsHistoryShowing.None;
 
@@ -2097,44 +2100,102 @@ namespace DataCollectorAutomator
 
                     string bcstMessage = curMessageBoundle.udpMessage;
                     int currMessageDevID = curMessageBoundle.devID;
+                    bool whetherContinueProcessThisMessage = true;
+
+
+                    if (curMessageBoundle.isPartOfMessage)
+                    {
+                        whetherContinueProcessThisMessage = false;
+
+
+                        IncomingUDPmessagesBoundlesTuple tplSrch = null;
+                        List<IncomingUDPmessagesBoundlesTuple> currTuples =
+                            new List<IncomingUDPmessagesBoundlesTuple>(cbArduinoMessagesTuples);
+                        tplSrch =
+                            currTuples.Find(
+                                tpl => ((tpl.devID == curMessageBoundle.devID) && (tpl.mID == curMessageBoundle.mID)));
+
+                        //try
+                        //{
+                        //    tplSrch = cbArduinoMessagesTuples.First(tpl => ((tpl.devID == curMessageBoundle.devID) && (tpl.mID == curMessageBoundle.mID)));
+                        //}
+                        //catch (Exception ex)
+                        //{
+                        //    if (ex.GetType() == typeof(InvalidOperationException))
+                        //    {
+                        //        tplSrch = null;
+                        //    }
+                        //}
+
+                        if (tplSrch == null)
+                        {
+                            tplSrch = new IncomingUDPmessagesBoundlesTuple(curMessageBoundle);
+                            cbArduinoMessagesTuples.Add(tplSrch);
+                            whetherContinueProcessThisMessage = false;
+                        }
+                        else
+                        {
+                            tplSrch = tplSrch + curMessageBoundle;
+                            if (tplSrch.IsComplete)
+                            {
+                                whetherContinueProcessThisMessage = true;
+                                curMessageBoundle = tplSrch.CompleteMessage;
+                                while (!cbArduinoMessagesTuples.TryTake(out tplSrch))
+                                {
+                                    Application.DoEvents();
+                                    Thread.Sleep(0);
+                                }
+                            }
+                        }
+                    }
+
+
+                    if (!whetherContinueProcessThisMessage)
+                    {
+                        continue;
+                    }
+
+
+
+
 
                     if (curMessageBoundle.isReplyMessage)
                     {
                         //bcstMessage = bcstMessage.Substring(6, bcstMessage.Length - 6);
                         if (currMessageDevID == 1)
                         {
-                            Note("devID:" + currMessageDevID + "   |   " + bcstMessage);
+                            Note("devID:" + currMessageDevID + "   |   " + curMessageBoundle.udpMessage);
                         }
                         else if (currMessageDevID == 2)
                         {
-                            Note("devID:" + currMessageDevID + "   |   " + bcstMessage);
+                            Note("devID:" + currMessageDevID + "   |   " + curMessageBoundle.udpMessage);
                         }
                         else
                         {
-                            Note(bcstMessage);
+                            Note(curMessageBoundle.udpMessage);
                         }
                         //udpMessage = bcstMessage;
-                        replyMessage = bcstMessage;
+                        replyMessage = curMessageBoundle.udpMessage;
                         if (needsReplyOnRequest) needsReplyOnRequest = false;
                     }
-                    else if (curMessageBoundle.isErrorMessage)
-                    {
-                        if (currMessageDevID == 1)
-                        {
-                            Note("devID:" + currMessageDevID + "   |   " + "ERROR: " + bcstMessage);
-                        }
-                        else if (currMessageDevID == 2)
-                        {
-                            Note("devID:" + currMessageDevID + "   |   " + "ERROR: " + bcstMessage);
-                        }
-                        else
-                        {
-                            Note("ERROR: " + bcstMessage);
-                        }
-
-                        //udpMessage = bcstMessage;
-                    }
-                    else if (bcstMessage == "imarduino")
+                    //else if (curMessageBoundle.isErrorMessage)
+                    //{
+                    //    if (currMessageDevID == 1)
+                    //    {
+                    //        Note("devID:" + currMessageDevID + "   |   " + "ERROR: " + bcstMessage);
+                    //    }
+                    //    else if (currMessageDevID == 2)
+                    //    {
+                    //        Note("devID:" + currMessageDevID + "   |   " + "ERROR: " + bcstMessage);
+                    //    }
+                    //    else
+                    //    {
+                    //        Note("ERROR: " + bcstMessage);
+                    //    }
+                    //
+                    //    //udpMessage = bcstMessage;
+                    //}
+                    else if (curMessageBoundle.udpMessage == "imarduino")
                     {
                         if ((needsToDiscoverArduinoBoardID1) && (currMessageDevID == 1))
                         {
@@ -2159,15 +2220,15 @@ namespace DataCollectorAutomator
 
                             if (currMessageDevID > 0)
                             {
-                                NoteLog("devID:" + currMessageDevID + "   |   " + timeStampStr + bcstMessage);
+                                NoteLog("devID:" + currMessageDevID + "   |   " + timeStampStr + curMessageBoundle.udpMessage);
                             }
                             else
                             {
-                                NoteLog(timeStampStr + bcstMessage);
+                                NoteLog(timeStampStr + curMessageBoundle.udpMessage);
                             }
 
                             //quArduinoUDPCatchedMessages.Enqueue(bcstMessage);
-                            ParseBroadcastMessage(bcstMessage, currMessageDevID);
+                            ParseBroadcastMessage(curMessageBoundle.udpMessage, currMessageDevID);
                         }
                     }
                 }

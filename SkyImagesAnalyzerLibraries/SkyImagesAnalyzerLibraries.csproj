@@ -64,6 +64,7 @@
     <Reference Include="ColorMine, Version=1.1.3.0, Culture=neutral, processorArchitecture=AMD64">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\components\ColorMine\bin\x64\Release\ColorMine.dll</HintPath>
+      <Private>True</Private>
     </Reference>
     <Reference Include="Emgu.CV, Version=2.9.0.0, Culture=neutral, PublicKeyToken=7281126722ab4438, processorArchitecture=AMD64">
       <SpecificVersion>False</SpecificVersion>
@@ -334,8 +335,7 @@
     </PostBuildEvent>
   </PropertyGroup>
   <PropertyGroup>
-    <PreBuildEvent>copy D:\_gulevlab\components\ColorMine\bin\x64\Debug\ColorMine.* $(TargetDir)
-copy D:\_gulevlab\components\EmguCV-2.4.10-compiled\bin\release\x64\x64\opencv_*.* $(TargetDir)
+    <PreBuildEvent>copy D:\_gulevlab\components\EmguCV-2.4.10-compiled\bin\release\x64\x64\opencv_*.* $(TargetDir)
 copy D:\_gulevlab\components\EmguCV-2.4.10-compiled\bin\debug\x64\Emgu* $(TargetDir)</PreBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

@@ -50,7 +50,7 @@
     <OutputPath>..\_bin\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <Optimize>true</Optimize>
-    <DebugType>pdbonly</DebugType>
+    <DebugType>none</DebugType>
     <PlatformTarget>x64</PlatformTarget>
     <ErrorReport>prompt</ErrorReport>
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
@@ -60,6 +60,7 @@
     <Reference Include="ColorMine, Version=1.1.3.0, Culture=neutral, processorArchitecture=AMD64">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\components\ColorMine\bin\x64\Release\ColorMine.dll</HintPath>
+      <Private>False</Private>
     </Reference>
     <Reference Include="Emgu.CV">
       <HintPath>..\..\components\EmguCV-2.4.10-compiled\bin\debug\x64\Emgu.CV.dll</HintPath>
