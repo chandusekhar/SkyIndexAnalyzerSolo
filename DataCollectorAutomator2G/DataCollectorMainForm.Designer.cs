@@ -36,8 +36,6 @@
             this.btnFindArduino1 = new System.Windows.Forms.Button();
             this.btnStartStopBdcstListening = new System.Windows.Forms.Button();
             this.btnStartStopCollecting = new System.Windows.Forms.Button();
-            this.SearchingArduinoID1ProcessCircle = new MRG.Controls.UI.LoadingCircle();
-            this.StartStopDataCollectingWaitingCircle = new MRG.Controls.UI.LoadingCircle();
             this.btnCollectMostClose = new System.Windows.Forms.Button();
             this.btnCollectImmediately = new System.Windows.Forms.Button();
             this.label3 = new System.Windows.Forms.Label();
@@ -66,7 +64,6 @@
             this.lblAccDevAngleValueID2 = new System.Windows.Forms.Label();
             this.tbIP2ListenDevID2 = new System.Windows.Forms.TextBox();
             this.btnFindArduino2 = new System.Windows.Forms.Button();
-            this.SearchingArduinoID2ProcessCircle = new MRG.Controls.UI.LoadingCircle();
             this.lblSnapshotFilenameID1 = new System.Windows.Forms.Label();
             this.lblSnapshotFilenameID2 = new System.Windows.Forms.Label();
             this.lblGotSnapshotDateTimeID1 = new System.Windows.Forms.Label();
@@ -111,13 +108,10 @@
             this.btnSaveAccelID2 = new System.Windows.Forms.Button();
             this.Preferencies = new System.Windows.Forms.TabPage();
             this.tableLayoutPanel4 = new System.Windows.Forms.TableLayoutPanel();
-            this.ipAddrValidatingCircle2 = new MRG.Controls.UI.LoadingCircle();
             this.camshotPeriodLabel = new System.Windows.Forms.Label();
             this.tbCamShotPeriod = new System.Windows.Forms.MaskedTextBox();
-            this.camshotPeriodDataSavingCircle = new MRG.Controls.UI.LoadingCircle();
             this.camIPLabel = new System.Windows.Forms.Label();
             this.tbCamIP1 = new System.Windows.Forms.TextBox();
-            this.ipAddrValidatingCircle1 = new MRG.Controls.UI.LoadingCircle();
             this.camUNameLabel = new System.Windows.Forms.Label();
             this.tbCamUName1 = new System.Windows.Forms.TextBox();
             this.camPWDLabel = new System.Windows.Forms.Label();
@@ -134,6 +128,12 @@
             this.dataCollector = new System.ComponentModel.BackgroundWorker();
             this.accelCalibrator = new System.ComponentModel.BackgroundWorker();
             this.bgwUDPmessagesParser = new System.ComponentModel.BackgroundWorker();
+            this.SearchingArduinoID1ProcessCircle = new MRG.Controls.UI.LoadingCircle();
+            this.StartStopDataCollectingWaitingCircle = new MRG.Controls.UI.LoadingCircle();
+            this.SearchingArduinoID2ProcessCircle = new MRG.Controls.UI.LoadingCircle();
+            this.ipAddrValidatingCircle2 = new MRG.Controls.UI.LoadingCircle();
+            this.camshotPeriodDataSavingCircle = new MRG.Controls.UI.LoadingCircle();
+            this.ipAddrValidatingCircle1 = new MRG.Controls.UI.LoadingCircle();
             this.tabControl1.SuspendLayout();
             this.tabPageMain.SuspendLayout();
             this.tableLayoutPanel1.SuspendLayout();
@@ -338,45 +338,6 @@
             this.btnStartStopCollecting.Text = "Start collecting data";
             this.btnStartStopCollecting.UseVisualStyleBackColor = true;
             this.btnStartStopCollecting.Click += new System.EventHandler(this.btnStartStopCollecting_Click);
-            // 
-            // SearchingArduinoID1ProcessCircle
-            // 
-            this.SearchingArduinoID1ProcessCircle.Active = false;
-            this.SearchingArduinoID1ProcessCircle.Color = System.Drawing.Color.DarkGray;
-            this.SearchingArduinoID1ProcessCircle.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.SearchingArduinoID1ProcessCircle.InnerCircleRadius = 8;
-            this.SearchingArduinoID1ProcessCircle.Location = new System.Drawing.Point(431, 4);
-            this.SearchingArduinoID1ProcessCircle.Margin = new System.Windows.Forms.Padding(4);
-            this.SearchingArduinoID1ProcessCircle.Name = "SearchingArduinoID1ProcessCircle";
-            this.SearchingArduinoID1ProcessCircle.NumberSpoke = 24;
-            this.SearchingArduinoID1ProcessCircle.OuterCircleRadius = 9;
-            this.SearchingArduinoID1ProcessCircle.RotationSpeed = 100;
-            this.SearchingArduinoID1ProcessCircle.Size = new System.Drawing.Size(61, 31);
-            this.SearchingArduinoID1ProcessCircle.SpokeThickness = 4;
-            this.SearchingArduinoID1ProcessCircle.StylePreset = MRG.Controls.UI.LoadingCircle.StylePresets.IE7;
-            this.SearchingArduinoID1ProcessCircle.TabIndex = 75;
-            this.SearchingArduinoID1ProcessCircle.Text = "loadingCircle1";
-            this.SearchingArduinoID1ProcessCircle.Visible = false;
-            // 
-            // StartStopDataCollectingWaitingCircle
-            // 
-            this.StartStopDataCollectingWaitingCircle.Active = false;
-            this.StartStopDataCollectingWaitingCircle.Color = System.Drawing.Color.Red;
-            this.StartStopDataCollectingWaitingCircle.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.StartStopDataCollectingWaitingCircle.ForeColor = System.Drawing.Color.Red;
-            this.StartStopDataCollectingWaitingCircle.InnerCircleRadius = 8;
-            this.StartStopDataCollectingWaitingCircle.Location = new System.Drawing.Point(1203, 94);
-            this.StartStopDataCollectingWaitingCircle.Margin = new System.Windows.Forms.Padding(4);
-            this.StartStopDataCollectingWaitingCircle.Name = "StartStopDataCollectingWaitingCircle";
-            this.StartStopDataCollectingWaitingCircle.NumberSpoke = 24;
-            this.StartStopDataCollectingWaitingCircle.OuterCircleRadius = 9;
-            this.StartStopDataCollectingWaitingCircle.RotationSpeed = 100;
-            this.StartStopDataCollectingWaitingCircle.Size = new System.Drawing.Size(66, 54);
-            this.StartStopDataCollectingWaitingCircle.SpokeThickness = 4;
-            this.StartStopDataCollectingWaitingCircle.StylePreset = MRG.Controls.UI.LoadingCircle.StylePresets.IE7;
-            this.StartStopDataCollectingWaitingCircle.TabIndex = 76;
-            this.StartStopDataCollectingWaitingCircle.Text = "loadingCircle1";
-            this.StartStopDataCollectingWaitingCircle.Visible = false;
             // 
             // btnCollectMostClose
             // 
@@ -795,25 +756,6 @@
             this.btnFindArduino2.Text = "search for board ID2";
             this.btnFindArduino2.UseVisualStyleBackColor = true;
             this.btnFindArduino2.Click += new System.EventHandler(this.btnFindArduino_Click);
-            // 
-            // SearchingArduinoID2ProcessCircle
-            // 
-            this.SearchingArduinoID2ProcessCircle.Active = false;
-            this.SearchingArduinoID2ProcessCircle.Color = System.Drawing.Color.DarkGray;
-            this.SearchingArduinoID2ProcessCircle.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.SearchingArduinoID2ProcessCircle.InnerCircleRadius = 8;
-            this.SearchingArduinoID2ProcessCircle.Location = new System.Drawing.Point(431, 43);
-            this.SearchingArduinoID2ProcessCircle.Margin = new System.Windows.Forms.Padding(4);
-            this.SearchingArduinoID2ProcessCircle.Name = "SearchingArduinoID2ProcessCircle";
-            this.SearchingArduinoID2ProcessCircle.NumberSpoke = 24;
-            this.SearchingArduinoID2ProcessCircle.OuterCircleRadius = 9;
-            this.SearchingArduinoID2ProcessCircle.RotationSpeed = 100;
-            this.SearchingArduinoID2ProcessCircle.Size = new System.Drawing.Size(61, 31);
-            this.SearchingArduinoID2ProcessCircle.SpokeThickness = 4;
-            this.SearchingArduinoID2ProcessCircle.StylePreset = MRG.Controls.UI.LoadingCircle.StylePresets.IE7;
-            this.SearchingArduinoID2ProcessCircle.TabIndex = 104;
-            this.SearchingArduinoID2ProcessCircle.Text = "loadingCircle1";
-            this.SearchingArduinoID2ProcessCircle.Visible = false;
             // 
             // lblSnapshotFilenameID1
             // 
@@ -1547,24 +1489,6 @@
             this.tableLayoutPanel4.Size = new System.Drawing.Size(1273, 657);
             this.tableLayoutPanel4.TabIndex = 0;
             // 
-            // ipAddrValidatingCircle2
-            // 
-            this.ipAddrValidatingCircle2.Active = false;
-            this.ipAddrValidatingCircle2.Color = System.Drawing.Color.DarkGray;
-            this.ipAddrValidatingCircle2.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.ipAddrValidatingCircle2.InnerCircleRadius = 8;
-            this.ipAddrValidatingCircle2.Location = new System.Drawing.Point(1212, 180);
-            this.ipAddrValidatingCircle2.Margin = new System.Windows.Forms.Padding(4);
-            this.ipAddrValidatingCircle2.Name = "ipAddrValidatingCircle2";
-            this.ipAddrValidatingCircle2.NumberSpoke = 24;
-            this.ipAddrValidatingCircle2.OuterCircleRadius = 9;
-            this.ipAddrValidatingCircle2.RotationSpeed = 100;
-            this.ipAddrValidatingCircle2.Size = new System.Drawing.Size(57, 31);
-            this.ipAddrValidatingCircle2.SpokeThickness = 4;
-            this.ipAddrValidatingCircle2.StylePreset = MRG.Controls.UI.LoadingCircle.StylePresets.IE7;
-            this.ipAddrValidatingCircle2.TabIndex = 96;
-            this.ipAddrValidatingCircle2.Visible = false;
-            // 
             // camshotPeriodLabel
             // 
             this.camshotPeriodLabel.AutoSize = true;
@@ -1593,25 +1517,6 @@
             this.tbCamShotPeriod.Text = "000000";
             this.tbCamShotPeriod.TextChanged += new System.EventHandler(this.tbCamShotPeriod_TextChanged);
             // 
-            // camshotPeriodDataSavingCircle
-            // 
-            this.camshotPeriodDataSavingCircle.Active = false;
-            this.camshotPeriodDataSavingCircle.Color = System.Drawing.Color.DarkGray;
-            this.camshotPeriodDataSavingCircle.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.camshotPeriodDataSavingCircle.InnerCircleRadius = 8;
-            this.camshotPeriodDataSavingCircle.Location = new System.Drawing.Point(1212, 4);
-            this.camshotPeriodDataSavingCircle.Margin = new System.Windows.Forms.Padding(4);
-            this.camshotPeriodDataSavingCircle.Name = "camshotPeriodDataSavingCircle";
-            this.camshotPeriodDataSavingCircle.NumberSpoke = 24;
-            this.camshotPeriodDataSavingCircle.OuterCircleRadius = 9;
-            this.camshotPeriodDataSavingCircle.RotationSpeed = 100;
-            this.camshotPeriodDataSavingCircle.Size = new System.Drawing.Size(57, 31);
-            this.camshotPeriodDataSavingCircle.SpokeThickness = 4;
-            this.camshotPeriodDataSavingCircle.StylePreset = MRG.Controls.UI.LoadingCircle.StylePresets.IE7;
-            this.camshotPeriodDataSavingCircle.TabIndex = 78;
-            this.camshotPeriodDataSavingCircle.Text = "loadingCircle1";
-            this.camshotPeriodDataSavingCircle.Visible = false;
-            // 
             // camIPLabel
             // 
             this.camIPLabel.AutoSize = true;
@@ -1637,25 +1542,6 @@
             this.tbCamIP1.Size = new System.Drawing.Size(294, 30);
             this.tbCamIP1.TabIndex = 80;
             this.tbCamIP1.TextChanged += new System.EventHandler(this.tbCamIP_TextChanged);
-            // 
-            // ipAddrValidatingCircle1
-            // 
-            this.ipAddrValidatingCircle1.Active = false;
-            this.ipAddrValidatingCircle1.Color = System.Drawing.Color.DarkGray;
-            this.ipAddrValidatingCircle1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.ipAddrValidatingCircle1.InnerCircleRadius = 8;
-            this.ipAddrValidatingCircle1.Location = new System.Drawing.Point(1212, 43);
-            this.ipAddrValidatingCircle1.Margin = new System.Windows.Forms.Padding(4);
-            this.ipAddrValidatingCircle1.Name = "ipAddrValidatingCircle1";
-            this.ipAddrValidatingCircle1.NumberSpoke = 24;
-            this.ipAddrValidatingCircle1.OuterCircleRadius = 9;
-            this.ipAddrValidatingCircle1.RotationSpeed = 100;
-            this.ipAddrValidatingCircle1.Size = new System.Drawing.Size(57, 31);
-            this.ipAddrValidatingCircle1.SpokeThickness = 4;
-            this.ipAddrValidatingCircle1.StylePreset = MRG.Controls.UI.LoadingCircle.StylePresets.IE7;
-            this.ipAddrValidatingCircle1.TabIndex = 81;
-            this.ipAddrValidatingCircle1.Text = "loadingCircle1";
-            this.ipAddrValidatingCircle1.Visible = false;
             // 
             // camUNameLabel
             // 
@@ -1815,18 +1701,134 @@
             this.bgwUDPmessagesParser.WorkerSupportsCancellation = true;
             this.bgwUDPmessagesParser.DoWork += new System.ComponentModel.DoWorkEventHandler(this.bgwUDPmessagesParser_DoWork);
             // 
+            // SearchingArduinoID1ProcessCircle
+            // 
+            this.SearchingArduinoID1ProcessCircle.Active = false;
+            this.SearchingArduinoID1ProcessCircle.Color = System.Drawing.Color.DarkGray;
+            this.SearchingArduinoID1ProcessCircle.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.SearchingArduinoID1ProcessCircle.InnerCircleRadius = 8;
+            this.SearchingArduinoID1ProcessCircle.Location = new System.Drawing.Point(431, 4);
+            this.SearchingArduinoID1ProcessCircle.Margin = new System.Windows.Forms.Padding(4);
+            this.SearchingArduinoID1ProcessCircle.Name = "SearchingArduinoID1ProcessCircle";
+            this.SearchingArduinoID1ProcessCircle.NumberSpoke = 24;
+            this.SearchingArduinoID1ProcessCircle.OuterCircleRadius = 9;
+            this.SearchingArduinoID1ProcessCircle.RotationSpeed = 100;
+            this.SearchingArduinoID1ProcessCircle.Size = new System.Drawing.Size(61, 31);
+            this.SearchingArduinoID1ProcessCircle.SpokeThickness = 4;
+            this.SearchingArduinoID1ProcessCircle.StylePreset = MRG.Controls.UI.LoadingCircle.StylePresets.IE7;
+            this.SearchingArduinoID1ProcessCircle.TabIndex = 75;
+            this.SearchingArduinoID1ProcessCircle.Text = "loadingCircle1";
+            this.SearchingArduinoID1ProcessCircle.Visible = false;
+            // 
+            // StartStopDataCollectingWaitingCircle
+            // 
+            this.StartStopDataCollectingWaitingCircle.Active = false;
+            this.StartStopDataCollectingWaitingCircle.Color = System.Drawing.Color.Red;
+            this.StartStopDataCollectingWaitingCircle.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.StartStopDataCollectingWaitingCircle.ForeColor = System.Drawing.Color.Red;
+            this.StartStopDataCollectingWaitingCircle.InnerCircleRadius = 8;
+            this.StartStopDataCollectingWaitingCircle.Location = new System.Drawing.Point(1203, 94);
+            this.StartStopDataCollectingWaitingCircle.Margin = new System.Windows.Forms.Padding(4);
+            this.StartStopDataCollectingWaitingCircle.Name = "StartStopDataCollectingWaitingCircle";
+            this.StartStopDataCollectingWaitingCircle.NumberSpoke = 24;
+            this.StartStopDataCollectingWaitingCircle.OuterCircleRadius = 9;
+            this.StartStopDataCollectingWaitingCircle.RotationSpeed = 100;
+            this.StartStopDataCollectingWaitingCircle.Size = new System.Drawing.Size(66, 54);
+            this.StartStopDataCollectingWaitingCircle.SpokeThickness = 4;
+            this.StartStopDataCollectingWaitingCircle.StylePreset = MRG.Controls.UI.LoadingCircle.StylePresets.IE7;
+            this.StartStopDataCollectingWaitingCircle.TabIndex = 76;
+            this.StartStopDataCollectingWaitingCircle.Text = "loadingCircle1";
+            this.StartStopDataCollectingWaitingCircle.Visible = false;
+            // 
+            // SearchingArduinoID2ProcessCircle
+            // 
+            this.SearchingArduinoID2ProcessCircle.Active = false;
+            this.SearchingArduinoID2ProcessCircle.Color = System.Drawing.Color.DarkGray;
+            this.SearchingArduinoID2ProcessCircle.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.SearchingArduinoID2ProcessCircle.InnerCircleRadius = 8;
+            this.SearchingArduinoID2ProcessCircle.Location = new System.Drawing.Point(431, 43);
+            this.SearchingArduinoID2ProcessCircle.Margin = new System.Windows.Forms.Padding(4);
+            this.SearchingArduinoID2ProcessCircle.Name = "SearchingArduinoID2ProcessCircle";
+            this.SearchingArduinoID2ProcessCircle.NumberSpoke = 24;
+            this.SearchingArduinoID2ProcessCircle.OuterCircleRadius = 9;
+            this.SearchingArduinoID2ProcessCircle.RotationSpeed = 100;
+            this.SearchingArduinoID2ProcessCircle.Size = new System.Drawing.Size(61, 31);
+            this.SearchingArduinoID2ProcessCircle.SpokeThickness = 4;
+            this.SearchingArduinoID2ProcessCircle.StylePreset = MRG.Controls.UI.LoadingCircle.StylePresets.IE7;
+            this.SearchingArduinoID2ProcessCircle.TabIndex = 104;
+            this.SearchingArduinoID2ProcessCircle.Text = "loadingCircle1";
+            this.SearchingArduinoID2ProcessCircle.Visible = false;
+            // 
+            // ipAddrValidatingCircle2
+            // 
+            this.ipAddrValidatingCircle2.Active = false;
+            this.ipAddrValidatingCircle2.Color = System.Drawing.Color.DarkGray;
+            this.ipAddrValidatingCircle2.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.ipAddrValidatingCircle2.InnerCircleRadius = 8;
+            this.ipAddrValidatingCircle2.Location = new System.Drawing.Point(1212, 180);
+            this.ipAddrValidatingCircle2.Margin = new System.Windows.Forms.Padding(4);
+            this.ipAddrValidatingCircle2.Name = "ipAddrValidatingCircle2";
+            this.ipAddrValidatingCircle2.NumberSpoke = 24;
+            this.ipAddrValidatingCircle2.OuterCircleRadius = 9;
+            this.ipAddrValidatingCircle2.RotationSpeed = 100;
+            this.ipAddrValidatingCircle2.Size = new System.Drawing.Size(57, 31);
+            this.ipAddrValidatingCircle2.SpokeThickness = 4;
+            this.ipAddrValidatingCircle2.StylePreset = MRG.Controls.UI.LoadingCircle.StylePresets.IE7;
+            this.ipAddrValidatingCircle2.TabIndex = 96;
+            this.ipAddrValidatingCircle2.Visible = false;
+            // 
+            // camshotPeriodDataSavingCircle
+            // 
+            this.camshotPeriodDataSavingCircle.Active = false;
+            this.camshotPeriodDataSavingCircle.Color = System.Drawing.Color.DarkGray;
+            this.camshotPeriodDataSavingCircle.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.camshotPeriodDataSavingCircle.InnerCircleRadius = 8;
+            this.camshotPeriodDataSavingCircle.Location = new System.Drawing.Point(1212, 4);
+            this.camshotPeriodDataSavingCircle.Margin = new System.Windows.Forms.Padding(4);
+            this.camshotPeriodDataSavingCircle.Name = "camshotPeriodDataSavingCircle";
+            this.camshotPeriodDataSavingCircle.NumberSpoke = 24;
+            this.camshotPeriodDataSavingCircle.OuterCircleRadius = 9;
+            this.camshotPeriodDataSavingCircle.RotationSpeed = 100;
+            this.camshotPeriodDataSavingCircle.Size = new System.Drawing.Size(57, 31);
+            this.camshotPeriodDataSavingCircle.SpokeThickness = 4;
+            this.camshotPeriodDataSavingCircle.StylePreset = MRG.Controls.UI.LoadingCircle.StylePresets.IE7;
+            this.camshotPeriodDataSavingCircle.TabIndex = 78;
+            this.camshotPeriodDataSavingCircle.Text = "loadingCircle1";
+            this.camshotPeriodDataSavingCircle.Visible = false;
+            // 
+            // ipAddrValidatingCircle1
+            // 
+            this.ipAddrValidatingCircle1.Active = false;
+            this.ipAddrValidatingCircle1.Color = System.Drawing.Color.DarkGray;
+            this.ipAddrValidatingCircle1.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.ipAddrValidatingCircle1.InnerCircleRadius = 8;
+            this.ipAddrValidatingCircle1.Location = new System.Drawing.Point(1212, 43);
+            this.ipAddrValidatingCircle1.Margin = new System.Windows.Forms.Padding(4);
+            this.ipAddrValidatingCircle1.Name = "ipAddrValidatingCircle1";
+            this.ipAddrValidatingCircle1.NumberSpoke = 24;
+            this.ipAddrValidatingCircle1.OuterCircleRadius = 9;
+            this.ipAddrValidatingCircle1.RotationSpeed = 100;
+            this.ipAddrValidatingCircle1.Size = new System.Drawing.Size(57, 31);
+            this.ipAddrValidatingCircle1.SpokeThickness = 4;
+            this.ipAddrValidatingCircle1.StylePreset = MRG.Controls.UI.LoadingCircle.StylePresets.IE7;
+            this.ipAddrValidatingCircle1.TabIndex = 81;
+            this.ipAddrValidatingCircle1.Text = "loadingCircle1";
+            this.ipAddrValidatingCircle1.Visible = false;
+            // 
             // DataCollectorMainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1289, 694);
             this.Controls.Add(this.tabControl1);
+            this.KeyPreview = true;
             this.Margin = new System.Windows.Forms.Padding(4);
             this.Name = "DataCollectorMainForm";
             this.Text = "Data collector";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.DataCollectorMainForm_FormClosing);
             this.Load += new System.EventHandler(this.DataCollectorMainForm_Load);
             this.Paint += new System.Windows.Forms.PaintEventHandler(this.DataCollectorMainForm_Paint);
+            this.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.DataCollectorMainForm_KeyPress);
             this.tabControl1.ResumeLayout(false);
             this.tabPageMain.ResumeLayout(false);
             this.tableLayoutPanel1.ResumeLayout(false);

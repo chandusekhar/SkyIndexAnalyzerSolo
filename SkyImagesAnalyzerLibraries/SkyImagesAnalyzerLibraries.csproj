@@ -63,8 +63,7 @@
   <ItemGroup>
     <Reference Include="ColorMine, Version=1.1.3.0, Culture=neutral, processorArchitecture=AMD64">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\components\ColorMine\bin\x64\Debug\ColorMine.dll</HintPath>
-      <Private>False</Private>
+      <HintPath>..\..\components\ColorMine\bin\x64\Release\ColorMine.dll</HintPath>
     </Reference>
     <Reference Include="Emgu.CV, Version=2.9.0.0, Culture=neutral, PublicKeyToken=7281126722ab4438, processorArchitecture=AMD64">
       <SpecificVersion>False</SpecificVersion>

@@ -16,7 +16,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="SensorsCollecting2G.ino" />
-    <None Include="SensorsCollecting2G-draft.ino" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Visual Micro\.SensorsCollecting2G.vsarduino.h">

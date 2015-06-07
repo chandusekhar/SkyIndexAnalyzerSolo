@@ -140,5 +140,13 @@ namespace SkyImagesAnalyzerLibraries
         {
             get { return textBox1.Lines.Length; }
         }
+
+
+
+
+        private void btnClear_Click(object sender, EventArgs e)
+        {
+            ClearLog(0);
+        }
     }
 }

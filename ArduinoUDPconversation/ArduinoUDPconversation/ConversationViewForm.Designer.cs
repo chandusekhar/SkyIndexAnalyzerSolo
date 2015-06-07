@@ -400,11 +400,13 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1400, 858);
             this.Controls.Add(this.tableLayoutPanel1);
+            this.KeyPreview = true;
             this.Margin = new System.Windows.Forms.Padding(4);
             this.Name = "ArduinoConversationForm";
             this.Text = "Arduino conversation";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.Form1_FormClosing);
             this.Load += new System.EventHandler(this.Form1_Load);
+            this.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.ArduinoConversationForm_KeyPress);
             this.tableLayoutPanel1.ResumeLayout(false);
             this.tableLayoutPanel1.PerformLayout();
             this.ResumeLayout(false);

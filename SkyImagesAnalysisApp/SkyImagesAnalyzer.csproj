@@ -244,6 +244,10 @@
       <DependentUpon>SunElevationTest.cs</DependentUpon>
     </EmbeddedResource>
     <None Include="app.config" />
+    <None Include="bw.rgb">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="GMT_gray.rgb" />
     <None Include="matlab_jet.rgb">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

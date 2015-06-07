@@ -104,18 +104,18 @@
     <Compile Include="DataSocketReader.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Form1.cs">
+    <Compile Include="ConversationViewForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Form1.Designer.cs">
-      <DependentUpon>Form1.cs</DependentUpon>
+    <Compile Include="ConversationViewForm.Designer.cs">
+      <DependentUpon>ConversationViewForm.cs</DependentUpon>
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Settings.cs" />
     <Compile Include="UdpState.cs" />
-    <EmbeddedResource Include="Form1.resx">
-      <DependentUpon>Form1.cs</DependentUpon>
+    <EmbeddedResource Include="ConversationViewForm.resx">
+      <DependentUpon>ConversationViewForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
@@ -143,6 +143,9 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="arduino_icon.ico" />
+    <Content Include="settings\ArduinoUDPconversationAppGeneralSettings2G.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\SkyImagesAnalyzerLibraries\SkyImagesAnalyzerLibraries.csproj">
@@ -151,6 +154,7 @@
       <Private>False</Private>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

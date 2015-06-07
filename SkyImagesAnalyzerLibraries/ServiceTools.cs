@@ -240,6 +240,8 @@ namespace SkyImagesAnalyzerLibraries
 
         public static LogWindow LogAText(LogWindow logWindow = null, string theText = "", bool appendMode = true)
         {
+            DateTime dt = DateTime.Now;
+            string strDT = dt.ToString("s");
             LogWindow theWindow = logWindow;
             if ((theWindow == null) || (theWindow.IsDisposed))
             {
@@ -249,7 +251,8 @@ namespace SkyImagesAnalyzerLibraries
 
             Type theType = theWindow.GetType();
             MethodInfo methodInfo = theType.GetMethod("LogAText");
-            object[] parametersArray = new object[] { theText, appendMode };
+            string textToShow = strDT + " : " + theText;
+            object[] parametersArray = new object[] { textToShow, appendMode };
             methodInfo.Invoke(theWindow, parametersArray);
 
             return theWindow;

@@ -14,7 +14,7 @@
   </table>
   <table>
     <key>BatchProcessingDirectory</key>
-    <value>D:\_gulevlab\SkyImagesAnalysis_appData\AI45-with-concurrent-data\input-test\</value>
+    <value>D:\_gulevlab\SkyImagesAnalysis_appData\AI45-ID1-SunnyCluster-sun-positioning-processing\</value>
   </table>
   <table>
     <key>GermanCloudSkySeparationValue</key>
@@ -37,6 +37,10 @@
     <value>4</value>
   </table>
   <table>
+    <key>MaxConcurrentFilesProcessingCount</key>
+    <value>4</value>
+  </table>
+  <table>
     <key>GrIxSunDetectionDesiredSunAreaPartial</key>
     <value>0,01</value>
   </table>
@@ -50,7 +54,7 @@
   </table>
   <table>
     <key>GrIxProcessingVerbosityLevel</key>
-    <value>2</value>
+    <value>0</value>
   </table>
   <table>
     <key>DefaultMaxImageSize</key>
@@ -62,7 +66,7 @@
   </table>
   <table>
     <key>DefaultDataFilesLocation</key>
-    <value>D:\_gulevlab\SkyImagesAnalysis_appData\AI45-with-concurrent-data\output\</value>
+    <value>D:\_gulevlab\SkyImagesAnalysis_appData\AI45-ID1-SunnyCluster-sun-positioning-processing\output\</value>
   </table>
   <table>
     <key>GrIxDefaultSkyCloudMarginWithoutSun</key>

@@ -15,6 +15,9 @@ namespace SkyImagesAnalyzerLibraries
         public List<PointD> lPointsArray = new List<PointD>();
         public int spaceDiscretization = 100;
         public DenseMatrix dmDensityMesh = null;
+
+        public Dictionary<string, object> defaultProperties = null;
+
         //public DenseMatrix dmDensityMeshXcoord = null;
         //public DenseMatrix dmDensityMeshYcoord = null;
 
@@ -112,6 +115,7 @@ namespace SkyImagesAnalyzerLibraries
             }
 
             ImageConditionAndDataRepresentingForm imgForm = new ImageConditionAndDataRepresentingForm(currHeatMapData, "data density");
+            imgForm.defaultProperties = defaultProperties;
             imgForm.Show();
         }
 

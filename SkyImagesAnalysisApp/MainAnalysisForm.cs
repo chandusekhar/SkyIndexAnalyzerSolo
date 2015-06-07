@@ -2786,7 +2786,8 @@ namespace SkyImagesAnalyzer
             //    lStatsDataObj.ConvertAll<SkyImageMedianPerc5Data>(obj => (SkyImageMedianPerc5Data)obj);
 
             List<PointD> lPointsList = lStatsData.ConvertAll<PointD>(statsDatum => new PointD(statsDatum.GrIxStatsMedian, statsDatum.GrIxStatsPerc5));
-            HeatMap hm = new HeatMap(lPointsList, 500);
+            HeatMap hm = new HeatMap(lPointsList, 200);
+            hm.defaultProperties = defaultProperties;
             hm.SetEqualMeasures();
             hm.SmoothDensityField(StandardConvolutionKernels.gauss);
             //hm.RepresentHeatMap();
@@ -3351,10 +3352,10 @@ namespace SkyImagesAnalyzer
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        private CameraPositioningDataCollector collector;
+        private CameraPositioningDataCollector collector = null;
         private void btnCollectCameraPositioningData_Click(object sender, EventArgs e)
         {
-            if ((sender as Button).Text != "STOP")
+            if ((collector == null) || (!collector.IsBusy))
             {
                 collector = new CameraPositioningDataCollector()
                 {
@@ -3364,15 +3365,15 @@ namespace SkyImagesAnalyzer
                     defaultPropertiesXMLfileName = this.defaultPropertiesXMLfileName,
                 };
 
-                collector.CollectPositioningData();
-
                 ThreadSafeOperations.ToggleButtonState(sender as Button, true, "STOP", true);
+
+                collector.CollectPositioningData();
             }
-
-            
-
-            
-
+            else
+            {
+                collector.StopProcessing();
+                ThreadSafeOperations.ToggleButtonState(sender as Button, true, "Обработка директории (detect camera positioning)", false);
+            }
         }
     }
 

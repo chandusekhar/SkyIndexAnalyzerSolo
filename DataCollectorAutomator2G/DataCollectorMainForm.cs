@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -118,7 +119,7 @@ namespace DataCollectorAutomator
         private string strTotalBcstLog = "";
         private bool showTotalBcstLog = false;
 
-        private static Queue<IncomingUDPmessageBoundle> quArduinoUDPCatchedMessages = new Queue<IncomingUDPmessageBoundle>();
+        private static ConcurrentQueue<IncomingUDPmessageBoundle> cquArduinoUDPCatchedMessages = new ConcurrentQueue<IncomingUDPmessageBoundle>();
 
         //private int sensorsHistoryRepresentingScale = 86400;
         //private SensorsHistoryShowing currRepresentingHistory = SensorsHistoryShowing.None;
@@ -488,7 +489,7 @@ namespace DataCollectorAutomator
 
                     if (bcstMessage != "")
                     {
-                        quArduinoUDPCatchedMessages.Enqueue(new IncomingUDPmessageBoundle(remoteSktAddr, bcstMessage));
+                        cquArduinoUDPCatchedMessages.Enqueue(new IncomingUDPmessageBoundle(remoteSktAddr, bcstMessage));
 
                         recievedUDPPacketsCounter++;
 
@@ -2062,22 +2063,36 @@ namespace DataCollectorAutomator
 
             while (true)
             {
-                if (selfWorker.CancellationPending && quArduinoUDPCatchedMessages.Count == 0)
+                if (selfWorker.CancellationPending && cquArduinoUDPCatchedMessages.Count == 0)
                 {
                     break;
                 }
 
-                if (quArduinoUDPCatchedMessages.Count == 0)
+                if (cquArduinoUDPCatchedMessages.Count == 0)
                 {
                     Application.DoEvents();
                     Thread.Sleep(0);
                     continue;
                 }
 
-                if (quArduinoUDPCatchedMessages.Count > 0)
+                if (cquArduinoUDPCatchedMessages.Count > 0)
                 {
-                    IncomingUDPmessageBoundle curMessageBoundle = quArduinoUDPCatchedMessages.Dequeue();
 
+                    IncomingUDPmessageBoundle curMessageBoundle = null;
+                    while (true)
+                    {
+                        if (cquArduinoUDPCatchedMessages.TryDequeue(out curMessageBoundle))
+                        {
+                            break;
+                        }
+                        else
+                        {
+                            Application.DoEvents();
+                            Thread.Sleep(0);
+                            continue;
+                        }
+                    }
+                    
                     if (curMessageBoundle == null) continue;
 
                     string bcstMessage = curMessageBoundle.udpMessage;
@@ -2212,6 +2227,14 @@ namespace DataCollectorAutomator
             if (currCaughtImageID2 != null)
             {
                 ThreadSafeOperations.UpdatePictureBox(pbThumbPreviewCam2, currCaughtImageID2.Bitmap, true);
+            }
+        }
+
+        private void DataCollectorMainForm_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            if (e.KeyChar == 27)//escape key
+            {
+                this.Close();
             }
         }
 

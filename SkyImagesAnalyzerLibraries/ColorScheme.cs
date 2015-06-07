@@ -29,10 +29,27 @@ namespace SkyImagesAnalyzerLibraries
                 fullFilename = Directory.GetCurrentDirectory() + "\\" + "matlab_jet.rgb";
             }
 
+            string depth = "byte";
+            double multiplier = 1.0d;
+
             String[] lines = File.ReadAllLines(fullFilename);
             foreach (String line in lines)
             {
-                if (!startedProcessColors && (line[0] == '#')) { startedProcessColors = true; continue; }
+                if (line.Substring(0, 6) == "depth=")
+                {
+                    //depth=double
+                    //depth=byte
+                    //
+                    depth = line.Substring(6);
+                    if (depth == "double")
+                    {
+                        multiplier = 255.0d;
+                    }
+                }
+                if (!startedProcessColors && (line[0] == '#'))
+                {
+                    startedProcessColors = true; continue;
+                }
                 if (!startedProcessColors) continue;
 
                 String str = line.ToString();
@@ -41,11 +58,31 @@ namespace SkyImagesAnalyzerLibraries
 
 
                 String[] fields = str.Split(' ');
-                colorsArray.Add(new Bgr(Convert.ToDouble(fields[2]), Convert.ToDouble(fields[1]), Convert.ToDouble(fields[0])));
+                colorsArray.Add(new Bgr(
+                    multiplier * Convert.ToDouble(fields[2].Replace(".", ",")),
+                    multiplier * Convert.ToDouble(fields[1].Replace(".", ",")),
+                    multiplier * Convert.ToDouble(fields[0].Replace(".", ","))));
             }
 
             //objectsToDispose.Add(colorsArray);
         }
+
+
+
+
+
+        public ColorScheme Reverse()
+        {
+            ColorScheme retScheme = new ColorScheme("");
+            List<Bgr> reversedColorsArray = new List<Bgr>(this.colorsArray);
+            reversedColorsArray.Reverse();
+            retScheme.colorsArray = reversedColorsArray;
+            retScheme.isSchemeGrayscaled = isSchemeGrayscaled;
+            retScheme.isColorSchemeSymmetric = isColorSchemeSymmetric;
+            return retScheme;
+        }
+
+
 
 
         public ColorScheme(bool Grayscaled = true)
@@ -94,7 +131,7 @@ namespace SkyImagesAnalyzerLibraries
         public static ColorScheme BinaryCloudSkyColorScheme(double marginValue, double minVal, double maxVal)
         {
             Bgr skyColor = new Bgr(255, 0, 0);
-            Bgr CloudColor = new Bgr(255,255,255);
+            Bgr CloudColor = new Bgr(255, 255, 255);
             int count = 1000;
 
             ColorScheme retColorScheme = new ColorScheme(false);
@@ -161,7 +198,7 @@ namespace SkyImagesAnalyzerLibraries
                 colorsArray.Add(new Bgr(Convert.ToDouble(fields[2]), Convert.ToDouble(fields[1]), Convert.ToDouble(fields[0])));
             }
 
-            
+
             if (isColorSchemeSymmetric)
             {
                 Bgr[] tmpArrayOfColors = new Bgr[colorsArray.Count];
@@ -223,7 +260,7 @@ namespace SkyImagesAnalyzerLibraries
             maxValue = imgData.dataMaxValue();
             if (imgData.currentColorScheme.isColorSchemeSymmetric)
             {
-                minValue = - Math.Max(Math.Abs(minValue), Math.Abs(maxValue));
+                minValue = -Math.Max(Math.Abs(minValue), Math.Abs(maxValue));
                 maxValue = Math.Max(Math.Abs(minValue), Math.Abs(maxValue));
             }
             colorScheme = imgData.currentColorScheme;
@@ -272,6 +309,15 @@ namespace SkyImagesAnalyzerLibraries
             imgToRule = null;
             //isMarginsFixed = imgData.isColorSchemeMarginsFixed;
             isMarginsFixed = sourceRuler.isMarginsFixed;
+        }
+
+
+
+
+
+        public ColorSchemeRuler Copy()
+        {
+            return new ColorSchemeRuler(this);
         }
 
 
@@ -552,8 +598,8 @@ namespace SkyImagesAnalyzerLibraries
             double filterMinValue = tmpImgData.DmSourceData.Values.Min();
             selection = null;
 
-            
-            DenseMatrix dmHighlightDenseMatrix = DenseMatrix.Create(currentDimY, currentDimX, new Func<int,int,double>
+
+            DenseMatrix dmHighlightDenseMatrix = DenseMatrix.Create(currentDimY, currentDimX, new Func<int, int, double>
                 (
                 (y, x) =>
                 {
@@ -574,7 +620,7 @@ namespace SkyImagesAnalyzerLibraries
 
 
             HighlightMask = highlightImage.Convert<Gray, double>();
-            HighlightMaskRelative = HighlightMask/255.0d;
+            HighlightMaskRelative = HighlightMask / 255.0d;
             //ImageProcessing.grayscaleImageFromDenseMatrixWithFixedValuesBounds(tmpDM, 0.0d, 255.0d).Convert<Gray, double>();
             //HighlightMask = HighlightMask / 255.0d;
         }

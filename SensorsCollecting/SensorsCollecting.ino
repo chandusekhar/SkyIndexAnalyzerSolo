@@ -9,11 +9,15 @@
 #include <util.h>
 #include <SPI.h>
 #include <Wire.h>
-#include <FreeSixIMU.h>
-#include <FIMU_ADXL345.h> //for accel
-#include <FIMU_ITG3200.h> //for gyroscope
-#include <HMC5883L.h>
+//#include <FreeSixIMU.h>
+//#include <FIMU_ADXL345.h> //for accel
+//#include <FIMU_ITG3200.h> //for gyroscope
+//#include <HMC5883L.h>
 #include <SoftwareSerial.h>
+#include "C:/Program Files (x86)/Arduino/libraries/HMC5883L/HMC5883L.h"
+#include "C:/Program Files (x86)/Arduino/libraries/FreeSixIMU/FreeSixIMU.h"
+#include "C:/Program Files (x86)/Arduino/libraries/FreeSixIMU/FIMU_ADXL345.h"
+#include "C:/Program Files (x86)/Arduino/libraries/FreeSixIMU/FIMU_ITG3200.h"
 
 //#define CurrDevID 1
 

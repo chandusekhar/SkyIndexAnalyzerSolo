@@ -234,6 +234,8 @@ namespace SkyImagesAnalyzerLibraries
         }
 
 
+
+
         /// <summary>
         /// Initializes a new instance of the <see cref="imageConditionAndData"/> class.
         /// note: with the fixed ruler bounds
@@ -579,6 +581,19 @@ namespace SkyImagesAnalyzerLibraries
             retImageData.currentColorSchemeRuler.imgToRule = retImageData;
             retImageData.currentColorSchemeRuler.IsMarginsFixed = false;
             //retImageData.UpdateColorSchemeRuler();
+            return retImageData;
+        }
+
+
+
+
+        public imageConditionAndData Copy()
+        {
+            imageConditionAndData retImageData = new imageConditionAndData(dmSourceData, maskImageBinary);
+            retImageData.currentColorScheme = currentColorScheme;
+            retImageData.currentColorSchemeRuler = currentColorSchemeRuler.Copy();
+            retImageData.currentColorSchemeRuler.imgToRule = retImageData;
+            retImageData.UpdateColorSchemeRuler();
             return retImageData;
         }
     }

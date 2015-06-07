@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
 using System.Text;
@@ -32,6 +33,9 @@ namespace SkyImagesAnalyzerLibraries
         private object meLeftButtonDownSender = null;
 
 
+        public Dictionary<string, object> defaultProperties = null;
+
+
         public ImageConditionAndDataRepresentingForm(string dataName = "")
         {
             InitializeComponent();
@@ -60,7 +64,7 @@ namespace SkyImagesAnalyzerLibraries
         {
             ThreadSafeOperations.UpdatePictureBox(pbRes, imgData.dataRepresentingImageColored(), true);
             ThreadSafeOperations.UpdatePictureBox(pbScale, imgData.currentColorSchemeRuler.RulerBitmap(pbScale.Width, pbScale.Height), false);
-            
+
         }
 
         private void ImageConditionAndDataRepresentingForm_KeyPress(object sender, KeyPressEventArgs e)
@@ -88,7 +92,7 @@ namespace SkyImagesAnalyzerLibraries
             double clickedValue = currentImgData.GetValueByClickEvent((PictureBox)sender, e, out origDataPointPosition);
             PointD thePointD = currentImgData.getDataPositionByClickEvent((PictureBox)sender, e);
             Point thePoint = new Point(Convert.ToInt32(thePointD.X), Convert.ToInt32(thePointD.Y));
-            string tooltipText = "position: "+thePoint + Environment.NewLine + ServiceTools.DoubleValueRepresentingString(clickedValue);
+            string tooltipText = "position: " + thePoint + Environment.NewLine + ServiceTools.DoubleValueRepresentingString(clickedValue);
             ShowToolTip(e, tooltipText, sender);
         }
 
@@ -110,7 +114,7 @@ namespace SkyImagesAnalyzerLibraries
             textToolTip.Show(textToShow, this, e.X + loc.X, e.Y + loc.Y);
             previousTooltipMouseLocation = e.Location;
         }
-        
+
         private void HighlightLinkedSelection(PictureBoxSelection theSelection)
         {
             if (theSelection.usedImageData.GetType().Equals(typeof(imageConditionAndData)))
@@ -149,7 +153,7 @@ namespace SkyImagesAnalyzerLibraries
                     currentICD = imgData;
                     theSenderDataType = imgData.currentColorSchemeRuler.GetType();
                 }
-                
+
 
                 //если уже есть selection у этого объекта, а это выделение пусто - проверить, было ли оно внутри
                 //если было внутри - значит, был клик или даблклик внутри выделения - не обрабатывать здесь
@@ -204,7 +208,7 @@ namespace SkyImagesAnalyzerLibraries
             {
                 currentRuler = imgData.currentColorSchemeRuler;
             }
-            
+
 
             double clickedValue = currentRuler.GetValueByClickEvent((PictureBox)sender, e);
             clickedValue = Math.Round(clickedValue, 2);
@@ -219,7 +223,7 @@ namespace SkyImagesAnalyzerLibraries
             {
                 currentResultRuler = imgData.currentColorSchemeRuler;
             }
-            
+
 
             currentResultRuler.IsMarginsFixed = !((CheckBox)sender).Checked;
 
@@ -248,6 +252,93 @@ namespace SkyImagesAnalyzerLibraries
                 imgData.DmSourceData.SaveNetCDFdataMatrix(fileName);
                 //NetCDFoperations.SaveDataToFile(imgData.DmSourceData, fileName, tbStats, absolutePath);
             }
+        }
+
+
+
+
+        private void btnChangeColorScheme_Click(object sender, EventArgs e)
+        {
+            imgData = imgData.Copy();
+
+
+
+            //TextBox currFilenameTextbox = tbColorSchemePath1;
+            //PictureBox pbCurrentColorScheme = pbRes1Scale;
+
+
+
+            OpenFileDialog opFD = new OpenFileDialog();
+            opFD.Filter = "RGB files (*.rgb)|*.rgb|All files (*.*)|*.*";
+            opFD.InitialDirectory = Directory.GetCurrentDirectory();
+            opFD.Multiselect = false;
+            DialogResult dialogRes = opFD.ShowDialog();
+            if (dialogRes == DialogResult.OK)
+            {
+                String filename = opFD.FileName;
+                FileInfo fInfo = new FileInfo(filename);
+                //if (fInfo.DirectoryName == Directory.GetCurrentDirectory()) ThreadSafeOperations.SetTextTB(currFilenameTextbox, fInfo.Name, false);
+                //else ThreadSafeOperations.SetTextTB(currFilenameTextbox, fInfo.FullName, false);
+
+                imgData.currentColorScheme = new ColorScheme(fInfo.FullName);
+                imgData.UpdateColorSchemeRuler();
+
+                RaisePaintEvent(null, null);
+            }
+
+
+
+        }
+
+        
+
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            imgData.currentColorScheme = imgData.currentColorScheme.Reverse();
+            imgData.UpdateColorSchemeRuler();
+            RaisePaintEvent(null, null);
+        }
+
+
+
+        private void btnSaveImage_Click(object sender, EventArgs e)
+        {
+            string fileName = "";
+            SaveFileDialog sfd = new SaveFileDialog();
+            sfd.InitialDirectory = (string) defaultProperties["DefaultDataFilesLocation"];
+            sfd.Filter = "jpeg images | *.jpg";
+            sfd.AddExtension = true;
+            sfd.FileName = DateTime.UtcNow.ToString("s").Replace(":", "-") + ".jpg";
+            DialogResult res = sfd.ShowDialog();
+            if (res == DialogResult.OK)
+            {
+                fileName = sfd.FileName;
+            }
+
+            imgData.dataRepresentingImageColored().Save(fileName);
+        }
+
+
+
+        private void btnsaveImageAndScale_Click(object sender, EventArgs e)
+        {
+            string fileName = "";
+            SaveFileDialog sfd = new SaveFileDialog();
+            sfd.InitialDirectory = (string) defaultProperties["DefaultDataFilesLocation"];
+            sfd.Filter = "jpeg images | *.jpg";
+            sfd.AddExtension = true;
+            sfd.FileName = DateTime.UtcNow.ToString("s").Replace(":", "-") + ".jpg";
+            DialogResult res = sfd.ShowDialog();
+            if (res == DialogResult.OK)
+            {
+                fileName = sfd.FileName;
+            }
+
+            imgData.dataRepresentingImageColored().Save(fileName);
+            FileInfo imgFileInfo = new FileInfo(fileName);
+            imgData.currentColorSchemeRuler.RulerBitmap(pbScale.Width, pbScale.Height)
+                .Save(imgFileInfo.DirectoryName + "\\" + Path.GetFileNameWithoutExtension(fileName) + ".scale.jpg");
         }
     }
 }

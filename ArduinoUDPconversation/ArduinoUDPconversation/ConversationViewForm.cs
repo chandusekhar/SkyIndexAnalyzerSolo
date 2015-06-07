@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -74,7 +75,7 @@ namespace ArduinoUDPconversation
 
 
         //private static Queue<string> quArduinoUDPCatchedMessages = new Queue<string>();
-        private static Queue<IncomingUDPmessageBoundle> quArduinoUDPCatchedMessages = new Queue<IncomingUDPmessageBoundle>();
+        private static ConcurrentQueue<IncomingUDPmessageBoundle> cquArduinoUDPCatchedMessages = new ConcurrentQueue<IncomingUDPmessageBoundle>();
         private static SocketAddress remoteSktAddr;
 
 
@@ -84,122 +85,6 @@ namespace ArduinoUDPconversation
         }
 
 
-
-
-        //#region stuff
-        //private static void SetText(Label textbox, string text, bool AppendMode)
-        //{
-        //    if (textbox.InvokeRequired)
-        //    {
-        //        SetTextCallback d = SetText;
-        //        textbox.Invoke(d, new object[] { textbox, text, AppendMode });
-        //    }
-        //    else
-        //    {
-        //        if (AppendMode)
-        //        {
-        //            textbox.Text += text;
-        //        }
-        //        else
-        //        {
-        //            textbox.Text = text;
-        //        }
-        //    }
-        //}
-        //private static void SetTextTB(TextBox textbox, string text, bool AppendMode)
-        //{
-        //    if (textbox.InvokeRequired)
-        //    {
-        //        SetTextTBCallback d = SetTextTB;
-        //        textbox.Invoke(d, new object[] { textbox, text, AppendMode });
-        //    }
-        //    else
-        //    {
-        //        if (AppendMode)
-        //        {
-        //            textbox.Text = text + textbox.Text;
-        //        }
-        //        else
-        //        {
-        //            textbox.Text = text;
-        //        }
-
-        //    }
-        //}
-        //private static void UpdateProgressBar(ProgressBar ProgressBarControl, int PBvalue)
-        //{
-        //    if (ProgressBarControl.InvokeRequired)
-        //    {
-        //        UpdateProgressBarCallback d = UpdateProgressBar;
-        //        ProgressBarControl.Invoke(d, new object[] { ProgressBarControl, PBvalue });
-        //    }
-        //    else
-        //    {
-        //        ProgressBarControl.Value = PBvalue;
-        //    }
-        //}
-        //private static void UpdatePictureBox(PictureBox PictureBoxControl, Image Image2Show)
-        //{
-        //    if (PictureBoxControl.InvokeRequired)
-        //    {
-        //        UpdatePictureBoxCallback d = UpdatePictureBox;
-        //        PictureBoxControl.Invoke(d, new object[] { PictureBoxControl, Image2Show });
-        //    }
-        //    else
-        //    {
-        //        PictureBoxControl.Image = Image2Show;
-        //    }
-        //}
-        //private static void MoveTrackBar(TrackBar TrackBarControl, int TBValue)
-        //{
-        //    if (TrackBarControl.InvokeRequired)
-        //    {
-        //        MoveTrackBarCallback d = MoveTrackBar;
-        //        TrackBarControl.Invoke(d, new object[] { TrackBarControl, TBValue });
-        //    }
-        //    else
-        //    {
-        //        TrackBarControl.Value = TBValue;
-        //    }
-        //}
-        //public static void ToggleButtonState(Button ButtonControl, bool ControlEnabled, string ButtonText, bool ButtonFontBold)
-        //{
-        //    FontStyle newfontstyle;
-        //    if (ButtonControl.InvokeRequired)
-        //    {
-        //        ToggleButtonStateCallback d = ToggleButtonState;
-        //        ButtonControl.Invoke(d, new object[] { ButtonControl, ControlEnabled, ButtonText, ButtonFontBold });
-        //    }
-        //    else
-        //    {
-        //        if (ButtonFontBold)
-        //        {
-        //            newfontstyle = FontStyle.Bold;
-        //        }
-        //        else
-        //        {
-        //            newfontstyle = FontStyle.Regular;
-        //        }
-        //        Font newfont = new Font(ButtonControl.Font, newfontstyle);
-        //        ButtonControl.Font = newfont;
-        //        ButtonControl.Text = ButtonText;
-        //        SetButtonEnabledStatus(ButtonControl, ControlEnabled);
-
-        //    }
-        //}
-        //public static void SetButtonEnabledStatus(Button ButtonControl, bool ControlEnabled)
-        //{
-        //    if (ButtonControl.InvokeRequired)
-        //    {
-        //        SetButtonEnabledStatusCallback d = SetButtonEnabledStatus;
-        //        ButtonControl.Invoke(d, new object[] { ButtonControl, ControlEnabled });
-        //    }
-        //    else
-        //    {
-        //        ButtonControl.Enabled = ControlEnabled;
-        //    }
-        //}
-        //#endregion
 
 
 
@@ -622,7 +507,7 @@ namespace ArduinoUDPconversation
 
         private void Form1_Load(object sender, EventArgs e)
         {
-            string generalSettingsFilename = Directory.GetCurrentDirectory() + "\\settings\\ArduinoUDPconversationAppGeneralSettings.xml";
+            string generalSettingsFilename = Directory.GetCurrentDirectory() + "\\settings\\ArduinoUDPconversationAppGeneralSettings2G.xml";
             if (!File.Exists(generalSettingsFilename))
             {
                 ip2ListenDevID1 = Settings.Default.ArduinoBoardDefaultIP;
@@ -731,7 +616,7 @@ namespace ArduinoUDPconversation
 
                     if (bcstMessage != "")
                     {
-                        quArduinoUDPCatchedMessages.Enqueue(new IncomingUDPmessageBoundle(remoteSktAddr, bcstMessage));
+                        cquArduinoUDPCatchedMessages.Enqueue(new IncomingUDPmessageBoundle(remoteSktAddr, bcstMessage));
 
                         //bcstMessageReceived = true;
                     }
@@ -922,21 +807,34 @@ namespace ArduinoUDPconversation
 
             while (true)
             {
-                if (selfWorker.CancellationPending && quArduinoUDPCatchedMessages.Count == 0)
+                if (selfWorker.CancellationPending && cquArduinoUDPCatchedMessages.Count == 0)
                 {
                     break;
                 }
 
-                if (quArduinoUDPCatchedMessages.Count == 0)
+                if (cquArduinoUDPCatchedMessages.Count == 0)
                 {
                     Application.DoEvents();
                     Thread.Sleep(0);
                     continue;
                 }
 
-                if (quArduinoUDPCatchedMessages.Count > 0)
+                if (cquArduinoUDPCatchedMessages.Count > 0)
                 {
-                    IncomingUDPmessageBoundle curMessageBoundle = quArduinoUDPCatchedMessages.Dequeue();
+                    IncomingUDPmessageBoundle curMessageBoundle = null; //cquArduinoUDPCatchedMessages.Dequeue();
+                    while (true)
+                    {
+                        if (cquArduinoUDPCatchedMessages.TryDequeue(out curMessageBoundle))
+                        {
+                            break;
+                        }
+                        else
+                        {
+                            Application.DoEvents();
+                            Thread.Sleep(0);
+                            continue;
+                        }
+                    }
 
                     if (curMessageBoundle == null) continue;
 
@@ -1065,6 +963,14 @@ namespace ArduinoUDPconversation
         private void tbDev2IPstr_TextChanged(object sender, EventArgs e)
         {
             ip2ListenDevID2 = (sender as TextBox).Text;
+        }
+
+        private void ArduinoConversationForm_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            if (e.KeyChar == 27)//escape key
+            {
+                this.Close();
+            }
         }
 
     }

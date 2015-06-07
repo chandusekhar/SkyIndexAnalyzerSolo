@@ -16,6 +16,7 @@ namespace SkyImagesAnalyzerLibraries
         public bool isErrorMessage = false;
         public string ipAddrString = "";
         private SocketAddress remoteSocketAddress = new SocketAddress(AddressFamily.InterNetwork);
+        public bool isPartOfMessage = false;
 
 
         public IncomingUDPmessageBoundle()
@@ -30,6 +31,13 @@ namespace SkyImagesAnalyzerLibraries
             char[] splitChar = { ',' };
             string[] sktAddrStrArray = addrStr.Split(splitChar);
             ipAddrString = sktAddrStrArray[2] + "." + sktAddrStrArray[3] + "." + sktAddrStrArray[4] + "." + sktAddrStrArray[5];
+
+
+            if ((message.Substring(0, 1) == "+") && (message.Last() == '+'))
+            {
+                message = message.Substring(1, message.Length - 2);
+                isPartOfMessage = true;
+            }
 
 
             if ((message.Length >= 5) && (message.IndexOf("<id") >= 0))
@@ -67,5 +75,34 @@ namespace SkyImagesAnalyzerLibraries
                 isErrorMessage = true;
             }
         }
+
+
+
+
+        public static IncomingUDPmessageBoundle operator +(IncomingUDPmessageBoundle msg1, IncomingUDPmessageBoundle msg2)
+        {
+            if ((msg1.devID == msg2.devID) &&
+                (msg1.isReplyMessage == msg2.isReplyMessage) &&
+                (msg1.isErrorMessage == msg2.isErrorMessage) &&
+                (msg1.ipAddrString == msg2.ipAddrString) &&
+                (msg1.isPartOfMessage == msg2.isPartOfMessage))
+            {
+                IncomingUDPmessageBoundle retMsg = new IncomingUDPmessageBoundle()
+                {
+                    udpMessage = msg1.udpMessage + msg2.udpMessage,
+                    devID = msg1.devID,
+                    isReplyMessage = msg1.isReplyMessage,
+                    isErrorMessage = msg1.isErrorMessage,
+                    ipAddrString = msg1.ipAddrString,
+                    isPartOfMessage = msg1.isPartOfMessage,
+                };
+                return retMsg;
+            }
+            else
+            {
+                return null;
+            }
+        }
+
     }
 }
