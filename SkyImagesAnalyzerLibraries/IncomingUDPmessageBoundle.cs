@@ -167,6 +167,14 @@ namespace SkyImagesAnalyzerLibraries
                 //    isErrorMessage = true;
                 //}
             }
+            else
+            {
+                if ((udpMessage.Length >= 6) && (udpMessage.IndexOf("<repl>") >= 0))
+                {
+                    udpMessage = udpMessage.Replace("<repl>", "");
+                    isReplyMessage = true;
+                }
+            }
         }
 
 
