@@ -30,16 +30,40 @@ namespace SkyImagesAnalyzerLibraries
                 connectionString += baseDir + fileName;
             }
 
-            NetCDFDataSet ds = new NetCDFDataSet(connectionString, ResourceOpenMode.Create);
+            NetCDFDataSet ds = null;
+
+            try
+            {
+                ds = new NetCDFDataSet(connectionString, ResourceOpenMode.Create);
+            }
+            catch (Exception ex)
+            {
+                if (tbLog != null)
+                {
+                    ThreadSafeOperations.SetTextTB(tbLog, "Не получилось :( " + Environment.NewLine + ex.Message, true);
+                }
+                else
+                {
+                    throw ex;
+                }
+            }
+            
             Variable<double> thDataVar = ds.AddVariable<double>(varName, dmData.ToArray(), "y", "x");
 
             try
             {
                 ds.TryCommit();
             }
-            catch (Exception exc)
+            catch (Exception ex)
             {
-                ThreadSafeOperations.SetTextTB(tbLog, "Не получилось :( " + Environment.NewLine + exc.Message, true);
+                if (tbLog != null)
+                {
+                    ThreadSafeOperations.SetTextTB(tbLog, "Не получилось :( " + Environment.NewLine + ex.Message, true);
+                }
+                else
+                {
+                    throw ex;
+                }
             }
 
             ds.Dispose();
@@ -64,7 +88,25 @@ namespace SkyImagesAnalyzerLibraries
                 connectionString += baseDir + fileName;
             }
 
-            NetCDFDataSet ds = new NetCDFDataSet(connectionString, ResourceOpenMode.OpenOrCreate);
+            NetCDFDataSet ds = null;
+
+            try
+            {
+                ds = new NetCDFDataSet(connectionString, ResourceOpenMode.OpenOrCreate);
+            }
+            catch (Exception ex)
+            {
+                if (tbLog != null)
+                {
+                    ThreadSafeOperations.SetTextTB(tbLog, "Не получилось :( " + Environment.NewLine + ex.Message, true);
+                }
+                else
+                {
+                    throw ex;
+                }
+            }
+            
+            
             Variable<double> thDataVar;
             if (!ds.Variables.Contains(varName))
             {
@@ -81,13 +123,16 @@ namespace SkyImagesAnalyzerLibraries
             {
                 ds.TryCommit();
             }
-            catch (Exception exc)
+            catch (Exception ex)
             {
                 if (tbLog != null)
                 {
-                    ThreadSafeOperations.SetTextTB(tbLog, "Не получилось :( " + Environment.NewLine + exc.Message, true);
+                    ThreadSafeOperations.SetTextTB(tbLog, "Не получилось :( " + Environment.NewLine + ex.Message, true);
                 }
-                else throw;
+                else
+                {
+                    throw ex;
+                }
             }
 
             ds.Dispose();
@@ -101,9 +146,18 @@ namespace SkyImagesAnalyzerLibraries
             double[,] res = null;
 
             if (!ServiceTools.CheckIfDirectoryExists(fileName)) return null;
+            NetCDFDataSet ds = null;
 
-            NetCDFDataSet ds = new NetCDFDataSet("msds:nc?file=" + fileName + "&enableRollback=false",
-                ResourceOpenMode.ReadOnly);
+            try
+            {
+                ds = new NetCDFDataSet("msds:nc?file=" + fileName + "&enableRollback=false",
+                    ResourceOpenMode.ReadOnly);
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+            
             //Variable<double> thDataVar = ds.AddVariable<double>("dataMatrix", dmData.ToArray(), "y", "x");
             //Variable<double> thDataVar = ds.Variables
             foreach (Variable theVar in ds)
@@ -125,8 +179,16 @@ namespace SkyImagesAnalyzerLibraries
 
             if (!ServiceTools.CheckIfDirectoryExists(fileName)) return null;
 
-            NetCDFDataSet ds = new NetCDFDataSet("msds:nc?file=" + fileName + "&enableRollback=false",
-                ResourceOpenMode.ReadOnly);
+            NetCDFDataSet ds = null;
+
+            try
+            {
+                ds = new NetCDFDataSet("msds:nc?file=" + fileName + "&enableRollback=false", ResourceOpenMode.ReadOnly);
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
             //Variable<double> thDataVar = ds.AddVariable<double>("dataMatrix", dmData.ToArray(), "y", "x");
             //Variable<double> thDataVar = ds.Variables
             foreach (Variable theVar in ds)
@@ -157,14 +219,24 @@ namespace SkyImagesAnalyzerLibraries
 
 
 
+
+
         public static Dictionary<string, object> ReadDataFromFile(string fileName, List<string> varNames = null)
         {
             if (!ServiceTools.CheckIfDirectoryExists(fileName)) return null;
 
             Dictionary<string, object> retDict = new Dictionary<string, object>();
             double[,] res = null;
-            NetCDFDataSet ds = new NetCDFDataSet("msds:nc?file=" + fileName + "&enableRollback=false",
-                ResourceOpenMode.ReadOnly);
+            NetCDFDataSet ds = null;
+
+            try
+            {
+                ds = new NetCDFDataSet("msds:nc?file=" + fileName + "&enableRollback=false", ResourceOpenMode.ReadOnly);
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
 
             foreach (Variable theVar in ds)
             {
@@ -262,7 +334,15 @@ namespace SkyImagesAnalyzerLibraries
 
             string connectionString = "msds:nc?file=";
             connectionString += fileName;
-            NetCDFDataSet ds = new NetCDFDataSet(connectionString, ResourceOpenMode.Create);
+            NetCDFDataSet ds = null;
+            try
+            {
+                ds = new NetCDFDataSet(connectionString, ResourceOpenMode.Create);
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
 
             foreach (KeyValuePair<string, object> keyValuePair in dataToWrite)
             {
@@ -299,10 +379,9 @@ namespace SkyImagesAnalyzerLibraries
             {
                 ds.TryCommit();
             }
-            catch (Exception exc)
+            catch (Exception ex)
             {
-                throw;
-                //ThreadSafeOperations.SetTextTB(tbLog, "Не получилось :( " + Environment.NewLine + exc.Message, true);
+                throw ex;
             }
 
             ds.Dispose();
@@ -319,7 +398,16 @@ namespace SkyImagesAnalyzerLibraries
 
             string connectionString = "msds:nc?file=";
             connectionString += fileName;
-            NetCDFDataSet ds = new NetCDFDataSet(connectionString, ResourceOpenMode.OpenOrCreate);
+            NetCDFDataSet ds = null;
+
+            try
+            {
+                ds = new NetCDFDataSet(connectionString, ResourceOpenMode.OpenOrCreate);
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
 
             foreach (KeyValuePair<string, object> keyValuePair in dataToWrite)
             {
@@ -398,10 +486,9 @@ namespace SkyImagesAnalyzerLibraries
             {
                 ds.TryCommit();
             }
-            catch (Exception exc)
+            catch (Exception ex)
             {
-                throw;
-                //ThreadSafeOperations.SetTextTB(tbLog, "Не получилось :( " + Environment.NewLine + exc.Message, true);
+                throw ex;
             }
 
             ds.Dispose();
@@ -415,8 +502,18 @@ namespace SkyImagesAnalyzerLibraries
             string fileName = DateTime.UtcNow.ToString("o").Replace(":", "-") + ".nc";
             string connectionString = "msds:nc?file=";
             connectionString += baseDir + fileName;
+
+            NetCDFDataSet ds = null;
+
+            try
+            {
+                ds = new NetCDFDataSet(connectionString, ResourceOpenMode.Create);
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
             
-            NetCDFDataSet ds = new NetCDFDataSet(connectionString, ResourceOpenMode.Create);
             Variable<double> thDataVar = ds.AddVariable<double>("DataMatrix", dmData.ToArray(), "y", "x");
 
             try

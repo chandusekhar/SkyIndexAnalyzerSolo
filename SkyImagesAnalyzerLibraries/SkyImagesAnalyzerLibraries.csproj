@@ -335,8 +335,8 @@
     </PostBuildEvent>
   </PropertyGroup>
   <PropertyGroup>
-    <PreBuildEvent>copy D:\_gulevlab\components\EmguCV-2.4.10-compiled\bin\release\x64\x64\opencv_*.* $(TargetDir)
-copy D:\_gulevlab\components\EmguCV-2.4.10-compiled\bin\debug\x64\Emgu* $(TargetDir)</PreBuildEvent>
+    <PreBuildEvent>
+    </PreBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

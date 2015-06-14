@@ -819,10 +819,32 @@ namespace SolarPositioning
 
             return result;
         }
-
     }
 
 
+
+
+    public class TimeOfDay
+    {
+        public int hour = 0;
+        public int minute = 0;
+        public int second = 0;
+
+
+        public TimeOfDay(double decimaHoursTime = 0.0d)
+        {
+            hour = Convert.ToInt32(Math.Floor(decimaHoursTime));
+            double rest = decimaHoursTime - (double) hour;
+            minute = Convert.ToInt32(Math.Floor(rest*60.0d));
+            rest = rest*60.0d - Math.Floor(rest*60.0d);
+            second = Convert.ToInt32(Math.Floor(rest*60.0d));
+        }
+
+        public override string ToString()
+        {
+            return "" + hour.ToString("D2") + ":" + minute.ToString("D2") + ":" + second.ToString("D2");
+        }
+    }
 
 
     public enum SPAFunctionType

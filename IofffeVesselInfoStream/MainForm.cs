@@ -88,7 +88,7 @@ namespace IofffeVesselInfoStream
             }
             catch (Exception)
             {
-                MessageBox.Show("====== coudn`t connect to remote server ======", "ERROR", MessageBoxButtons.OK,
+                MessageBox.Show("====== couldn`t connect to remote server ======", "ERROR", MessageBoxButtons.OK,
                     MessageBoxIcon.Warning);
                 //ThreadSafeOperations.SetTextTB(tbLog, "====== coudn`t connect to remote server ======" + Environment.NewLine, true);
                 return null;

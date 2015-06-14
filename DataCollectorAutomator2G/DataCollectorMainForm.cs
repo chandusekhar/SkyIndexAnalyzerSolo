@@ -21,6 +21,7 @@ using MathNet.Numerics.LinearAlgebra.Double;
 using MRG.Controls.UI;
 using MathNet.Numerics.Statistics;
 using SkyImagesAnalyzerLibraries;
+using SolarPositioning;
 
 
 namespace DataCollectorAutomator
@@ -51,6 +52,16 @@ namespace DataCollectorAutomator
         Pressure,
         GPS
     }
+
+
+    public enum ButtonBackgroundStateWatchingProcess
+    {
+        allGood,
+        alarm,
+        notWatching
+    }
+
+
 
     #endregion
 
@@ -128,6 +139,7 @@ namespace DataCollectorAutomator
         //private SensorsHistoryShowing currRepresentingHistory = SensorsHistoryShowing.None;
 
         private static int recievedUDPPacketsCounter = 0;
+        private static int processedUDPPacketsCounter = 0;
         //private static double recievingUDPpacketsSpeed = 0.0d;
 
         private static Image<Bgr, Byte> currCaughtImageID1 = null;
@@ -375,6 +387,10 @@ namespace DataCollectorAutomator
             }
         }
 
+
+
+
+
         private void arduinoBoardSearchingWorker_DoWork(object sender, DoWorkEventArgs e)
         {
             BackgroundWorker SelfWorker = sender as System.ComponentModel.BackgroundWorker;
@@ -458,9 +474,14 @@ namespace DataCollectorAutomator
             }
         }
 
+
+
+
         private void udpCatchingJob_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
         {
             ThreadSafeOperations.ToggleButtonState(btnStartStopBdcstListening, true, "Start listening", false);
+            ChangeIndicatingButtonBackgroundColor(btnStartStopBdcstListening,
+                ButtonBackgroundStateWatchingProcess.notWatching);
             bgwUDPmessagesParser.CancelAsync();
         }
 
@@ -537,6 +558,8 @@ namespace DataCollectorAutomator
             int sent = Skt.SendTo(ret, ipEP);
             Skt.Close();
         }
+
+
 
 
 
@@ -679,16 +702,16 @@ namespace DataCollectorAutomator
 
         private void ArduinoRequestExpectant_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
         {
-            StartStopDataCollectingWaitingCircle.Visible = false;
-            StartStopDataCollectingWaitingCircle.Active = false;
+            //StartStopDataCollectingWaitingCircle.Visible = false;
+            //StartStopDataCollectingWaitingCircle.Active = false;
             if (ArduinoRequestString == "1")
             {
                 //найдем строку, в которой сказано про data broadcasting
                 if ((replyMessage == "data broadcasting is OFF") && (dataCollectingState == DataCollectingStates.checkingState))
                 {
                     Note("Outdoor facility data broadcasting is OFF. Turning it ON.");
-                    StartStopDataCollectingWaitingCircle.Visible = true;
-                    StartStopDataCollectingWaitingCircle.Active = true;
+                    //StartStopDataCollectingWaitingCircle.Visible = true;
+                    //StartStopDataCollectingWaitingCircle.Active = true;
                     PerformRequestArduinoBoard("2", currOperatingDevID);
                 }
                 else if ((replyMessage == "data broadcasting is ON") && (dataCollectingState == DataCollectingStates.checkingState))
@@ -737,6 +760,51 @@ namespace DataCollectorAutomator
         //    int accY2Show = Convert.ToInt32(Math.Round(100.0 * (accData.AccDoubleY / accData.accMagnitude), 0));
         //    int accZ2Show = Convert.ToInt32(Math.Round(100.0 * (accData.AccDoubleZ / accData.accMagnitude), 0));
         //}
+
+
+
+
+
+        private void ChangeIndicatingButtonBackgroundColor(Control btn, ButtonBackgroundStateWatchingProcess state = ButtonBackgroundStateWatchingProcess.notWatching)
+        {
+            switch (state)
+            {
+                case ButtonBackgroundStateWatchingProcess.notWatching:
+                {
+                    ThreadSafeOperations.SetButtonBackgroundColor(btn, Color.Gainsboro);
+                    break;
+                }
+                case ButtonBackgroundStateWatchingProcess.allGood:
+                {
+                    if (btn.BackColor == Color.Gainsboro)
+                    {
+                        ThreadSafeOperations.SetButtonBackgroundColor(btn, Color.Honeydew);
+                    }
+                    else
+                    {
+                        ThreadSafeOperations.SetButtonBackgroundColor(btn, Color.Gainsboro);
+                    }
+                    break;
+                }
+                case ButtonBackgroundStateWatchingProcess.alarm:
+                {
+                    if (btn.BackColor == Color.Gainsboro)
+                    {
+                        ThreadSafeOperations.SetButtonBackgroundColor(btn, Color.MistyRose);
+                    }
+                    else
+                    {
+                        ThreadSafeOperations.SetButtonBackgroundColor(btn, Color.Gainsboro);
+                    }
+                    break;
+                }
+                default:
+                    break;
+            }
+        }
+
+
+
 
 
 
@@ -868,19 +936,33 @@ namespace DataCollectorAutomator
                 if (stwToEstimateUDPpacketsRecieving.ElapsedMilliseconds >= 1000)
                 {
                     //оценим скорость поступления пакетов
-                    double speed = (double)recievedUDPPacketsCounter * 1000.0d /
+                    double speedUDPrecieving = (double)recievedUDPPacketsCounter * 1000.0d /
                                       (double)stwToEstimateUDPpacketsRecieving.ElapsedMilliseconds;
                     recievedUDPPacketsCounter = 0;
+
+                    double speedUDPprocessing = (double) processedUDPPacketsCounter*1000.0d/
+                                                (double) stwToEstimateUDPpacketsRecieving.ElapsedMilliseconds;
+                    processedUDPPacketsCounter = 0;
+
                     stwToEstimateUDPpacketsRecieving.Restart();
 
-                    if (speed > 0.0d)
+                    if (speedUDPrecieving <= 0.0d)
                     {
-                        //ThreadSafeOperations.SetLoadingCircleState(processCircleID1, true, true, processCircleID1.Color, Convert.ToInt32(100.0d * speed / 50.0));
-                        //Note("UDP messages speed: " + speed + Environment.NewLine);
+                        ChangeIndicatingButtonBackgroundColor(btnStartStopBdcstListening,
+                            ButtonBackgroundStateWatchingProcess.alarm);
                     }
-                    else
+
+
+                    if (speedUDPprocessing > 0.0d)
                     {
-                        //ThreadSafeOperations.SetLoadingCircleState(processCircleID1, false, false, processCircleID1.Color, 100);
+                        ChangeIndicatingButtonBackgroundColor(lblAccMagnValueID1,
+                            ButtonBackgroundStateWatchingProcess.alarm);
+                        ChangeIndicatingButtonBackgroundColor(lblAccDevAngleValueID1,
+                            ButtonBackgroundStateWatchingProcess.alarm);
+                        ChangeIndicatingButtonBackgroundColor(lblAccMagnTitleID2,
+                            ButtonBackgroundStateWatchingProcess.alarm);
+                        ChangeIndicatingButtonBackgroundColor(lblAccDevAngleTitleID2,
+                            ButtonBackgroundStateWatchingProcess.alarm);
                     }
                 }
 
@@ -1028,10 +1110,10 @@ namespace DataCollectorAutomator
                         accDevAngleID1 = Math.Acos(accDevAngleID1);
                         double accDevAngleID2 = (latestAccDataID2 * accCalibrationDataID2) / (latestAccDataID2.AccMagnitude * accCalibrationDataID2.AccMagnitude);
                         accDevAngleID2 = Math.Acos(accDevAngleID2);
-                        ThreadSafeOperations.SetText(lblAccMagnValueID1, (latestAccDataID1.AccMagnitude / accCalibrationDataID1.AccMagnitude).ToString("0.###e-00"), false);
-                        ThreadSafeOperations.SetText(lblAccDevAngleValueID1, accDevAngleID1.ToString("0.###e-00"), false);
-                        ThreadSafeOperations.SetText(lblAccMagnValueID2, (latestAccDataID2.AccMagnitude / accCalibrationDataID2.AccMagnitude).ToString("0.###e-00"), false);
-                        ThreadSafeOperations.SetText(lblAccDevAngleValueID2, accDevAngleID2.ToString("0.###e-00"), false);
+                        ThreadSafeOperations.SetText(lblAccMagnValueID1, (latestAccDataID1.AccMagnitude / accCalibrationDataID1.AccMagnitude).ToString("F2"), false);
+                        ThreadSafeOperations.SetText(lblAccDevAngleValueID1, accDevAngleID1.ToString("F3"), false);
+                        ThreadSafeOperations.SetText(lblAccMagnValueID2, (latestAccDataID2.AccMagnitude / accCalibrationDataID2.AccMagnitude).ToString("F2"), false);
+                        ThreadSafeOperations.SetText(lblAccDevAngleValueID2, accDevAngleID2.ToString("F3"), false);
 
                     }
 
@@ -1229,9 +1311,22 @@ namespace DataCollectorAutomator
 
                 if (gpsDataHasBeenChanged)
                 {
-                    ThreadSafeOperations.SetText(lblLatValue, gpsData.lat.ToString() + gpsData.latHemisphere, false);
-                    ThreadSafeOperations.SetText(lblLonValue, gpsData.lon.ToString() + gpsData.lonHemisphere, false);
+                    SPA spaCalc = new SPA(gpsData.dateTimeUTC.Year, gpsData.dateTimeUTC.Month, gpsData.dateTimeUTC.Day, gpsData.dateTimeUTC.Hour,
+                        gpsData.dateTimeUTC.Minute, gpsData.dateTimeUTC.Second, (float)gpsData.LonDec, (float)gpsData.LatDec,
+                        (float)SPAConst.DeltaT(gpsData.dateTimeUTC));
+                    int res = spaCalc.spa_calculate();
+                    AzimuthZenithAngle sunPositionSPAext = new AzimuthZenithAngle(spaCalc.spa.azimuth,
+                        spaCalc.spa.zenith);
+                    double sunElevCalc = sunPositionSPAext.ElevationAngle;
+                    double sunAzimuth = sunPositionSPAext.Azimuth;
+
+
+                    ThreadSafeOperations.SetText(lblLatValue, gpsData.lat.ToString("F2") + gpsData.latHemisphere, false);
+                    ThreadSafeOperations.SetText(lblLonValue, gpsData.lon.ToString("F2") + gpsData.lonHemisphere, false);
                     ThreadSafeOperations.SetText(lblUTCTimeValue, gpsData.dateTimeUTC.ToString("u").Replace(" ", Environment.NewLine).Replace("Z", ""), false);
+                    ThreadSafeOperations.SetText(lblSunElev, sunElevCalc.ToString("F2"), false);
+                    ThreadSafeOperations.SetText(lblSunAzimuth, sunAzimuth.ToString("F2"), false);
+
                     gpsDataHasBeenChanged = false;
 
                     gpsDateTimeValuesList.Add(DateTime.UtcNow.Ticks);
@@ -1343,6 +1438,11 @@ namespace DataCollectorAutomator
         }
 
 
+
+
+
+
+
         private void updateTimersLabels(DateTime datetimeCamShothasBeenTaken, DateTime datetimePreviousTimerBegin, TimeSpan camshotPeriod)
         {
             //int timespanTicksInSecond = 1000000;
@@ -1363,6 +1463,14 @@ namespace DataCollectorAutomator
             // исправить: сливать изображения в какую-нибудь более адекватную директорию, а не в папку с программой
 
             //String filename1 = Directory.GetCurrentDirectory() + "\\img-" + DateTime.Now.Year + "-" + DateTime.Now.Month + "-" + DateTime.Now.Day + "-" + DateTime.Now.Hour + "-" + DateTime.Now.Minute + "-" + DateTime.Now.Second;
+
+            string dirName = Directory.GetCurrentDirectory() + "\\snapshots\\";
+            if (!ServiceTools.CheckIfDirectoryExists(dirName))
+            {
+                throw new Exception("couldn`t find or create output directory for snapshots:" + Environment.NewLine +
+                                    dirName);
+            }
+
             String filename1 = Directory.GetCurrentDirectory() + "\\snapshots\\img-" +
                                DateTime.UtcNow.ToString("s").Replace(":", "-");
             filename1 += imageFNameAttrs;
@@ -1657,8 +1765,8 @@ namespace DataCollectorAutomator
                 }
                 Note("Detecting outdoor board broadcasting state");
                 ThreadSafeOperations.ToggleButtonState(btnCalibrateAccelerometerID1, false, "wait for state checking", true);
-                StartStopDataCollectingWaitingCircle.Visible = true;
-                StartStopDataCollectingWaitingCircle.Active = true;
+                //StartStopDataCollectingWaitingCircle.Visible = true;
+                //StartStopDataCollectingWaitingCircle.Active = true;
                 dataCollectingState = DataCollectingStates.checkingState;
                 theWorkerRequestedArduinoDataBroadcastState = WorkersRequestingArduinoDataBroadcastState.accelCalibrator;
                 currOperatingDevID = 1;
@@ -1937,10 +2045,16 @@ namespace DataCollectorAutomator
 
 
 
-        private void lblAccelerometerSign_Click(object sender, EventArgs e)
-        {
-            ShowAccelerometerHistoryPicture();
-        }
+
+        #region obsolete
+        //private void lblAccelerometerSign_Click(object sender, EventArgs e)
+        //{
+        //    ShowAccelerometerHistoryPicture();
+        //}
+        #endregion obsolete
+
+
+
 
         private void btnSwitchShowingTotalLog_Click(object sender, EventArgs e)
         {
@@ -1958,31 +2072,31 @@ namespace DataCollectorAutomator
 
 
 
-
-        private void ShowAccelerometerHistoryPicture()
-        {
-            //AccelerometerDataRepresentingForm accForm =
-            //    new AccelerometerDataRepresentingForm(
-            //        Directory.GetCurrentDirectory() + "\\logs\\AccelerometerDataLog-" +
-            //        DateTime.UtcNow.Date.ToString("yyyy-MM-dd") + ".nc", SensorsHistoryShowing.Accelerometer);
-
-            AccelerometerDataRepresentingForm accForm = new AccelerometerDataRepresentingForm();
-
-            if (!accForm.IsDisposed)
-            {
-                accForm.Show();
-            }
-        }
-
-
-
+        #region obsolete
+        //private void ShowAccelerometerHistoryPicture()
+        //{
+        //    //AccelerometerDataRepresentingForm accForm =
+        //    //    new AccelerometerDataRepresentingForm(
+        //    //        Directory.GetCurrentDirectory() + "\\logs\\AccelerometerDataLog-" +
+        //    //        DateTime.UtcNow.Date.ToString("yyyy-MM-dd") + ".nc", SensorsHistoryShowing.Accelerometer);
+        //
+        //    AccelerometerDataRepresentingForm accForm = new AccelerometerDataRepresentingForm();
+        //
+        //    if (!accForm.IsDisposed)
+        //    {
+        //        accForm.Show();
+        //    }
+        //}
+        #endregion obsolete
 
 
 
 
 
 
-        //#region External network data stream
+
+
+        #region // External network data stream
 
         //private void btnConnect_Click(object sender, EventArgs e)
         //{
@@ -2043,7 +2157,7 @@ namespace DataCollectorAutomator
 
         //}
 
-        //#endregion  External network data stream
+        #endregion  //External network data stream
 
 
 
@@ -2078,159 +2192,20 @@ namespace DataCollectorAutomator
                     continue;
                 }
 
+
                 if (cquArduinoUDPCatchedMessages.Count > 0)
                 {
 
-                    IncomingUDPmessageBoundle curMessageBoundle = null;
-                    while (true)
+                    try
                     {
-                        if (cquArduinoUDPCatchedMessages.TryDequeue(out curMessageBoundle))
-                        {
-                            break;
-                        }
-                        else
-                        {
-                            Application.DoEvents();
-                            Thread.Sleep(0);
-                            continue;
-                        }
+                        ProcessUDPmessagesFromQueue(selfWorker);
                     }
-                    
-                    if (curMessageBoundle == null) continue;
-
-                    string bcstMessage = curMessageBoundle.udpMessage;
-                    int currMessageDevID = curMessageBoundle.devID;
-                    bool whetherContinueProcessThisMessage = true;
-
-
-                    if (curMessageBoundle.isPartOfMessage)
+                    catch (Exception ex)
                     {
-                        whetherContinueProcessThisMessage = false;
-
-
-                        IncomingUDPmessagesBoundlesTuple tplSrch = null;
-                        List<IncomingUDPmessagesBoundlesTuple> currTuples =
-                            new List<IncomingUDPmessagesBoundlesTuple>(cbArduinoMessagesTuples);
-                        tplSrch =
-                            currTuples.Find(
-                                tpl => ((tpl.devID == curMessageBoundle.devID) && (tpl.mID == curMessageBoundle.mID)));
-
-                        //try
-                        //{
-                        //    tplSrch = cbArduinoMessagesTuples.First(tpl => ((tpl.devID == curMessageBoundle.devID) && (tpl.mID == curMessageBoundle.mID)));
-                        //}
-                        //catch (Exception ex)
-                        //{
-                        //    if (ex.GetType() == typeof(InvalidOperationException))
-                        //    {
-                        //        tplSrch = null;
-                        //    }
-                        //}
-
-                        if (tplSrch == null)
-                        {
-                            tplSrch = new IncomingUDPmessagesBoundlesTuple(curMessageBoundle);
-                            cbArduinoMessagesTuples.Add(tplSrch);
-                            whetherContinueProcessThisMessage = false;
-                        }
-                        else
-                        {
-                            tplSrch = tplSrch + curMessageBoundle;
-                            if (tplSrch.IsComplete)
-                            {
-                                whetherContinueProcessThisMessage = true;
-                                curMessageBoundle = tplSrch.CompleteMessage;
-                                while (!cbArduinoMessagesTuples.TryTake(out tplSrch))
-                                {
-                                    Application.DoEvents();
-                                    Thread.Sleep(0);
-                                }
-                            }
-                        }
-                    }
-
-
-                    if (!whetherContinueProcessThisMessage)
-                    {
+                        theLogWindow = ServiceTools.LogAText(theLogWindow, ex.Message);
                         continue;
                     }
 
-
-
-
-
-                    if (curMessageBoundle.isReplyMessage)
-                    {
-                        //bcstMessage = bcstMessage.Substring(6, bcstMessage.Length - 6);
-                        if (currMessageDevID == 1)
-                        {
-                            Note("devID:" + currMessageDevID + "   |   " + curMessageBoundle.udpMessage);
-                        }
-                        else if (currMessageDevID == 2)
-                        {
-                            Note("devID:" + currMessageDevID + "   |   " + curMessageBoundle.udpMessage);
-                        }
-                        else
-                        {
-                            Note(curMessageBoundle.udpMessage);
-                        }
-                        //udpMessage = bcstMessage;
-                        replyMessage = curMessageBoundle.udpMessage;
-                        if (needsReplyOnRequest) needsReplyOnRequest = false;
-                    }
-                    //else if (curMessageBoundle.isErrorMessage)
-                    //{
-                    //    if (currMessageDevID == 1)
-                    //    {
-                    //        Note("devID:" + currMessageDevID + "   |   " + "ERROR: " + bcstMessage);
-                    //    }
-                    //    else if (currMessageDevID == 2)
-                    //    {
-                    //        Note("devID:" + currMessageDevID + "   |   " + "ERROR: " + bcstMessage);
-                    //    }
-                    //    else
-                    //    {
-                    //        Note("ERROR: " + bcstMessage);
-                    //    }
-                    //
-                    //    //udpMessage = bcstMessage;
-                    //}
-                    else if (curMessageBoundle.udpMessage == "imarduino")
-                    {
-                        if ((needsToDiscoverArduinoBoardID1) && (currMessageDevID == 1))
-                        {
-                            string addrStr = curMessageBoundle.ipAddrString;
-                            ThreadSafeOperations.SetTextTB(tbIP2ListenDevID1, addrStr, false);
-                            needsToDiscoverArduinoBoardID1 = false;
-                        }
-                        if (needsToDiscoverArduinoBoardID2 && (currMessageDevID == 2))
-                        {
-                            string addrStr = curMessageBoundle.ipAddrString;
-                            ThreadSafeOperations.SetTextTB(tbIP2ListenDevID2, addrStr, false);
-                            needsToDiscoverArduinoBoardID2 = false;
-                        }
-                    }
-                    else
-                    {
-                        if ((!needsToDiscoverArduinoBoardID2) && (!needsToDiscoverArduinoBoardID1))
-                        {
-                            //DateTimeFormatInfo dtFormat = new DateTimeFormatInfo();
-
-                            string timeStampStr = DateTime.UtcNow.ToString("o") + ": ";
-
-                            if (currMessageDevID > 0)
-                            {
-                                NoteLog("devID:" + currMessageDevID + "   |   " + timeStampStr + curMessageBoundle.udpMessage);
-                            }
-                            else
-                            {
-                                NoteLog(timeStampStr + curMessageBoundle.udpMessage);
-                            }
-
-                            //quArduinoUDPCatchedMessages.Enqueue(bcstMessage);
-                            ParseBroadcastMessage(curMessageBoundle.udpMessage, currMessageDevID);
-                        }
-                    }
                 }
                 else
                 {
@@ -2240,6 +2215,143 @@ namespace DataCollectorAutomator
 
             }
         }
+
+
+
+
+
+
+        private void ProcessUDPmessagesFromQueue(BackgroundWorker selfWorker)
+        {
+            IncomingUDPmessageBoundle curMessageBoundle = null;
+            while (true)
+            {
+                if (selfWorker.CancellationPending)
+                {
+                    break;
+                }
+
+                if (cquArduinoUDPCatchedMessages.TryDequeue(out curMessageBoundle))
+                {
+                    break;
+                }
+                else
+                {
+                    Application.DoEvents();
+                    Thread.Sleep(0);
+                    continue;
+                }
+            }
+
+            if (curMessageBoundle == null) return;
+
+            string bcstMessage = curMessageBoundle.udpMessage;
+            int currMessageDevID = curMessageBoundle.devID;
+            bool whetherContinueProcessThisMessage = true;
+
+
+            if (curMessageBoundle.isPartOfMessage)
+            {
+                whetherContinueProcessThisMessage = false;
+
+
+                IncomingUDPmessagesBoundlesTuple tplSrch = null;
+                List<IncomingUDPmessagesBoundlesTuple> currTuples =
+                    new List<IncomingUDPmessagesBoundlesTuple>(cbArduinoMessagesTuples);
+                tplSrch =
+                    currTuples.Find(
+                        tpl => ((tpl.devID == curMessageBoundle.devID) && (tpl.mID == curMessageBoundle.mID)));
+
+
+                if (tplSrch == null)
+                {
+                    tplSrch = new IncomingUDPmessagesBoundlesTuple(curMessageBoundle);
+                    cbArduinoMessagesTuples.Add(tplSrch);
+                    whetherContinueProcessThisMessage = false;
+                }
+                else
+                {
+                    tplSrch = tplSrch + curMessageBoundle;
+                    if (tplSrch.IsComplete)
+                    {
+                        whetherContinueProcessThisMessage = true;
+                        curMessageBoundle = tplSrch.CompleteMessage;
+                        while (!cbArduinoMessagesTuples.TryTake(out tplSrch))
+                        {
+                            Application.DoEvents();
+                            Thread.Sleep(0);
+                        }
+                    }
+                }
+            }
+
+
+            if (!whetherContinueProcessThisMessage)
+            {
+                return;
+            }
+
+
+
+
+
+            if (curMessageBoundle.isReplyMessage)
+            {
+                //bcstMessage = bcstMessage.Substring(6, bcstMessage.Length - 6);
+                if (currMessageDevID == 1)
+                {
+                    Note("devID:" + currMessageDevID + "   |   " + curMessageBoundle.udpMessage);
+                }
+                else if (currMessageDevID == 2)
+                {
+                    Note("devID:" + currMessageDevID + "   |   " + curMessageBoundle.udpMessage);
+                }
+                else
+                {
+                    Note(curMessageBoundle.udpMessage);
+                }
+                //udpMessage = bcstMessage;
+                replyMessage = curMessageBoundle.udpMessage;
+                if (needsReplyOnRequest) needsReplyOnRequest = false;
+            }
+            else if (curMessageBoundle.udpMessage == "imarduino")
+            {
+                if ((needsToDiscoverArduinoBoardID1) && (currMessageDevID == 1))
+                {
+                    string addrStr = curMessageBoundle.ipAddrString;
+                    ThreadSafeOperations.SetTextTB(tbIP2ListenDevID1, addrStr, false);
+                    needsToDiscoverArduinoBoardID1 = false;
+                }
+                if (needsToDiscoverArduinoBoardID2 && (currMessageDevID == 2))
+                {
+                    string addrStr = curMessageBoundle.ipAddrString;
+                    ThreadSafeOperations.SetTextTB(tbIP2ListenDevID2, addrStr, false);
+                    needsToDiscoverArduinoBoardID2 = false;
+                }
+            }
+            else
+            {
+                if ((!needsToDiscoverArduinoBoardID2) && (!needsToDiscoverArduinoBoardID1))
+                {
+                    string timeStampStr = DateTime.UtcNow.ToString("o") + ": ";
+
+                    if (currMessageDevID > 0)
+                    {
+                        NoteLog("devID:" + currMessageDevID + "   |   " + timeStampStr + curMessageBoundle.udpMessage);
+                    }
+                    else
+                    {
+                        NoteLog(timeStampStr + curMessageBoundle.udpMessage);
+                    }
+
+                    ParseBroadcastMessage(curMessageBoundle.udpMessage, currMessageDevID);
+                }
+            }
+        }
+
+
+
+
 
 
 
@@ -2299,6 +2411,38 @@ namespace DataCollectorAutomator
             }
         }
 
+
+
+
+        private void lblSunElev_Click(object sender, EventArgs e)
+        {
+            if (gpsData.validGPSdata)
+            {
+                SPA spaCalc = new SPA(gpsData.dateTimeUTC.Year, gpsData.dateTimeUTC.Month, gpsData.dateTimeUTC.Day, gpsData.dateTimeUTC.Hour,
+                        gpsData.dateTimeUTC.Minute, gpsData.dateTimeUTC.Second, (float)gpsData.LonDec, (float)gpsData.LatDec,
+                        (float)SPAConst.DeltaT(gpsData.dateTimeUTC));
+                int res = spaCalc.spa_calculate();
+                AzimuthZenithAngle sunPositionSPAext = new AzimuthZenithAngle(spaCalc.spa.azimuth,
+                    spaCalc.spa.zenith);
+                spaCalc.spa.function = SPAFunctionType.SPA_ZA_RTS;
+                spaCalc.spa_calculate();
+
+
+
+
+
+                theLogWindow = ServiceTools.LogAText(theLogWindow, gpsData.dateTimeUTC.ToString() +
+                                                                   Environment.NewLine + "sunrise: " +
+                                                                   (new TimeOfDay(spaCalc.spa.sunrise)) +
+                                                                   Environment.NewLine + "sunset: " +
+                                                                   (new TimeOfDay(spaCalc.spa.sunset)));
+            }
+        }
+
+
+
+
+        
 
 
 

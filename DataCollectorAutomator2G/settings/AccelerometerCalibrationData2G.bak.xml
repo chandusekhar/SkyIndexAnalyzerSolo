@@ -2,26 +2,26 @@
 <DataSet xmlns="NetFrameWork">
   <table>
     <key>accID1CalibratedXzero</key>
-    <value>0</value>
+    <value>-4,835</value>
   </table>
   <table>
     <key>accID1CalibratedYzero</key>
-    <value>0</value>
+    <value>1,998</value>
   </table>
   <table>
     <key>accID1CalibratedZzero</key>
-    <value>262,0</value>
+    <value>261,714000000001</value>
   </table>
   <table>
     <key>accID2CalibratedXzero</key>
-    <value>0</value>
+    <value>-4,835</value>
   </table>
   <table>
     <key>accID2CalibratedYzero</key>
-    <value>0</value>
+    <value>1,998</value>
   </table>
   <table>
     <key>accID2CalibratedZzero</key>
-    <value>262,0</value>
+    <value>261,714000000001</value>
   </table>
 </DataSet>

@@ -14,6 +14,7 @@ namespace SkyImagesAnalyzerLibraries
         delegate void UpdateProgressBarCallback(System.Windows.Forms.ProgressBar ProgressBarControl, int PBvalue);
         delegate int[] UpdatePictureBoxCallback(System.Windows.Forms.PictureBox PictureBoxControl, Image Image2Show, bool NormalizeImage = false);
         delegate void SetButtonEnabledStatusCallback(System.Windows.Forms.Button Control, bool ControlEnabled);
+        delegate void SetButtonBackgroundColorCallback(System.Windows.Forms.Control ButtonControl, Color bgColor);
         delegate void SetTrackBarEnabledStatusCallback(System.Windows.Forms.TrackBar Control, bool ControlEnabled);
         delegate void MoveTrackBarCallback(System.Windows.Forms.TrackBar TrackBarControl, int TBValue);
         delegate void ToggleButtonStateCallback(System.Windows.Forms.Button ButtonControl, bool ControlEnabled, string ButtonText, bool ButtonFontBold);
@@ -271,6 +272,23 @@ namespace SkyImagesAnalyzerLibraries
                 ButtonControl.Enabled = ControlEnabled;
             }
         }
+
+
+
+
+        public static void SetButtonBackgroundColor(System.Windows.Forms.Control ButtonControl, Color bgColor)
+        {
+            if (ButtonControl.InvokeRequired)
+            {
+                SetButtonBackgroundColorCallback d = SetButtonBackgroundColor;
+                ButtonControl.Invoke(d, new object[] { ButtonControl, bgColor });
+            }
+            else
+            {
+                ButtonControl.BackColor = bgColor;
+            }
+        }
+
 
 
 

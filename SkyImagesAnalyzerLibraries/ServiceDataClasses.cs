@@ -1049,6 +1049,7 @@ namespace SkyImagesAnalyzerLibraries
             lonHemisphere = "E";
             latHemisphere = "N";
             dateTimeUTC = DateTime.UtcNow;
+            validGPSdata = false;
         }
 
 
@@ -1533,110 +1534,206 @@ namespace SkyImagesAnalyzerLibraries
             //0     1                2                3                4                 5               6                   78            9
             //Meteo,Temperature: 1.4,Pressure: 1001.0,Wind speed: 4.54,Wind Dir. : 46.82,R. humidity: 96,Water(t): Practical,,M_Speed: 3.8,M_Dir: 73.2
 
-            if (strValues.Count() < 9)
+            //if (strValues.Count() < 9)
+            //{
+            //    //некорректная строка. вернем без результатов
+            //    validMeteoData = false;
+            //    return;
+            //}
+
+            // Meteo,Temperature: 10.8,Pressure: 1015.1,Wind speed: 2.28,Wind Dir. : 323.40,,M_Speed: 5.5,M_Dir: 358.2
+            List<string> meteoDataFields = new List<string>(strValues);
+            foreach (string strMeteoDatumField in meteoDataFields)
             {
-                //некорректная строка. вернем без результатов
-                validMeteoData = false;
-                return;
+                if (strMeteoDatumField.Contains("Temperature:"))
+                {
+                    string datumSubstr = strMeteoDatumField.Replace("Temperature:", "").Trim().Replace(".", ",");
+                    try
+                    {
+                        airTemperature = Convert.ToDouble(datumSubstr);
+                    }
+                    catch (Exception ex)
+                    {
+                        airTemperature = 0.0d;
+                    }
+                }
+
+                if (strMeteoDatumField.Contains("Pressure:"))
+                {
+                    string datumSubstr = strMeteoDatumField.Replace("Pressure:", "").Trim().Replace(".", ",");
+                    try
+                    {
+                        pressure = Convert.ToDouble(datumSubstr);
+                    }
+                    catch (Exception ex)
+                    {
+                        pressure = 0.0d;
+                    }
+                }
+
+                if (strMeteoDatumField.Contains("Wind speed:"))
+                {
+                    string datumSubstr = strMeteoDatumField.Replace("Wind speed:", "").Trim().Replace(".", ",");
+                    try
+                    {
+                        windSpeed = Convert.ToDouble(datumSubstr);
+                    }
+                    catch (Exception ex)
+                    {
+                        windSpeed = 0.0d;
+                    }
+                }
+
+                if (strMeteoDatumField.Contains("Wind Dir. :"))
+                {
+                    string datumSubstr = strMeteoDatumField.Replace("Wind Dir. :", "").Trim().Replace(".", ",");
+                    try
+                    {
+                        windDirection = Convert.ToDouble(datumSubstr);
+                    }
+                    catch (Exception ex)
+                    {
+                        windDirection = 0.0d;
+                    }
+                }
+
+                if (strMeteoDatumField.Contains("R. humidity:"))
+                {
+                    string datumSubstr = strMeteoDatumField.Replace("R. humidity:", "").Trim().Replace(".", ",");
+                    try
+                    {
+                        Rhumidity = Convert.ToDouble(datumSubstr);
+                    }
+                    catch (Exception ex)
+                    {
+                        Rhumidity = 0.0d;
+                    }
+                }
+
+
+                if (strMeteoDatumField.Contains("Water(t):"))
+                {
+                    string datumSubstr = strMeteoDatumField.Replace("Water(t):", "").Trim();
+                    try
+                    {
+                        string strWaterConsistency = strValues[6];
+                        int idx1 = strWaterConsistency.IndexOf("<Field0>");
+                        int idx2 = strWaterConsistency.IndexOf("</Field0>");
+                        waterTemperature = Convert.ToDouble(strWaterConsistency.Substring(idx1 + 8, idx2 - 8 - idx1).Replace(".", ","));
+                        int idx3 = strWaterConsistency.IndexOf("<Field1>");
+                        int idx4 = strWaterConsistency.IndexOf("</Field1>");
+                        waterSalinity = Convert.ToDouble(strWaterConsistency.Substring(idx3 + 8, idx4 - 8 - idx3).Replace(".", ","));
+                    }
+                    catch (Exception ex)
+                    {
+                        waterSalinity = 0.0d;
+                        waterTemperature = 0.0d;
+                    }
+                }
             }
 
 
-
+            #region obsolete
             //Temperature: 11.1
-            try
-            {
-                string datumString = strValues[1];
-                string[] sunstrings = datumString.Split(':');
+            //try
+            //{
+            //    string datumString = strValues[1];
+            //    string[] sunstrings = datumString.Split(':');
 
-                airTemperature = Convert.ToDouble(sunstrings[1].Trim().Replace(".", ","));
-            }
-            catch (Exception)
-            {
-                airTemperature = 0.0d;
-                validMeteoData = false;
-                return;
-            }
+            //    airTemperature = Convert.ToDouble(sunstrings[1].Trim().Replace(".", ","));
+            //}
+            //catch (Exception)
+            //{
+            //    airTemperature = 0.0d;
+            //    validMeteoData = false;
+            //    return;
+            //}
 
 
             //Pressure: 1001.6
-            try
-            {
-                string datumString = strValues[2];
-                string[] sunstrings = datumString.Split(':');
-
-                pressure = Convert.ToDouble(sunstrings[1].Trim().Replace(".", ","));
-            }
-            catch (Exception)
-            {
-                pressure = 0.0d;
-                validMeteoData = false;
-                return;
-            }
+            //try
+            //{
+            //    string datumString = strValues[2];
+            //    string[] sunstrings = datumString.Split(':');
+            //
+            //    pressure = Convert.ToDouble(sunstrings[1].Trim().Replace(".", ","));
+            //}
+            //catch (Exception)
+            //{
+            //    pressure = 0.0d;
+            //    validMeteoData = false;
+            //    return;
+            //}
 
             //Wind speed: 0.70
-            try
-            {
-                string datumString = strValues[3];
-                string[] sunstrings = datumString.Split(':');
-
-                windSpeed = Convert.ToDouble(sunstrings[1].Trim().Replace(".", ","));
-            }
-            catch (Exception)
-            {
-                windSpeed = 0.0d;
-                validMeteoData = false;
-                return;
-            }
+            //try
+            //{
+            //    string datumString = strValues[3];
+            //    string[] sunstrings = datumString.Split(':');
+            //
+            //    windSpeed = Convert.ToDouble(sunstrings[1].Trim().Replace(".", ","));
+            //}
+            //catch (Exception)
+            //{
+            //    windSpeed = 0.0d;
+            //    validMeteoData = false;
+            //    return;
+            //}
+            
 
 
             //Wind Dir. : 297.96
-            try
-            {
-                string datumString = strValues[4];
-                string[] sunstrings = datumString.Split(':');
-
-                windDirection = Convert.ToDouble(sunstrings[1].Trim().Replace(".", ","));
-            }
-            catch (Exception)
-            {
-                windDirection = 0.0d;
-                validMeteoData = false;
-                return;
-            }
+            //try
+            //{
+            //    string datumString = strValues[4];
+            //    string[] sunstrings = datumString.Split(':');
+            //
+            //    windDirection = Convert.ToDouble(sunstrings[1].Trim().Replace(".", ","));
+            //}
+            //catch (Exception)
+            //{
+            //    windDirection = 0.0d;
+            //    validMeteoData = false;
+            //    return;
+            //}
 
 
             //R. humidity: 94
-            try
-            {
-                string datumString = strValues[5];
-                string[] sunstrings = datumString.Split(':');
+            //try
+            //{
+            //    string datumString = strValues[5];
+            //    string[] sunstrings = datumString.Split(':');
+            //
+            //    Rhumidity = Convert.ToDouble(sunstrings[1].Trim().Replace(".", ","));
+            //}
+            //catch (Exception)
+            //{
+            //    Rhumidity = 0.0d;
+            //    validMeteoData = false;
+            //    return;
+            //}
+            
 
-                Rhumidity = Convert.ToDouble(sunstrings[1].Trim().Replace(".", ","));
-            }
-            catch (Exception)
-            {
-                Rhumidity = 0.0d;
-                validMeteoData = false;
-                return;
-            }
+
+            //try
+            //{
+            //    //Water(t): index='41600'><Field0>11.5097</Field0><Field1>35.0939</Field1></Scan>
+            //    string strWaterConsistency = strValues[6];
+            //    int idx1 = strWaterConsistency.IndexOf("<Field0>");
+            //    int idx2 = strWaterConsistency.IndexOf("</Field0>");
+            //    waterTemperature = Convert.ToDouble(strWaterConsistency.Substring(idx1 + 8, idx2 - 8 - idx1).Replace(".", ","));
+            //    int idx3 = strWaterConsistency.IndexOf("<Field1>");
+            //    int idx4 = strWaterConsistency.IndexOf("</Field1>");
+            //    waterSalinity = Convert.ToDouble(strWaterConsistency.Substring(idx3 + 8, idx4 - 8 - idx3).Replace(".", ","));
+            //}
+            //catch (Exception)
+            //{
+            //    waterSalinity = 0.0d;
+            //    waterTemperature = 0.0d;
+            //}
+            #endregion obsolete
 
 
-            try
-            {
-                //Water(t): index='41600'><Field0>11.5097</Field0><Field1>35.0939</Field1></Scan>
-                string strWaterConsistency = strValues[6];
-                int idx1 = strWaterConsistency.IndexOf("<Field0>");
-                int idx2 = strWaterConsistency.IndexOf("</Field0>");
-                waterTemperature = Convert.ToDouble(strWaterConsistency.Substring(idx1 + 8, idx2 - 8 - idx1).Replace(".", ","));
-                int idx3 = strWaterConsistency.IndexOf("<Field1>");
-                int idx4 = strWaterConsistency.IndexOf("</Field1>");
-                waterSalinity = Convert.ToDouble(strWaterConsistency.Substring(idx3 + 8, idx4 - 8 - idx3).Replace(".", ","));
-            }
-            catch (Exception)
-            {
-                waterSalinity = 0.0d;
-                waterTemperature = 0.0d;
-            }
         }
 
 
