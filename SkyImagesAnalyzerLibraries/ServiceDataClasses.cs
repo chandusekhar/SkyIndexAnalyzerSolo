@@ -1616,7 +1616,7 @@ namespace SkyImagesAnalyzerLibraries
                     string datumSubstr = strMeteoDatumField.Replace("Water(t):", "").Trim();
                     try
                     {
-                        string strWaterConsistency = strValues[6];
+                        string strWaterConsistency = datumSubstr;
                         int idx1 = strWaterConsistency.IndexOf("<Field0>");
                         int idx2 = strWaterConsistency.IndexOf("</Field0>");
                         waterTemperature = Convert.ToDouble(strWaterConsistency.Substring(idx1 + 8, idx2 - 8 - idx1).Replace(".", ","));

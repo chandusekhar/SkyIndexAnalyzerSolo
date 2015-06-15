@@ -1113,7 +1113,7 @@ namespace CloudCamsDataAnalysis
                     Image<Bgr, Byte> imgBgrID1 = inImageToProcess.Copy();
                     imgBgrID1 = ImageProcessing.ImageResizer(imgBgrID1, 800);
 
-                    string formulaString = "1 - sqrt((R*R+G*G+B*B)/3 - (R+G+B)*(R+G+B)/9) / Y";
+                    string formulaString = "grix";
 
                     #region preparing data of the image to process
                     ImageProcessing imgPid1 = new ImageProcessing(imgBgrID1, true);

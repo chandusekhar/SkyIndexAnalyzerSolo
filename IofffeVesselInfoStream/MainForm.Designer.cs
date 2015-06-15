@@ -121,7 +121,7 @@
             this.tabControl1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tabControl1.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this.tabControl1.Location = new System.Drawing.Point(0, 0);
-            this.tabControl1.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.tabControl1.Margin = new System.Windows.Forms.Padding(4);
             this.tabControl1.Name = "tabControl1";
             this.tabControl1.SelectedIndex = 0;
             this.tabControl1.Size = new System.Drawing.Size(1343, 869);
@@ -132,9 +132,9 @@
             this.tpNavAndMeteo.BackColor = System.Drawing.SystemColors.Control;
             this.tpNavAndMeteo.Controls.Add(this.tableLayoutPanel1);
             this.tpNavAndMeteo.Location = new System.Drawing.Point(4, 29);
-            this.tpNavAndMeteo.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.tpNavAndMeteo.Margin = new System.Windows.Forms.Padding(4);
             this.tpNavAndMeteo.Name = "tpNavAndMeteo";
-            this.tpNavAndMeteo.Padding = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.tpNavAndMeteo.Padding = new System.Windows.Forms.Padding(4);
             this.tpNavAndMeteo.Size = new System.Drawing.Size(1335, 836);
             this.tpNavAndMeteo.TabIndex = 0;
             this.tpNavAndMeteo.Text = "Nav&Meteo";
@@ -193,7 +193,7 @@
             this.tableLayoutPanel1.Controls.Add(this.cbLogMeasurementsData, 4, 1);
             this.tableLayoutPanel1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tableLayoutPanel1.Location = new System.Drawing.Point(4, 4);
-            this.tableLayoutPanel1.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.tableLayoutPanel1.Margin = new System.Windows.Forms.Padding(4);
             this.tableLayoutPanel1.Name = "tableLayoutPanel1";
             this.tableLayoutPanel1.RowCount = 17;
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 49F));
@@ -224,7 +224,7 @@
             this.btnConnect.Font = new System.Drawing.Font("Microsoft Sans Serif", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this.btnConnect.ForeColor = System.Drawing.Color.Red;
             this.btnConnect.Location = new System.Drawing.Point(4, 4);
-            this.btnConnect.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.btnConnect.Margin = new System.Windows.Forms.Padding(4);
             this.btnConnect.Name = "btnConnect";
             this.btnConnect.Size = new System.Drawing.Size(1319, 41);
             this.btnConnect.TabIndex = 0;
@@ -343,7 +343,7 @@
             this.tbGPSDateTimeValue.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tbGPSDateTimeValue.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this.tbGPSDateTimeValue.Location = new System.Drawing.Point(290, 127);
-            this.tbGPSDateTimeValue.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.tbGPSDateTimeValue.Margin = new System.Windows.Forms.Padding(4);
             this.tbGPSDateTimeValue.Multiline = true;
             this.tbGPSDateTimeValue.Name = "tbGPSDateTimeValue";
             this.tbGPSDateTimeValue.ReadOnly = true;
@@ -358,7 +358,7 @@
             this.tbGPSlonValue.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tbGPSlonValue.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this.tbGPSlonValue.Location = new System.Drawing.Point(290, 201);
-            this.tbGPSlonValue.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.tbGPSlonValue.Margin = new System.Windows.Forms.Padding(4);
             this.tbGPSlonValue.Multiline = true;
             this.tbGPSlonValue.Name = "tbGPSlonValue";
             this.tbGPSlonValue.ReadOnly = true;
@@ -373,7 +373,7 @@
             this.tbGPSlatValue.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tbGPSlatValue.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this.tbGPSlatValue.Location = new System.Drawing.Point(290, 164);
-            this.tbGPSlatValue.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.tbGPSlatValue.Margin = new System.Windows.Forms.Padding(4);
             this.tbGPSlatValue.Multiline = true;
             this.tbGPSlatValue.Name = "tbGPSlatValue";
             this.tbGPSlatValue.ReadOnly = true;
@@ -388,7 +388,7 @@
             this.tbTrueHeadValue.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tbTrueHeadValue.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this.tbTrueHeadValue.Location = new System.Drawing.Point(290, 238);
-            this.tbTrueHeadValue.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.tbTrueHeadValue.Margin = new System.Windows.Forms.Padding(4);
             this.tbTrueHeadValue.Multiline = true;
             this.tbTrueHeadValue.Name = "tbTrueHeadValue";
             this.tbTrueHeadValue.ReadOnly = true;
@@ -403,7 +403,7 @@
             this.tbGyroHeadValue.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tbGyroHeadValue.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this.tbGyroHeadValue.Location = new System.Drawing.Point(290, 275);
-            this.tbGyroHeadValue.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.tbGyroHeadValue.Margin = new System.Windows.Forms.Padding(4);
             this.tbGyroHeadValue.Multiline = true;
             this.tbGyroHeadValue.Name = "tbGyroHeadValue";
             this.tbGyroHeadValue.ReadOnly = true;
@@ -418,7 +418,7 @@
             this.tbSpeedKnotsValue.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tbSpeedKnotsValue.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this.tbSpeedKnotsValue.Location = new System.Drawing.Point(290, 312);
-            this.tbSpeedKnotsValue.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.tbSpeedKnotsValue.Margin = new System.Windows.Forms.Padding(4);
             this.tbSpeedKnotsValue.Multiline = true;
             this.tbSpeedKnotsValue.Name = "tbSpeedKnotsValue";
             this.tbSpeedKnotsValue.ReadOnly = true;
@@ -433,7 +433,7 @@
             this.tbDepthValue.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tbDepthValue.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this.tbDepthValue.Location = new System.Drawing.Point(290, 349);
-            this.tbDepthValue.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.tbDepthValue.Margin = new System.Windows.Forms.Padding(4);
             this.tbDepthValue.Multiline = true;
             this.tbDepthValue.Name = "tbDepthValue";
             this.tbDepthValue.ReadOnly = true;
@@ -518,7 +518,7 @@
             this.tbPressureValue.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tbPressureValue.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this.tbPressureValue.Location = new System.Drawing.Point(959, 127);
-            this.tbPressureValue.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.tbPressureValue.Margin = new System.Windows.Forms.Padding(4);
             this.tbPressureValue.Multiline = true;
             this.tbPressureValue.Name = "tbPressureValue";
             this.tbPressureValue.ReadOnly = true;
@@ -533,7 +533,7 @@
             this.tbAirTemperatureValue.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tbAirTemperatureValue.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this.tbAirTemperatureValue.Location = new System.Drawing.Point(959, 164);
-            this.tbAirTemperatureValue.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.tbAirTemperatureValue.Margin = new System.Windows.Forms.Padding(4);
             this.tbAirTemperatureValue.Multiline = true;
             this.tbAirTemperatureValue.Name = "tbAirTemperatureValue";
             this.tbAirTemperatureValue.ReadOnly = true;
@@ -548,7 +548,7 @@
             this.tbWindSpeedValue.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tbWindSpeedValue.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this.tbWindSpeedValue.Location = new System.Drawing.Point(959, 201);
-            this.tbWindSpeedValue.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.tbWindSpeedValue.Margin = new System.Windows.Forms.Padding(4);
             this.tbWindSpeedValue.Multiline = true;
             this.tbWindSpeedValue.Name = "tbWindSpeedValue";
             this.tbWindSpeedValue.ReadOnly = true;
@@ -563,7 +563,7 @@
             this.tbWindDirectionValue.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tbWindDirectionValue.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this.tbWindDirectionValue.Location = new System.Drawing.Point(959, 238);
-            this.tbWindDirectionValue.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.tbWindDirectionValue.Margin = new System.Windows.Forms.Padding(4);
             this.tbWindDirectionValue.Multiline = true;
             this.tbWindDirectionValue.Name = "tbWindDirectionValue";
             this.tbWindDirectionValue.ReadOnly = true;
@@ -578,7 +578,7 @@
             this.tbRelHumidityValue.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tbRelHumidityValue.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this.tbRelHumidityValue.Location = new System.Drawing.Point(959, 275);
-            this.tbRelHumidityValue.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.tbRelHumidityValue.Margin = new System.Windows.Forms.Padding(4);
             this.tbRelHumidityValue.Multiline = true;
             this.tbRelHumidityValue.Name = "tbRelHumidityValue";
             this.tbRelHumidityValue.ReadOnly = true;
@@ -593,7 +593,7 @@
             this.tableLayoutPanel1.SetColumnSpan(this.pbGeoTrack, 2);
             this.pbGeoTrack.Dock = System.Windows.Forms.DockStyle.Fill;
             this.pbGeoTrack.Location = new System.Drawing.Point(44, 447);
-            this.pbGeoTrack.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.pbGeoTrack.Margin = new System.Windows.Forms.Padding(4);
             this.pbGeoTrack.Name = "pbGeoTrack";
             this.tableLayoutPanel1.SetRowSpan(this.pbGeoTrack, 3);
             this.pbGeoTrack.Size = new System.Drawing.Size(608, 301);
@@ -621,7 +621,7 @@
             this.tableLayoutPanel1.SetColumnSpan(this.pbGraphs, 2);
             this.pbGraphs.Dock = System.Windows.Forms.DockStyle.Fill;
             this.pbGraphs.Location = new System.Drawing.Point(713, 447);
-            this.pbGraphs.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.pbGraphs.Margin = new System.Windows.Forms.Padding(4);
             this.pbGraphs.Name = "pbGraphs";
             this.tableLayoutPanel1.SetRowSpan(this.pbGraphs, 3);
             this.pbGraphs.Size = new System.Drawing.Size(610, 301);
@@ -633,7 +633,7 @@
             this.trbGeoTrackScale.Dock = System.Windows.Forms.DockStyle.Fill;
             this.trbGeoTrackScale.LargeChange = 3;
             this.trbGeoTrackScale.Location = new System.Drawing.Point(660, 447);
-            this.trbGeoTrackScale.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.trbGeoTrackScale.Margin = new System.Windows.Forms.Padding(4);
             this.trbGeoTrackScale.Name = "trbGeoTrackScale";
             this.trbGeoTrackScale.Orientation = System.Windows.Forms.Orientation.Vertical;
             this.tableLayoutPanel1.SetRowSpan(this.trbGeoTrackScale, 3);
@@ -648,7 +648,7 @@
             this.cbShowGeoTrack.Dock = System.Windows.Forms.DockStyle.Fill;
             this.cbShowGeoTrack.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this.cbShowGeoTrack.Location = new System.Drawing.Point(44, 398);
-            this.cbShowGeoTrack.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.cbShowGeoTrack.Margin = new System.Windows.Forms.Padding(4);
             this.cbShowGeoTrack.Name = "cbShowGeoTrack";
             this.cbShowGeoTrack.Size = new System.Drawing.Size(608, 41);
             this.cbShowGeoTrack.TabIndex = 34;
@@ -664,7 +664,7 @@
             this.wcUpdatimgGraphs.Dock = System.Windows.Forms.DockStyle.Fill;
             this.wcUpdatimgGraphs.InnerCircleRadius = 8;
             this.wcUpdatimgGraphs.Location = new System.Drawing.Point(660, 398);
-            this.wcUpdatimgGraphs.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.wcUpdatimgGraphs.Margin = new System.Windows.Forms.Padding(4);
             this.wcUpdatimgGraphs.Name = "wcUpdatimgGraphs";
             this.wcUpdatimgGraphs.NumberSpoke = 24;
             this.wcUpdatimgGraphs.OuterCircleRadius = 9;
@@ -710,7 +710,7 @@
             this.tbWaterTemperatureValue.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tbWaterTemperatureValue.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this.tbWaterTemperatureValue.Location = new System.Drawing.Point(959, 312);
-            this.tbWaterTemperatureValue.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.tbWaterTemperatureValue.Margin = new System.Windows.Forms.Padding(4);
             this.tbWaterTemperatureValue.Multiline = true;
             this.tbWaterTemperatureValue.Name = "tbWaterTemperatureValue";
             this.tbWaterTemperatureValue.ReadOnly = true;
@@ -725,7 +725,7 @@
             this.tbWaterSalinityValue.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tbWaterSalinityValue.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this.tbWaterSalinityValue.Location = new System.Drawing.Point(959, 349);
-            this.tbWaterSalinityValue.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.tbWaterSalinityValue.Margin = new System.Windows.Forms.Padding(4);
             this.tbWaterSalinityValue.Multiline = true;
             this.tbWaterSalinityValue.Name = "tbWaterSalinityValue";
             this.tbWaterSalinityValue.ReadOnly = true;
@@ -781,7 +781,7 @@
             this.wcNavDataSoeedControl.Dock = System.Windows.Forms.DockStyle.Fill;
             this.wcNavDataSoeedControl.InnerCircleRadius = 5;
             this.wcNavDataSoeedControl.Location = new System.Drawing.Point(290, 90);
-            this.wcNavDataSoeedControl.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.wcNavDataSoeedControl.Margin = new System.Windows.Forms.Padding(4);
             this.wcNavDataSoeedControl.Name = "wcNavDataSoeedControl";
             this.wcNavDataSoeedControl.NumberSpoke = 12;
             this.wcNavDataSoeedControl.OuterCircleRadius = 11;
@@ -799,7 +799,7 @@
             this.wcMeteoDataSpeedControl.Dock = System.Windows.Forms.DockStyle.Top;
             this.wcMeteoDataSpeedControl.InnerCircleRadius = 5;
             this.wcMeteoDataSpeedControl.Location = new System.Drawing.Point(959, 90);
-            this.wcMeteoDataSpeedControl.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.wcMeteoDataSpeedControl.Margin = new System.Windows.Forms.Padding(4);
             this.wcMeteoDataSpeedControl.Name = "wcMeteoDataSpeedControl";
             this.wcMeteoDataSpeedControl.NumberSpoke = 12;
             this.wcMeteoDataSpeedControl.OuterCircleRadius = 11;
@@ -817,7 +817,7 @@
             this.btnCenterToActualPosition.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnCenterToActualPosition.Image = global::IofffeVesselInfoStream.Properties.Resources._74_location;
             this.btnCenterToActualPosition.Location = new System.Drawing.Point(4, 398);
-            this.btnCenterToActualPosition.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.btnCenterToActualPosition.Margin = new System.Windows.Forms.Padding(4);
             this.btnCenterToActualPosition.Name = "btnCenterToActualPosition";
             this.btnCenterToActualPosition.Size = new System.Drawing.Size(32, 41);
             this.btnCenterToActualPosition.TabIndex = 46;
@@ -832,7 +832,7 @@
             this.tableLayoutPanel1.SetColumnSpan(this.cbLogNCdata, 3);
             this.cbLogNCdata.Dock = System.Windows.Forms.DockStyle.Fill;
             this.cbLogNCdata.Location = new System.Drawing.Point(4, 53);
-            this.cbLogNCdata.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.cbLogNCdata.Margin = new System.Windows.Forms.Padding(4);
             this.cbLogNCdata.Name = "cbLogNCdata";
             this.cbLogNCdata.Size = new System.Drawing.Size(648, 29);
             this.cbLogNCdata.TabIndex = 47;
@@ -847,7 +847,7 @@
             this.tableLayoutPanel1.SetColumnSpan(this.cbLogMeasurementsData, 2);
             this.cbLogMeasurementsData.Dock = System.Windows.Forms.DockStyle.Fill;
             this.cbLogMeasurementsData.Location = new System.Drawing.Point(713, 53);
-            this.cbLogMeasurementsData.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.cbLogMeasurementsData.Margin = new System.Windows.Forms.Padding(4);
             this.cbLogMeasurementsData.Name = "cbLogMeasurementsData";
             this.cbLogMeasurementsData.Size = new System.Drawing.Size(610, 29);
             this.cbLogMeasurementsData.TabIndex = 48;
@@ -859,10 +859,10 @@
             this.tpSeaSaveStream.BackColor = System.Drawing.SystemColors.Control;
             this.tpSeaSaveStream.Controls.Add(this.tableLayoutPanel2);
             this.tpSeaSaveStream.Location = new System.Drawing.Point(4, 29);
-            this.tpSeaSaveStream.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.tpSeaSaveStream.Margin = new System.Windows.Forms.Padding(4);
             this.tpSeaSaveStream.Name = "tpSeaSaveStream";
-            this.tpSeaSaveStream.Padding = new System.Windows.Forms.Padding(4, 4, 4, 4);
-            this.tpSeaSaveStream.Size = new System.Drawing.Size(1081, 672);
+            this.tpSeaSaveStream.Padding = new System.Windows.Forms.Padding(4);
+            this.tpSeaSaveStream.Size = new System.Drawing.Size(1335, 836);
             this.tpSeaSaveStream.TabIndex = 1;
             this.tpSeaSaveStream.Text = "SeaSave";
             // 
@@ -875,12 +875,12 @@
             this.tableLayoutPanel2.Controls.Add(this.tbSeaSaveLog, 0, 1);
             this.tableLayoutPanel2.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tableLayoutPanel2.Location = new System.Drawing.Point(4, 4);
-            this.tableLayoutPanel2.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.tableLayoutPanel2.Margin = new System.Windows.Forms.Padding(4);
             this.tableLayoutPanel2.Name = "tableLayoutPanel2";
             this.tableLayoutPanel2.RowCount = 2;
             this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 49F));
             this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            this.tableLayoutPanel2.Size = new System.Drawing.Size(1073, 664);
+            this.tableLayoutPanel2.Size = new System.Drawing.Size(1327, 828);
             this.tableLayoutPanel2.TabIndex = 0;
             // 
             // btnStartStopSeaSave
@@ -891,9 +891,9 @@
             this.btnStartStopSeaSave.Font = new System.Drawing.Font("Microsoft Sans Serif", 15.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this.btnStartStopSeaSave.ForeColor = System.Drawing.Color.Red;
             this.btnStartStopSeaSave.Location = new System.Drawing.Point(4, 4);
-            this.btnStartStopSeaSave.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.btnStartStopSeaSave.Margin = new System.Windows.Forms.Padding(4);
             this.btnStartStopSeaSave.Name = "btnStartStopSeaSave";
-            this.btnStartStopSeaSave.Size = new System.Drawing.Size(1065, 41);
+            this.btnStartStopSeaSave.Size = new System.Drawing.Size(1319, 41);
             this.btnStartStopSeaSave.TabIndex = 0;
             this.btnStartStopSeaSave.Text = "CONNECT SeaSave";
             this.btnStartStopSeaSave.UseVisualStyleBackColor = true;
@@ -904,11 +904,11 @@
             this.tableLayoutPanel2.SetColumnSpan(this.tbSeaSaveLog, 2);
             this.tbSeaSaveLog.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tbSeaSaveLog.Location = new System.Drawing.Point(4, 53);
-            this.tbSeaSaveLog.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.tbSeaSaveLog.Margin = new System.Windows.Forms.Padding(4);
             this.tbSeaSaveLog.Multiline = true;
             this.tbSeaSaveLog.Name = "tbSeaSaveLog";
             this.tbSeaSaveLog.ScrollBars = System.Windows.Forms.ScrollBars.Both;
-            this.tbSeaSaveLog.Size = new System.Drawing.Size(1065, 607);
+            this.tbSeaSaveLog.Size = new System.Drawing.Size(1319, 771);
             this.tbSeaSaveLog.TabIndex = 1;
             // 
             // bgwSeaSaveSocketStreamReader
@@ -926,9 +926,10 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1343, 869);
             this.Controls.Add(this.tabControl1);
-            this.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.Margin = new System.Windows.Forms.Padding(4);
             this.Name = "MainForm";
             this.Text = "Form1";
+            this.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.MainForm_KeyPress);
             this.tabControl1.ResumeLayout(false);
             this.tpNavAndMeteo.ResumeLayout(false);
             this.tableLayoutPanel1.ResumeLayout(false);

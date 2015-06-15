@@ -1230,6 +1230,14 @@ namespace IofffeVesselInfoStream
 
         #endregion
 
+        private void MainForm_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            if (e.KeyChar == 27)
+            {
+                this.Close();
+            }
+        }
+
 
 
 
