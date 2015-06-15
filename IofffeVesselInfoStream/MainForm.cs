@@ -14,6 +14,7 @@ using Emgu.CV;
 using Emgu.CV.Structure;
 using MathNet.Numerics.LinearAlgebra.Double;
 using SkyImagesAnalyzerLibraries;
+using SolarPositioning;
 
 
 namespace IofffeVesselInfoStream
@@ -322,7 +323,7 @@ namespace IofffeVesselInfoStream
                                 Directory.GetCurrentDirectory() + "\\logs\\IoffeVesselInfoStream-MeteoDataLog-" +
                                 DateTime.UtcNow.Date.ToString("yyyy-MM-dd") + ".nc");
                         }
-                        
+
 
                         dmMeteoDataMatrix = null;
                         meteoDateTimeValuesList.Clear();
@@ -565,9 +566,22 @@ namespace IofffeVesselInfoStream
 
                         if (actualGPSdata != null)
                         {
+                            SPA spaCalc = new SPA(actualGPSdata.dateTimeUTC.Year, actualGPSdata.dateTimeUTC.Month,
+                                actualGPSdata.dateTimeUTC.Day, actualGPSdata.dateTimeUTC.Hour,
+                                actualGPSdata.dateTimeUTC.Minute, actualGPSdata.dateTimeUTC.Second,
+                                (float) actualGPSdata.LonDec, (float) actualGPSdata.LatDec,
+                                (float) SPAConst.DeltaT(actualGPSdata.dateTimeUTC));
+                            int res = spaCalc.spa_calculate();
+                            AzimuthZenithAngle sunPositionSPAext = new AzimuthZenithAngle(spaCalc.spa.azimuth,
+                                spaCalc.spa.zenith);
+                            double sunElevCalc = sunPositionSPAext.ElevationAngle;
+                            double sunAzimuth = sunPositionSPAext.Azimuth;
+
+
+
                             strDataToObservationsLog += actualGPSdata.Lat.ToString().Replace(".", ",") + "; ";
                             strDataToObservationsLog += actualGPSdata.Lon.ToString().Replace(".", ",") + "; ";
-                            strDataToObservationsLog += "" + "; ";
+                            strDataToObservationsLog += sunElevCalc.ToString("F2").Replace(".", ",") + "; "; // Sun elevation
                             strDataToObservationsLog +=
                                 actualGPSdata.IOFFEdataHeadingTrue.ToString().Replace(".", ",") + "; ";
                             strDataToObservationsLog +=
@@ -820,7 +834,7 @@ namespace IofffeVesselInfoStream
             {
                 return;
             }
-            
+
             while (!Monitor.TryEnter(geoRenderer, 100))
             {
                 Application.DoEvents();

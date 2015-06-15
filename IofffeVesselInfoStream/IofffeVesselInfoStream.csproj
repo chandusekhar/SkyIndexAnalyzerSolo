@@ -127,6 +127,11 @@
       <Name>SkyImagesAnalyzerLibraries</Name>
       <Private>False</Private>
     </ProjectReference>
+    <ProjectReference Include="..\SolarPositioning\SolarPositioning.csproj">
+      <Project>{3499be05-5c5b-49f0-9655-05cb2e5e6b3d}</Project>
+      <Name>SolarPositioning</Name>
+      <Private>False</Private>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\left_arrow.png" />
