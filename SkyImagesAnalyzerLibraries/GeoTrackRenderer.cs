@@ -147,7 +147,7 @@ namespace SkyImagesAnalyzerLibraries
                 Dictionary<string, object> dictCurrFileData = NetCDFoperations.ReadDataFromFile(GPSdataLogNetCdfFileName);
                 string varNameDateTime = "DateTime";
 
-                #region deprecated
+                #region //obsolete
                 //if (dictCurrFileData.Keys.Contains("DateTime"))
                 //{
                 //    varNameDateTime = "DateTime";
@@ -156,14 +156,14 @@ namespace SkyImagesAnalyzerLibraries
                 //{
                 //    varNameDateTime = "Datetime";
                 //}
-                #endregion deprecated
+                #endregion //obsolete
 
                 List<long> currFileDateTimeLongTicksList = new List<long>((dictCurrFileData[varNameDateTime] as long[]));
                 List<DateTime> currFileDateTimeList = currFileDateTimeLongTicksList.ConvertAll(longVal => new DateTime(longVal));
 
                 string varNameGPSdata = "GPSdata";
 
-                #region deprecated
+                #region //obsolete
                 //if (dictCurrFileData.Keys.Contains("AccelerometerData"))
                 //{
                 //    varNameGPSdata = "AccelerometerData";
@@ -172,7 +172,7 @@ namespace SkyImagesAnalyzerLibraries
                 //{
                 //    varNameGPSdata = "GPSdata";
                 //}
-                #endregion deprecated
+                #endregion //obsolete
 
 
                 //DenseMatrix dmTmpGPSdata = dictCurrFileData[varNameGPSdata] as DenseMatrix;

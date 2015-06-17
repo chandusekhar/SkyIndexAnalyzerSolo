@@ -1755,5 +1755,59 @@ namespace SkyImagesAnalyzerLibraries
             return dmRetMatr;
         }
 
+
+
+
+        public MeteoData(IEnumerable<double> source)
+        {
+            if (source.Count() == 7)
+            {
+                // { pressure, Rhumidity, airTemperature, windSpeed, windDirection, waterTemperature, waterSalinity }
+                try
+                {
+                    pressure = source.ElementAt(0);
+                    Rhumidity = source.ElementAt(1);
+                    airTemperature = source.ElementAt(2);
+                    windSpeed = source.ElementAt(3);
+                    windDirection = source.ElementAt(4);
+                    waterTemperature = source.ElementAt(5);
+                    waterSalinity = source.ElementAt(6);
+                }
+                catch (Exception)
+                {
+                    validMeteoData = false;
+                    return;
+                }
+            }
+            else
+            {
+                validMeteoData = false;
+                return;
+            }
+        }
+
+
+
+        public static List<MeteoData> OfDenseMatrix(DenseMatrix dmSource)
+        {
+            if (dmSource.RowCount == 0)
+            {
+                return null;
+            }
+
+            List<MeteoData> listRetMeteodata = new List<MeteoData>();
+
+            foreach (Tuple<int, Vector<double>> tplRow in dmSource.EnumerateRowsIndexed())
+            {
+                MeteoData newMeteoDatum = new MeteoData(tplRow.Item2);
+                if (newMeteoDatum != null)
+                {
+                    listRetMeteodata.Add(newMeteoDatum);
+                }
+            }
+
+            return listRetMeteodata;
+        }
+
     }
 }

@@ -1,0 +1,19 @@
+﻿<?xml version="1.0" standalone="yes"?>
+<DataSet xmlns="NetFrameWork">
+  <table>
+    <key>DefaultDataBroadcastingServerIP</key>
+    <value>169.254.249.87</value>
+  </table>
+  <table>
+    <key>DefaultDataBroadcastingServerPort</key>
+    <value>1977</value>
+  </table>
+  <table>
+    <key>GraphsUpdatingPeriodSec</key>
+    <value>10</value>
+  </table>
+  <table>
+    <key>IoffeNavMeteoDataFilesDirectory</key>
+    <value>D:\_gulevlab\nv2-met\</value>
+  </table>
+</DataSet>

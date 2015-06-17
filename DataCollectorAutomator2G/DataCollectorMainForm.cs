@@ -66,10 +66,14 @@ namespace DataCollectorAutomator
     #endregion
 
 
+
+
     #region the form behaviour
 
     public partial class DataCollectorMainForm : Form
     {
+        private System.Threading.Timer workingControlTimer = null;
+        
         private string ip2ListenID1 = "";
         private string ip2ListenID2 = "";
         private int port2converse = 5555;
@@ -126,7 +130,7 @@ namespace DataCollectorAutomator
         private string VivotekCameraUserName2 = "root";
         private string VivotekCameraPassword2 = "vivotek";
 
-        private LogWindow theLogWindow = null;
+        private static LogWindow theLogWindow = null;
         private string strTotalBcstLog = "";
         private bool showTotalBcstLog = false;
 
@@ -144,6 +148,10 @@ namespace DataCollectorAutomator
 
         private static Image<Bgr, Byte> currCaughtImageID1 = null;
         private static Image<Bgr, Byte> currCaughtImageID2 = null;
+
+        //public delegate void CheckIfEveryBgwWorkingHandler(object sender, NotAllBgwWorkingAlertEventArgs e);
+        //private event CheckIfEveryBgwWorkingHandler CheckIfEveryBgwWorking;
+
 
 
         private void ParseBroadcastMessage(string bcstMessage, int devID = 1)
@@ -240,10 +248,15 @@ namespace DataCollectorAutomator
         }
 
 
+        
+        
         public DataCollectorMainForm()
         {
             InitializeComponent();
         }
+
+
+
 
         private void DataCollectorMainForm_Load(object sender, EventArgs e)
         {
@@ -328,7 +341,23 @@ namespace DataCollectorAutomator
 
 
             //reportingTextBox = tbMainLog;
+
+            //theLogWindow = ServiceTools.LogAText(theLogWindow,
+            //    "started at " + DateTime.Now.ToString("u").Replace("Z", ""));
+            //CheckIfEveryBgwWorking += DataCollectorMainForm_CheckIfEveryBgwWorking;
         }
+
+
+
+        //void DataCollectorMainForm_CheckIfEveryBgwWorking(object sender, NotAllBgwWorkingAlertEventArgs e)
+        //{
+        //    if (!(((dataCollector != null) && (udpCatchingJob != null) && (bgwUDPmessagesParser != null)) &&
+        //                (dataCollector.IsBusy && udpCatchingJob.IsBusy && bgwUDPmessagesParser.IsBusy)))
+        //    {
+        //        theLogWindow = ServiceTools.LogAText(theLogWindow, "ALERT!!! Something is wrong! Check please if everything is working.");
+        //    }
+        //    Application.DoEvents();
+        //}
 
 
 
@@ -338,11 +367,6 @@ namespace DataCollectorAutomator
             if (showTotalBcstLog)
             {
                 Note(text);
-                //theLogWindow = ServiceTools.LogAText(theLogWindow, text, true);
-                //if (theLogWindow.LinesCount >= BroadcastLogHistorySizeLines)
-                //{
-                //    swapBcstLog();
-                //}
             }
             strTotalBcstLog += text + Environment.NewLine;
             if (strTotalBcstLog.Length >= (BroadcastLogHistorySizeLines * 200))
@@ -661,6 +685,8 @@ namespace DataCollectorAutomator
                     needsToSwitchListeningArduinoOFF = true;
                     btnStartStopBdcstListening_Click(null, null);
                 }
+
+                #region // obsolete
                 //Note("Detecting outdoor board broadcasting state");
                 //ThreadSafeOperations.ToggleButtonState(btnStartStopCollecting, false, "wait for state checking", true);
                 //ThreadSafeOperations.SetLoadingCircleState(StartStopDataCollectingWaitingCircle, true, true,
@@ -676,13 +702,26 @@ namespace DataCollectorAutomator
                 //}
                 //currOperatingDevID = 2;
                 //PerformRequestArduinoBoard("1", currOperatingDevID);
+                #endregion // obsolete
 
                 dataCollector.RunWorkerAsync();
+
+                //TimerCallback workingControlTimerCallback = new TimerCallback((obj) =>
+                //{
+                //    if (CheckIfEveryBgwWorking != null)
+                //    {
+                //        CheckIfEveryBgwWorking(this, new NotAllBgwWorkingAlertEventArgs(""));
+                //    }
+                //});
+                //workingControlTimer = new System.Threading.Timer(workingControlTimerCallback,
+                //    null, 0, 1000);
 
             }
             else
             {
                 dataCollector.CancelAsync();
+                //workingControlTimer.Change(Timeout.Infinite, Timeout.Infinite);
+                //workingControlTimer.Dispose();
             }
         }
 
@@ -767,40 +806,73 @@ namespace DataCollectorAutomator
 
         private void ChangeIndicatingButtonBackgroundColor(Control btn, ButtonBackgroundStateWatchingProcess state = ButtonBackgroundStateWatchingProcess.notWatching)
         {
-            switch (state)
+            if (btn.GetType() == typeof(Button))
             {
-                case ButtonBackgroundStateWatchingProcess.notWatching:
+                switch (state)
                 {
-                    ThreadSafeOperations.SetButtonBackgroundColor(btn, Color.Gainsboro);
-                    break;
+                    case ButtonBackgroundStateWatchingProcess.notWatching:
+                        {
+                            ThreadSafeOperations.SetButtonBackgroundColor(btn, Color.Gainsboro);
+                            break;
+                        }
+                    case ButtonBackgroundStateWatchingProcess.allGood:
+                        {
+                            if (btn.BackColor != Color.Gainsboro)
+                            {
+                                ThreadSafeOperations.SetButtonBackgroundColor(btn, Color.Gainsboro);
+                            }
+                            break;
+                        }
+                    case ButtonBackgroundStateWatchingProcess.alarm:
+                        {
+                            if (btn.BackColor == Color.Gainsboro)
+                            {
+                                ThreadSafeOperations.SetButtonBackgroundColor(btn, Color.MistyRose);
+                            }
+                            else
+                            {
+                                ThreadSafeOperations.SetButtonBackgroundColor(btn, Color.Gainsboro);
+                            }
+                            break;
+                        }
+                    default:
+                        break;
                 }
-                case ButtonBackgroundStateWatchingProcess.allGood:
-                {
-                    if (btn.BackColor == Color.Gainsboro)
-                    {
-                        ThreadSafeOperations.SetButtonBackgroundColor(btn, Color.Honeydew);
-                    }
-                    else
-                    {
-                        ThreadSafeOperations.SetButtonBackgroundColor(btn, Color.Gainsboro);
-                    }
-                    break;
-                }
-                case ButtonBackgroundStateWatchingProcess.alarm:
-                {
-                    if (btn.BackColor == Color.Gainsboro)
-                    {
-                        ThreadSafeOperations.SetButtonBackgroundColor(btn, Color.MistyRose);
-                    }
-                    else
-                    {
-                        ThreadSafeOperations.SetButtonBackgroundColor(btn, Color.Gainsboro);
-                    }
-                    break;
-                }
-                default:
-                    break;
             }
+            else if (btn.GetType() == typeof(Label))
+            {
+                switch (state)
+                {
+                    case ButtonBackgroundStateWatchingProcess.notWatching:
+                        {
+                            ThreadSafeOperations.SetButtonBackgroundColor(btn, Color.Transparent);
+                            break;
+                        }
+                    case ButtonBackgroundStateWatchingProcess.allGood:
+                        {
+                            if (btn.BackColor != Color.Transparent)
+                            {
+                                ThreadSafeOperations.SetButtonBackgroundColor(btn, Color.Transparent);
+                            }
+                            break;
+                        }
+                    case ButtonBackgroundStateWatchingProcess.alarm:
+                        {
+                            if (btn.BackColor == Color.Transparent)
+                            {
+                                ThreadSafeOperations.SetButtonBackgroundColor(btn, Color.MistyRose);
+                            }
+                            else
+                            {
+                                ThreadSafeOperations.SetButtonBackgroundColor(btn, Color.Transparent);
+                            }
+                            break;
+                        }
+                    default:
+                        break;
+                }
+            }
+            
         }
 
 
@@ -951,6 +1023,11 @@ namespace DataCollectorAutomator
                         ChangeIndicatingButtonBackgroundColor(btnStartStopBdcstListening,
                             ButtonBackgroundStateWatchingProcess.alarm);
                     }
+                    else
+                    {
+                        ChangeIndicatingButtonBackgroundColor(btnStartStopBdcstListening,
+                            ButtonBackgroundStateWatchingProcess.allGood);
+                    }
 
 
                     if (speedUDPprocessing > 0.0d)
@@ -963,6 +1040,17 @@ namespace DataCollectorAutomator
                             ButtonBackgroundStateWatchingProcess.alarm);
                         ChangeIndicatingButtonBackgroundColor(lblAccDevAngleTitleID2,
                             ButtonBackgroundStateWatchingProcess.alarm);
+                    }
+                    else
+                    {
+                        ChangeIndicatingButtonBackgroundColor(lblAccMagnValueID1,
+                            ButtonBackgroundStateWatchingProcess.allGood);
+                        ChangeIndicatingButtonBackgroundColor(lblAccDevAngleValueID1,
+                            ButtonBackgroundStateWatchingProcess.allGood);
+                        ChangeIndicatingButtonBackgroundColor(lblAccMagnTitleID2,
+                            ButtonBackgroundStateWatchingProcess.allGood);
+                        ChangeIndicatingButtonBackgroundColor(lblAccDevAngleTitleID2,
+                            ButtonBackgroundStateWatchingProcess.allGood);
                     }
                 }
 
@@ -2173,10 +2261,21 @@ namespace DataCollectorAutomator
 
 
 
+
+
+
         private void bgwUDPmessagesParser_DoWork(object sender, DoWorkEventArgs e)
         {
             BackgroundWorker selfWorker = sender as BackgroundWorker;
+            //bool needToThrowEx = false;
             //int currMessageDevID = 0;
+            //TimerCallback testExceptionTimerCallback = new TimerCallback((obj) =>
+            //{
+            //    needToThrowEx = true;
+            //});
+            //System.Threading.Timer timerTestException = new System.Threading.Timer(testExceptionTimerCallback, null, 0,
+            //    5000);
+
 
             while (true)
             {
@@ -2199,10 +2298,17 @@ namespace DataCollectorAutomator
                     try
                     {
                         ProcessUDPmessagesFromQueue(selfWorker);
+                        //if (needToThrowEx)
+                        //{
+                        //    needToThrowEx = false;
+                        //    throw new Exception("test exception " + DateTime.Now.ToString("u"));
+                        //}
                     }
                     catch (Exception ex)
                     {
                         theLogWindow = ServiceTools.LogAText(theLogWindow, ex.Message);
+                        //ServiceTools.logToTextFile(Directory.GetCurrentDirectory() + "\\error.log",
+                        //    Environment.NewLine + ex.Message + Environment.NewLine, true);
                         continue;
                     }
 
@@ -2217,6 +2323,8 @@ namespace DataCollectorAutomator
         }
 
 
+
+        
 
 
 
@@ -2449,6 +2557,27 @@ namespace DataCollectorAutomator
     }
 
     #endregion
+
+
+
+
+
+
+    #region event-model usage
+
+    public class NotAllBgwWorkingAlertEventArgs
+    {
+        public String Message { get; private set; }
+
+        public NotAllBgwWorkingAlertEventArgs(string message)
+        {
+            Message = message;
+        }
+    }
+
+    #endregion event-model usage
+
+
 
 
 
