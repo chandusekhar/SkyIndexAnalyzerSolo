@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using MathNet.Numerics.LinearAlgebra;
 using MathNet.Numerics.LinearAlgebra.Double;
+using SolarPositioning;
 
 
 namespace SkyImagesAnalyzerLibraries
@@ -121,56 +122,121 @@ namespace SkyImagesAnalyzerLibraries
             this.AccDoubleZ = aZ;
         }
 
+
         public accelerometerData(IEnumerable<int> source)
         {
-            try
+            if (source.Count() == 3)
             {
-                this.AccX = source.ElementAt(0);
-                this.AccY = source.ElementAt(1);
-                this.AccZ = source.ElementAt(2);
+                try
+                {
+                    this.AccX = source.ElementAt(0);
+                    this.AccY = source.ElementAt(1);
+                    this.AccZ = source.ElementAt(2);
+                }
+                catch (Exception)
+                {
+                    this.AccX = 0;
+                    this.AccY = 0;
+                    this.AccZ = 0;
+                    validAccData = false;
+                }
             }
-            catch (Exception)
+            else if (source.Count() == 4) // devID specified
             {
-                this.AccX = 0;
-                this.AccY = 0;
-                this.AccZ = 0;
-                validAccData = false;
+                try
+                {
+                    this.AccX = source.ElementAt(0);
+                    this.AccY = source.ElementAt(1);
+                    this.AccZ = source.ElementAt(2);
+                    devID = Convert.ToInt32(source.ElementAt(3));
+                }
+                catch (Exception)
+                {
+                    this.AccX = 0;
+                    this.AccY = 0;
+                    this.AccZ = 0;
+                    validAccData = false;
+                }
             }
-
         }
+
+
 
         public accelerometerData(IEnumerable<double> source)
         {
-            try
+            if (source.Count() == 3)
             {
-                this.AccDoubleX = source.ElementAt(0);
-                this.AccDoubleY = source.ElementAt(1);
-                this.AccDoubleZ = source.ElementAt(2);
+                try
+                {
+                    this.AccDoubleX = source.ElementAt(0);
+                    this.AccDoubleY = source.ElementAt(1);
+                    this.AccDoubleZ = source.ElementAt(2);
+                }
+                catch (Exception)
+                {
+                    this.AccDoubleX = 0;
+                    this.AccDoubleY = 0;
+                    this.AccDoubleZ = 0;
+                    validAccData = false;
+                }
             }
-            catch (Exception)
+            else if (source.Count() == 4) // devID specified
             {
-                this.AccDoubleX = 0.0d;
-                this.AccDoubleY = 0.0d;
-                this.AccDoubleZ = 0.0d;
-                validAccData = false;
+                try
+                {
+                    this.AccDoubleX = source.ElementAt(0);
+                    this.AccDoubleY = source.ElementAt(1);
+                    this.AccDoubleZ = source.ElementAt(2);
+                    devID = Convert.ToInt32(source.ElementAt(3));
+                }
+                catch (Exception)
+                {
+                    this.AccDoubleX = 0;
+                    this.AccDoubleY = 0;
+                    this.AccDoubleZ = 0;
+                    validAccData = false;
+                }
             }
 
         }
 
+
+
+
         public accelerometerData(IEnumerable<string> source)
         {
-            try
+            if (source.Count() == 3)
             {
-                this.AccDoubleX = Convert.ToDouble(source.ElementAt(0));
-                this.AccDoubleY = Convert.ToDouble(source.ElementAt(1));
-                this.AccDoubleZ = Convert.ToDouble(source.ElementAt(2));
+                try
+                {
+                    this.AccDoubleX = Convert.ToDouble(source.ElementAt(0));
+                    this.AccDoubleY = Convert.ToDouble(source.ElementAt(1));
+                    this.AccDoubleZ = Convert.ToDouble(source.ElementAt(2));
+                }
+                catch (Exception)
+                {
+                    this.AccDoubleX = 0.0d;
+                    this.AccDoubleY = 0.0d;
+                    this.AccDoubleZ = 0.0d;
+                    validAccData = false;
+                }
             }
-            catch (Exception)
+            else if (source.Count() == 4) // devID specified
             {
-                this.AccDoubleX = 0.0d;
-                this.AccDoubleY = 0.0d;
-                this.AccDoubleZ = 0.0d;
-                validAccData = false;
+                try
+                {
+                    this.AccDoubleX = Convert.ToDouble(source.ElementAt(0));
+                    this.AccDoubleY = Convert.ToDouble(source.ElementAt(1));
+                    this.AccDoubleZ = Convert.ToDouble(source.ElementAt(2));
+                    devID = Convert.ToInt32(source.ElementAt(3));
+                }
+                catch (Exception)
+                {
+                    this.AccDoubleX = 0.0d;
+                    this.AccDoubleY = 0.0d;
+                    this.AccDoubleZ = 0.0d;
+                    validAccData = false;
+                }
             }
 
         }
@@ -305,6 +371,7 @@ namespace SkyImagesAnalyzerLibraries
                         return 0.0d;
                 }
             });
+            dvRetVect = DenseVector.OfEnumerable(dvRetVect.Concat(new double[] { devID }));
             return dvRetVect;
         }
 
@@ -637,6 +704,8 @@ namespace SkyImagesAnalyzerLibraries
                         return 0.0d;
                 }
             });
+            //dvRetVect.Add(devID);
+            dvRetVect = DenseVector.OfEnumerable(dvRetVect.Concat(new double[] {devID}));
             return dvRetVect;
         }
 
@@ -977,6 +1046,7 @@ namespace SkyImagesAnalyzerLibraries
                         return 0.0d;
                 }
             });
+            dvRetVect = DenseVector.OfEnumerable(dvRetVect.Concat(new double[] { devID }));
             return dvRetVect;
         }
 
@@ -1360,6 +1430,9 @@ namespace SkyImagesAnalyzerLibraries
                 double[] arr = new double[] { Lat, Lon, IOFFEdataHeadingTrue, IOFFEdataHeadingGyro, IOFFEdataSpeedKnots, IOFFEdataDepth };
                 dvRetVect = DenseVector.OfEnumerable(arr);
             }
+
+            dvRetVect = DenseVector.OfEnumerable(dvRetVect.Concat(new double[] { devID }));
+
             return dvRetVect;
         }
 
@@ -1397,6 +1470,26 @@ namespace SkyImagesAnalyzerLibraries
                     return;
                 }
             }
+            if (source.Count() == 3) // devID specified
+            {
+                try
+                {
+                    lat = source.ElementAt(0);
+                    latHemisphere = (lat >= 0.0d) ? ("N") : ("S");
+                    lat = Math.Abs(lat);
+
+                    lon = source.ElementAt(1);
+                    lonHemisphere = (lon >= 0.0d) ? ("E") : ("W");
+                    lon = Math.Abs(lon);
+
+                    devID = Convert.ToInt32(source.ElementAt(2));
+                }
+                catch (Exception)
+                {
+                    validGPSdata = false;
+                    return;
+                }
+            }
             else if (source.Count() == 6)
             {
                 // { Lat, Lon, IOFFEdataHeadingTrue, IOFFEdataHeadingGyro, IOFFEdataSpeedKnots, IOFFEdataDepth }
@@ -1417,6 +1510,35 @@ namespace SkyImagesAnalyzerLibraries
                     IOFFEdataSpeedKnots = source.ElementAt(4);
 
                     IOFFEdataDepth = source.ElementAt(5);
+                }
+                catch (Exception)
+                {
+                    validGPSdata = false;
+                    return;
+                }
+            }
+            else if (source.Count() == 7) // devID specified
+            {
+                // { Lat, Lon, IOFFEdataHeadingTrue, IOFFEdataHeadingGyro, IOFFEdataSpeedKnots, IOFFEdataDepth }
+                try
+                {
+                    lat = source.ElementAt(0);
+                    latHemisphere = (lat >= 0.0d) ? ("N") : ("S");
+                    lat = Math.Abs(lat);
+
+                    lon = source.ElementAt(1);
+                    lonHemisphere = (lon >= 0.0d) ? ("E") : ("W");
+                    lon = Math.Abs(lon);
+
+                    IOFFEdataHeadingTrue = source.ElementAt(2);
+
+                    IOFFEdataHeadingGyro = source.ElementAt(3);
+
+                    IOFFEdataSpeedKnots = source.ElementAt(4);
+
+                    IOFFEdataDepth = source.ElementAt(5);
+
+                    devID = Convert.ToInt32(source.ElementAt(6));
                 }
                 catch (Exception)
                 {
@@ -1456,30 +1578,17 @@ namespace SkyImagesAnalyzerLibraries
 
 
 
-        #region // obsolete - use SolarPositioning instead
-        //public double SunAlt()
-        //{
-        //    double tetha = (360.0d / ((DateTime.IsLeapYear(dateTimeUTC.Year)) ? (366.0d) : (365.0d))) / ((double)dateTimeUTC.DayOfYear);
-        //    double SunDelt = 0.006918d - 0.399912d * Math.Cos(tetha) + 0.070257d * Math.Sin(tetha) -
-        //                     0.006758d * Math.Cos(2.0d * tetha) + 0.000908d * Math.Sin(2.0d * tetha);
-        //
-        //
-        //    DateTime tloc = dateTimeUTC.AddHours((LonDec - LonDec % 15) / 15);
-        //    double tm = tloc.Hour + tloc.Minute / 60.0d + tloc.Second / 3600.0d;
-        //    double dt = 0.0172d + 0.4281d * Math.Cos(tetha) - 7.3515d * Math.Sin(tetha) - 3.3495d * Math.Cos(2.0d * tetha) -
-        //                9.3619d * Math.Sin(2.0d * tetha);
-        //    dt = dt / 60.0d;
-        //    double t0 = tm + dt;
-        //    double sunTau = 15.0d * (t0 - 12.0d);
-        //    sunTau = Math.PI * sunTau / 180.0d;
-        //
-        //    double sinHsun = Math.Sin(LatDec * Math.PI / 180.0d) * Math.Sin(SunDelt) +
-        //                     Math.Cos(LatDec * Math.PI / 180.0d) * Math.Cos(SunDelt) * Math.Cos(sunTau);
-        //    double sunHeight = Math.Asin(sinHsun);
-        //    sunHeight = 180.0d * sunHeight / Math.PI;
-        //    return sunHeight;
-        //}
-        #endregion // obsolete - use SolarPositioning instead
+
+        public AzimuthZenithAngle SunZenithAzimuth()
+        {
+            SPA spaCalc = new SPA(dateTimeUTC.Year, dateTimeUTC.Month, dateTimeUTC.Day, dateTimeUTC.Hour,
+                        dateTimeUTC.Minute, dateTimeUTC.Second, (float)LonDec, (float)LatDec,
+                        (float)SPAConst.DeltaT(dateTimeUTC));
+            int res = spaCalc.spa_calculate();
+            AzimuthZenithAngle sunPositionSPAext = new AzimuthZenithAngle(spaCalc.spa.azimuth,
+                spaCalc.spa.zenith);
+            return sunPositionSPAext;
+        }
     }
 
 
@@ -1810,4 +1919,101 @@ namespace SkyImagesAnalyzerLibraries
         }
 
     }
+
+
+
+
+
+    public class FixedQueue<T>
+    {
+        private Queue<T> queue;
+
+        public FixedQueue(int capacity)
+        {
+            Capacity = capacity;
+            queue = new Queue<T>(capacity);
+        }
+
+
+
+        public FixedQueue(IEnumerable<T> inputEnum)
+        {
+            Capacity = inputEnum.Count();
+            queue = new Queue<T>(Capacity);
+            foreach (T item in inputEnum.Reverse())
+            {
+                queue.Enqueue(item);
+            }
+        }
+
+
+
+
+        public int Capacity { get; private set; }
+
+        public int Count { get { return queue.Count; } }
+
+        public T Enqueue(T item)
+        {
+            queue.Enqueue(item);
+            if (queue.Count > Capacity)
+            {
+                return queue.Dequeue();
+            }
+            else
+            {
+                //if you want this to do something else, such as return the `peek` value
+                //modify as desired.
+                return default(T);
+            }
+        }
+
+
+
+
+        public void Enqueue(IEnumerable<T> items)
+        {
+            foreach (T item in items.Reverse())
+            {
+                Enqueue(item);
+            }
+        }
+
+
+
+
+        public T Peek()
+        {
+            return queue.Peek();
+        }
+
+
+        public T First()
+        {
+            return queue.First();
+        }
+
+
+        public T Last()
+        {
+            return queue.Last();
+        }
+
+
+        public List<T> ToList()
+        {
+            List<T> lRet = queue.ToList();
+            lRet.Reverse();
+            return lRet;
+        }
+
+
+        public T[] ToArray()
+        {
+            List<T> lRet = queue.ToList();
+            lRet.Reverse();
+            return lRet.ToArray();
+        }
+    }
+
 }

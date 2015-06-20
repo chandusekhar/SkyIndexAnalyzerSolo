@@ -200,7 +200,7 @@ namespace IofffeVesselInfoStream
                     strCurrentCatchedStreamString = "";
                     while (!cquStreamTextStrings.TryDequeue(out strCurrentCatchedStreamString))
                     {
-                        Application.DoEvents();
+                        // Application.DoEvents();
 
                         if (selfWorker.CancellationPending)
                         {
@@ -214,7 +214,7 @@ namespace IofffeVesselInfoStream
                     //strCurrentCatchedStreamString = quStreamTextStrings.Dequeue();
                     if (strCurrentCatchedStreamString == "")
                     {
-                        Application.DoEvents();
+                        // Application.DoEvents();
                         Thread.Sleep(0);
                         continue;
                     }
@@ -244,14 +244,14 @@ namespace IofffeVesselInfoStream
                     }
                     else
                     {
-                        Application.DoEvents();
+                        // Application.DoEvents();
                         Thread.Sleep(0);
                         continue;
                     }
                 }
                 else
                 {
-                    Application.DoEvents();
+                    // Application.DoEvents();
                     Thread.Sleep(0);
                     continue;
                 }
@@ -333,6 +333,8 @@ namespace IofffeVesselInfoStream
             {
                 if (selfWorker.CancellationPending)
                 {
+                    #region dunp the rest of data
+
                     if (dmGPSDataMatrix != null)
                     {
                         Dictionary<string, object> dataToSave = new Dictionary<string, object>();
@@ -379,6 +381,8 @@ namespace IofffeVesselInfoStream
                     ThreadSafeOperations.SetLoadingCircleState(wcMeteoDataSpeedControl, false, true, Color.Red, 100);
 
                     break;
+
+                    #endregion dunp the rest of data
                 }
 
 
@@ -428,7 +432,7 @@ namespace IofffeVesselInfoStream
                 #endregion data rate controls
 
 
-                //if (quGPSDataQueue.Count > 0)
+
                 if (cquGPSDataQueue.Count > 0)
                 {
                     //while (quGPSDataQueue.Count > 0)
@@ -438,7 +442,7 @@ namespace IofffeVesselInfoStream
 
                         while (!cquGPSDataQueue.TryDequeue(out currQueuedGPSdata))
                         {
-                            Application.DoEvents();
+                            // Application.DoEvents();
 
                             if (selfWorker.CancellationPending)
                             {
@@ -517,7 +521,7 @@ namespace IofffeVesselInfoStream
 
                             while (!Monitor.TryEnter(geoRenderer, 100))
                             {
-                                Application.DoEvents();
+                                // Application.DoEvents();
                                 Thread.Sleep(0);
                             }
 
@@ -569,7 +573,7 @@ namespace IofffeVesselInfoStream
 
                         while (!cquMeteoDataQueue.TryDequeue(out currQueuedMeteoData))
                         {
-                            Application.DoEvents();
+                            // Application.DoEvents();
 
                             if (selfWorker.CancellationPending)
                             {
@@ -723,7 +727,7 @@ namespace IofffeVesselInfoStream
 
                 while (!Monitor.TryEnter(geoRenderer, 100))
                 {
-                    Application.DoEvents();
+                    // Application.DoEvents();
                     Thread.Sleep(0);
                 }
 
@@ -1334,7 +1338,7 @@ namespace IofffeVesselInfoStream
 
         private void MainForm_KeyPress(object sender, KeyPressEventArgs e)
         {
-            if (e.KeyChar == 27)
+            if (e.KeyChar == 27)//escape key
             {
                 this.Close();
             }
@@ -1563,9 +1567,6 @@ namespace IofffeVesselInfoStream
             }
             else
             {
-
-
-
                 DateTime curDateTime = DateTime.UtcNow;
 
                 theLogWindow = ServiceTools.LogAText(theLogWindow,
@@ -1597,6 +1598,7 @@ namespace IofffeVesselInfoStream
                     string[] sMetFilenames = Directory.GetFiles(navMetFilesPath, "*.met", SearchOption.AllDirectories);
 
                     int totalFilesCount = sNavFilenames.Count() + sMetFilenames.Count();
+                    int ProgressPercentagePrev = 0;
                     int processedFiles = 0;
 
                     if (!sNavFilenames.Any())
@@ -1608,6 +1610,15 @@ namespace IofffeVesselInfoStream
                     {
                         foreach (string navFilename in sNavFilenames)
                         {
+                            processedFiles++;
+                            int ProgressPercentage = Convert.ToInt32(100.0d * processedFiles / totalFilesCount);
+                            if (ProgressPercentage > ProgressPercentagePrev)
+                            {
+                                ProgressPercentagePrev = ProgressPercentage;
+                                selfWorker.ReportProgress(ProgressPercentage);
+                            }
+
+
                             if (selfWorker.CancellationPending)
                             {
                                 break;
@@ -1635,8 +1646,6 @@ namespace IofffeVesselInfoStream
                                 true);
                             Application.DoEvents();
                             lAllNavData.AddRange(dataHasBeenRead);
-
-                            processedFiles++;
                         }
                     }
 
@@ -1667,6 +1676,15 @@ namespace IofffeVesselInfoStream
                     {
                         foreach (string meteoFilename in sMetFilenames)
                         {
+                            processedFiles++;
+                            int ProgressPercentage = Convert.ToInt32(100.0d * processedFiles / totalFilesCount);
+                            if (ProgressPercentage > ProgressPercentagePrev)
+                            {
+                                ProgressPercentagePrev = ProgressPercentage;
+                                selfWorker.ReportProgress(ProgressPercentage);
+                            }
+
+
                             if (selfWorker.CancellationPending)
                             {
                                 break;

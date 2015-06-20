@@ -17,16 +17,16 @@
     <value>4444</value>
   </table>
   <table>
-    <key>VivotekCameraShootingPeriod</key>
-    <value>00:01:00</value>
+    <key>VivotekCameraShootingPeriodSec</key>
+    <value>60</value>
   </table>
   <table>
     <key>VivotekCameraID1IPaddr</key>
-    <value>192.168.192.217</value>
+    <value>192.0.0.201</value>
   </table>
   <table>
     <key>VivotekCameraID2IPaddr</key>
-    <value>192.168.192.216</value>
+    <value>192.0.0.202</value>
   </table>
   <table>
     <key>VivotekCameraID1UserName</key>
@@ -47,5 +47,9 @@
   <table>
     <key>BroadcastLogHistorySizeLines</key>
     <value>4096</value>
+  </table>
+  <table>
+    <key>CamDeclinationThresholdDegToShoot</key>
+    <value>3</value>
   </table>
 </DataSet>

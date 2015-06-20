@@ -20,8 +20,10 @@ using Emgu.CV.Structure;
 using MathNet.Numerics.LinearAlgebra.Double;
 using MRG.Controls.UI;
 using MathNet.Numerics.Statistics;
+using SkyImagesAnalyzer;
 using SkyImagesAnalyzerLibraries;
 using SolarPositioning;
+using Timer = System.Threading.Timer;
 
 
 namespace DataCollectorAutomator
@@ -73,7 +75,7 @@ namespace DataCollectorAutomator
     public partial class DataCollectorMainForm : Form
     {
         private System.Threading.Timer workingControlTimer = null;
-        
+
         private string ip2ListenID1 = "";
         private string ip2ListenID2 = "";
         private int port2converse = 5555;
@@ -92,9 +94,11 @@ namespace DataCollectorAutomator
         //private static DateTime JanFirst1970 = new DateTime(1970, 1, 1);
         IntPtr m_ip = IntPtr.Zero;
 
-        private static Queue<accelerometerData> accDataQueue = new Queue<accelerometerData>();
+        // private static Queue<accelerometerData> accDataQueue = new Queue<accelerometerData>();
+        private static Queue<Tuple<DateTime, accelerometerData>> accDataAndDTqueue = new Queue<Tuple<DateTime, accelerometerData>>();
         private static accelerometerData latestAccData = new accelerometerData();
-        private static Queue<GyroData> gyroDataQueue = new Queue<GyroData>();
+        //private static Queue<GyroData> gyroDataQueue = new Queue<GyroData>();
+        private static Queue<Tuple<DateTime, GyroData>> gyroDataAndDTqueue = new Queue<Tuple<DateTime, GyroData>>();
         private static GyroData latestGyroData = new GyroData();
         //private static MagnetometerData magnData = new MagnetometerData();
         private static GPSdata gpsData = new GPSdata();
@@ -118,8 +122,7 @@ namespace DataCollectorAutomator
 
         //public static TextBox reportingTextBox;
 
-        private string generalSettingsFilename = "";
-        private string accCalibrationDataFilename = "";
+        //private string generalSettingsFilename = "";
         //private string magnCalibrationDataFilename = "";
         private int BroadcastLogHistorySizeLines = 4096;
         private TimeSpan CamShotPeriod = new TimeSpan(0, 1, 0);
@@ -129,6 +132,7 @@ namespace DataCollectorAutomator
         private string VivotekCameraPassword1 = "vivotek";
         private string VivotekCameraUserName2 = "root";
         private string VivotekCameraPassword2 = "vivotek";
+        private double angleCamDeclinationThresholdDeg = 5;
 
         private static LogWindow theLogWindow = null;
         private string strTotalBcstLog = "";
@@ -151,6 +155,11 @@ namespace DataCollectorAutomator
 
         //public delegate void CheckIfEveryBgwWorkingHandler(object sender, NotAllBgwWorkingAlertEventArgs e);
         //private event CheckIfEveryBgwWorkingHandler CheckIfEveryBgwWorking;
+
+        private Dictionary<string, object> defaultProperties = null;
+        private string defaultPropertiesXMLfileName = "";
+        private Dictionary<string, object> accCalibrationDataDict = null;
+        private string accCalibrationDataFilename = "";
 
 
 
@@ -191,7 +200,9 @@ namespace DataCollectorAutomator
 
                             if (latestAccData.validAccData)
                             {
-                                accDataQueue.Enqueue(latestAccData);
+                                //accDataQueue.Enqueue(latestAccData);
+                                accDataAndDTqueue.Enqueue(new Tuple<DateTime, accelerometerData>(DateTime.UtcNow,
+                                    latestAccData));
                             }
 
                             break;
@@ -203,7 +214,8 @@ namespace DataCollectorAutomator
                             string[] stringGyroValues = dataValuesString.Split(splitters, System.StringSplitOptions.RemoveEmptyEntries);
                             latestGyroData = new GyroData(stringGyroValues);
                             latestGyroData.devID = devID;
-                            gyroDataQueue.Enqueue(latestGyroData);
+                            //gyroDataQueue.Enqueue(latestGyroData);
+                            gyroDataAndDTqueue.Enqueue(new Tuple<DateTime, GyroData>(DateTime.UtcNow, latestGyroData));
                             //gyroDatahasBeenChanged = true;
                             break;
                         }
@@ -248,8 +260,8 @@ namespace DataCollectorAutomator
         }
 
 
-        
-        
+
+
         public DataCollectorMainForm()
         {
             InitializeComponent();
@@ -260,75 +272,8 @@ namespace DataCollectorAutomator
 
         private void DataCollectorMainForm_Load(object sender, EventArgs e)
         {
-            generalSettingsFilename = Directory.GetCurrentDirectory() +
-                                      "\\settings\\DataCollectorAppGeneralSettings2G.xml";
-            accCalibrationDataFilename = Directory.GetCurrentDirectory() +
-                                         "\\settings\\AccelerometerCalibrationData2G.xml";
 
-
-
-            Dictionary<string, object> accCalibrationDataDict = ServiceTools.ReadDictionaryFromXML(accCalibrationDataFilename);
-            //Dictionary<string, object> magnCalibrationDataDict = ServiceTools.ReadDictionaryFromXML(magnCalibrationDataFilename);
-            Dictionary<string, object> generalSettings = ServiceTools.ReadDictionaryFromXML(generalSettingsFilename);
-
-            accCalibrationDataID1 = new accelerometerData(Convert.ToDouble(accCalibrationDataDict["accID1CalibratedXzero"]),
-                Convert.ToDouble(accCalibrationDataDict["accID1CalibratedYzero"]),
-                Convert.ToDouble(accCalibrationDataDict["accID1CalibratedZzero"]));
-            accCalibrationDataID2 = new accelerometerData(Convert.ToDouble(accCalibrationDataDict["accID2CalibratedXzero"]),
-                Convert.ToDouble(accCalibrationDataDict["accID2CalibratedYzero"]),
-                Convert.ToDouble(accCalibrationDataDict["accID2CalibratedZzero"]));
-
-
-            ip2ListenID1 = generalSettings["ArduinoBoardID1DefaultIP"] as string;
-            ip2ListenID2 = generalSettings["ArduinoBoardID2DefaultIP"] as string;
-
-            port2converse = Convert.ToInt32(generalSettings["ArduinoBoardDefaultUDPport"]);
-            portBcstRecvng = Convert.ToInt32(generalSettings["UDPBroadcastDefaultListeningPort"]);
-            string strCamShotPeriod = (generalSettings["VivotekCameraShootingPeriod"]) as string;
-            CamShotPeriod = new TimeSpan(Convert.ToInt32(strCamShotPeriod.Substring(0, 2)),
-                Convert.ToInt32(strCamShotPeriod.Substring(3, 2)), Convert.ToInt32(strCamShotPeriod.Substring(6, 2)));
-
-            IPAddress.TryParse(generalSettings["VivotekCameraID1IPaddr"] as string, out VivotekCameraID1IPaddress);
-            IPAddress.TryParse(generalSettings["VivotekCameraID2IPaddr"] as string, out VivotekCameraID2IPaddress);
-            VivotekCameraUserName1 = generalSettings["VivotekCameraID1UserName"] as string;
-            VivotekCameraPassword1 = generalSettings["VivotekCameraID1Password"] as string;
-            VivotekCameraUserName2 = generalSettings["VivotekCameraID2UserName"] as string;
-            VivotekCameraPassword2 = generalSettings["VivotekCameraID2Password"] as string;
-            BroadcastLogHistorySizeLines = Convert.ToInt32(generalSettings["BroadcastLogHistorySizeLines"]);
-
-
-            ThreadSafeOperations.SetTextTB(tbCamPWD1, VivotekCameraPassword1, false);
-            ThreadSafeOperations.SetTextTB(tbCamPWD2, VivotekCameraPassword2, false);
-            tbCamIP1.Text = generalSettings["VivotekCameraID1IPaddr"] as string;
-            tbCamIP2.Text = generalSettings["VivotekCameraID2IPaddr"] as string;
-            ThreadSafeOperations.SetTextTB(tbCamUName1, VivotekCameraUserName1, false);
-            ThreadSafeOperations.SetTextTB(tbCamUName2, VivotekCameraUserName2, false);
-            ThreadSafeOperations.SetTextTB(tbIP2ListenDevID1, ip2ListenID1, false);
-            ThreadSafeOperations.SetTextTB(tbIP2ListenDevID2, ip2ListenID2, false);
-
-            tbCamShotPeriod.Text = CamShotPeriod.ToString("c");
-
-            //ThreadSafeOperations.SetTextTB(tbBcstListeningPort, portBcstRecvng.ToString(), false);
-
-
-
-
-            if (accCalibrationDataID1.AccMagnitude == 0.0d)
-            {
-                accCalibrationDataID1 = new accelerometerData(0.0, 0.0, -256.0);
-            }
-            if (accCalibrationDataID2.AccMagnitude == 0.0d)
-            {
-                accCalibrationDataID2 = new accelerometerData(0.0, 0.0, -256.0);
-            }
-
-            ThreadSafeOperations.SetText(lblAccelCalibrationXID1, Math.Round(accCalibrationDataID1.AccDoubleX, 2).ToString(), false);
-            ThreadSafeOperations.SetText(lblAccelCalibrationYID1, Math.Round(accCalibrationDataID1.AccDoubleY, 2).ToString(), false);
-            ThreadSafeOperations.SetText(lblAccelCalibrationZID1, Math.Round(accCalibrationDataID1.AccDoubleZ, 2).ToString(), false);
-            ThreadSafeOperations.SetText(lblAccelCalibrationXID2, Math.Round(accCalibrationDataID2.AccDoubleX, 2).ToString(), false);
-            ThreadSafeOperations.SetText(lblAccelCalibrationYID2, Math.Round(accCalibrationDataID2.AccDoubleY, 2).ToString(), false);
-            ThreadSafeOperations.SetText(lblAccelCalibrationZID2, Math.Round(accCalibrationDataID2.AccDoubleZ, 2).ToString(), false);
-
+            #region // obsolete
             //processCircleID1.OuterCircleRadius = 20;
             //processCircleID1.InnerCircleRadius = 15;
             //processCircleID1.NumberSpoke = 12;
@@ -345,6 +290,8 @@ namespace DataCollectorAutomator
             //theLogWindow = ServiceTools.LogAText(theLogWindow,
             //    "started at " + DateTime.Now.ToString("u").Replace("Z", ""));
             //CheckIfEveryBgwWorking += DataCollectorMainForm_CheckIfEveryBgwWorking;
+            #endregion // obsolete
+
         }
 
 
@@ -436,8 +383,10 @@ namespace DataCollectorAutomator
                     break;
                 }
 
+                // не нужно?..
                 Application.DoEvents();
                 Thread.Sleep(0);
+                // не нужно?..
             }
 
 
@@ -450,31 +399,31 @@ namespace DataCollectorAutomator
 
 
 
-        private void SaveSettings()
-        {
-            Dictionary<string, object> dictDataToSave = new Dictionary<string, object>();
-            dictDataToSave.Add("ArduinoBoardID1DefaultIP", ip2ListenID1);
-            dictDataToSave.Add("ArduinoBoardID2DefaultIP", ip2ListenID2);
-            dictDataToSave.Add("ArduinoBoardDefaultUDPport", port2converse);
-            dictDataToSave.Add("UDPBroadcastDefaultListeningPort", portBcstRecvng);
-            dictDataToSave.Add("VivotekCameraShootingPeriod", CamShotPeriod.ToString("c"));
-            dictDataToSave.Add("VivotekCameraID1IPaddr", VivotekCameraID1IPaddress.ToString());
-            dictDataToSave.Add("VivotekCameraID2IPaddr", VivotekCameraID2IPaddress.ToString());
-            dictDataToSave.Add("VivotekCameraID1UserName", VivotekCameraUserName1);
-            dictDataToSave.Add("VivotekCameraID2UserName", VivotekCameraUserName2);
-            dictDataToSave.Add("VivotekCameraID1Password", VivotekCameraPassword1);
-            dictDataToSave.Add("VivotekCameraID2Password", VivotekCameraPassword2);
-            dictDataToSave.Add("BroadcastLogHistorySizeLines", BroadcastLogHistorySizeLines);
+        //private void SaveSettings()
+        //{
+        //    Dictionary<string, object> dictDataToSave = new Dictionary<string, object>();
+        //    dictDataToSave.Add("ArduinoBoardID1DefaultIP", ip2ListenID1);
+        //    dictDataToSave.Add("ArduinoBoardID2DefaultIP", ip2ListenID2);
+        //    dictDataToSave.Add("ArduinoBoardDefaultUDPport", port2converse);
+        //    dictDataToSave.Add("UDPBroadcastDefaultListeningPort", portBcstRecvng);
+        //    dictDataToSave.Add("VivotekCameraShootingPeriod", CamShotPeriod.ToString("c"));
+        //    dictDataToSave.Add("VivotekCameraID1IPaddr", VivotekCameraID1IPaddress.ToString());
+        //    dictDataToSave.Add("VivotekCameraID2IPaddr", VivotekCameraID2IPaddress.ToString());
+        //    dictDataToSave.Add("VivotekCameraID1UserName", VivotekCameraUserName1);
+        //    dictDataToSave.Add("VivotekCameraID2UserName", VivotekCameraUserName2);
+        //    dictDataToSave.Add("VivotekCameraID1Password", VivotekCameraPassword1);
+        //    dictDataToSave.Add("VivotekCameraID2Password", VivotekCameraPassword2);
+        //    dictDataToSave.Add("BroadcastLogHistorySizeLines", BroadcastLogHistorySizeLines);
 
-            ServiceTools.WriteDictionaryToXml(dictDataToSave, generalSettingsFilename, false);
-        }
+        //    ServiceTools.WriteDictionaryToXml(dictDataToSave, generalSettingsFilename, false);
+        //}
 
 
 
 
         private void DataCollectorMainForm_FormClosing(object sender, FormClosingEventArgs e)
         {
-            SaveSettings();
+            //SaveSettings();
         }
 
 
@@ -591,8 +540,12 @@ namespace DataCollectorAutomator
         private void udpCatchingJob_DoWork(object sender, DoWorkEventArgs e)
         {
             UdpClient bcstUDPreader = new UdpClient(portBcstRecvng, AddressFamily.InterNetwork);
+            //bcstUDPreader.ExclusiveAddressUse = false;
+            bcstUDPreader.EnableBroadcast = true;
             System.ComponentModel.BackgroundWorker SelfWorker = sender as System.ComponentModel.BackgroundWorker;
             IPEndPoint RemoteIpEndPoint = new IPEndPoint(IPAddress.Any, 0);
+            //bcstUDPreader.Client.Bind(RemoteIpEndPoint);
+            //bcstUDPreader.ExclusiveAddressUse = false;
             UdpState s = new UdpState();
             s.ipEndPoint = RemoteIpEndPoint;
             s.UDPclient = bcstUDPreader;
@@ -608,15 +561,23 @@ namespace DataCollectorAutomator
 
                 if (recievingUDPmessage)
                 {
-                    Application.DoEvents();
-                    Thread.Sleep(0);
+                    //Application.DoEvents();
+                    //Thread.Sleep(0);
                     continue;
                 }
 
 
                 //bcstMessageReceived = false;
-                recievingUDPmessage = true;
-                bcstUDPreader.BeginReceive(bcstReceiveCallback, s);
+                if (bcstUDPreader.Available > 0)
+                {
+                    recievingUDPmessage = true;
+                    bcstUDPreader.BeginReceive(bcstReceiveCallback, s);
+                }
+                else
+                {
+                    //Thread.Sleep(0);
+                    continue;
+                }
             }
 
             bcstUDPreader.Close();
@@ -636,11 +597,17 @@ namespace DataCollectorAutomator
 
         private void swapBcstLog()
         {
-            string filename1;
-
-            filename1 = Directory.GetCurrentDirectory() + "\\logs\\BcstLog-" + DateTime.UtcNow.ToString("o").Replace(":", "-") + ".log";
+            string filename1 = Directory.GetCurrentDirectory() + "\\logs\\DataCollector2G-BcstLog-" +
+                        DateTime.UtcNow.ToString("o").Replace(":", "-").Replace("Z", "") + ".log";
+            ServiceTools.logToTextFile(filename1, strTotalBcstLog, true);
 
             strTotalBcstLog = "";
+
+
+            string filename2 = Directory.GetCurrentDirectory() + "\\logs\\DataCollector2G-NotesLog-" +
+                        DateTime.UtcNow.ToString("o").Replace(":", "-").Replace("Z", "") + ".log";
+            ServiceTools.logToTextFile(filename2, tbMainLog.Text, true);
+            ThreadSafeOperations.SetTextTB(tbMainLog, "", false);
         }
 
 
@@ -872,9 +839,173 @@ namespace DataCollectorAutomator
                         break;
                 }
             }
-            
+
         }
 
+
+
+
+
+        private void EstimateAndReportUDPpacketsRecievingSpeed(object state)
+        {
+            Stopwatch stwToEstimateUDPpacketsRecieving;
+            try
+            {
+                stwToEstimateUDPpacketsRecieving = (state as object[])[0] as Stopwatch;
+            }
+            catch (Exception ex)
+            {
+                return;
+            }
+            
+
+            double elapsedms = (double)(stwToEstimateUDPpacketsRecieving.ElapsedMilliseconds);
+
+            if (elapsedms == 0)
+            {
+                stwToEstimateUDPpacketsRecieving.Restart();
+                return;
+            }
+
+            //оценим скорость поступления пакетов
+            double speedUDPrecieving = (double)recievedUDPPacketsCounter * 1000.0d /
+                              (double)elapsedms;
+            recievedUDPPacketsCounter = 0;
+
+            double speedUDPprocessing = (double)processedUDPPacketsCounter * 1000.0d /
+                                        (double)elapsedms;
+            processedUDPPacketsCounter = 0;
+
+            //theLogWindow = ServiceTools.LogAText(theLogWindow, Environment.NewLine +
+            //    "UDP recieving speed = " + speedUDPrecieving.ToString("F2") + Environment.NewLine +
+            //    "UDP processing speed = " + speedUDPprocessing.ToString("F2"));
+#if DEBUG
+            ThreadSafeOperations.SetText(lblUDPpacketsRecievingSpeedValue, speedUDPrecieving.ToString("F2"), false);
+            ThreadSafeOperations.SetText(lblUDPpacketsProcessingSpeedValue, speedUDPprocessing.ToString("F2"), false);
+#endif
+
+
+            stwToEstimateUDPpacketsRecieving.Restart();
+
+            if (speedUDPrecieving <= 0.0d)
+            {
+                ChangeIndicatingButtonBackgroundColor(btnStartStopBdcstListening,
+                    ButtonBackgroundStateWatchingProcess.alarm);
+            }
+            else
+            {
+                ChangeIndicatingButtonBackgroundColor(btnStartStopBdcstListening,
+                    ButtonBackgroundStateWatchingProcess.allGood);
+            }
+
+
+            if (speedUDPprocessing <= 0.0d)
+            {
+                ChangeIndicatingButtonBackgroundColor(lblAccMagnValueID1,
+                    ButtonBackgroundStateWatchingProcess.alarm);
+                ChangeIndicatingButtonBackgroundColor(lblAccDevAngleValueID1,
+                    ButtonBackgroundStateWatchingProcess.alarm);
+                ChangeIndicatingButtonBackgroundColor(lblAccMagnValueID2,
+                    ButtonBackgroundStateWatchingProcess.alarm);
+                ChangeIndicatingButtonBackgroundColor(lblAccDevAngleValueID2,
+                    ButtonBackgroundStateWatchingProcess.alarm);
+                ChangeIndicatingButtonBackgroundColor(lblAccMagnTitleID1,
+                    ButtonBackgroundStateWatchingProcess.alarm);
+                ChangeIndicatingButtonBackgroundColor(lblAccDevAngleTitleID1,
+                    ButtonBackgroundStateWatchingProcess.alarm);
+                ChangeIndicatingButtonBackgroundColor(lblAccMagnTitleID2,
+                    ButtonBackgroundStateWatchingProcess.alarm);
+                ChangeIndicatingButtonBackgroundColor(lblAccDevAngleTitleID2,
+                    ButtonBackgroundStateWatchingProcess.alarm);
+            }
+            else
+            {
+                ChangeIndicatingButtonBackgroundColor(lblAccMagnValueID1,
+                    ButtonBackgroundStateWatchingProcess.allGood);
+                ChangeIndicatingButtonBackgroundColor(lblAccDevAngleValueID1,
+                    ButtonBackgroundStateWatchingProcess.allGood);
+                ChangeIndicatingButtonBackgroundColor(lblAccMagnValueID2,
+                    ButtonBackgroundStateWatchingProcess.allGood);
+                ChangeIndicatingButtonBackgroundColor(lblAccDevAngleValueID2,
+                    ButtonBackgroundStateWatchingProcess.allGood);
+                ChangeIndicatingButtonBackgroundColor(lblAccMagnTitleID1,
+                    ButtonBackgroundStateWatchingProcess.allGood);
+                ChangeIndicatingButtonBackgroundColor(lblAccDevAngleTitleID1,
+                    ButtonBackgroundStateWatchingProcess.allGood);
+                ChangeIndicatingButtonBackgroundColor(lblAccMagnTitleID2,
+                    ButtonBackgroundStateWatchingProcess.allGood);
+                ChangeIndicatingButtonBackgroundColor(lblAccDevAngleTitleID2,
+                    ButtonBackgroundStateWatchingProcess.allGood);
+            }
+        }
+
+
+
+
+
+        private void UpdateSensorsDataPresentation(object state)
+        {
+            #region // magnetometer - obsolete
+            //DenseVector dvMagnDev = DenseVector.Create(dmAccDataMatrix.RowCount, i =>
+            //{
+            //    accelerometerData accCurrentData = new accelerometerData(dmAccDataMatrix[0, 0],
+            //        dmAccDataMatrix[0, 1], dmAccDataMatrix[0, 2]);
+            //    return (accCurrentData.AccMagnitude - accCalibrationData.AccMagnitude) *
+            //           (accCurrentData.AccMagnitude - accCalibrationData.AccMagnitude);
+            //});
+            //ThreadSafeOperations.SetText(lblAccDevMeanMagnValueID1,
+            //    Math.Sqrt(dvMagnDev.Sum() / dvMagnDev.Count).ToString("0.###e-00"), false);
+
+
+            //DescriptiveStatistics stats1 = new DescriptiveStatistics(dmAccDataMatrix.Column(6));
+            //ThreadSafeOperations.SetText(lblAccDevMeanAngleValueID1, stats1.Mean.ToString("0.###e-00"), false);
+            #endregion #region // magnetometer - obsolete
+
+            // =======================
+            //вывести мгновенные значения, но раздельно по устройствам
+            // =======================
+            // dataToPassToSensorsDataPresentation = new object[] { latestAccDataID1, accCalibrationDataID1, latestAccDataID2, accCalibrationDataID2 };
+            if (state == null)
+            {
+                return;
+            }
+            if (state.GetType() == typeof(List<accelerometerData>))
+            {
+                List<accelerometerData> dataToPassToSensorsDataPresentation = state as List<accelerometerData>;
+                if (dataToPassToSensorsDataPresentation.Count != 4)
+                {
+                    return;
+                }
+            }
+
+            accelerometerData latestAccDataID1;
+            accelerometerData accCalibrationDataID1;
+            accelerometerData latestAccDataID2;
+            accelerometerData accCalibrationDataID2;
+
+            try
+            {
+                List<accelerometerData> dataToPassToSensorsDataPresentation = state as List<accelerometerData>;
+                latestAccDataID1 = dataToPassToSensorsDataPresentation[0] as accelerometerData;
+                accCalibrationDataID1 = dataToPassToSensorsDataPresentation[1] as accelerometerData;
+                latestAccDataID2 = dataToPassToSensorsDataPresentation[2] as accelerometerData;
+                accCalibrationDataID2 = dataToPassToSensorsDataPresentation[3] as accelerometerData;
+            }
+            catch (Exception ex)
+            {
+                return;
+            }
+            
+
+            double accDevAngleID1 = (latestAccDataID1 * accCalibrationDataID1) / (latestAccDataID1.AccMagnitude * accCalibrationDataID1.AccMagnitude);
+            accDevAngleID1 = Math.Acos(accDevAngleID1) * 180.0d / Math.PI;
+            double accDevAngleID2 = (latestAccDataID2 * accCalibrationDataID2) / (latestAccDataID2.AccMagnitude * accCalibrationDataID2.AccMagnitude);
+            accDevAngleID2 = Math.Acos(accDevAngleID2) * 180.0d / Math.PI;
+            ThreadSafeOperations.SetText(lblAccMagnValueID1, (latestAccDataID1.AccMagnitude / accCalibrationDataID1.AccMagnitude).ToString("F2"), false);
+            ThreadSafeOperations.SetText(lblAccDevAngleValueID1, accDevAngleID1.ToString("F3"), false);
+            ThreadSafeOperations.SetText(lblAccMagnValueID2, (latestAccDataID2.AccMagnitude / accCalibrationDataID2.AccMagnitude).ToString("F2"), false);
+            ThreadSafeOperations.SetText(lblAccDevAngleValueID2, accDevAngleID2.ToString("F3"), false);
+        }
 
 
 
@@ -882,14 +1013,19 @@ namespace DataCollectorAutomator
 
         private void dataCollector_DoWork(object sender, DoWorkEventArgs e)
         {
+            double angleCamDeclinationThresholdRad = Math.PI*angleCamDeclinationThresholdDeg/180.0d;
             DateTime datetimeCamshotTimerBegin = DateTime.Now;
-            DateTime datetimeCamshotTimerNow = DateTime.Now;
-            DateTime datetimeCamshotHasBeenTaken = DateTime.Now;
-            TimeSpan camshotTimer = datetimeCamshotTimerNow - datetimeCamshotTimerBegin;
+            //DateTime datetimeCamshotTimerNow = DateTime.Now;
+            //DateTime datetimeCamshotHasBeenTaken = DateTime.Now;
+            //TimeSpan camshotTimer = datetimeCamshotTimerNow - datetimeCamshotTimerBegin;
+            Stopwatch stwCamshotTimer = new Stopwatch();
+            stwCamshotTimer.Start();
             TimeSpan camshotPeriod = CamShotPeriod;
-            TimeSpan sinceCamShotHasBeenTaken = DateTime.Now - datetimeCamshotHasBeenTaken;
+            //TimeSpan sinceCamShotHasBeenTaken = stwCamshotTimer.Elapsed; // DateTime.Now - datetimeCamshotHasBeenTaken;
             TimeSpan labelsUpdatingPeriod = new TimeSpan(0, 0, 1);
-            DateTime datetimePreviousLabelsUpdate = DateTime.MinValue;
+            Stopwatch stwCamshotTimersUpdating = new Stopwatch();
+            stwCamshotTimersUpdating.Start();
+            //DateTime datetimePreviousLabelsUpdate = DateTime.MinValue;
             //double horizAcc, totalAcc, percHorizAcc;
             //double percAccDeviation = 100.0;
             double accDevAngle = 0.0d;
@@ -902,6 +1038,12 @@ namespace DataCollectorAutomator
 
             DenseMatrix dmAccDataMatrix = null;
             List<long> accDateTimeValuesList = new List<long>();
+
+            DenseMatrix dmAccSmoothedDataMatrixID1 = null;
+            List<long> accSmoothedDateTimeValuesListID1 = new List<long>();
+            DenseMatrix dmAccSmoothedDataMatrixID2 = null;
+            List<long> accSmoothedDateTimeValuesListID2 = new List<long>();
+
             DenseMatrix dmGyroDataMatrix = null;
             List<long> gyroDateTimeValuesList = new List<long>();
 
@@ -916,16 +1058,50 @@ namespace DataCollectorAutomator
             Stopwatch stwToEstimateUDPpacketsRecieving = new Stopwatch();
             stwToEstimateUDPpacketsRecieving.Start();
 
+            //Stopwatch stwShowActualAccData = new Stopwatch();
+            //stwShowActualAccData.Start();
+
             accelerometerData latestAccDataID1 = new accelerometerData();
             latestAccDataID1.devID = 1;
             accelerometerData latestAccDataID2 = new accelerometerData();
             latestAccDataID2.devID = 2;
+
+            int tailLength = 5;
+            FixedTimeQueue<accelerometerData> accID1tail = new FixedTimeQueue<accelerometerData>(tailLength);
+            FixedTimeQueue<accelerometerData> accID2tail = new FixedTimeQueue<accelerometerData>(tailLength);
+            FixedTimeQueue<GyroData> gyroID1tail = new FixedTimeQueue<GyroData>(tailLength);
+            FixedTimeQueue<GyroData> gyroID2tail = new FixedTimeQueue<GyroData>(tailLength);
+            DenseVector dvKernelFixedWidth = Extensions.ConvKernelAsymmetric(StandardConvolutionKernels.gauss, tailLength, false);
+
+
+            #region timer for periodical process of UDPpackets Recieving speed estimation
+
+            TimerCallback UDPpacketsRecievingSpeedEstimationCallback =
+                new TimerCallback(EstimateAndReportUDPpacketsRecievingSpeed);
+            Timer tmrUDPpacketsRecievingSpeedEstimation = new Timer(UDPpacketsRecievingSpeedEstimationCallback,
+                new object[] { stwToEstimateUDPpacketsRecieving }, 0, 1000);
+
+            #endregion timer for periodical process of UDPpackets Recieving speed estimation
+
+
+            #region timer for periodical sensors values presentation updating
+
+            List<accelerometerData> dataToPassToSensorsDataPresentation = new List<accelerometerData>();
+            TimerCallback UpdateSensorsDataPresentationCallback =
+                new TimerCallback(UpdateSensorsDataPresentation);
+            Timer tmrUpdateSensorsDataPresentation = new Timer(UpdateSensorsDataPresentationCallback,
+                dataToPassToSensorsDataPresentation, 0, 500);
+
+            #endregion timer for periodical sensors values presentation updating
+
+
 
 
             while (true)
             {
                 if (SelfWorker.CancellationPending)
                 {
+                    #region dump the rest accelerometers data to nc-file
                     if (dmAccDataMatrix != null)
                     {
                         Dictionary<string, object> dataToSave = new Dictionary<string, object>();
@@ -939,6 +1115,43 @@ namespace DataCollectorAutomator
                         dmAccDataMatrix = null;
                         accDateTimeValuesList.Clear();
                     }
+                    #endregion dump the rest accelerometers data to nc-file
+
+
+
+                    #region dump the rest smoothed accelerometers data to nc-file
+                    if (dmAccSmoothedDataMatrixID1 != null)
+                    {
+                        Dictionary<string, object> dataToSave = new Dictionary<string, object>();
+                        dataToSave.Add("DateTime", accSmoothedDateTimeValuesListID1.ToArray());
+                        dataToSave.Add("AccelerometerData", dmAccSmoothedDataMatrixID1);
+
+                        NetCDFoperations.AddVariousDataToFile(dataToSave,
+                            Directory.GetCurrentDirectory() + "\\logs\\AccelerometerID1-Smoothed-DataLog-" +
+                            DateTime.UtcNow.Date.ToString("yyyy-MM-dd") + ".nc");
+
+                        dmAccSmoothedDataMatrixID1 = null;
+                        accSmoothedDateTimeValuesListID1.Clear();
+                    }
+
+                    if (dmAccSmoothedDataMatrixID2 != null)
+                    {
+                        Dictionary<string, object> dataToSave = new Dictionary<string, object>();
+                        dataToSave.Add("DateTime", accSmoothedDateTimeValuesListID2.ToArray());
+                        dataToSave.Add("AccelerometerData", dmAccSmoothedDataMatrixID2);
+
+                        NetCDFoperations.AddVariousDataToFile(dataToSave,
+                            Directory.GetCurrentDirectory() + "\\logs\\AccelerometerID2-Smoothed-DataLog-" +
+                            DateTime.UtcNow.Date.ToString("yyyy-MM-dd") + ".nc");
+
+                        dmAccSmoothedDataMatrixID2 = null;
+                        accSmoothedDateTimeValuesListID2.Clear();
+                    }
+                    #endregion dump the rest smoothed accelerometers data to nc-file
+
+
+
+                    #region dump the rest gyro data to nc-file
                     if (dmGyroDataMatrix != null)
                     {
                         Dictionary<string, object> dataToSave = new Dictionary<string, object>();
@@ -952,6 +1165,9 @@ namespace DataCollectorAutomator
                         dmGyroDataMatrix = null;
                         gyroDateTimeValuesList.Clear();
                     }
+                    #endregion dump the rest gyro data to nc-file
+
+                    #region // dmMagnDataMatrix
                     //if (dmMagnDataMatrix != null)
                     //{
                     //    Dictionary<string, object> dataToSave = new Dictionary<string, object>();
@@ -965,6 +1181,9 @@ namespace DataCollectorAutomator
                     //    dmMagnDataMatrix = null;
                     //    magnDateTimeValuesList.Clear();
                     //}
+                    #endregion // dmMagnDataMatrix
+
+                    #region dump the rest GPS data to nc-file
                     if (dmGPSDataMatrix != null)
                     {
                         Dictionary<string, object> dataToSave = new Dictionary<string, object>();
@@ -978,6 +1197,9 @@ namespace DataCollectorAutomator
                         dmGPSDataMatrix = null;
                         gpsDateTimeValuesList.Clear();
                     }
+                    #endregion dump the rest GPS data to nc-file
+
+                    #region dump the rest pressure data to nc-file
                     if (pressureValuesList.Count > 0)
                     {
                         ThreadSafeOperations.SetText(lblPressureValue, pressureValuesList[pressureValuesList.Count - 1].ToString(), false);
@@ -996,214 +1218,373 @@ namespace DataCollectorAutomator
                         pressureValuesList.Clear();
                         pressureDateTimeValuesList.Clear();
                     }
-
-                    //ThreadSafeOperations.SetLoadingCircleState(processCircleID1, false, false, processCircleID1.Color, 100);
-                    //ThreadSafeOperations.SetLoadingCircleState(processCircleID2, false, false, processCircleID2.Color, 100);
+                    #endregion dump the rest pressure data to nc-file
 
                     break;
                 }
 
 
-                //оценка скорости приема пакетов и анализ состояния приема данных
-                if (stwToEstimateUDPpacketsRecieving.ElapsedMilliseconds >= 1000)
-                {
-                    //оценим скорость поступления пакетов
-                    double speedUDPrecieving = (double)recievedUDPPacketsCounter * 1000.0d /
-                                      (double)stwToEstimateUDPpacketsRecieving.ElapsedMilliseconds;
-                    recievedUDPPacketsCounter = 0;
+                #region // оценка скорости приема пакетов и анализ состояния приема данных - вынесено в метод, запускаемый по таймеру
 
-                    double speedUDPprocessing = (double) processedUDPPacketsCounter*1000.0d/
-                                                (double) stwToEstimateUDPpacketsRecieving.ElapsedMilliseconds;
-                    processedUDPPacketsCounter = 0;
+                //double elapsedms = (double)(stwToEstimateUDPpacketsRecieving.ElapsedMilliseconds);
+                //if (elapsedms >= 1000)
+                //{
+                //    //оценим скорость поступления пакетов
+                //    double speedUDPrecieving = (double)recievedUDPPacketsCounter * 1000.0d /
+                //                      (double)elapsedms;
+                //    recievedUDPPacketsCounter = 0;
 
-                    stwToEstimateUDPpacketsRecieving.Restart();
+                //    double speedUDPprocessing = (double)processedUDPPacketsCounter * 1000.0d /
+                //                                (double)elapsedms;
+                //    processedUDPPacketsCounter = 0;
 
-                    if (speedUDPrecieving <= 0.0d)
-                    {
-                        ChangeIndicatingButtonBackgroundColor(btnStartStopBdcstListening,
-                            ButtonBackgroundStateWatchingProcess.alarm);
-                    }
-                    else
-                    {
-                        ChangeIndicatingButtonBackgroundColor(btnStartStopBdcstListening,
-                            ButtonBackgroundStateWatchingProcess.allGood);
-                    }
+                //    stwToEstimateUDPpacketsRecieving.Restart();
 
-
-                    if (speedUDPprocessing > 0.0d)
-                    {
-                        ChangeIndicatingButtonBackgroundColor(lblAccMagnValueID1,
-                            ButtonBackgroundStateWatchingProcess.alarm);
-                        ChangeIndicatingButtonBackgroundColor(lblAccDevAngleValueID1,
-                            ButtonBackgroundStateWatchingProcess.alarm);
-                        ChangeIndicatingButtonBackgroundColor(lblAccMagnTitleID2,
-                            ButtonBackgroundStateWatchingProcess.alarm);
-                        ChangeIndicatingButtonBackgroundColor(lblAccDevAngleTitleID2,
-                            ButtonBackgroundStateWatchingProcess.alarm);
-                    }
-                    else
-                    {
-                        ChangeIndicatingButtonBackgroundColor(lblAccMagnValueID1,
-                            ButtonBackgroundStateWatchingProcess.allGood);
-                        ChangeIndicatingButtonBackgroundColor(lblAccDevAngleValueID1,
-                            ButtonBackgroundStateWatchingProcess.allGood);
-                        ChangeIndicatingButtonBackgroundColor(lblAccMagnTitleID2,
-                            ButtonBackgroundStateWatchingProcess.allGood);
-                        ChangeIndicatingButtonBackgroundColor(lblAccDevAngleTitleID2,
-                            ButtonBackgroundStateWatchingProcess.allGood);
-                    }
-                }
+                //    if (speedUDPrecieving <= 0.0d)
+                //    {
+                //        ChangeIndicatingButtonBackgroundColor(btnStartStopBdcstListening,
+                //            ButtonBackgroundStateWatchingProcess.alarm);
+                //    }
+                //    else
+                //    {
+                //        ChangeIndicatingButtonBackgroundColor(btnStartStopBdcstListening,
+                //            ButtonBackgroundStateWatchingProcess.allGood);
+                //    }
 
 
+                //    if (speedUDPprocessing > 0.0d)
+                //    {
+                //        ChangeIndicatingButtonBackgroundColor(lblAccMagnValueID1,
+                //            ButtonBackgroundStateWatchingProcess.alarm);
+                //        ChangeIndicatingButtonBackgroundColor(lblAccDevAngleValueID1,
+                //            ButtonBackgroundStateWatchingProcess.alarm);
+                //        ChangeIndicatingButtonBackgroundColor(lblAccMagnTitleID2,
+                //            ButtonBackgroundStateWatchingProcess.alarm);
+                //        ChangeIndicatingButtonBackgroundColor(lblAccDevAngleTitleID2,
+                //            ButtonBackgroundStateWatchingProcess.alarm);
+                //    }
+                //    else
+                //    {
+                //        ChangeIndicatingButtonBackgroundColor(lblAccMagnValueID1,
+                //            ButtonBackgroundStateWatchingProcess.allGood);
+                //        ChangeIndicatingButtonBackgroundColor(lblAccDevAngleValueID1,
+                //            ButtonBackgroundStateWatchingProcess.allGood);
+                //        ChangeIndicatingButtonBackgroundColor(lblAccMagnTitleID2,
+                //            ButtonBackgroundStateWatchingProcess.allGood);
+                //        ChangeIndicatingButtonBackgroundColor(lblAccDevAngleTitleID2,
+                //            ButtonBackgroundStateWatchingProcess.allGood);
+                //    }
+                //}
+                #endregion // оценка скорости приема пакетов и анализ состояния приема данных
 
-                if (accDataQueue.Count > 0)
+
+
+                #region обработка очередей разобранных данных
+                #region accelerometers
+                if (accDataAndDTqueue.Count > 0)
                 {
                     //accDatahasBeenChanged = false;
 
-                    accelerometerData accData = accDataQueue.Dequeue();
-                    accelerometerData accCalibrationData = ((accData.devID == 1) || (accData.devID == 0))
+                    Tuple<DateTime, accelerometerData> tplAccDT = accDataAndDTqueue.Dequeue();
+
+                    if (tplAccDT == null) continue;
+
+                    //accelerometerData accData = accDataQueue.Dequeue();
+                    accelerometerData accData = tplAccDT.Item2;
+                    DateTime dtAccDataRecieved = tplAccDT.Item1;
+
+                    if (accData.devID <= 1) accID1tail.Enqueue(accData, dtAccDataRecieved);
+                    else accID2tail.Enqueue(accData, dtAccDataRecieved);
+
+
+                    accelerometerData accCalibrationData = (accData.devID <= 1)
                         ? (accCalibrationDataID1)
                         : (accCalibrationDataID2);
 
-                    // сформировано наиболее актуальное значение accData для соответствующего устройства
-                    if ((accData.devID == 1) || (accData.devID == 0))
+
+                    // пересчитать хвост
+                    if (accData.devID <= 1)
                     {
-                        latestAccDataID1 = accData.Copy();
-                    }
-                    else if (accData.devID == 2)
-                    {
-                        latestAccDataID2 = accData.Copy();
-                    }
+                        List<accelerometerData> accDataTail = new List<accelerometerData>(accID1tail.DataValues);
+                        DenseVector dvAccXvaluesTail =
+                            DenseVector.OfEnumerable(accDataTail.ConvertAll(accDt => accDt.AccDoubleX));
+                        DenseVector dvAccYvaluesTail =
+                            DenseVector.OfEnumerable(accDataTail.ConvertAll(accDt => accDt.AccDoubleY));
+                        DenseVector dvAccZvaluesTail =
+                            DenseVector.OfEnumerable(accDataTail.ConvertAll(accDt => accDt.AccDoubleZ));
 
-                    if (accData == null) continue;
-                    accDevAngle = (accData * accCalibrationData) / (accData.AccMagnitude * accCalibrationData.AccMagnitude);
-                    accDevAngle = Math.Acos(accDevAngle);
-
-
-                    accDateTimeValuesList.Add(DateTime.UtcNow.Ticks);
-
-                    if (dmAccDataMatrix == null)
-                    {
-                        dmAccDataMatrix = DenseMatrix.Create(1, 7, (r, c) =>
+                        if (accDataTail.Count < tailLength)
                         {
-                            switch (c)
-                            {
-                                case 0:
-                                    return accData.AccDoubleX;
-                                    break;
-                                case 1:
-                                    return accData.AccDoubleY;
-                                    break;
-                                case 2:
-                                    return accData.AccDoubleZ;
-                                    break;
-                                case 3:
-                                    return accCalibrationData.AccDoubleX;
-                                    break;
-                                case 4:
-                                    return accCalibrationData.AccDoubleY;
-                                    break;
-                                case 5:
-                                    return accCalibrationData.AccDoubleZ;
-                                    break;
-                                case 6:
-                                    {
-                                        //угол отклонения от калибровочного вектора
-                                        // В РАДИАНАХ
-                                        return accDevAngle;
-                                        break;
-                                    }
-                                case 7:
-                                    {
-                                        // devID
-                                        return accData.devID;
-                                        break;
-                                    }
-                                default:
-                                    break;
-                            }
-                            return 0;
-                        });
+                            dvAccXvaluesTail = DenseVector.OfEnumerable(dvAccXvaluesTail.Concat(DenseVector.Create(tailLength - accDataTail.Count, 0.0d)));
+                            dvAccYvaluesTail = DenseVector.OfEnumerable(dvAccYvaluesTail.Concat(DenseVector.Create(tailLength - accDataTail.Count, 0.0d)));
+                            dvAccZvaluesTail = DenseVector.OfEnumerable(dvAccZvaluesTail.Concat(DenseVector.Create(tailLength - accDataTail.Count, 0.0d)));
+                        }
+
+
+                        latestAccDataID1 = new accelerometerData(dvKernelFixedWidth * dvAccXvaluesTail,
+                            dvKernelFixedWidth * dvAccYvaluesTail, dvKernelFixedWidth * dvAccZvaluesTail);
+                        latestAccDataID1.devID = accData.devID;
+
+                        accDevAngle = (latestAccDataID1 * accCalibrationData) / (latestAccDataID1.AccMagnitude * accCalibrationData.AccMagnitude);
+                        accDevAngle = Math.Acos(accDevAngle);
                     }
                     else
                     {
-                        DenseVector dvAccDataVectorToAdd = DenseVector.Create(7, c =>
+                        List<accelerometerData> accDataTail = new List<accelerometerData>(accID2tail.DataValues);
+                        DenseVector dvAccXvaluesTail =
+                            DenseVector.OfEnumerable(accDataTail.ConvertAll(accDt => accDt.AccDoubleX));
+                        DenseVector dvAccYvaluesTail =
+                            DenseVector.OfEnumerable(accDataTail.ConvertAll(accDt => accDt.AccDoubleY));
+                        DenseVector dvAccZvaluesTail =
+                            DenseVector.OfEnumerable(accDataTail.ConvertAll(accDt => accDt.AccDoubleZ));
+
+                        if (accDataTail.Count < tailLength)
                         {
-                            switch (c)
-                            {
-                                case 0:
-                                    return accData.AccDoubleX;
-                                    break;
-                                case 1:
-                                    return accData.AccDoubleY;
-                                    break;
-                                case 2:
-                                    return accData.AccDoubleZ;
-                                    break;
-                                case 3:
-                                    return accCalibrationData.AccDoubleX;
-                                    break;
-                                case 4:
-                                    return accCalibrationData.AccDoubleY;
-                                    break;
-                                case 5:
-                                    return accCalibrationData.AccDoubleZ;
-                                    break;
-                                case 6:
-                                    {
-                                        //угол отклонения от калибровочного вектора
-                                        // В РАДИАНАХ
-                                        return accDevAngle;
-                                        break;
-                                    }
-                                case 7:
-                                    {
-                                        // devID
-                                        return accData.devID;
-                                        break;
-                                    }
-                                default:
-                                    break;
-                            }
-                            return 0;
-                        });
-                        dmAccDataMatrix =
-                            (DenseMatrix)dmAccDataMatrix.InsertRow(dmAccDataMatrix.RowCount, dvAccDataVectorToAdd);
+                            dvAccXvaluesTail = DenseVector.OfEnumerable(dvAccXvaluesTail.Concat(DenseVector.Create(tailLength - accDataTail.Count, 0.0d)));
+                            dvAccYvaluesTail = DenseVector.OfEnumerable(dvAccYvaluesTail.Concat(DenseVector.Create(tailLength - accDataTail.Count, 0.0d)));
+                            dvAccZvaluesTail = DenseVector.OfEnumerable(dvAccZvaluesTail.Concat(DenseVector.Create(tailLength - accDataTail.Count, 0.0d)));
+                        }
+
+                        latestAccDataID2 = new accelerometerData(dvKernelFixedWidth * dvAccXvaluesTail,
+                            dvKernelFixedWidth * dvAccYvaluesTail, dvKernelFixedWidth * dvAccZvaluesTail);
+                        latestAccDataID2.devID = accData.devID;
+
+                        accDevAngle = (latestAccDataID2 * accCalibrationData) / (latestAccDataID2.AccMagnitude * accCalibrationData.AccMagnitude);
+                        accDevAngle = Math.Acos(accDevAngle);
                     }
 
+                    #region // obsolete
+                    // сформировано наиболее актуальное значение accData для соответствующего устройства
+                    //if (accData.devID <= 1)
+                    //{
+                    //    latestAccDataID1 = accData.Copy();
+                    //}
+                    //else if (accData.devID == 2)
+                    //{
+                    //    latestAccDataID2 = accData.Copy();
+                    //}
+
+
+                    // accDateTimeValuesList.Add(DateTime.UtcNow.Ticks);
+                    #endregion // obsolete
+
+                    accDateTimeValuesList.Add(dtAccDataRecieved.Ticks);
+
+
+
+
+                    #region adding latest recieved acc data to backuping datamatrix
+                    if (dmAccDataMatrix == null)
+                    {
+                        dmAccDataMatrix = DenseMatrix.Create(1, 8, 0.0d);
+                        DenseVector dvInitialData = (DenseVector)accData.ToDenseVector().SubVector(0, 3); // x,y,z
+                        DenseVector dvCalibratedData = (DenseVector)accCalibrationData.ToDenseVector().SubVector(0, 3); // x,y,z calibration data
+                        dvInitialData =
+                            DenseVector.OfEnumerable(
+                                dvInitialData.Concat(dvCalibratedData)
+                                    .Concat(new double[] { accDevAngle, accData.devID }));
+                        dmAccDataMatrix.InsertRow(0, dvInitialData);
+
+                        #region // obsolete
+                        //dmAccDataMatrix = DenseMatrix.Create(1, 8, (r, c) =>
+                        //{
+                        //    switch (c)
+                        //    {
+                        //        case 0:
+                        //            return accData.AccDoubleX;
+                        //            break;
+                        //        case 1:
+                        //            return accData.AccDoubleY;
+                        //            break;
+                        //        case 2:
+                        //            return accData.AccDoubleZ;
+                        //            break;
+                        //        case 3:
+                        //            return accCalibrationData.AccDoubleX;
+                        //            break;
+                        //        case 4:
+                        //            return accCalibrationData.AccDoubleY;
+                        //            break;
+                        //        case 5:
+                        //            return accCalibrationData.AccDoubleZ;
+                        //            break;
+                        //        case 6:
+                        //            {
+                        //                //угол отклонения от калибровочного вектора
+                        //                // В РАДИАНАХ
+                        //                return accDevAngle;
+                        //                break;
+                        //            }
+                        //        case 7:
+                        //            {
+                        //                // devID
+                        //                return accData.devID;
+                        //                break;
+                        //            }
+                        //        default:
+                        //            break;
+                        //    }
+                        //    return 0;
+                        //});
+                        #endregion // obsolete
+                    }
+                    else
+                    {
+                        DenseVector dvRowToAdd = (DenseVector)accData.ToDenseVector().SubVector(0, 3); // x,y,z
+                        DenseVector dvCalibratedData = (DenseVector)accCalibrationData.ToDenseVector().SubVector(0, 3); // x,y,z calibration data
+                        dvRowToAdd =
+                            DenseVector.OfEnumerable(
+                                dvRowToAdd.Concat(dvCalibratedData)
+                                    .Concat(new double[] { accDevAngle, accData.devID }));
+
+                        #region // obsolete
+                        //DenseVector dvAccDataVectorToAdd = DenseVector.Create(8, c =>
+                        //{
+                        //    switch (c)
+                        //    {
+                        //        case 0:
+                        //            return accData.AccDoubleX;
+                        //            break;
+                        //        case 1:
+                        //            return accData.AccDoubleY;
+                        //            break;
+                        //        case 2:
+                        //            return accData.AccDoubleZ;
+                        //            break;
+                        //        case 3:
+                        //            return accCalibrationData.AccDoubleX;
+                        //            break;
+                        //        case 4:
+                        //            return accCalibrationData.AccDoubleY;
+                        //            break;
+                        //        case 5:
+                        //            return accCalibrationData.AccDoubleZ;
+                        //            break;
+                        //        case 6:
+                        //            {
+                        //                //угол отклонения от калибровочного вектора
+                        //                // В РАДИАНАХ
+                        //                return accDevAngle;
+                        //                break;
+                        //            }
+                        //        case 7:
+                        //            {
+                        //                // devID
+                        //                return accData.devID;
+                        //                break;
+                        //            }
+                        //        default:
+                        //            break;
+                        //    }
+                        //    return 0;
+                        //});
+                        #endregion // obsolete
+
+                        dmAccDataMatrix =
+                            (DenseMatrix)dmAccDataMatrix.InsertRow(dmAccDataMatrix.RowCount, dvRowToAdd);
+                    }
+                    #endregion adding latest recieved acc data to backuping datamatrix
+
+
+                    #region adding latest recieved smoothed acc data to backuping datamatrix
+
+                    //accelerometerData latestAccDataIDx = null;
+                    if (accData.devID <= 1)
+                    {
+                        accSmoothedDateTimeValuesListID1.Add(dtAccDataRecieved.Ticks);
+
+                        if (dmAccSmoothedDataMatrixID1 == null)
+                        {
+                            dmAccSmoothedDataMatrixID1 = DenseMatrix.Create(1, 8, 0.0d);
+                            DenseVector dvInitialData = (DenseVector)latestAccDataID1.ToDenseVector().SubVector(0, 3); // x,y,z
+                            DenseVector dvCalibratedData = (DenseVector)accCalibrationData.ToDenseVector().SubVector(0, 3); // x,y,z calibration data
+                            dvInitialData =
+                                DenseVector.OfEnumerable(
+                                    dvInitialData.Concat(dvCalibratedData)
+                                        .Concat(new double[] { accDevAngle, latestAccDataID1.devID }));
+                            dmAccSmoothedDataMatrixID1.InsertRow(0, dvInitialData);
+                        }
+                        else
+                        {
+                            DenseVector dvRowToAdd = (DenseVector)latestAccDataID1.ToDenseVector().SubVector(0, 3); // x,y,z
+                            DenseVector dvCalibratedData = (DenseVector)accCalibrationData.ToDenseVector().SubVector(0, 3); // x,y,z calibration data
+                            dvRowToAdd =
+                                DenseVector.OfEnumerable(
+                                    dvRowToAdd.Concat(dvCalibratedData)
+                                        .Concat(new double[] { accDevAngle, latestAccDataID1.devID }));
+
+                            dmAccSmoothedDataMatrixID1 =
+                                (DenseMatrix)dmAccSmoothedDataMatrixID1.InsertRow(dmAccSmoothedDataMatrixID1.RowCount, dvRowToAdd);
+                        }
+                    }
+                    else
+                    {
+                        accSmoothedDateTimeValuesListID2.Add(dtAccDataRecieved.Ticks);
+                        if (dmAccSmoothedDataMatrixID2 == null)
+                        {
+                            dmAccSmoothedDataMatrixID2 = DenseMatrix.Create(1, 8, 0.0d);
+                            DenseVector dvInitialData = (DenseVector)latestAccDataID2.ToDenseVector().SubVector(0, 3); // x,y,z
+                            DenseVector dvCalibratedData = (DenseVector)accCalibrationData.ToDenseVector().SubVector(0, 3); // x,y,z calibration data
+                            dvInitialData =
+                                DenseVector.OfEnumerable(
+                                    dvInitialData.Concat(dvCalibratedData)
+                                        .Concat(new double[] { accDevAngle, latestAccDataID2.devID }));
+                            dmAccSmoothedDataMatrixID2.InsertRow(0, dvInitialData);
+                        }
+                        else
+                        {
+                            DenseVector dvRowToAdd = (DenseVector)latestAccDataID2.ToDenseVector().SubVector(0, 3); // x,y,z
+                            DenseVector dvCalibratedData = (DenseVector)accCalibrationData.ToDenseVector().SubVector(0, 3); // x,y,z calibration data
+                            dvRowToAdd =
+                                DenseVector.OfEnumerable(
+                                    dvRowToAdd.Concat(dvCalibratedData)
+                                        .Concat(new double[] { accDevAngle, latestAccDataID2.devID }));
+
+                            dmAccSmoothedDataMatrixID2 =
+                                (DenseMatrix)dmAccSmoothedDataMatrixID2.InsertRow(dmAccSmoothedDataMatrixID2.RowCount, dvRowToAdd);
+                        }
+                    }
+
+                    #endregion adding latest recieved smoothed acc data to backuping datamatrix
+
+                    dataToPassToSensorsDataPresentation.Clear();
+                    dataToPassToSensorsDataPresentation.AddRange(new accelerometerData[] { latestAccDataID1, accCalibrationDataID1, latestAccDataID2, accCalibrationDataID2 });
+
+                    #region // obsolete - moved to timer callback mech
                     //ThreadSafeOperations.SetText(lblGotAccDataPackCounterValue, accDateTimeValuesList.Count.ToString(), false);
 
-                    if (accDateTimeValuesList.Count % 100 == 0)
-                    {
-                        #region
-                        //DenseVector dvMagnDev = DenseVector.Create(dmAccDataMatrix.RowCount, i =>
-                        //{
-                        //    accelerometerData accCurrentData = new accelerometerData(dmAccDataMatrix[0, 0],
-                        //        dmAccDataMatrix[0, 1], dmAccDataMatrix[0, 2]);
-                        //    return (accCurrentData.AccMagnitude - accCalibrationData.AccMagnitude) *
-                        //           (accCurrentData.AccMagnitude - accCalibrationData.AccMagnitude);
-                        //});
-                        //ThreadSafeOperations.SetText(lblAccDevMeanMagnValueID1,
-                        //    Math.Sqrt(dvMagnDev.Sum() / dvMagnDev.Count).ToString("0.###e-00"), false);
+                    //if (stwShowActualAccData.ElapsedMilliseconds >= 500)
+                    //{
+                    //    stwShowActualAccData.Restart();
+                    //    #region // magnetometer - obsolete
+                    //    //DenseVector dvMagnDev = DenseVector.Create(dmAccDataMatrix.RowCount, i =>
+                    //    //{
+                    //    //    accelerometerData accCurrentData = new accelerometerData(dmAccDataMatrix[0, 0],
+                    //    //        dmAccDataMatrix[0, 1], dmAccDataMatrix[0, 2]);
+                    //    //    return (accCurrentData.AccMagnitude - accCalibrationData.AccMagnitude) *
+                    //    //           (accCurrentData.AccMagnitude - accCalibrationData.AccMagnitude);
+                    //    //});
+                    //    //ThreadSafeOperations.SetText(lblAccDevMeanMagnValueID1,
+                    //    //    Math.Sqrt(dvMagnDev.Sum() / dvMagnDev.Count).ToString("0.###e-00"), false);
 
 
-                        //DescriptiveStatistics stats1 = new DescriptiveStatistics(dmAccDataMatrix.Column(6));
-                        //ThreadSafeOperations.SetText(lblAccDevMeanAngleValueID1, stats1.Mean.ToString("0.###e-00"), false);
-                        #endregion
+                    //    //DescriptiveStatistics stats1 = new DescriptiveStatistics(dmAccDataMatrix.Column(6));
+                    //    //ThreadSafeOperations.SetText(lblAccDevMeanAngleValueID1, stats1.Mean.ToString("0.###e-00"), false);
+                    //    #endregion #region // magnetometer - obsolete
 
-                        // =======================
-                        //вывести мгновенные значения, но раздельно по устройствам
-                        // =======================
-                        double accDevAngleID1 = (latestAccDataID1 * accCalibrationDataID1) / (latestAccDataID1.AccMagnitude * accCalibrationDataID1.AccMagnitude);
-                        accDevAngleID1 = Math.Acos(accDevAngleID1);
-                        double accDevAngleID2 = (latestAccDataID2 * accCalibrationDataID2) / (latestAccDataID2.AccMagnitude * accCalibrationDataID2.AccMagnitude);
-                        accDevAngleID2 = Math.Acos(accDevAngleID2);
-                        ThreadSafeOperations.SetText(lblAccMagnValueID1, (latestAccDataID1.AccMagnitude / accCalibrationDataID1.AccMagnitude).ToString("F2"), false);
-                        ThreadSafeOperations.SetText(lblAccDevAngleValueID1, accDevAngleID1.ToString("F3"), false);
-                        ThreadSafeOperations.SetText(lblAccMagnValueID2, (latestAccDataID2.AccMagnitude / accCalibrationDataID2.AccMagnitude).ToString("F2"), false);
-                        ThreadSafeOperations.SetText(lblAccDevAngleValueID2, accDevAngleID2.ToString("F3"), false);
-
-                    }
+                    //    // =======================
+                    //    //вывести мгновенные значения, но раздельно по устройствам
+                    //    // =======================
+                    //    double accDevAngleID1 = (latestAccDataID1 * accCalibrationDataID1) / (latestAccDataID1.AccMagnitude * accCalibrationDataID1.AccMagnitude);
+                    //    accDevAngleID1 = Math.Acos(accDevAngleID1) * 180.0d / Math.PI;
+                    //    double accDevAngleID2 = (latestAccDataID2 * accCalibrationDataID2) / (latestAccDataID2.AccMagnitude * accCalibrationDataID2.AccMagnitude);
+                    //    accDevAngleID2 = Math.Acos(accDevAngleID2) * 180.0d / Math.PI;
+                    //    ThreadSafeOperations.SetText(lblAccMagnValueID1, (latestAccDataID1.AccMagnitude / accCalibrationDataID1.AccMagnitude).ToString("F2"), false);
+                    //    ThreadSafeOperations.SetText(lblAccDevAngleValueID1, accDevAngleID1.ToString("F3"), false);
+                    //    ThreadSafeOperations.SetText(lblAccMagnValueID2, (latestAccDataID2.AccMagnitude / accCalibrationDataID2.AccMagnitude).ToString("F2"), false);
+                    //    ThreadSafeOperations.SetText(lblAccDevAngleValueID2, accDevAngleID2.ToString("F3"), false);
+                    //}
+                    #endregion // obsolete - moved to timer callback mech
 
 
                     #region swap acc data to hdd
@@ -1223,21 +1604,64 @@ namespace DataCollectorAutomator
                         dmAccDataMatrix = null;
                         accDateTimeValuesList.Clear();
                     }
+
+
+                    if (accSmoothedDateTimeValuesListID1.Count >= 500)
+                    {
+                        Dictionary<string, object> dataToSave = new Dictionary<string, object>();
+                        dataToSave.Add("DateTime", accSmoothedDateTimeValuesListID1.ToArray());
+                        dataToSave.Add("AccelerometerData", dmAccSmoothedDataMatrixID1);
+
+                        NetCDFoperations.AddVariousDataToFile(dataToSave,
+                            Directory.GetCurrentDirectory() + "\\logs\\AccelerometerID1-Smoothed-DataLog-" +
+                            DateTime.UtcNow.Date.ToString("yyyy-MM-dd") + ".nc");
+
+
+                        dmAccSmoothedDataMatrixID1 = null;
+                        accSmoothedDateTimeValuesListID1.Clear();
+                    }
+
+
+                    if (accSmoothedDateTimeValuesListID2.Count >= 500)
+                    {
+                        Dictionary<string, object> dataToSave = new Dictionary<string, object>();
+                        dataToSave.Add("DateTime", accSmoothedDateTimeValuesListID2.ToArray());
+                        dataToSave.Add("AccelerometerData", dmAccSmoothedDataMatrixID2);
+
+                        NetCDFoperations.AddVariousDataToFile(dataToSave,
+                            Directory.GetCurrentDirectory() + "\\logs\\AccelerometerID2-Smoothed-DataLog-" +
+                            DateTime.UtcNow.Date.ToString("yyyy-MM-dd") + ".nc");
+
+
+                        dmAccSmoothedDataMatrixID2 = null;
+                        accSmoothedDateTimeValuesListID2.Clear();
+                    }
                     #endregion swap acc data to hdd
+
+                    processedUDPPacketsCounter++;
                 }
+                #endregion accelerometers
 
 
-
-
-                if (gyroDataQueue.Count > 0)
+                #region gyroscope
+                //if (gyroDataQueue.Count > 0)
+                if (gyroDataAndDTqueue.Count > 0)
                 {
                     //gyroDatahasBeenChanged = false;
 
-                    GyroData gyroData = gyroDataQueue.Dequeue();
-                    if (gyroData == null)
-                        continue;
+                    Tuple<DateTime, GyroData> tplGyroDT = gyroDataAndDTqueue.Dequeue();
 
-                    gyroDateTimeValuesList.Add(DateTime.UtcNow.Ticks);
+                    if (tplGyroDT == null) continue;
+
+                    //accelerometerData accData = accDataQueue.Dequeue();
+                    GyroData gyroData = tplGyroDT.Item2;
+                    DateTime dtGyroDataRecieved = tplGyroDT.Item1;
+
+                    //GyroData gyroData = gyroDataQueue.Dequeue();
+                    //if (gyroData == null)
+                    //    continue;
+
+                    gyroDateTimeValuesList.Add(dtGyroDataRecieved.Ticks);
 
                     if (dmGyroDataMatrix == null)
                     {
@@ -1251,7 +1675,7 @@ namespace DataCollectorAutomator
                             (DenseMatrix)dmGyroDataMatrix.InsertRow(dmGyroDataMatrix.RowCount, dvGyroDataVectorToAdd);
                     }
 
-                    if (gyroDateTimeValuesList.Count >= 100)
+                    if (gyroDateTimeValuesList.Count >= 500)
                     {
                         Dictionary<string, object> dataToSave = new Dictionary<string, object>();
                         dataToSave.Add("DateTime", gyroDateTimeValuesList.ToArray());
@@ -1265,8 +1689,10 @@ namespace DataCollectorAutomator
                         dmGyroDataMatrix = null;
                         gyroDateTimeValuesList.Clear();
                     }
-                }
 
+                    processedUDPPacketsCounter++;
+                }
+                #endregion gyroscope
 
 
 
@@ -1397,14 +1823,16 @@ namespace DataCollectorAutomator
 
 
 
+                #region GPS from Arduino stream
                 if (gpsDataHasBeenChanged)
                 {
-                    SPA spaCalc = new SPA(gpsData.dateTimeUTC.Year, gpsData.dateTimeUTC.Month, gpsData.dateTimeUTC.Day, gpsData.dateTimeUTC.Hour,
-                        gpsData.dateTimeUTC.Minute, gpsData.dateTimeUTC.Second, (float)gpsData.LonDec, (float)gpsData.LatDec,
-                        (float)SPAConst.DeltaT(gpsData.dateTimeUTC));
-                    int res = spaCalc.spa_calculate();
-                    AzimuthZenithAngle sunPositionSPAext = new AzimuthZenithAngle(spaCalc.spa.azimuth,
-                        spaCalc.spa.zenith);
+                    #region //obsolete
+                    //SPA spaCalc = new SPA(gpsData.dateTimeUTC.Year, gpsData.dateTimeUTC.Month, gpsData.dateTimeUTC.Day, gpsData.dateTimeUTC.Hour,
+                    //    gpsData.dateTimeUTC.Minute, gpsData.dateTimeUTC.Second, (float)gpsData.LonDec, (float)gpsData.LatDec,
+                    //    (float)SPAConst.DeltaT(gpsData.dateTimeUTC));
+                    //int res = spaCalc.spa_calculate();
+                    #endregion //obsolete
+                    AzimuthZenithAngle sunPositionSPAext = gpsData.SunZenithAzimuth();
                     double sunElevCalc = sunPositionSPAext.ElevationAngle;
                     double sunAzimuth = sunPositionSPAext.Azimuth;
 
@@ -1443,10 +1871,13 @@ namespace DataCollectorAutomator
                         dmGPSDataMatrix = null;
                         gpsDateTimeValuesList.Clear();
                     }
+
+                    processedUDPPacketsCounter++;
                 }
+                #endregion GPS from Arduino stream
 
 
-
+                #region pressure data from Arduino stream
                 if (pressureHasBeenChanged)
                 {
                     pressureDateTimeValuesList.Add(DateTime.UtcNow.Ticks);
@@ -1471,19 +1902,24 @@ namespace DataCollectorAutomator
                         pressureDateTimeValuesList.Clear();
                     }
                     pressureHasBeenChanged = false;
+
+                    processedUDPPacketsCounter++;
                 }
+                #endregion pressure data from Arduino stream
+
+                #endregion обработка очередей разобранных данных
 
 
+                #region if it is time to shoot - then shoot
 
-
-
-                datetimeCamshotTimerNow = DateTime.Now;
-                camshotTimer = datetimeCamshotTimerNow - datetimeCamshotTimerBegin;
-                if (camshotTimer >= camshotPeriod)
+                //datetimeCamshotTimerNow = DateTime.Now;
+                //camshotTimer = datetimeCamshotTimerNow - datetimeCamshotTimerBegin;
+                if (stwCamshotTimer.Elapsed >= camshotPeriod)
                 {
                     camshotTimeToGetIt = true;
                     ThreadSafeOperations.ToggleLabelTextColor(lblNextShotIn, SystemColors.Highlight);
-                    datetimeCamshotTimerBegin = datetimeCamshotTimerNow;
+                    // datetimeCamshotTimerBegin = datetimeCamshotTimerNow;
+                    stwCamshotTimer.Restart();
                 }
                 if (itsTimeToGetCamShot)
                 {
@@ -1492,19 +1928,21 @@ namespace DataCollectorAutomator
                 }
 
 
-                if (accDevAngle > Math.PI * 5.0d / 180.0d) camshotInclinedProperly = false;
-                else camshotInclinedProperly = true;
+                camshotInclinedProperly = !(accDevAngle > angleCamDeclinationThresholdRad);
 
                 if ((camshotInclinedProperly && camshotTimeToGetIt) || getCamShotImmediately)
                 {
                     catchCameraImages();
                     camshotHasBeenTaken = true;
-                    datetimeCamshotHasBeenTaken = DateTime.Now;
+                    //datetimeCamshotHasBeenTaken = DateTime.Now;
                 }
+                #endregion if it is time to shoot - then shoot
+
+
 
                 if (camshotHasBeenTaken)
                 {
-                    Note("Got a shot " + datetimeCamshotTimerNow.ToString());
+                    Note("Got a shot " + DateTime.Now);
                     camshotInclinedProperly = false;
                     camshotHasBeenTaken = false;
                     camshotTimeToGetIt = false;
@@ -1517,12 +1955,18 @@ namespace DataCollectorAutomator
                     logCurrentSensorsData();
                 }
 
-                if (datetimeCamshotTimerNow - datetimePreviousLabelsUpdate >= labelsUpdatingPeriod)
+                if (stwCamshotTimersUpdating.Elapsed >= labelsUpdatingPeriod)
                 {
-                    datetimePreviousLabelsUpdate = datetimeCamshotTimerNow;
-                    updateTimersLabels(datetimeCamshotHasBeenTaken, datetimeCamshotTimerBegin, camshotPeriod);
+                    //datetimePreviousLabelsUpdate = datetimeCamshotTimerNow;
+                    updateTimersLabels(stwCamshotTimer, datetimeCamshotTimerBegin, camshotPeriod);
+                    stwCamshotTimersUpdating.Restart();
                 }
             }
+
+            tmrUDPpacketsRecievingSpeedEstimation.Change(Timeout.Infinite, Timeout.Infinite);
+            tmrUDPpacketsRecievingSpeedEstimation.Dispose();
+            tmrUpdateSensorsDataPresentation.Change(Timeout.Infinite, Timeout.Infinite);
+            tmrUpdateSensorsDataPresentation.Dispose();
         }
 
 
@@ -1531,17 +1975,17 @@ namespace DataCollectorAutomator
 
 
 
-        private void updateTimersLabels(DateTime datetimeCamShothasBeenTaken, DateTime datetimePreviousTimerBegin, TimeSpan camshotPeriod)
+        private void updateTimersLabels(Stopwatch stwCamshotTimer, DateTime datetimePreviousTimerBegin, TimeSpan camshotPeriod)
         {
             //int timespanTicksInSecond = 1000000;
-            DateTime datetimeNow = DateTime.Now;
-            DateTime nextshotAt = datetimePreviousTimerBegin + camshotPeriod;
-            TimeSpan nextShotIn = (nextshotAt - datetimeNow);
-            nextShotIn = new TimeSpan(0, 0, (int)nextShotIn.TotalSeconds + 1);
-            ThreadSafeOperations.SetText(lblNextShotIn, nextShotIn.ToString("c"), false);
-            TimeSpan timeSinceLastShot = datetimeNow - datetimeCamShothasBeenTaken;
-            timeSinceLastShot = new TimeSpan(0, 0, (int)timeSinceLastShot.TotalSeconds);
-            ThreadSafeOperations.SetText(lblSinceLastShot, timeSinceLastShot.ToString("c"), false);
+            //DateTime datetimeNow = DateTime.Now;
+            // DateTime nextshotAt = datetimePreviousTimerBegin + camshotPeriod;
+            TimeSpan nextShotIn = camshotPeriod - stwCamshotTimer.Elapsed; //(nextshotAt - datetimeNow);
+            // nextShotIn = new TimeSpan(0, 0, (int)nextShotIn.TotalSeconds + 1);
+            ThreadSafeOperations.SetText(lblNextShotIn, nextShotIn.RoundToSeconds().ToString("c"), false);
+            // TimeSpan timeSinceLastShot = stwCamshotTimer.Elapsed;
+            // timeSinceLastShot = new TimeSpan(0, 0, (int)timeSinceLastShot.TotalSeconds);
+            ThreadSafeOperations.SetText(lblSinceLastShot, stwCamshotTimer.Elapsed.RoundToSeconds().ToString("c"), false);
         }
 
 
@@ -1664,7 +2108,7 @@ namespace DataCollectorAutomator
             {
                 catchCameraImages();
             }
-            
+
         }
 
         private void btnCollectMostClose_Click(object sender, EventArgs e)
@@ -1676,12 +2120,12 @@ namespace DataCollectorAutomator
 
         private void catchCameraImages()
         {
-            String usernameID1 = tbCamUName1.Text;
-            String usernameID2 = tbCamUName2.Text;
-            String passwordID1 = tbCamPWD1.Text;
-            String passwordID2 = tbCamPWD2.Text;
-            String ipAddrVivotekCamID1 = tbCamIP1.Text.Replace(",", ".");
-            String ipAddrVivotekCamID2 = tbCamIP2.Text.Replace(",", ".");
+            String usernameID1 = VivotekCameraUserName1; // tbCamUName1.Text;
+            String usernameID2 = VivotekCameraUserName2; // tbCamUName2.Text;
+            String passwordID1 = VivotekCameraPassword1; // tbCamPWD1.Text;
+            String passwordID2 = VivotekCameraPassword2; // tbCamPWD2.Text;
+            String ipAddrVivotekCamID1 = VivotekCameraID1IPaddress.ToString(); // tbCamIP1.Text.Replace(",", ".");
+            String ipAddrVivotekCamID2 = VivotekCameraID2IPaddress.ToString(); // tbCamIP2.Text.Replace(",", ".");
 
 
             // Надо взять сразу оба снимка - берем в backgroundworker-ах
@@ -1703,10 +2147,14 @@ namespace DataCollectorAutomator
                 {
                     WebClient client = new WebClient();
                     client.Credentials = new NetworkCredential(uname, pwd);
+                    DateTime reqSnapshotDT = DateTime.UtcNow;
                     Stream stream = client.OpenRead(imageURL2Get);
                     gotImage = Image.FromStream(stream);
                     stream.Flush();
                     stream.Close();
+
+                    Note("image from camera ID" + devID + " requested at " + reqSnapshotDT.ToString("o"));
+                    Note("image from camera ID" + devID + " recieved at " + DateTime.UtcNow.ToString("o"));
 
                     gotimageFileName = swapImageToFile(gotImage, "devID" + devID);
                     FileInfo finfo = new FileInfo(gotimageFileName);
@@ -1717,8 +2165,9 @@ namespace DataCollectorAutomator
                         currCaughtImageID1 = new Image<Bgr, byte>((Bitmap)gotImage);
                         ThreadSafeOperations.SetText(lblSnapshotFilenameID1, finfo.Name, false);
                         ThreadSafeOperations.SetText(lblGotSnapshotDateTimeID1,
-                            "snapshot got at: " + Environment.NewLine +
-                            DateTime.UtcNow.ToString("o"), false);
+                            "requested at: " + reqSnapshotDT.ToString("o").Replace("Z", "") +
+                            Environment.NewLine +
+                            "recieved at: " + DateTime.UtcNow.ToString("o").Replace("Z", ""), false);
                         RaisePaintEvent(null, null);
                     }
                     else if (devID == 2)
@@ -1727,8 +2176,9 @@ namespace DataCollectorAutomator
                         currCaughtImageID2 = new Image<Bgr, byte>((Bitmap)gotImage);
                         ThreadSafeOperations.SetText(lblSnapshotFilenameID2, finfo.Name, false);
                         ThreadSafeOperations.SetText(lblGotSnapshotDateTimeID2,
-                            "snapshot got at: " + Environment.NewLine +
-                            DateTime.UtcNow.ToString("o"), false);
+                            "requested at: " + reqSnapshotDT.ToString("o").Replace("Z", "") +
+                            Environment.NewLine +
+                            "recieved at: " + DateTime.UtcNow.ToString("o").Replace("Z", ""), false);
                         RaisePaintEvent(null, null);
                     }
                 }
@@ -1756,13 +2206,16 @@ namespace DataCollectorAutomator
             bgwGetImgID1.DoWork += currDoWorkHandler;
             bgwGetImgID1.RunWorkerCompleted += currWorkCompletedHandler;
             object[] BGWargsID1 = new object[] { ipAddrVivotekCamID1, usernameID1, passwordID1, 1 };
-            bgwGetImgID1.RunWorkerAsync(BGWargsID1);
+
 
             BackgroundWorker bgwGetImgID2 = new BackgroundWorker();
             bgwGetImgID2.WorkerSupportsCancellation = true;
             bgwGetImgID2.DoWork += currDoWorkHandler;
             bgwGetImgID2.RunWorkerCompleted += currWorkCompletedHandler;
             object[] BGWargsID2 = new object[] { ipAddrVivotekCamID2, usernameID2, passwordID2, 2 };
+
+
+            bgwGetImgID1.RunWorkerAsync(BGWargsID1);
             bgwGetImgID2.RunWorkerAsync(BGWargsID2);
         }
 
@@ -1777,66 +2230,69 @@ namespace DataCollectorAutomator
 
 
 
-
-        private void tbCamShotPeriod_TextChanged(object sender, EventArgs e)
-        {
-            TimeSpan tmpCamShotPeriod = CamShotPeriod;
-
-            if (!camshotPeriodDataSavingCircle.Visible)
-            {
-                camshotPeriodDataSavingCircle.Visible = true;
-                camshotPeriodDataSavingCircle.Active = true;
-            }
-
-            try
-            {
-                CamShotPeriod = new TimeSpan(Convert.ToInt32(tbCamShotPeriod.Text.Substring(0, 2)),
-                    Convert.ToInt32(tbCamShotPeriod.Text.Substring(3, 2)),
-                    Convert.ToInt32(tbCamShotPeriod.Text.Substring(6, 2)));
-                SaveSettings();
-                camshotPeriodDataSavingCircle.Active = false;
-                camshotPeriodDataSavingCircle.Visible = false;
-            }
-            catch (Exception exc)
-            {
-                //Note(exc.Message);
-                //throw;
-            }
-        }
-
-
-
-        private void tbCamIP_TextChanged(object sender, EventArgs e)
-        {
-            String IPAddrString = tbCamIP1.Text;
-
-
-            IPAddrString = IPAddrString.Replace(",", ".");
-
-            ThreadSafeOperations.SetLoadingCircleState(ipAddrValidatingCircle1, true, true, ipAddrValidatingCircle1.Color);
-
-            if (IPAddress.TryParse(IPAddrString, out VivotekCameraID1IPaddress))
-            {
-                SaveSettings();
-                ThreadSafeOperations.SetLoadingCircleState(ipAddrValidatingCircle1, false, false, ipAddrValidatingCircle1.Color);
-            }
-        }
+        #region // obsolete
+        //private void tbCamShotPeriod_TextChanged(object sender, EventArgs e)
+        //{
+        //    TimeSpan tmpCamShotPeriod = CamShotPeriod;
+        //
+        //    if (!camshotPeriodDataSavingCircle.Visible)
+        //    {
+        //        camshotPeriodDataSavingCircle.Visible = true;
+        //        camshotPeriodDataSavingCircle.Active = true;
+        //    }
+        //
+        //    try
+        //    {
+        //        CamShotPeriod = new TimeSpan(Convert.ToInt32(tbCamShotPeriod.Text.Substring(0, 2)),
+        //            Convert.ToInt32(tbCamShotPeriod.Text.Substring(3, 2)),
+        //            Convert.ToInt32(tbCamShotPeriod.Text.Substring(6, 2)));
+        //        SaveSettings();
+        //        camshotPeriodDataSavingCircle.Active = false;
+        //        camshotPeriodDataSavingCircle.Visible = false;
+        //    }
+        //    catch (Exception exc)
+        //    {
+        //        //Note(exc.Message);
+        //        //throw;
+        //    }
+        //}
 
 
 
-        private void tbCamUName_TextChanged(object sender, EventArgs e)
-        {
-            VivotekCameraUserName1 = tbCamUName1.Text;
-            SaveSettings();
-        }
+        //private void tbCamIP_TextChanged(object sender, EventArgs e)
+        //{
+        //    String IPAddrString = tbCamIP1.Text;
+        //
+        //
+        //    IPAddrString = IPAddrString.Replace(",", ".");
+        //
+        //    ThreadSafeOperations.SetLoadingCircleState(ipAddrValidatingCircle1, true, true, ipAddrValidatingCircle1.Color);
+        //
+        //    if (IPAddress.TryParse(IPAddrString, out VivotekCameraID1IPaddress))
+        //    {
+        //        SaveSettings();
+        //        ThreadSafeOperations.SetLoadingCircleState(ipAddrValidatingCircle1, false, false, ipAddrValidatingCircle1.Color);
+        //    }
+        //}
 
 
 
-        private void tbCamPWD_TextChanged(object sender, EventArgs e)
-        {
-            VivotekCameraPassword1 = tbCamPWD1.Text;
-            SaveSettings();
-        }
+        //private void tbCamUName_TextChanged(object sender, EventArgs e)
+        //{
+        //    VivotekCameraUserName1 = tbCamUName1.Text;
+        //    SaveSettings();
+        //}
+
+
+
+        //private void tbCamPWD_TextChanged(object sender, EventArgs e)
+        //{
+        //    VivotekCameraPassword1 = tbCamPWD1.Text;
+        //    SaveSettings();
+        //}
+        #endregion // obsolete
+
+
 
 
         #region accelerpmeter calibration
@@ -1896,13 +2352,21 @@ namespace DataCollectorAutomator
                     break;
                 }
 
-                if (accDataQueue.Count > 0)
+                // if (accDataQueue.Count > 0)
+                if (accDataAndDTqueue.Count > 0)
                 {
-                    accelerometerData accData = accDataQueue.Dequeue();
-                    if (accData == null)
-                    {
-                        continue;
-                    }
+                    //accelerometerData accData = accDataQueue.Dequeue();
+                    //if (accData == null)
+                    //{
+                    //    continue;
+                    //}
+                    Tuple<DateTime, accelerometerData> tplAccDT = accDataAndDTqueue.Dequeue();
+
+                    if (tplAccDT == null) continue;
+
+                    //accelerometerData accData = accDataQueue.Dequeue();
+                    accelerometerData accData = tplAccDT.Item2;
+                    DateTime dtAccDataRecieved = tplAccDT.Item1;
 
                     ThreadSafeOperations.SetText(lblAccelCalibrationCurrentXID1, accData.AccX.ToString(), false);
                     ThreadSafeOperations.SetText(lblAccelCalibrationCurrentYID1, accData.AccY.ToString(), false);
@@ -2179,11 +2643,6 @@ namespace DataCollectorAutomator
 
 
 
-
-
-
-
-
         #region // External network data stream
 
         //private void btnConnect_Click(object sender, EventArgs e)
@@ -2267,6 +2726,8 @@ namespace DataCollectorAutomator
         private void bgwUDPmessagesParser_DoWork(object sender, DoWorkEventArgs e)
         {
             BackgroundWorker selfWorker = sender as BackgroundWorker;
+
+            #region // test exceptions
             //bool needToThrowEx = false;
             //int currMessageDevID = 0;
             //TimerCallback testExceptionTimerCallback = new TimerCallback((obj) =>
@@ -2275,7 +2736,7 @@ namespace DataCollectorAutomator
             //});
             //System.Threading.Timer timerTestException = new System.Threading.Timer(testExceptionTimerCallback, null, 0,
             //    5000);
-
+            #endregion // test exceptions
 
             while (true)
             {
@@ -2286,8 +2747,8 @@ namespace DataCollectorAutomator
 
                 if (cquArduinoUDPCatchedMessages.Count == 0)
                 {
-                    Application.DoEvents();
-                    Thread.Sleep(0);
+                    //Application.DoEvents();
+                    //Thread.Sleep(0);
                     continue;
                 }
 
@@ -2298,11 +2759,13 @@ namespace DataCollectorAutomator
                     try
                     {
                         ProcessUDPmessagesFromQueue(selfWorker);
+                        #region // test exceptions
                         //if (needToThrowEx)
                         //{
                         //    needToThrowEx = false;
                         //    throw new Exception("test exception " + DateTime.Now.ToString("u"));
                         //}
+                        #endregion // test exceptions
                     }
                     catch (Exception ex)
                     {
@@ -2315,8 +2778,9 @@ namespace DataCollectorAutomator
                 }
                 else
                 {
-                    Application.DoEvents();
-                    Thread.Sleep(0);
+                    //Application.DoEvents();
+                    //Thread.Sleep(0);
+                    continue;
                 }
 
             }
@@ -2324,7 +2788,7 @@ namespace DataCollectorAutomator
 
 
 
-        
+
 
 
 
@@ -2339,14 +2803,19 @@ namespace DataCollectorAutomator
                     break;
                 }
 
+                if (cquArduinoUDPCatchedMessages.Count == 0)
+                {
+                    return;
+                }
+
                 if (cquArduinoUDPCatchedMessages.TryDequeue(out curMessageBoundle))
                 {
                     break;
                 }
                 else
                 {
-                    Application.DoEvents();
-                    Thread.Sleep(0);
+                    //Application.DoEvents();
+                    //Thread.Sleep(0);
                     continue;
                 }
             }
@@ -2386,8 +2855,9 @@ namespace DataCollectorAutomator
                         curMessageBoundle = tplSrch.CompleteMessage;
                         while (!cbArduinoMessagesTuples.TryTake(out tplSrch))
                         {
-                            Application.DoEvents();
-                            Thread.Sleep(0);
+                            //Application.DoEvents();
+                            //Thread.Sleep(0);
+                            continue;
                         }
                     }
                 }
@@ -2463,38 +2933,40 @@ namespace DataCollectorAutomator
 
 
 
-        private void maskedTextBox2_TextChanged(object sender, EventArgs e)
-        {
-            String IPAddrString2 = tbCamIP2.Text;
+        //private void maskedTextBox2_TextChanged(object sender, EventArgs e)
+        //{
+        //    String IPAddrString2 = tbCamIP2.Text;
+        //
+        //
+        //    IPAddrString2 = IPAddrString2.Replace(",", ".");
+        //
+        //    ThreadSafeOperations.SetLoadingCircleState(ipAddrValidatingCircle2, true, true, ipAddrValidatingCircle2.Color);
+        //
+        //    if (IPAddress.TryParse(IPAddrString2, out VivotekCameraID2IPaddress))
+        //    {
+        //        SaveSettings();
+        //        ThreadSafeOperations.SetLoadingCircleState(ipAddrValidatingCircle2, false, false, ipAddrValidatingCircle2.Color);
+        //    }
+        //}
+
+        //private void tbCamUName2_TextChanged(object sender, EventArgs e)
+        //{
+        //    VivotekCameraUserName2 = tbCamUName2.Text;
+        //    SaveSettings();
+        //}
 
 
-            IPAddrString2 = IPAddrString2.Replace(",", ".");
-
-            ThreadSafeOperations.SetLoadingCircleState(ipAddrValidatingCircle2, true, true, ipAddrValidatingCircle2.Color);
-
-            if (IPAddress.TryParse(IPAddrString2, out VivotekCameraID2IPaddress))
-            {
-                SaveSettings();
-                ThreadSafeOperations.SetLoadingCircleState(ipAddrValidatingCircle2, false, false, ipAddrValidatingCircle2.Color);
-            }
-        }
-
-        private void tbCamUName2_TextChanged(object sender, EventArgs e)
-        {
-            VivotekCameraUserName2 = tbCamUName2.Text;
-            SaveSettings();
-        }
 
         private void tbIP2ListenDevID2_TextChanged(object sender, EventArgs e)
         {
             ip2ListenID2 = tbIP2ListenDevID2.Text;
         }
 
-        private void tbCamPWD2_TextChanged(object sender, EventArgs e)
-        {
-            VivotekCameraPassword2 = tbCamPWD2.Text;
-            SaveSettings();
-        }
+        //private void tbCamPWD2_TextChanged(object sender, EventArgs e)
+        //{
+        //    VivotekCameraPassword2 = tbCamPWD2.Text;
+        //    SaveSettings();
+        //}
 
 
 
@@ -2510,6 +2982,9 @@ namespace DataCollectorAutomator
                 ThreadSafeOperations.UpdatePictureBox(pbThumbPreviewCam2, currCaughtImageID2.Bitmap, true);
             }
         }
+
+
+
 
         private void DataCollectorMainForm_KeyPress(object sender, KeyPressEventArgs e)
         {
@@ -2550,13 +3025,142 @@ namespace DataCollectorAutomator
 
 
 
-        
+
+        private void btnPrefs_Click(object sender, EventArgs e)
+        {
+            PropertiesEditor propForm = new PropertiesEditor(defaultProperties, defaultPropertiesXMLfileName);
+            propForm.FormClosed += new FormClosedEventHandler(PropertiesFormClosed);
+            propForm.ShowDialog();
+        }
+
+
+        public void PropertiesFormClosed(object sender, FormClosedEventArgs e)
+        {
+            readDefaultProperties();
+        }
+
+
+
+        private void readDefaultProperties()
+        {
+            defaultProperties = new Dictionary<string, object>();
+            defaultPropertiesXMLfileName = Directory.GetCurrentDirectory() +
+                                         "\\settings\\DataCollectorAppGeneralSettings2G.xml";
+            if (!File.Exists(defaultPropertiesXMLfileName)) return;
+            defaultProperties = ServiceTools.ReadDictionaryFromXML(defaultPropertiesXMLfileName);
+
+
+
+
+
+
+            //generalSettingsFilename = Directory.GetCurrentDirectory() +
+            //                          "\\settings\\DataCollectorAppGeneralSettings2G.xml";
+            accCalibrationDataFilename = Directory.GetCurrentDirectory() +
+                                         "\\settings\\AccelerometerCalibrationData2G.xml";
+
+
+
+            accCalibrationDataDict = ServiceTools.ReadDictionaryFromXML(accCalibrationDataFilename);
+            //Dictionary<string, object> magnCalibrationDataDict = ServiceTools.ReadDictionaryFromXML(magnCalibrationDataFilename);
+            //Dictionary<string, object> generalSettings = ServiceTools.ReadDictionaryFromXML(defaultPropertiesXMLfileName);
+
+            accCalibrationDataID1 = new accelerometerData(Convert.ToDouble(accCalibrationDataDict["accID1CalibratedXzero"]),
+                Convert.ToDouble(accCalibrationDataDict["accID1CalibratedYzero"]),
+                Convert.ToDouble(accCalibrationDataDict["accID1CalibratedZzero"]));
+            accCalibrationDataID2 = new accelerometerData(Convert.ToDouble(accCalibrationDataDict["accID2CalibratedXzero"]),
+                Convert.ToDouble(accCalibrationDataDict["accID2CalibratedYzero"]),
+                Convert.ToDouble(accCalibrationDataDict["accID2CalibratedZzero"]));
+
+
+            ip2ListenID1 = defaultProperties["ArduinoBoardID1DefaultIP"] as string;
+            ip2ListenID2 = defaultProperties["ArduinoBoardID2DefaultIP"] as string;
+
+            port2converse = Convert.ToInt32(defaultProperties["ArduinoBoardDefaultUDPport"]);
+            portBcstRecvng = Convert.ToInt32(defaultProperties["UDPBroadcastDefaultListeningPort"]);
+            string strCamShotPeriod = (defaultProperties["VivotekCameraShootingPeriodSec"]) as string;
+            //CamShotPeriod = new TimeSpan(Convert.ToInt32(strCamShotPeriod.Substring(0, 2)),
+            //    Convert.ToInt32(strCamShotPeriod.Substring(3, 2)), Convert.ToInt32(strCamShotPeriod.Substring(6, 2)));
+            CamShotPeriod = new TimeSpan(0, 0, Convert.ToInt32(strCamShotPeriod));
+
+
+            IPAddress.TryParse(defaultProperties["VivotekCameraID1IPaddr"] as string, out VivotekCameraID1IPaddress);
+            IPAddress.TryParse(defaultProperties["VivotekCameraID2IPaddr"] as string, out VivotekCameraID2IPaddress);
+            VivotekCameraUserName1 = defaultProperties["VivotekCameraID1UserName"] as string;
+            VivotekCameraPassword1 = defaultProperties["VivotekCameraID1Password"] as string;
+            VivotekCameraUserName2 = defaultProperties["VivotekCameraID2UserName"] as string;
+            VivotekCameraPassword2 = defaultProperties["VivotekCameraID2Password"] as string;
+            BroadcastLogHistorySizeLines = Convert.ToInt32(defaultProperties["BroadcastLogHistorySizeLines"]);
+
+            try
+            {
+                angleCamDeclinationThresholdDeg = Convert.ToDouble(defaultProperties["CamDeclinationThresholdDegToShoot"]);
+            }
+            catch (Exception ex)
+            {
+                theLogWindow = ServiceTools.LogAText(theLogWindow,
+                    "couldn`t read critical camera declination angle. Using default value = " +
+                    angleCamDeclinationThresholdDeg.ToString("F2") + Environment.NewLine +
+                    "exception was thrown: \"" + ex.Message + "\"");
+            }
+
+
+            //ThreadSafeOperations.SetTextTB(tbCamPWD1, VivotekCameraPassword1, false);
+            //ThreadSafeOperations.SetTextTB(tbCamPWD2, VivotekCameraPassword2, false);
+            //tbCamIP1.Text = defaultProperties["VivotekCameraID1IPaddr"] as string;
+            //tbCamIP2.Text = defaultProperties["VivotekCameraID2IPaddr"] as string;
+            //ThreadSafeOperations.SetTextTB(tbCamUName1, VivotekCameraUserName1, false);
+            //ThreadSafeOperations.SetTextTB(tbCamUName2, VivotekCameraUserName2, false);
+            ThreadSafeOperations.SetTextTB(tbIP2ListenDevID1, ip2ListenID1, false);
+            ThreadSafeOperations.SetTextTB(tbIP2ListenDevID2, ip2ListenID2, false);
+
+            // tbCamShotPeriod.Text = CamShotPeriod.ToString("c");
+
+            //ThreadSafeOperations.SetTextTB(tbBcstListeningPort, portBcstRecvng.ToString(), false);
+
+
+
+
+            if (accCalibrationDataID1.AccMagnitude == 0.0d)
+            {
+                accCalibrationDataID1 = new accelerometerData(0.0, 0.0, -256.0);
+            }
+            if (accCalibrationDataID2.AccMagnitude == 0.0d)
+            {
+                accCalibrationDataID2 = new accelerometerData(0.0, 0.0, -256.0);
+            }
+
+            ThreadSafeOperations.SetText(lblAccelCalibrationXID1, Math.Round(accCalibrationDataID1.AccDoubleX, 2).ToString(), false);
+            ThreadSafeOperations.SetText(lblAccelCalibrationYID1, Math.Round(accCalibrationDataID1.AccDoubleY, 2).ToString(), false);
+            ThreadSafeOperations.SetText(lblAccelCalibrationZID1, Math.Round(accCalibrationDataID1.AccDoubleZ, 2).ToString(), false);
+            ThreadSafeOperations.SetText(lblAccelCalibrationXID2, Math.Round(accCalibrationDataID2.AccDoubleX, 2).ToString(), false);
+            ThreadSafeOperations.SetText(lblAccelCalibrationYID2, Math.Round(accCalibrationDataID2.AccDoubleY, 2).ToString(), false);
+            ThreadSafeOperations.SetText(lblAccelCalibrationZID2, Math.Round(accCalibrationDataID2.AccDoubleZ, 2).ToString(), false);
+        }
+
+
+
+
+        private void DataCollectorMainForm_Shown(object sender, EventArgs e)
+        {
+            readDefaultProperties();
+        }
+
+
+
+        private void btnAccCalibrationData_Click(object sender, EventArgs e)
+        {
+            PropertiesEditor propForm = new PropertiesEditor(accCalibrationDataDict, accCalibrationDataFilename);
+            propForm.FormClosed += new FormClosedEventHandler(PropertiesFormClosed);
+            propForm.ShowDialog();
+        }
+
 
 
 
     }
 
-    #endregion
+    #endregion the form behaviour
 
 
 

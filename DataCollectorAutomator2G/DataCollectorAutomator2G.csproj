@@ -101,6 +101,11 @@
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Properties\Resources.Designer.cs" />
+    <Compile Include="Properties\Resources1.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
     <Compile Include="Properties\Settings.Designer.cs" />
     <Compile Include="Properties\Settings1.Designer.cs">
       <AutoGen>True</AutoGen>
@@ -116,7 +121,10 @@
     <EmbeddedResource Include="DataCollectorMainForm.resx">
       <DependentUpon>DataCollectorMainForm.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Properties\Resources.resx" />
+    <EmbeddedResource Include="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources1.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
@@ -129,6 +137,7 @@
   <ItemGroup>
     <Content Include="Resources\01-refresh.png" />
     <Content Include="Resources\06-magnify.png" />
+    <None Include="Resources\gearIcon.png" />
     <Content Include="Resources\play.png" />
     <Content Include="Resources\play1.png" />
     <Content Include="settings\AccelerometerCalibrationData2G.xml">

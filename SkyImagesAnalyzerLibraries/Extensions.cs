@@ -235,6 +235,7 @@ namespace SkyImagesAnalyzerLibraries
 
 
 
+
         public static DenseVector Conv(this DenseVector dvSource, DenseVector dvKernel)
         {
             int kernelHalfSize = (dvKernel.Count - 1) / 2;
@@ -261,9 +262,9 @@ namespace SkyImagesAnalyzerLibraries
 
 
 
-        public static DenseVector Conv(this DenseVector dvSource, StandardConvolutionKernels kernelType, int kernelHalfWidth = 10)
+        public static DenseVector ConvKernel(StandardConvolutionKernels kernelType, int kernelHalfWidth = 10)
         {
-            double maxL = ((double)kernelHalfWidth) * Math.Sqrt(2.0d);
+            double maxL = ((double)kernelHalfWidth) * 2.0d;
             DenseVector dvKernel = DenseVector.Create(2 * kernelHalfWidth + 1, 1.0d);
 
             if (kernelType == StandardConvolutionKernels.cos)
@@ -315,6 +316,38 @@ namespace SkyImagesAnalyzerLibraries
 
             double kernelSum = dvKernel.Values.Sum();
             dvKernel.MapInplace(dval => dval / kernelSum);
+            return dvKernel;
+        }
+
+
+
+
+
+
+        public static DenseVector ConvKernelAsymmetric(StandardConvolutionKernels kernelType, int kernelWidth = 10, bool centerToTheRight = true)
+        {
+            DenseVector dvKernel = ConvKernel(kernelType, kernelWidth-1);
+            if (centerToTheRight)
+            {
+                dvKernel = (DenseVector) dvKernel.SubVector(0, kernelWidth);
+            }
+            else
+            {
+                dvKernel = (DenseVector) dvKernel.SubVector(kernelWidth - 1, kernelWidth);
+            }
+
+            double kernelSum = dvKernel.Values.Sum();
+            dvKernel.MapInplace(dval => dval / kernelSum);
+            return dvKernel;
+        }
+
+
+
+
+
+        public static DenseVector Conv(this DenseVector dvSource, StandardConvolutionKernels kernelType, int kernelHalfWidth = 10)
+        {
+            DenseVector dvKernel = ConvKernel(kernelType, kernelHalfWidth);
 
             return dvSource.Conv(dvKernel);
         }
@@ -452,6 +485,14 @@ namespace SkyImagesAnalyzerLibraries
         {
             ServiceTools.logToTextFile(fileName, ServiceTools.densevectorToString(dv));
             return true;
+        }
+
+
+
+
+        public static TimeSpan RoundToSeconds(this TimeSpan timeSpan)
+        {
+            return TimeSpan.FromSeconds(Math.Round(timeSpan.TotalSeconds));
         }
     }
 

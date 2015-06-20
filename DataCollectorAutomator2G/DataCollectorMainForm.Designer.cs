@@ -75,7 +75,9 @@
             this.label15 = new System.Windows.Forms.Label();
             this.lblSunElev = new System.Windows.Forms.Label();
             this.lblSunAzimuth = new System.Windows.Forms.Label();
-            this.tabPageBcstLog = new System.Windows.Forms.TabPage();
+            this.btnPrefs = new System.Windows.Forms.Button();
+            this.btnAccCalibrationData = new System.Windows.Forms.Button();
+            this.tabPageService = new System.Windows.Forms.TabPage();
             this.tableLayoutPanel2 = new System.Windows.Forms.TableLayoutPanel();
             this.tbMainLog = new System.Windows.Forms.TextBox();
             this.btnSwapBcstLog = new System.Windows.Forms.Button();
@@ -113,50 +115,32 @@
             this.lblStDevZID2 = new System.Windows.Forms.Label();
             this.lblCalculationStatisticsID2 = new System.Windows.Forms.Label();
             this.btnSaveAccelID2 = new System.Windows.Forms.Button();
-            this.Preferencies = new System.Windows.Forms.TabPage();
-            this.tableLayoutPanel4 = new System.Windows.Forms.TableLayoutPanel();
-            this.ipAddrValidatingCircle2 = new MRG.Controls.UI.LoadingCircle();
-            this.camshotPeriodLabel = new System.Windows.Forms.Label();
-            this.tbCamShotPeriod = new System.Windows.Forms.MaskedTextBox();
-            this.camshotPeriodDataSavingCircle = new MRG.Controls.UI.LoadingCircle();
-            this.camIPLabel = new System.Windows.Forms.Label();
-            this.tbCamIP1 = new System.Windows.Forms.TextBox();
-            this.ipAddrValidatingCircle1 = new MRG.Controls.UI.LoadingCircle();
-            this.camUNameLabel = new System.Windows.Forms.Label();
-            this.tbCamUName1 = new System.Windows.Forms.TextBox();
-            this.camPWDLabel = new System.Windows.Forms.Label();
-            this.tbCamPWD1 = new System.Windows.Forms.TextBox();
-            this.label2 = new System.Windows.Forms.Label();
-            this.label8 = new System.Windows.Forms.Label();
-            this.label9 = new System.Windows.Forms.Label();
-            this.tbCamUName2 = new System.Windows.Forms.TextBox();
-            this.tbCamPWD2 = new System.Windows.Forms.TextBox();
-            this.tbCamIP2 = new System.Windows.Forms.TextBox();
             this.arduinoBoardSearchingWorker = new System.ComponentModel.BackgroundWorker();
             this.udpCatchingJob = new System.ComponentModel.BackgroundWorker();
             this.ArduinoRequestExpectant = new System.ComponentModel.BackgroundWorker();
             this.dataCollector = new System.ComponentModel.BackgroundWorker();
             this.accelCalibrator = new System.ComponentModel.BackgroundWorker();
             this.bgwUDPmessagesParser = new System.ComponentModel.BackgroundWorker();
+            this.lblUDPpacketsRecievingSpeedTitle = new System.Windows.Forms.Label();
+            this.lblUDPpacketsProcessingSpeedTitle = new System.Windows.Forms.Label();
+            this.lblUDPpacketsRecievingSpeedValue = new System.Windows.Forms.Label();
+            this.lblUDPpacketsProcessingSpeedValue = new System.Windows.Forms.Label();
             this.tabControl1.SuspendLayout();
             this.tabPageMain.SuspendLayout();
             this.tableLayoutPanel1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pbThumbPreviewCam2)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pbThumbPreviewCam1)).BeginInit();
-            this.tabPageBcstLog.SuspendLayout();
+            this.tabPageService.SuspendLayout();
             this.tableLayoutPanel2.SuspendLayout();
             this.SensorsCalibration.SuspendLayout();
             this.tableLayoutPanel3.SuspendLayout();
-            this.Preferencies.SuspendLayout();
-            this.tableLayoutPanel4.SuspendLayout();
             this.SuspendLayout();
             // 
             // tabControl1
             // 
             this.tabControl1.Controls.Add(this.tabPageMain);
-            this.tabControl1.Controls.Add(this.tabPageBcstLog);
+            this.tabControl1.Controls.Add(this.tabPageService);
             this.tabControl1.Controls.Add(this.SensorsCalibration);
-            this.tabControl1.Controls.Add(this.Preferencies);
             this.tabControl1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tabControl1.Location = new System.Drawing.Point(0, 0);
             this.tabControl1.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
@@ -204,7 +188,7 @@
             this.tableLayoutPanel1.Controls.Add(this.pbThumbPreviewCam2, 7, 7);
             this.tableLayoutPanel1.Controls.Add(this.tbIP2ListenDevID1, 0, 0);
             this.tableLayoutPanel1.Controls.Add(this.btnFindArduino1, 3, 0);
-            this.tableLayoutPanel1.Controls.Add(this.btnStartStopBdcstListening, 14, 0);
+            this.tableLayoutPanel1.Controls.Add(this.btnStartStopBdcstListening, 8, 0);
             this.tableLayoutPanel1.Controls.Add(this.btnStartStopCollecting, 0, 3);
             this.tableLayoutPanel1.Controls.Add(this.SearchingArduinoID1ProcessCircle, 7, 0);
             this.tableLayoutPanel1.Controls.Add(this.btnCollectMostClose, 0, 4);
@@ -245,6 +229,8 @@
             this.tableLayoutPanel1.Controls.Add(this.label15, 18, 16);
             this.tableLayoutPanel1.Controls.Add(this.lblSunElev, 16, 17);
             this.tableLayoutPanel1.Controls.Add(this.lblSunAzimuth, 18, 17);
+            this.tableLayoutPanel1.Controls.Add(this.btnPrefs, 18, 0);
+            this.tableLayoutPanel1.Controls.Add(this.btnAccCalibrationData, 15, 0);
             this.tableLayoutPanel1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tableLayoutPanel1.Location = new System.Drawing.Point(4, 5);
             this.tableLayoutPanel1.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
@@ -323,13 +309,13 @@
             this.btnStartStopBdcstListening.Dock = System.Windows.Forms.DockStyle.Fill;
             this.btnStartStopBdcstListening.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnStartStopBdcstListening.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.btnStartStopBdcstListening.Location = new System.Drawing.Point(958, 5);
+            this.btnStartStopBdcstListening.Location = new System.Drawing.Point(558, 5);
             this.btnStartStopBdcstListening.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.btnStartStopBdcstListening.Name = "btnStartStopBdcstListening";
             this.tableLayoutPanel1.SetRowSpan(this.btnStartStopBdcstListening, 2);
-            this.btnStartStopBdcstListening.Size = new System.Drawing.Size(472, 88);
+            this.btnStartStopBdcstListening.Size = new System.Drawing.Size(392, 88);
             this.btnStartStopBdcstListening.TabIndex = 43;
-            this.btnStartStopBdcstListening.Text = "Start listening";
+            this.btnStartStopBdcstListening.Text = "Start listening boards stream";
             this.btnStartStopBdcstListening.UseVisualStyleBackColor = false;
             this.btnStartStopBdcstListening.Click += new System.EventHandler(this.btnStartStopBdcstListening_Click);
             // 
@@ -942,18 +928,48 @@
             this.lblSunAzimuth.Text = "---";
             this.lblSunAzimuth.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
-            // tabPageBcstLog
+            // btnPrefs
             // 
-            this.tabPageBcstLog.Controls.Add(this.tableLayoutPanel2);
-            this.tabPageBcstLog.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.tabPageBcstLog.Location = new System.Drawing.Point(4, 29);
-            this.tabPageBcstLog.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
-            this.tabPageBcstLog.Name = "tabPageBcstLog";
-            this.tabPageBcstLog.Padding = new System.Windows.Forms.Padding(4, 5, 4, 5);
-            this.tabPageBcstLog.Size = new System.Drawing.Size(1442, 957);
-            this.tabPageBcstLog.TabIndex = 0;
-            this.tabPageBcstLog.Text = "Logs";
-            this.tabPageBcstLog.UseVisualStyleBackColor = true;
+            this.btnPrefs.BackgroundImage = global::DataCollectorAutomator2G.Properties.Resources.gearIcon;
+            this.btnPrefs.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Zoom;
+            this.tableLayoutPanel1.SetColumnSpan(this.btnPrefs, 2);
+            this.btnPrefs.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.btnPrefs.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnPrefs.Location = new System.Drawing.Point(1265, 3);
+            this.btnPrefs.Name = "btnPrefs";
+            this.tableLayoutPanel1.SetRowSpan(this.btnPrefs, 2);
+            this.btnPrefs.Size = new System.Drawing.Size(166, 92);
+            this.btnPrefs.TabIndex = 114;
+            this.btnPrefs.UseVisualStyleBackColor = true;
+            this.btnPrefs.Click += new System.EventHandler(this.btnPrefs_Click);
+            // 
+            // btnAccCalibrationData
+            // 
+            this.tableLayoutPanel1.SetColumnSpan(this.btnAccCalibrationData, 3);
+            this.btnAccCalibrationData.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.btnAccCalibrationData.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnAccCalibrationData.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.btnAccCalibrationData.Location = new System.Drawing.Point(1034, 3);
+            this.btnAccCalibrationData.Name = "btnAccCalibrationData";
+            this.tableLayoutPanel1.SetRowSpan(this.btnAccCalibrationData, 2);
+            this.btnAccCalibrationData.Size = new System.Drawing.Size(225, 92);
+            this.btnAccCalibrationData.TabIndex = 115;
+            this.btnAccCalibrationData.Text = "Accelerometers calibration data";
+            this.btnAccCalibrationData.UseVisualStyleBackColor = true;
+            this.btnAccCalibrationData.Click += new System.EventHandler(this.btnAccCalibrationData_Click);
+            // 
+            // tabPageService
+            // 
+            this.tabPageService.Controls.Add(this.tableLayoutPanel2);
+            this.tabPageService.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.tabPageService.Location = new System.Drawing.Point(4, 29);
+            this.tabPageService.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.tabPageService.Name = "tabPageService";
+            this.tabPageService.Padding = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.tabPageService.Size = new System.Drawing.Size(1442, 957);
+            this.tabPageService.TabIndex = 0;
+            this.tabPageService.Text = "Service";
+            this.tabPageService.UseVisualStyleBackColor = true;
             // 
             // tableLayoutPanel2
             // 
@@ -964,20 +980,25 @@
             this.tableLayoutPanel2.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 16.66667F));
             this.tableLayoutPanel2.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 16.66667F));
             this.tableLayoutPanel2.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 16.66667F));
-            this.tableLayoutPanel2.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 30F));
             this.tableLayoutPanel2.Controls.Add(this.tbMainLog, 0, 2);
             this.tableLayoutPanel2.Controls.Add(this.btnSwapBcstLog, 3, 0);
             this.tableLayoutPanel2.Controls.Add(this.label11, 0, 1);
             this.tableLayoutPanel2.Controls.Add(this.btnSwitchShowingTotalLog, 0, 0);
+            this.tableLayoutPanel2.Controls.Add(this.lblUDPpacketsRecievingSpeedTitle, 0, 3);
+            this.tableLayoutPanel2.Controls.Add(this.lblUDPpacketsProcessingSpeedTitle, 0, 4);
+            this.tableLayoutPanel2.Controls.Add(this.lblUDPpacketsRecievingSpeedValue, 2, 3);
+            this.tableLayoutPanel2.Controls.Add(this.lblUDPpacketsProcessingSpeedValue, 2, 4);
             this.tableLayoutPanel2.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tableLayoutPanel2.Location = new System.Drawing.Point(4, 5);
             this.tableLayoutPanel2.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.tableLayoutPanel2.Name = "tableLayoutPanel2";
-            this.tableLayoutPanel2.RowCount = 3;
+            this.tableLayoutPanel2.RowCount = 6;
             this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 61F));
             this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 46F));
             this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 31F));
+            this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 60F));
+            this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 60F));
+            this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 60F));
             this.tableLayoutPanel2.Size = new System.Drawing.Size(1434, 947);
             this.tableLayoutPanel2.TabIndex = 0;
             // 
@@ -991,7 +1012,7 @@
             this.tbMainLog.Multiline = true;
             this.tbMainLog.Name = "tbMainLog";
             this.tbMainLog.ScrollBars = System.Windows.Forms.ScrollBars.Both;
-            this.tbMainLog.Size = new System.Drawing.Size(1426, 830);
+            this.tbMainLog.Size = new System.Drawing.Size(1426, 650);
             this.tbMainLog.TabIndex = 10;
             // 
             // btnSwapBcstLog
@@ -1556,296 +1577,6 @@
             this.btnSaveAccelID2.Text = "Save calibration data (dev.2)";
             this.btnSaveAccelID2.UseVisualStyleBackColor = true;
             // 
-            // Preferencies
-            // 
-            this.Preferencies.BackColor = System.Drawing.Color.Transparent;
-            this.Preferencies.Controls.Add(this.tableLayoutPanel4);
-            this.Preferencies.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.Preferencies.Location = new System.Drawing.Point(4, 29);
-            this.Preferencies.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
-            this.Preferencies.Name = "Preferencies";
-            this.Preferencies.Padding = new System.Windows.Forms.Padding(4, 5, 4, 5);
-            this.Preferencies.Size = new System.Drawing.Size(1442, 957);
-            this.Preferencies.TabIndex = 3;
-            this.Preferencies.Text = "Preferencies";
-            // 
-            // tableLayoutPanel4
-            // 
-            this.tableLayoutPanel4.ColumnCount = 5;
-            this.tableLayoutPanel4.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 25F));
-            this.tableLayoutPanel4.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 25F));
-            this.tableLayoutPanel4.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 25F));
-            this.tableLayoutPanel4.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 25F));
-            this.tableLayoutPanel4.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 74F));
-            this.tableLayoutPanel4.Controls.Add(this.ipAddrValidatingCircle2, 4, 5);
-            this.tableLayoutPanel4.Controls.Add(this.camshotPeriodLabel, 0, 0);
-            this.tableLayoutPanel4.Controls.Add(this.tbCamShotPeriod, 1, 0);
-            this.tableLayoutPanel4.Controls.Add(this.camshotPeriodDataSavingCircle, 4, 0);
-            this.tableLayoutPanel4.Controls.Add(this.camIPLabel, 0, 1);
-            this.tableLayoutPanel4.Controls.Add(this.tbCamIP1, 1, 1);
-            this.tableLayoutPanel4.Controls.Add(this.ipAddrValidatingCircle1, 4, 1);
-            this.tableLayoutPanel4.Controls.Add(this.camUNameLabel, 0, 2);
-            this.tableLayoutPanel4.Controls.Add(this.tbCamUName1, 1, 2);
-            this.tableLayoutPanel4.Controls.Add(this.camPWDLabel, 0, 3);
-            this.tableLayoutPanel4.Controls.Add(this.tbCamPWD1, 1, 3);
-            this.tableLayoutPanel4.Controls.Add(this.label2, 0, 5);
-            this.tableLayoutPanel4.Controls.Add(this.label8, 0, 6);
-            this.tableLayoutPanel4.Controls.Add(this.label9, 0, 7);
-            this.tableLayoutPanel4.Controls.Add(this.tbCamUName2, 1, 6);
-            this.tableLayoutPanel4.Controls.Add(this.tbCamPWD2, 1, 7);
-            this.tableLayoutPanel4.Controls.Add(this.tbCamIP2, 1, 5);
-            this.tableLayoutPanel4.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.tableLayoutPanel4.Location = new System.Drawing.Point(4, 5);
-            this.tableLayoutPanel4.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
-            this.tableLayoutPanel4.Name = "tableLayoutPanel4";
-            this.tableLayoutPanel4.RowCount = 10;
-            this.tableLayoutPanel4.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 49F));
-            this.tableLayoutPanel4.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 49F));
-            this.tableLayoutPanel4.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 49F));
-            this.tableLayoutPanel4.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 49F));
-            this.tableLayoutPanel4.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 25F));
-            this.tableLayoutPanel4.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 49F));
-            this.tableLayoutPanel4.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 49F));
-            this.tableLayoutPanel4.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 49F));
-            this.tableLayoutPanel4.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 49F));
-            this.tableLayoutPanel4.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            this.tableLayoutPanel4.Size = new System.Drawing.Size(1434, 947);
-            this.tableLayoutPanel4.TabIndex = 0;
-            // 
-            // ipAddrValidatingCircle2
-            // 
-            this.ipAddrValidatingCircle2.Active = false;
-            this.ipAddrValidatingCircle2.Color = System.Drawing.Color.DarkGray;
-            this.ipAddrValidatingCircle2.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.ipAddrValidatingCircle2.InnerCircleRadius = 8;
-            this.ipAddrValidatingCircle2.Location = new System.Drawing.Point(1364, 226);
-            this.ipAddrValidatingCircle2.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
-            this.ipAddrValidatingCircle2.Name = "ipAddrValidatingCircle2";
-            this.ipAddrValidatingCircle2.NumberSpoke = 24;
-            this.ipAddrValidatingCircle2.OuterCircleRadius = 9;
-            this.ipAddrValidatingCircle2.RotationSpeed = 100;
-            this.ipAddrValidatingCircle2.Size = new System.Drawing.Size(66, 39);
-            this.ipAddrValidatingCircle2.SpokeThickness = 4;
-            this.ipAddrValidatingCircle2.StylePreset = MRG.Controls.UI.LoadingCircle.StylePresets.IE7;
-            this.ipAddrValidatingCircle2.TabIndex = 96;
-            this.ipAddrValidatingCircle2.Visible = false;
-            // 
-            // camshotPeriodLabel
-            // 
-            this.camshotPeriodLabel.AutoSize = true;
-            this.camshotPeriodLabel.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.camshotPeriodLabel.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.camshotPeriodLabel.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.camshotPeriodLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.camshotPeriodLabel.Location = new System.Drawing.Point(4, 0);
-            this.camshotPeriodLabel.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.camshotPeriodLabel.Name = "camshotPeriodLabel";
-            this.camshotPeriodLabel.Size = new System.Drawing.Size(332, 49);
-            this.camshotPeriodLabel.TabIndex = 72;
-            this.camshotPeriodLabel.Text = "camera shooting period:";
-            this.camshotPeriodLabel.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-            // 
-            // tbCamShotPeriod
-            // 
-            this.tbCamShotPeriod.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.tbCamShotPeriod.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.tbCamShotPeriod.Location = new System.Drawing.Point(344, 5);
-            this.tbCamShotPeriod.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
-            this.tbCamShotPeriod.Mask = "00:00:00";
-            this.tbCamShotPeriod.Name = "tbCamShotPeriod";
-            this.tbCamShotPeriod.Size = new System.Drawing.Size(332, 35);
-            this.tbCamShotPeriod.TabIndex = 73;
-            this.tbCamShotPeriod.Text = "000000";
-            this.tbCamShotPeriod.TextChanged += new System.EventHandler(this.tbCamShotPeriod_TextChanged);
-            // 
-            // camshotPeriodDataSavingCircle
-            // 
-            this.camshotPeriodDataSavingCircle.Active = false;
-            this.camshotPeriodDataSavingCircle.Color = System.Drawing.Color.DarkGray;
-            this.camshotPeriodDataSavingCircle.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.camshotPeriodDataSavingCircle.InnerCircleRadius = 8;
-            this.camshotPeriodDataSavingCircle.Location = new System.Drawing.Point(1364, 5);
-            this.camshotPeriodDataSavingCircle.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
-            this.camshotPeriodDataSavingCircle.Name = "camshotPeriodDataSavingCircle";
-            this.camshotPeriodDataSavingCircle.NumberSpoke = 24;
-            this.camshotPeriodDataSavingCircle.OuterCircleRadius = 9;
-            this.camshotPeriodDataSavingCircle.RotationSpeed = 100;
-            this.camshotPeriodDataSavingCircle.Size = new System.Drawing.Size(66, 39);
-            this.camshotPeriodDataSavingCircle.SpokeThickness = 4;
-            this.camshotPeriodDataSavingCircle.StylePreset = MRG.Controls.UI.LoadingCircle.StylePresets.IE7;
-            this.camshotPeriodDataSavingCircle.TabIndex = 78;
-            this.camshotPeriodDataSavingCircle.Text = "loadingCircle1";
-            this.camshotPeriodDataSavingCircle.Visible = false;
-            // 
-            // camIPLabel
-            // 
-            this.camIPLabel.AutoSize = true;
-            this.camIPLabel.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.camIPLabel.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.camIPLabel.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.camIPLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.camIPLabel.Location = new System.Drawing.Point(4, 49);
-            this.camIPLabel.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.camIPLabel.Name = "camIPLabel";
-            this.camIPLabel.Size = new System.Drawing.Size(332, 49);
-            this.camIPLabel.TabIndex = 79;
-            this.camIPLabel.Text = "Camera-1 IP";
-            this.camIPLabel.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-            // 
-            // tbCamIP1
-            // 
-            this.tbCamIP1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.tbCamIP1.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.tbCamIP1.Location = new System.Drawing.Point(344, 54);
-            this.tbCamIP1.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
-            this.tbCamIP1.Name = "tbCamIP1";
-            this.tbCamIP1.Size = new System.Drawing.Size(332, 35);
-            this.tbCamIP1.TabIndex = 80;
-            this.tbCamIP1.TextChanged += new System.EventHandler(this.tbCamIP_TextChanged);
-            // 
-            // ipAddrValidatingCircle1
-            // 
-            this.ipAddrValidatingCircle1.Active = false;
-            this.ipAddrValidatingCircle1.Color = System.Drawing.Color.DarkGray;
-            this.ipAddrValidatingCircle1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.ipAddrValidatingCircle1.InnerCircleRadius = 8;
-            this.ipAddrValidatingCircle1.Location = new System.Drawing.Point(1364, 54);
-            this.ipAddrValidatingCircle1.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
-            this.ipAddrValidatingCircle1.Name = "ipAddrValidatingCircle1";
-            this.ipAddrValidatingCircle1.NumberSpoke = 24;
-            this.ipAddrValidatingCircle1.OuterCircleRadius = 9;
-            this.ipAddrValidatingCircle1.RotationSpeed = 100;
-            this.ipAddrValidatingCircle1.Size = new System.Drawing.Size(66, 39);
-            this.ipAddrValidatingCircle1.SpokeThickness = 4;
-            this.ipAddrValidatingCircle1.StylePreset = MRG.Controls.UI.LoadingCircle.StylePresets.IE7;
-            this.ipAddrValidatingCircle1.TabIndex = 81;
-            this.ipAddrValidatingCircle1.Text = "loadingCircle1";
-            this.ipAddrValidatingCircle1.Visible = false;
-            // 
-            // camUNameLabel
-            // 
-            this.camUNameLabel.AutoSize = true;
-            this.camUNameLabel.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.camUNameLabel.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.camUNameLabel.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.camUNameLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.camUNameLabel.Location = new System.Drawing.Point(4, 98);
-            this.camUNameLabel.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.camUNameLabel.Name = "camUNameLabel";
-            this.camUNameLabel.Size = new System.Drawing.Size(332, 49);
-            this.camUNameLabel.TabIndex = 82;
-            this.camUNameLabel.Text = "camera username";
-            this.camUNameLabel.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-            // 
-            // tbCamUName1
-            // 
-            this.tbCamUName1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.tbCamUName1.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.tbCamUName1.Location = new System.Drawing.Point(344, 103);
-            this.tbCamUName1.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
-            this.tbCamUName1.Name = "tbCamUName1";
-            this.tbCamUName1.Size = new System.Drawing.Size(332, 35);
-            this.tbCamUName1.TabIndex = 83;
-            this.tbCamUName1.TextChanged += new System.EventHandler(this.tbCamUName_TextChanged);
-            // 
-            // camPWDLabel
-            // 
-            this.camPWDLabel.AutoSize = true;
-            this.camPWDLabel.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.camPWDLabel.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.camPWDLabel.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.camPWDLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.camPWDLabel.Location = new System.Drawing.Point(4, 147);
-            this.camPWDLabel.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.camPWDLabel.Name = "camPWDLabel";
-            this.camPWDLabel.Size = new System.Drawing.Size(332, 49);
-            this.camPWDLabel.TabIndex = 84;
-            this.camPWDLabel.Text = "camera password";
-            this.camPWDLabel.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-            // 
-            // tbCamPWD1
-            // 
-            this.tbCamPWD1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.tbCamPWD1.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.tbCamPWD1.Location = new System.Drawing.Point(344, 152);
-            this.tbCamPWD1.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
-            this.tbCamPWD1.Name = "tbCamPWD1";
-            this.tbCamPWD1.Size = new System.Drawing.Size(332, 35);
-            this.tbCamPWD1.TabIndex = 85;
-            this.tbCamPWD1.TextChanged += new System.EventHandler(this.tbCamPWD_TextChanged);
-            // 
-            // label2
-            // 
-            this.label2.AutoSize = true;
-            this.label2.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.label2.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.label2.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.label2.Location = new System.Drawing.Point(3, 221);
-            this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(334, 49);
-            this.label2.TabIndex = 87;
-            this.label2.Text = "Camera-2 IP";
-            this.label2.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-            // 
-            // label8
-            // 
-            this.label8.AutoSize = true;
-            this.label8.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.label8.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.label8.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.label8.Location = new System.Drawing.Point(3, 270);
-            this.label8.Name = "label8";
-            this.label8.Size = new System.Drawing.Size(334, 49);
-            this.label8.TabIndex = 88;
-            this.label8.Text = "username";
-            this.label8.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-            // 
-            // label9
-            // 
-            this.label9.AutoSize = true;
-            this.label9.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.label9.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.label9.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.label9.Location = new System.Drawing.Point(3, 319);
-            this.label9.Name = "label9";
-            this.label9.Size = new System.Drawing.Size(334, 49);
-            this.label9.TabIndex = 89;
-            this.label9.Text = "password";
-            this.label9.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-            // 
-            // tbCamUName2
-            // 
-            this.tbCamUName2.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.tbCamUName2.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.tbCamUName2.Location = new System.Drawing.Point(343, 272);
-            this.tbCamUName2.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
-            this.tbCamUName2.Name = "tbCamUName2";
-            this.tbCamUName2.Size = new System.Drawing.Size(334, 35);
-            this.tbCamUName2.TabIndex = 92;
-            this.tbCamUName2.TextChanged += new System.EventHandler(this.tbCamUName2_TextChanged);
-            // 
-            // tbCamPWD2
-            // 
-            this.tbCamPWD2.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.tbCamPWD2.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.tbCamPWD2.Location = new System.Drawing.Point(343, 321);
-            this.tbCamPWD2.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
-            this.tbCamPWD2.Name = "tbCamPWD2";
-            this.tbCamPWD2.Size = new System.Drawing.Size(334, 35);
-            this.tbCamPWD2.TabIndex = 93;
-            this.tbCamPWD2.TextChanged += new System.EventHandler(this.tbCamPWD2_TextChanged);
-            // 
-            // tbCamIP2
-            // 
-            this.tbCamIP2.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.tbCamIP2.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.tbCamIP2.Location = new System.Drawing.Point(343, 223);
-            this.tbCamIP2.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
-            this.tbCamIP2.Name = "tbCamIP2";
-            this.tbCamIP2.Size = new System.Drawing.Size(334, 35);
-            this.tbCamIP2.TabIndex = 95;
-            this.tbCamIP2.TextChanged += new System.EventHandler(this.maskedTextBox2_TextChanged);
-            // 
             // arduinoBoardSearchingWorker
             // 
             this.arduinoBoardSearchingWorker.WorkerSupportsCancellation = true;
@@ -1880,6 +1611,62 @@
             this.bgwUDPmessagesParser.WorkerSupportsCancellation = true;
             this.bgwUDPmessagesParser.DoWork += new System.ComponentModel.DoWorkEventHandler(this.bgwUDPmessagesParser_DoWork);
             // 
+            // lblUDPpacketsRecievingSpeedTitle
+            // 
+            this.lblUDPpacketsRecievingSpeedTitle.AutoSize = true;
+            this.lblUDPpacketsRecievingSpeedTitle.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.tableLayoutPanel2.SetColumnSpan(this.lblUDPpacketsRecievingSpeedTitle, 2);
+            this.lblUDPpacketsRecievingSpeedTitle.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.lblUDPpacketsRecievingSpeedTitle.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.lblUDPpacketsRecievingSpeedTitle.Location = new System.Drawing.Point(3, 767);
+            this.lblUDPpacketsRecievingSpeedTitle.Name = "lblUDPpacketsRecievingSpeedTitle";
+            this.lblUDPpacketsRecievingSpeedTitle.Size = new System.Drawing.Size(471, 60);
+            this.lblUDPpacketsRecievingSpeedTitle.TabIndex = 13;
+            this.lblUDPpacketsRecievingSpeedTitle.Text = "UDP packets recieving speed:";
+            this.lblUDPpacketsRecievingSpeedTitle.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            // 
+            // lblUDPpacketsProcessingSpeedTitle
+            // 
+            this.lblUDPpacketsProcessingSpeedTitle.AutoSize = true;
+            this.lblUDPpacketsProcessingSpeedTitle.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.tableLayoutPanel2.SetColumnSpan(this.lblUDPpacketsProcessingSpeedTitle, 2);
+            this.lblUDPpacketsProcessingSpeedTitle.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.lblUDPpacketsProcessingSpeedTitle.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.lblUDPpacketsProcessingSpeedTitle.Location = new System.Drawing.Point(3, 827);
+            this.lblUDPpacketsProcessingSpeedTitle.Name = "lblUDPpacketsProcessingSpeedTitle";
+            this.lblUDPpacketsProcessingSpeedTitle.Size = new System.Drawing.Size(471, 60);
+            this.lblUDPpacketsProcessingSpeedTitle.TabIndex = 14;
+            this.lblUDPpacketsProcessingSpeedTitle.Text = "UDP packets processing speed:";
+            this.lblUDPpacketsProcessingSpeedTitle.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            // 
+            // lblUDPpacketsRecievingSpeedValue
+            // 
+            this.lblUDPpacketsRecievingSpeedValue.AutoSize = true;
+            this.lblUDPpacketsRecievingSpeedValue.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.tableLayoutPanel2.SetColumnSpan(this.lblUDPpacketsRecievingSpeedValue, 4);
+            this.lblUDPpacketsRecievingSpeedValue.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.lblUDPpacketsRecievingSpeedValue.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.lblUDPpacketsRecievingSpeedValue.Location = new System.Drawing.Point(480, 767);
+            this.lblUDPpacketsRecievingSpeedValue.Name = "lblUDPpacketsRecievingSpeedValue";
+            this.lblUDPpacketsRecievingSpeedValue.Size = new System.Drawing.Size(951, 60);
+            this.lblUDPpacketsRecievingSpeedValue.TabIndex = 15;
+            this.lblUDPpacketsRecievingSpeedValue.Text = "---";
+            this.lblUDPpacketsRecievingSpeedValue.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
+            // lblUDPpacketsProcessingSpeedValue
+            // 
+            this.lblUDPpacketsProcessingSpeedValue.AutoSize = true;
+            this.lblUDPpacketsProcessingSpeedValue.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.tableLayoutPanel2.SetColumnSpan(this.lblUDPpacketsProcessingSpeedValue, 4);
+            this.lblUDPpacketsProcessingSpeedValue.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.lblUDPpacketsProcessingSpeedValue.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.lblUDPpacketsProcessingSpeedValue.Location = new System.Drawing.Point(480, 827);
+            this.lblUDPpacketsProcessingSpeedValue.Name = "lblUDPpacketsProcessingSpeedValue";
+            this.lblUDPpacketsProcessingSpeedValue.Size = new System.Drawing.Size(951, 60);
+            this.lblUDPpacketsProcessingSpeedValue.TabIndex = 16;
+            this.lblUDPpacketsProcessingSpeedValue.Text = "---";
+            this.lblUDPpacketsProcessingSpeedValue.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
             // DataCollectorMainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 20F);
@@ -1892,6 +1679,7 @@
             this.Text = "Data collector";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.DataCollectorMainForm_FormClosing);
             this.Load += new System.EventHandler(this.DataCollectorMainForm_Load);
+            this.Shown += new System.EventHandler(this.DataCollectorMainForm_Shown);
             this.Paint += new System.Windows.Forms.PaintEventHandler(this.DataCollectorMainForm_Paint);
             this.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.DataCollectorMainForm_KeyPress);
             this.tabControl1.ResumeLayout(false);
@@ -1900,15 +1688,12 @@
             this.tableLayoutPanel1.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pbThumbPreviewCam2)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pbThumbPreviewCam1)).EndInit();
-            this.tabPageBcstLog.ResumeLayout(false);
+            this.tabPageService.ResumeLayout(false);
             this.tableLayoutPanel2.ResumeLayout(false);
             this.tableLayoutPanel2.PerformLayout();
             this.SensorsCalibration.ResumeLayout(false);
             this.tableLayoutPanel3.ResumeLayout(false);
             this.tableLayoutPanel3.PerformLayout();
-            this.Preferencies.ResumeLayout(false);
-            this.tableLayoutPanel4.ResumeLayout(false);
-            this.tableLayoutPanel4.PerformLayout();
             this.ResumeLayout(false);
 
         }
@@ -1916,7 +1701,7 @@
         #endregion
 
         private System.Windows.Forms.TabControl tabControl1;
-        private System.Windows.Forms.TabPage tabPageBcstLog;
+        private System.Windows.Forms.TabPage tabPageService;
         private System.Windows.Forms.TabPage tabPageMain;
         private System.ComponentModel.BackgroundWorker arduinoBoardSearchingWorker;
         private System.ComponentModel.BackgroundWorker udpCatchingJob;
@@ -1946,7 +1731,6 @@
         private System.Windows.Forms.Label lblStDevYID1;
         private System.Windows.Forms.Label lblStDevZID1;
         private System.Windows.Forms.Button btnSaveAccelID1;
-        private System.Windows.Forms.TabPage Preferencies;
         private System.Windows.Forms.TableLayoutPanel tableLayoutPanel1;
         private System.Windows.Forms.TextBox tbIP2ListenDevID1;
         private System.Windows.Forms.Button btnFindArduino1;
@@ -1960,17 +1744,6 @@
         private System.Windows.Forms.Label lblSinceLastShot;
         private System.Windows.Forms.Label label5;
         private MRG.Controls.UI.LoadingCircle SearchingArduinoID1ProcessCircle;
-        private System.Windows.Forms.TableLayoutPanel tableLayoutPanel4;
-        private System.Windows.Forms.Label camshotPeriodLabel;
-        private System.Windows.Forms.MaskedTextBox tbCamShotPeriod;
-        private MRG.Controls.UI.LoadingCircle camshotPeriodDataSavingCircle;
-        private System.Windows.Forms.Label camIPLabel;
-        private System.Windows.Forms.TextBox tbCamIP1;
-        private MRG.Controls.UI.LoadingCircle ipAddrValidatingCircle1;
-        private System.Windows.Forms.Label camUNameLabel;
-        private System.Windows.Forms.TextBox tbCamUName1;
-        private System.Windows.Forms.Label camPWDLabel;
-        private System.Windows.Forms.TextBox tbCamPWD1;
         private System.Windows.Forms.TextBox tbMainLog;
         private System.Windows.Forms.Label label11;
         private System.Windows.Forms.Label lblGPStitle;
@@ -1998,13 +1771,6 @@
         private System.Windows.Forms.TextBox tbIP2ListenDevID2;
         private System.Windows.Forms.Button btnFindArduino2;
         private MRG.Controls.UI.LoadingCircle SearchingArduinoID2ProcessCircle;
-        private System.Windows.Forms.Label label2;
-        private System.Windows.Forms.Label label8;
-        private System.Windows.Forms.Label label9;
-        private System.Windows.Forms.TextBox tbCamUName2;
-        private System.Windows.Forms.TextBox tbCamPWD2;
-        private System.Windows.Forms.TextBox tbCamIP2;
-        private MRG.Controls.UI.LoadingCircle ipAddrValidatingCircle2;
         private System.Windows.Forms.Button btnCalibrateAccelerometerID2;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Label label10;
@@ -2029,6 +1795,12 @@
         private System.Windows.Forms.Label label15;
         private System.Windows.Forms.Label lblSunElev;
         private System.Windows.Forms.Label lblSunAzimuth;
+        private System.Windows.Forms.Button btnPrefs;
+        private System.Windows.Forms.Button btnAccCalibrationData;
+        private System.Windows.Forms.Label lblUDPpacketsRecievingSpeedTitle;
+        private System.Windows.Forms.Label lblUDPpacketsProcessingSpeedTitle;
+        private System.Windows.Forms.Label lblUDPpacketsRecievingSpeedValue;
+        private System.Windows.Forms.Label lblUDPpacketsProcessingSpeedValue;
 
 
     }

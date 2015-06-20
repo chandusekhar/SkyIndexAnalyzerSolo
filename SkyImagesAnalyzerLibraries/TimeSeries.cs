@@ -26,7 +26,7 @@ namespace SkyImagesAnalyzerLibraries
 
         public TimeSpan TotalSeriaDuration
         {
-            get { return (lDateTimeStamps[lDateTimeStamps.Count - 1] - lDateTimeStamps[0]); }
+            get { return (lDateTimeStamps.Last() - lDateTimeStamps.First()); }
         }
 
 
@@ -119,7 +119,7 @@ namespace SkyImagesAnalyzerLibraries
             List<DateTime> lDateTimeStampsShiftedplus1 = new List<DateTime>();
             lDateTimeStampsShiftedplus1.AddRange(lDateTimeStamps);
             lDateTimeStampsShiftedplus1.RemoveAt(0);
-            lDateTimeStampsShiftedplus1.Add(lDateTimeStampsShiftedplus1[lDateTimeStampsShiftedplus1.Count - 1]);
+            lDateTimeStampsShiftedplus1.Add(lDateTimeStampsShiftedplus1.Last());
             List<TimeSpan> lTimeSpanValues = new List<TimeSpan>(lDateTimeStampsShiftedplus1.Zip(lDateTimeStamps, (dateTimeShifted, dateTime) => dateTimeShifted - dateTime));
 
             DescriptiveStatistics stats = new DescriptiveStatistics(lTimeSpanValues.ConvertAll<double>(ts => ts.TotalMilliseconds));
@@ -274,22 +274,15 @@ namespace SkyImagesAnalyzerLibraries
 
         public void RemoveValues(Predicate<T> falseCondition)
         {
-            List<T> dataSeriaFiltered = new List<T>();
-            List<DateTime> lDateTimeStampsFiltered = new List<DateTime>();
+            List<Tuple<DateTime, T>> tuplesList =
+                new List<Tuple<DateTime, T>>(Enumerable.Zip(lDateTimeStamps, dataSeria,
+                    (dt, dat) => new Tuple<DateTime, T>(dt, dat)));
 
-            List<bool> falseList = dataSeria.ConvertAll<bool>(dataValue => falseCondition(dataValue));
+            List<Tuple<DateTime, T>> filteredTuplesList = tuplesList.FindAll(tpl => !falseCondition(tpl.Item2));
 
-            for (int i = 0; i < dataSeria.Count; i++)
-            {
-                if (falseCondition(dataSeria[i]))
-                {
-                    continue;
-                }
-                dataSeriaFiltered.Add(dataSeria[i]);
-                lDateTimeStampsFiltered.Add(lDateTimeStamps[i]);
-            }
-            dataSeria = dataSeriaFiltered;
-            lDateTimeStamps = lDateTimeStampsFiltered;
+
+            dataSeria = filteredTuplesList.ConvertAll<T>(tpl => tpl.Item2);
+            lDateTimeStamps = filteredTuplesList.ConvertAll<DateTime>(tpl => tpl.Item1);
         }
 
 
@@ -473,4 +466,281 @@ namespace SkyImagesAnalyzerLibraries
         }
 
     }
+
+
+
+
+
+
+
+    public class FixedTimeQueue<T>
+    {
+        private FixedQueue<T> dataSeria; // = new List<T>();
+        private FixedQueue<DateTime> lDateTimeStamps; // = new List<DateTime>();
+
+
+        public int Count
+        {
+            get { return dataSeria.Count; }
+        }
+
+
+        public TimeSpan TotalSeriaDuration
+        {
+            get { return (lDateTimeStamps.Last() - lDateTimeStamps.First()); }
+        }
+
+
+
+
+        public FixedTimeQueue(IEnumerable<T> dataSeriaList, IEnumerable<DateTime> dateTimeStamps)
+        {
+            dataSeria = new FixedQueue<T>(dataSeriaList);
+            lDateTimeStamps = new FixedQueue<DateTime>(dateTimeStamps);
+        }
+
+
+
+
+        public FixedTimeQueue(int capacity)
+        {
+            dataSeria = new FixedQueue<T>(capacity);
+            lDateTimeStamps = new FixedQueue<DateTime>(capacity);
+        }
+
+
+
+
+        public void AddSubseriaData(IEnumerable<T> lDataToAdd, IEnumerable<DateTime> lDateTimeStampsToAdd)
+        {
+            if (lDataToAdd.Count() != lDateTimeStampsToAdd.Count())
+            {
+                return;
+            }
+
+            dataSeria.Enqueue(lDataToAdd);
+            lDateTimeStamps.Enqueue(lDateTimeStampsToAdd);
+        }
+
+
+
+
+
+        public void Enqueue(T dataToAdd, DateTime dtStampToAdd)
+        {
+            dataSeria.Enqueue(dataToAdd);
+            lDateTimeStamps.Enqueue(dtStampToAdd);
+        }
+
+
+
+        
+
+
+        public void RemoveDuplicatedTimeStamps()
+        {
+            List<DateTime> lDateTimeStampsLoc = lDateTimeStamps.ToList();
+            List<DateTime> lDateTimeStampsFiltered = new List<DateTime>(lDateTimeStamps.ToList().Distinct<DateTime>());
+            List<T> dataSeriaLoc = dataSeria.ToList();
+
+            List<T> dataSeriaFiltered = new List<T>();
+            int idx = 0;
+            foreach (DateTime dtStamp in lDateTimeStampsFiltered)
+            {
+                idx = lDateTimeStampsLoc.FindIndex(idx, datetimeValue => datetimeValue == dtStamp);
+                dataSeriaFiltered.Add(dataSeriaLoc[idx]);
+            }
+
+            lDateTimeStamps = new FixedQueue<DateTime>(lDateTimeStamps.Count);
+            lDateTimeStamps.Enqueue(lDateTimeStampsFiltered);
+            dataSeria = new FixedQueue<T>(dataSeria.Count);
+            dataSeria.Enqueue(dataSeriaFiltered);
+        }
+
+
+
+
+        public void RemoveValues(Predicate<T> falseCondition)
+        {
+            List<Tuple<DateTime, T>> tuplesList =
+                new List<Tuple<DateTime, T>>(Enumerable.Zip(lDateTimeStamps.ToList(), dataSeria.ToList(),
+                    (dt, dat) => new Tuple<DateTime, T>(dt, dat)));
+
+            List<Tuple<DateTime, T>> filteredTuplesList = tuplesList.FindAll(tpl => !falseCondition(tpl.Item2));
+
+
+            dataSeria = new FixedQueue<T>(dataSeria.Count);
+            dataSeria.Enqueue(filteredTuplesList.ConvertAll<T>(tpl => tpl.Item2));
+            lDateTimeStamps = new FixedQueue<DateTime>(lDateTimeStamps.Count);
+            lDateTimeStamps.Enqueue(filteredTuplesList.ConvertAll<DateTime>(tpl => tpl.Item1));
+        }
+
+
+
+        #region // obsolete
+        //public FixedTimeQueue<T> InterpolateSeria(TimeSpan dt)
+        //{
+        //    if (typeof(T) != typeof(double))
+        //    {
+        //        return null;
+        //    }
+
+        //    RemoveDuplicatedTimeStamps();
+
+        //    List<DateTime> resDateTimeList = new List<DateTime>();
+
+        //    DateTime startTime = lDateTimeStamps.Last();
+        //    List<double> currentDatetimeList =
+        //        lDateTimeStamps.ToList().ConvertAll<double>(time => (time - startTime).TotalMilliseconds);
+        //    //List<double> currentDataList =
+        //    //    dataSeria.ConvertAll<double>(dVal => Convert.ToDouble(dVal));
+
+        //    DateTime endTime = lDateTimeStamps.First();
+        //    int dtCount = Convert.ToInt32(((double)((endTime - startTime).TotalMilliseconds) / (double)(dt.TotalMilliseconds)));
+        //    long dtInternalTicks = Convert.ToInt64(((endTime - startTime).Ticks) / (double)dtCount);
+        //    TimeSpan dtInternal = new TimeSpan(dtInternalTicks);
+
+        //    DateTime t = startTime;
+        //    while (true)
+        //    {
+        //        resDateTimeList.Add(t);
+        //        t += dtInternal;
+        //        if (t > endTime) { break; }
+        //    }
+
+        //    List<double> dataDoubleValues = dataSeria.ToList() as List<double>;
+
+        //    IInterpolation method;
+        //    try
+        //    {
+        //        method = Interpolate.Linear(currentDatetimeList, dataDoubleValues);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return this;
+        //    }
+
+        //    List<double> interpolatedValues = new List<double>();
+        //    foreach (DateTime time in resDateTimeList)
+        //    {
+        //        interpolatedValues.Add(method.Interpolate((time - startTime).TotalMilliseconds));
+        //    }
+
+        //    return new TimeSeries<T>(interpolatedValues as List<T>, resDateTimeList);
+
+        //}
+        #endregion // obsolete
+
+
+
+
+
+        public Complex[] DataRealValuesComplexArray()
+        {
+            if (typeof(T) != typeof(double))
+            {
+                return null;
+            }
+            List<double> dDataList = dataSeria as List<double>;
+
+            MathNet.Numerics.LinearAlgebra.Complex.DenseVector theVector =
+                MathNet.Numerics.LinearAlgebra.Complex.DenseVector.Create(dataSeria.Count,
+                    idx => new Complex(dDataList[idx], 0.0d));
+            return theVector.ToArray();
+        }
+
+
+
+
+
+        public DenseVector DoubleDataValues
+        {
+            get
+            {
+                if (typeof(T) != typeof(double))
+                {
+                    return null;
+                }
+                DenseVector dvRetVector = DenseVector.OfEnumerable(dataSeria.ToList() as List<double>);
+                return dvRetVector;
+            }
+        }
+
+
+
+
+        public T[] DataValues
+        {
+            get { return dataSeria.ToArray(); }
+        }
+
+
+
+
+        public DenseVector TimeStampsValuesSeconds
+        {
+            get
+            {
+                DateTime startTime = lDateTimeStamps.Last();
+                List<double> tsValuesList =
+                    lDateTimeStamps.ToList().ConvertAll<double>(dt => (dt - startTime).TotalMilliseconds / 1000.0d);
+                DenseVector dvRetVector = DenseVector.OfEnumerable(tsValuesList);
+                return dvRetVector;
+            }
+        }
+
+
+
+
+        public DateTime StartTime
+        {
+            get
+            {
+                DateTime startTime = lDateTimeStamps.First();
+                return startTime;
+            }
+        }
+
+
+        public DateTime EndTime
+        {
+            get
+            {
+                DateTime andTime = lDateTimeStamps.Last();
+                return andTime;
+            }
+        }
+
+
+        #region // obsolete
+        //public Tuple<DateTime, T> GetMostClose(DateTime dtInFocus)
+        //{
+        //    Tuple<DateTime, T> retVal = new Tuple<DateTime, T>(lDateTimeStamps[0], dataSeria[0]);
+
+        //    int idxR = lDateTimeStamps.FindIndex(dt => dtInFocus <= dt);
+        //    if (idxR == 0)
+        //    {
+        //        return new Tuple<DateTime, T>(lDateTimeStamps[0], dataSeria[0]);
+        //    }
+        //    else if (idxR == -1)
+        //    {
+        //        return new Tuple<DateTime, T>(lDateTimeStamps[Count - 1], dataSeria[Count - 1]);
+        //    }
+
+        //    int idxL = idxR - 1;
+
+        //    if ((lDateTimeStamps[idxR] - dtInFocus) <= (dtInFocus - lDateTimeStamps[idxL]))
+        //    {
+        //        retVal = new Tuple<DateTime, T>(lDateTimeStamps[idxR], dataSeria[idxR]);
+        //    }
+        //    else
+        //    {
+        //        retVal = new Tuple<DateTime, T>(lDateTimeStamps[idxL], dataSeria[idxL]);
+        //    }
+        //    return retVal;
+        //}
+        #endregion // obsolete
+
+    }
+
 }

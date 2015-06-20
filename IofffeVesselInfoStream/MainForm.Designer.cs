@@ -96,13 +96,13 @@
             this.lblFoundMetData = new System.Windows.Forms.Label();
             this.lblFoundNavDataTitle = new System.Windows.Forms.Label();
             this.lblFoundMeteoDataTitle = new System.Windows.Forms.Label();
+            this.prbSearchingProgress = new System.Windows.Forms.ProgressBar();
             this.tpSeaSaveStream = new System.Windows.Forms.TabPage();
             this.tableLayoutPanel2 = new System.Windows.Forms.TableLayoutPanel();
             this.btnStartStopSeaSave = new System.Windows.Forms.Button();
             this.tbSeaSaveLog = new System.Windows.Forms.TextBox();
             this.bgwSeaSaveSocketStreamReader = new System.ComponentModel.BackgroundWorker();
             this.bgwSeaSaveStreamTextParser = new System.ComponentModel.BackgroundWorker();
-            this.prbSearchingProgress = new System.Windows.Forms.ProgressBar();
             this.tabControl1.SuspendLayout();
             this.tpNavAndMeteo.SuspendLayout();
             this.tableLayoutPanel1.SuspendLayout();
@@ -1148,6 +1148,15 @@
             this.lblFoundMeteoDataTitle.Text = "meteo:";
             this.lblFoundMeteoDataTitle.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             // 
+            // prbSearchingProgress
+            // 
+            this.tableLayoutPanel3.SetColumnSpan(this.prbSearchingProgress, 10);
+            this.prbSearchingProgress.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.prbSearchingProgress.Location = new System.Drawing.Point(3, 63);
+            this.prbSearchingProgress.Name = "prbSearchingProgress";
+            this.prbSearchingProgress.Size = new System.Drawing.Size(1491, 14);
+            this.prbSearchingProgress.TabIndex = 8;
+            // 
             // tpSeaSaveStream
             // 
             this.tpSeaSaveStream.BackColor = System.Drawing.SystemColors.Control;
@@ -1214,21 +1223,13 @@
             // 
             this.bgwSeaSaveStreamTextParser.WorkerSupportsCancellation = true;
             // 
-            // prbSearchingProgress
-            // 
-            this.tableLayoutPanel3.SetColumnSpan(this.prbSearchingProgress, 10);
-            this.prbSearchingProgress.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.prbSearchingProgress.Location = new System.Drawing.Point(3, 63);
-            this.prbSearchingProgress.Name = "prbSearchingProgress";
-            this.prbSearchingProgress.Size = new System.Drawing.Size(1491, 14);
-            this.prbSearchingProgress.TabIndex = 8;
-            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 20F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1511, 1086);
             this.Controls.Add(this.tabControl1);
+            this.KeyPreview = true;
             this.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.Name = "MainForm";
             this.Text = "Ioffe nav&meteo stream";
