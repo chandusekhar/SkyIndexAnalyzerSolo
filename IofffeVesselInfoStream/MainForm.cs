@@ -1539,43 +1539,86 @@ namespace IofffeVesselInfoStream
 
             DirectoryInfo dirInfo = new DirectoryInfo(curDirPath);
 
+            string yesterdaysMeteoDataFileName = curDirPath + "IoffeVesselInfoStream-MeteoDataLog-" +
+                                             DateTime.UtcNow.Date.AddDays(-1).ToString("yyyy-MM-dd") + ".nc";
+
             string todaysMeteoDataFileName = curDirPath + "IoffeVesselInfoStream-MeteoDataLog-" +
                                              DateTime.UtcNow.Date.ToString("yyyy-MM-dd") + ".nc";
 
-            if (!File.Exists(todaysMeteoDataFileName))
+            if (!File.Exists(todaysMeteoDataFileName) && !File.Exists(yesterdaysMeteoDataFileName))
             {
                 return null;
             }
 
-            Dictionary<string, object> dictCurrFileData = null;
+            Dictionary<string, object> dictTodaysFileData = null;
+            Dictionary<string, object> dictYesterdaysFileData = null;
 
             try
             {
-                dictCurrFileData = NetCDFoperations.ReadDataFromFile(todaysMeteoDataFileName);
+                dictTodaysFileData = NetCDFoperations.ReadDataFromFile(todaysMeteoDataFileName);
+                dictYesterdaysFileData = NetCDFoperations.ReadDataFromFile(yesterdaysMeteoDataFileName);
             }
             catch (Exception)
             {
+                //return null;
+            }
+
+            if ((dictTodaysFileData == null) && (dictYesterdaysFileData == null))
+            {
                 return null;
             }
-            
-            string varNameDateTime = "DateTime";
 
-            List<long> currFileDateTimeLongTicksList = new List<long>((dictCurrFileData[varNameDateTime] as long[]));
-            List<DateTime> currFileDateTimeList = currFileDateTimeLongTicksList.ConvertAll(longVal => new DateTime(longVal));
-
-            string varNameMeteoData = "MeteoData";
-            List<MeteoData> currFileMeteoDataList =
-                MeteoData.OfDenseMatrix(dictCurrFileData[varNameMeteoData] as DenseMatrix);
+            List<Dictionary<string, object>> lReadData = new List<Dictionary<string, object>>()
+            {
+                dictYesterdaysFileData,
+                dictTodaysFileData
+            };
 
 
-            TimeSeries<MeteoData> tsMeteoData = new TimeSeries<MeteoData>(currFileMeteoDataList, currFileDateTimeList);
+            TimeSeries<MeteoData> tsMeteoData = null;
+
+            foreach (Dictionary<string, object> currFileDataDict in lReadData)
+            {
+                if (currFileDataDict == null)
+                {
+                    continue;
+                }
+
+                string varNameDateTime = "DateTime";
+
+                List<long> currFileDateTimeLongTicksList = new List<long>((currFileDataDict[varNameDateTime] as long[]));
+                List<DateTime> currFileDateTimeList = currFileDateTimeLongTicksList.ConvertAll(longVal => new DateTime(longVal));
+
+                string varNameMeteoData = "MeteoData";
+                List<MeteoData> currFileMeteoDataList =
+                    MeteoData.OfDenseMatrix(currFileDataDict[varNameMeteoData] as DenseMatrix);
+
+                if (tsMeteoData == null)
+                {
+                    tsMeteoData = new TimeSeries<MeteoData>(currFileMeteoDataList, currFileDateTimeList);
+                }
+                else
+                {
+                    tsMeteoData.AddSubseriaData(currFileMeteoDataList, currFileDateTimeList);
+                }
+            }
+
+            if (tsMeteoData == null)
+            {
+                return null;
+            }
+
             tsMeteoData.SortByTimeStamps();
             tsMeteoData.RemoveDuplicatedTimeStamps();
+
+            DateTime utcNow = DateTime.UtcNow;
+            tsMeteoData.RemoveValues(new Predicate<DateTime>(dt => (utcNow - dt).TotalSeconds > 86400));
+
             List<TimeSeries<MeteoData>> subSeriesBy1Minute = tsMeteoData.SplitByTimeSpan(new TimeSpan(0, 1, 0));
             List<double> lSubSeriesEntriesCount = subSeriesBy1Minute.ConvertAll(subs => (double)subs.Count);
             DescriptiveStatistics statsCounts = new DescriptiveStatistics(lSubSeriesEntriesCount);
             int aveMinuteEntriesCount = Convert.ToInt32(statsCounts.Mean);
-            currFileMeteoDataList = tsMeteoData.DataValues;
+            List<MeteoData> meteoDataList = tsMeteoData.DataValues;
 
             DateTime maxDateTime = tsMeteoData.TimeStamps.Max();
             List<double> currFileSecondsList = new List<double>(); // = tsMeteoData.TimeStamps.ConvertAll(dt => (dt - maxDateTime).TotalSeconds);
@@ -1588,7 +1631,7 @@ namespace IofffeVesselInfoStream
             List<double> currVarToShowValues = new List<double>();
             if (rbtnPressureGraph.Checked)
             {
-                currVarToShowValues = currFileMeteoDataList.ConvertAll(mdt => mdt.pressure);
+                currVarToShowValues = meteoDataList.ConvertAll(mdt => mdt.pressure);
 
                 TimeSeries<double> currVarTS = new TimeSeries<double>(currVarToShowValues, tsMeteoData.TimeStamps);
                 currVarTS.RemoveValues(dVal => dVal <= 900.0d);
@@ -1600,7 +1643,7 @@ namespace IofffeVesselInfoStream
             }
             else if (rbtnAirTempGraph.Checked)
             {
-                currVarToShowValues = currFileMeteoDataList.ConvertAll(mdt => mdt.airTemperature);
+                currVarToShowValues = meteoDataList.ConvertAll(mdt => mdt.airTemperature);
 
                 TimeSeries<double> currVarTS = new TimeSeries<double>(currVarToShowValues, tsMeteoData.TimeStamps);
                 currVarTS.RemoveValues(dVal => ((dVal < -20.0d) || (dVal > 50.0d)));
@@ -1612,7 +1655,7 @@ namespace IofffeVesselInfoStream
             }
             else if (rbtnWaterTempGraph.Checked)
             {
-                currVarToShowValues = currFileMeteoDataList.ConvertAll(mdt => mdt.waterTemperature);
+                currVarToShowValues = meteoDataList.ConvertAll(mdt => mdt.waterTemperature);
 
                 TimeSeries<double> currVarTS = new TimeSeries<double>(currVarToShowValues, tsMeteoData.TimeStamps);
                 currVarTS.RemoveValues(dVal => ((dVal < -20.0d) || (dVal > 50.0d)));
@@ -1624,7 +1667,7 @@ namespace IofffeVesselInfoStream
             }
             else if (rbtnWindSpeedGraph.Checked)
             {
-                currVarToShowValues = currFileMeteoDataList.ConvertAll(mdt => mdt.windSpeed);
+                currVarToShowValues = meteoDataList.ConvertAll(mdt => mdt.windSpeed);
 
                 TimeSeries<double> currVarTS = new TimeSeries<double>(currVarToShowValues, tsMeteoData.TimeStamps);
                 currVarTS.RemoveValues(dVal => ((dVal < 0.0d) || (dVal > 50.0d)));

@@ -383,6 +383,22 @@ namespace SkyImagesAnalyzerLibraries
 
 
 
+        public void RemoveValues(Predicate<DateTime> falseConditionOnTimeStamps)
+        {
+            List<Tuple<DateTime, T>> tuplesList =
+                new List<Tuple<DateTime, T>>(Enumerable.Zip(lDateTimeStamps, dataSeria,
+                    (dt, dat) => new Tuple<DateTime, T>(dt, dat)));
+
+            List<Tuple<DateTime, T>> filteredTuplesList = tuplesList.FindAll(tpl => !falseConditionOnTimeStamps(tpl.Item1));
+
+
+            dataSeria = filteredTuplesList.ConvertAll<T>(tpl => tpl.Item2);
+            lDateTimeStamps = filteredTuplesList.ConvertAll<DateTime>(tpl => tpl.Item1);
+        }
+
+
+
+
 
         public TimeSeries<T> InterpolateSeria(TimeSpan dt)
         {
