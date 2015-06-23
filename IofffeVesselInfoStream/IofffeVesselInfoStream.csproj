@@ -122,11 +122,6 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\IoffeVesselDataReader\IoffeVesselDataReader.csproj">
-      <Project>{664d7e9d-2f92-4d4e-945d-a6e3a9b8b9c4}</Project>
-      <Name>IoffeVesselDataReader</Name>
-      <Private>False</Private>
-    </ProjectReference>
     <ProjectReference Include="..\SkyImagesAnalyzerLibraries\SkyImagesAnalyzerLibraries.csproj">
       <Project>{7beac8e4-e53f-466a-b824-1fe69e60d114}</Project>
       <Name>SkyImagesAnalyzerLibraries</Name>

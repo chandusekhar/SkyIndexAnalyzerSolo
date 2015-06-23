@@ -12,7 +12,7 @@ using System.Windows.Forms;
 using System.Xml.Serialization;
 using Emgu.CV;
 using Emgu.CV.Structure;
-using IoffeVesselDataReader;
+//using IoffeVesselDataReader;
 using MathNet.Numerics.LinearAlgebra.Double;
 using SkyImagesAnalyzerLibraries;
 using SolarPositioning;
@@ -26,8 +26,8 @@ namespace SkyImagesAnalyzer
         public MainAnalysisForm ParentForm { get; set; }
         public string defaultPropertiesXMLfileName { get; set; }
 
-        private static ConcurrentBag<AzimuthSunDeviationCalcResult> cbAzimuthSunDeviationCalcResults =
-            new ConcurrentBag<AzimuthSunDeviationCalcResult>();
+        private static ConcurrentBag<AngleSunDeviationCalcResult> cbAnglesSunDeviationCalcResults =
+            new ConcurrentBag<AngleSunDeviationCalcResult>();
 
         private List<FileInfo> lImagesFileInfos;
         private bool hasToStopCollecting = false;
@@ -67,6 +67,9 @@ namespace SkyImagesAnalyzer
         // private List<bool> bgwFinished = new List<bool>();
         public void CollectPositioningData()
         {
+#if DEBUG
+            int concurrentFilesProcessingCount = 1;
+#else
             int concurrentFilesProcessingCount = 2;
             try
             {
@@ -79,8 +82,10 @@ namespace SkyImagesAnalyzer
                     "MaxConcurrentFilesProcessingCount value can`t be read. " + Environment.NewLine +
                     "Using default value = " + concurrentFilesProcessingCount);
             }
-            
-            
+#endif
+
+
+
 
             theLogWindow = ServiceTools.LogAText(theLogWindow, "started on " + DateTime.UtcNow.ToString("s"));
 
@@ -153,42 +158,32 @@ namespace SkyImagesAnalyzer
 
                 //for (int i = 0; i < concurrentFilesProcessingCount; i++)
                 //{
-                    theLogWindow = ServiceTools.LogAText(theLogWindow,
-                    "" + currDataIdx + " / " + filesCountToProcess + " (+ " + filesCountAlreadyProcessed +
-                    " processed before)");
-                    theLogWindow = ServiceTools.LogAText(theLogWindow, Environment.NewLine + "starting: " + finfo.Name);
+                theLogWindow = ServiceTools.LogAText(theLogWindow,
+                "" + currDataIdx + " / " + filesCountToProcess + " (+ " + filesCountAlreadyProcessed +
+                " processed before)");
+                theLogWindow = ServiceTools.LogAText(theLogWindow, Environment.NewLine + "starting: " + finfo.Name);
 
 
-                    //object[] BGWorker2Args = new object[] { finfo, defaultProperties, currentBgwID };
-                    object[] BGWorker2Args = new object[] { finfo, defaultProperties };
+                //object[] BGWorker2Args = new object[] { finfo, defaultProperties, currentBgwID };
+                object[] BGWorker2Args = new object[] { finfo, defaultProperties };
 
-                    BackgroundWorker currBgw = new BackgroundWorker();
-                    // bgwList[currentBgwID] = currBgw;
-                    currBgw.DoWork += currBgw_DoWork;
-                    currBgw.RunWorkerCompleted += currBgw_RunWorkerCompleted;
-                    currBgw.RunWorkerAsync(BGWorker2Args);
+                BackgroundWorker currBgw = new BackgroundWorker();
+                // bgwList[currentBgwID] = currBgw;
+                currBgw.DoWork += currBgw_DoWork;
+                currBgw.RunWorkerCompleted += currBgw_RunWorkerCompleted;
+                currBgw.RunWorkerAsync(BGWorker2Args);
 
-                    cbgBgwList.Add(finfo.FullName);
+                cbgBgwList.Add(finfo.FullName);
 
+                if (filesCountToProcess > 0)
+                {
                     int progress = Convert.ToInt32(100.0d * (double)currDataIdx / (double)filesCountToProcess);
                     ThreadSafeOperations.UpdateProgressBar(ParentForm.pbUniversalProgressBar, progress);
                     Interlocked.Increment(ref currDataIdx);
-                //}
-
-
-                //for (int i = 0; i < bgwFinished.Count; i++)
-                //{
-                //    if (bgwFinished[i])
-                //    {
-                //        currentBgwID = i;
-                //        bgwFinished[i] = false;
-                //        break;
-                //    }
-                //}
+                }
             }
 
 
-            //while (bgwFinished.Sum(boolVal => (boolVal) ? ((int)0) : ((int)1)) > 0)
             while (cbgBgwList.Count > 0)
             {
                 Application.DoEvents();
@@ -215,30 +210,61 @@ namespace SkyImagesAnalyzer
                 return;
             }
 
-            string computedDeviationsXMLFile = computedDeviationsXMLfilesPath + "PreComputedAzimuthDeviationsData.xml";
+            string computedAzimuthDeviationsXMLFile = computedDeviationsXMLfilesPath + "PreComputedSunAnglesDeviationsData.xml";
 
-            List<AzimuthSunDeviationCalcResult> lResList =
-                new List<AzimuthSunDeviationCalcResult>(cbAzimuthSunDeviationCalcResults);
-            ServiceTools.WriteObjectToXML(lResList, computedDeviationsXMLFile);
+            List<AngleSunDeviationCalcResult> lResList =
+                new List<AngleSunDeviationCalcResult>(cbAnglesSunDeviationCalcResults);
+            ServiceTools.WriteObjectToXML(lResList, computedAzimuthDeviationsXMLFile);
             ServiceTools.WriteDictionaryToXml(defaultProperties, defaultPropertiesXMLfileName, false);
 
 
             // теперь посчитаем статистику
+            List<AngleSunDeviationCalcResult> azimuthResults = new List<AngleSunDeviationCalcResult>(lResList);
+            List<AngleSunDeviationCalcResult> zenithResults = new List<AngleSunDeviationCalcResult>(lResList);
+            azimuthResults.RemoveAll(
+                azimuthSunDeviationCalcResult =>
+                    ((!azimuthSunDeviationCalcResult.calculationSucceeded) ||
+                     (!azimuthSunDeviationCalcResult.AzimuthDeviationCanBeComputed)));
+            zenithResults.RemoveAll(
+                sunDeviationCalcResult =>
+                    ((!sunDeviationCalcResult.calculationSucceeded) ||
+                     (!sunDeviationCalcResult.ZenithDeviationCanBeComputed)));
+
             List<double> azimuthDevValues =
-                lResList.ConvertAll<double>(
-                    azimuthSunDeviationCalcResult => azimuthSunDeviationCalcResult.computedAzimuthDeviation);
+                azimuthResults.ConvertAll<double>(
+                    azimuthSunDeviationCalcResult => azimuthSunDeviationCalcResult.computedAzimuthDeviationDeg);
+
+            List<double> zenithDevValues =
+                zenithResults.ConvertAll<double>(
+                    azimuthSunDeviationCalcResult => azimuthSunDeviationCalcResult.computedZenithDeviationDeg);
 
 
             ServiceTools.ExecMethodInSeparateThread(ParentForm, delegate()
             {
-                HistogramDataAndProperties histData =
+                HistogramDataAndProperties histAzimuthData =
                     new HistogramDataAndProperties(DenseVector.OfEnumerable(azimuthDevValues), 100);
-                HistogramCalcAndShowForm hForm = new HistogramCalcAndShowForm("azimuth sun angle deviations",
+                HistogramCalcAndShowForm hAzimuthForm = new HistogramCalcAndShowForm("azimuth sun angle deviations (deg.)",
                     defaultProperties);
-                hForm.HistToRepresent = histData;
-                hForm.Show();
-                hForm.Represent();
+                hAzimuthForm.HistToRepresent = histAzimuthData;
+                hAzimuthForm.Show();
+                hAzimuthForm.Represent();
             });
+
+
+
+
+            ServiceTools.ExecMethodInSeparateThread(ParentForm, delegate()
+            {
+                HistogramDataAndProperties histZenithData =
+                    new HistogramDataAndProperties(DenseVector.OfEnumerable(zenithDevValues), 100);
+                HistogramCalcAndShowForm hZenithForm = new HistogramCalcAndShowForm("zenith sun angle deviations (deg.)",
+                    defaultProperties);
+                hZenithForm.HistToRepresent = histZenithData;
+                hZenithForm.Show();
+                hZenithForm.Represent();
+            });
+
+
 
 
             ThreadSafeOperations.UpdateProgressBar(ParentForm.pbUniversalProgressBar, 0);
@@ -270,9 +296,17 @@ namespace SkyImagesAnalyzer
         {
             BackgroundWorker selfWorker = sender as BackgroundWorker;
             FileInfo finfo = ((object[])e.Argument)[0] as FileInfo;
-            Dictionary<string, object> defaultProperties = ((object[]) e.Argument)[1] as Dictionary<string, object>;
+            Dictionary<string, object> defaultProperties = ((object[])e.Argument)[1] as Dictionary<string, object>;
             //int currentBgwID = (int) ((object[]) e.Argument)[2];
             LogWindow currImageLogWindow = null;
+            bool showOnlyErrors = false;
+
+            string sunDiskInfoFileName = finfo.DirectoryName + "\\" +
+                                         Path.GetFileNameWithoutExtension(finfo.FullName) + "-SunDiskInfo.xml";
+            if (File.Exists(sunDiskInfoFileName))
+            {
+                showOnlyErrors = true;
+            }
 
             try
             {
@@ -282,24 +316,35 @@ namespace SkyImagesAnalyzer
                     return;
                 }
 
-                currImageLogWindow = ServiceTools.LogAText(currImageLogWindow, Environment.NewLine + "starting: " + finfo.Name);
+                if (!showOnlyErrors)
+                {
+                    currImageLogWindow = ServiceTools.LogAText(currImageLogWindow, Environment.NewLine + "starting: " + finfo.Name);
+                    currImageLogWindow = ServiceTools.LogAText(currImageLogWindow, "start processing image " + finfo.Name);
+                }
 
-                currImageLogWindow = ServiceTools.LogAText(currImageLogWindow, "start processing image " + finfo.Name);
 
-                AzimuthSunDeviationCalcResult devCalcResDatum = CalculateDevDataForImage(finfo, defaultProperties, currImageLogWindow);
+                AngleSunDeviationCalcResult devCalcResDatum = CalculateDevDataForImage(finfo, defaultProperties, currImageLogWindow, showOnlyErrors);
+
 
                 if (devCalcResDatum.calculationSucceeded)
                 {
-                    cbAzimuthSunDeviationCalcResults.Add(devCalcResDatum);
+                    cbAnglesSunDeviationCalcResults.Add(devCalcResDatum);
                 }
 
-                currImageLogWindow = ServiceTools.LogAText(currImageLogWindow,
-                    Environment.NewLine + "finished: " + Path.GetFileName(devCalcResDatum.fileName) +
-                    " with result: " + devCalcResDatum.calculationSucceeded + Environment.NewLine +
-                    devCalcResDatum.resultMessage);
+
+                if (!showOnlyErrors)
+                {
+                    currImageLogWindow = ServiceTools.LogAText(currImageLogWindow,
+                        Environment.NewLine + "finished: " + Path.GetFileName(devCalcResDatum.fileName) +
+                        " with result: " + devCalcResDatum.calculationSucceeded + Environment.NewLine +
+                        devCalcResDatum.resultMessage);
+                }
 
 
-                currImageLogWindow.Close();
+                if (currImageLogWindow != null)
+                {
+                    currImageLogWindow.Close();
+                }
             }
             catch (Exception ex)
             {
@@ -308,10 +353,20 @@ namespace SkyImagesAnalyzer
 
                 string strDirForFailedImages = Path.GetDirectoryName(finfo.FullName);
                 strDirForFailedImages += (strDirForFailedImages.Last() == '\\') ? ("") : ("\\") + "failed-detections\\";
-                if (ServiceTools.CheckIfDirectoryExists(strDirForFailedImages))
+                try
                 {
-                    File.Move(finfo.FullName, strDirForFailedImages + finfo.Name);
+                    if (ServiceTools.CheckIfDirectoryExists(strDirForFailedImages))
+                    {
+                        File.Move(finfo.FullName, strDirForFailedImages + finfo.Name);
+                    }
                 }
+                catch (Exception ex1)
+                {
+                    theLogWindow = ServiceTools.LogAText(theLogWindow,
+                        Environment.NewLine + "ERROR. There exceptions has been thrown: " + Environment.NewLine +
+                        ex1.Message);
+                }
+
 
                 if (currImageLogWindow != null) currImageLogWindow.Close();
             }
@@ -331,106 +386,128 @@ namespace SkyImagesAnalyzer
         // 2. корректировке по хедингу судна по данным корабельной навигации
         // вычислять азимутальное отклонение расположения солнечного диска на снимке
         // от ожидаемого положения
-        private AzimuthSunDeviationCalcResult CalculateDevDataForImage(FileInfo finfo, Dictionary<string, object> defaultProperties, LogWindow currImageLogWindow)
+        private AngleSunDeviationCalcResult CalculateDevDataForImage(FileInfo finfo, Dictionary<string, object> defaultProperties, LogWindow currImageLogWindow, bool showOnlyErrors = false)
         {
             FileInfo currFileInfo = finfo;
             Dictionary<string, object> defaultProps = defaultProperties;
 
 
-            AzimuthSunDeviationCalcResult retRes = new AzimuthSunDeviationCalcResult()
+            AngleSunDeviationCalcResult retRes = new AngleSunDeviationCalcResult()
             {
                 fileName = currFileInfo.FullName,
             };
 
-            // определяем дату-время файла
-            DateTime curDateTime = DateTime.UtcNow;
-
-            Image anImage = Image.FromFile(currFileInfo.FullName);
-            ImageInfo newIInfo = new ImageInfo(anImage);
-            int minute = 0;
-            String dateTime = (String)newIInfo.getValueByKey("ExifDTOrig");
-            if (dateTime == null)
+            GPSdata gps = ServiceTools.FindProperGPSdataForImage(currFileInfo.FullName, theLogWindow, defaultProperties);
+            if (gps == null)
             {
-                //попробуем вытащить из имени файла
-                string strDateTime = currFileInfo.Name;
-                strDateTime = strDateTime.Substring(4, 19);
-                dateTime = strDateTime;
-            }
-
-            try
-            {
-                curDateTime = CommonTools.DateTimeOfString(dateTime);
-            }
-            catch (Exception)
-            {
+                theLogWindow = ServiceTools.LogAText(theLogWindow, "Couldn`t find GPS data for this image.");
                 retRes.calculationSucceeded = false;
-                retRes.resultMessage = "couldn`t get date/time for file: " + Environment.NewLine + currFileInfo.Name;
+                retRes.resultMessage = "Couldn`t find GPS data for this image.";
                 return retRes;
             }
-            curDateTime = DateTime.SpecifyKind(curDateTime, DateTimeKind.Utc);
 
-            GPSdata neededGPSdata = new GPSdata();
-            string currPath = currFileInfo.DirectoryName;
+            #region // obsolete
+            //// определяем дату-время файла
+            //DateTime curDateTime = DateTime.UtcNow;
+
+            //Image anImage = Image.FromFile(currFileInfo.FullName);
+            //ImageInfo newIInfo = new ImageInfo(anImage);
+            //int minute = 0;
+            //String dateTime = (String)newIInfo.getValueByKey("ExifDTOrig");
+            //if (dateTime == null)
+            //{
+            //    //попробуем вытащить из имени файла
+            //    string strDateTime = currFileInfo.Name;
+            //    strDateTime = strDateTime.Substring(4, 19);
+            //    dateTime = strDateTime;
+            //}
+
+            //try
+            //{
+            //    curDateTime = CommonTools.DateTimeOfString(dateTime);
+            //}
+            //catch (Exception)
+            //{
+            //    retRes.calculationSucceeded = false;
+            //    retRes.resultMessage = "couldn`t get date/time for file: " + Environment.NewLine + currFileInfo.Name;
+            //    return retRes;
+            //}
+            //curDateTime = DateTime.SpecifyKind(curDateTime, DateTimeKind.Utc);
+
+            //GPSdata neededGPSdata = new GPSdata();
+            //string currPath = currFileInfo.DirectoryName;
 
 
-            string navFilesPath = defaultProps["IoffeMeteoNavFilesDirectory"] as string;
-            List<IoffeVesselDualNavDataConverted> lAllNavData = new List<IoffeVesselDualNavDataConverted>();
+            //string navFilesPath = defaultProps["IoffeMeteoNavFilesDirectory"] as string;
+            //List<IoffeVesselDualNavDataConverted> lAllNavData = new List<IoffeVesselDualNavDataConverted>();
 
-            string[] sNavFilenames = Directory.GetFiles(navFilesPath, "*.nv2");
-            if (!sNavFilenames.Any())
+            //string[] sNavFilenames = Directory.GetFiles(navFilesPath, "*.nv2", SearchOption.AllDirectories);
+            //if (!sNavFilenames.Any())
+            //{
+            //    retRes.calculationSucceeded = false;
+            //    retRes.resultMessage = "Не найдено файлов данных навигации в директории " + navFilesPath;
+            //    return retRes;
+            //}
+            //else
+            //{
+            //    foreach (string navFilename in sNavFilenames)
+            //    {
+            //        Tuple<DateTime, DateTime> timeSpan =
+            //            IoffeVesselNavDataReader.GetNavFileDateTimeMargins(navFilename);
+            //        if (timeSpan == null)
+            //        {
+            //            continue;
+            //        }
+
+            //        if ((curDateTime < timeSpan.Item1) || (curDateTime > timeSpan.Item2))
+            //        {
+            //            continue;
+            //        }
+
+            //        List<IoffeVesselDualNavDataConverted> dataHasBeenRead = IoffeVesselNavDataReader.ReadNavFile(navFilename);
+            //        if (dataHasBeenRead == null)
+            //        {
+            //            continue;
+            //        }
+            //        Application.DoEvents();
+            //        lAllNavData.AddRange(dataHasBeenRead);
+            //    }
+            //}
+
+            //lAllNavData.Sort((gpsRecord1, gpsRecord2) =>
+            //{
+            //    double dev1 = Math.Abs((gpsRecord1.gps.dateTimeUTC - curDateTime).TotalMilliseconds);
+            //    double dev2 = Math.Abs((gpsRecord2.gps.dateTimeUTC - curDateTime).TotalMilliseconds);
+            //    return (dev1 >= dev2) ? (1) : (-1);
+            //});
+            //neededGPSdata = lAllNavData[0].gps;
+            #endregion // obsolete
+
+            retRes.gpsData = gps;
+
+
+            #region obsolete
+            //double lat = gps.LatDec;
+            //double lon = gps.LonDec;
+
+
+            //SPA spaCalc = new SPA(curDateTime.Year, curDateTime.Month, curDateTime.Day, curDateTime.Hour,
+            //    curDateTime.Minute, curDateTime.Second, (float)lon, (float)lat,
+            //    (float)SPAConst.DeltaT(curDateTime));
+            //int res = spaCalc.spa_calculate();
+            //AzimuthZenithAngle sunPositionSPAext = new AzimuthZenithAngle(spaCalc.spa.azimuth,
+            //    spaCalc.spa.zenith);
+            #endregion obsolete
+
+
+            AzimuthZenithAngle sunPositionSPAext = gps.SunZenithAzimuth();
+
+            if (!showOnlyErrors)
             {
-                retRes.calculationSucceeded = false;
-                retRes.resultMessage = "Не найдено файлов данных навигации в директории " + navFilesPath;
-                return retRes;
+                currImageLogWindow = ServiceTools.LogAText(currImageLogWindow,
+                    "SPA ext sun position for " + gps.dateTimeUTC.ToString("s") + ": " + sunPositionSPAext);
             }
-            else
-            {
-                foreach (string navFilename in sNavFilenames)
-                {
-                    Tuple<DateTime, DateTime> timeSpan =
-                        IoffeVesselNavDataReader.GetNavFileDateTimeMargins(navFilename);
-                    if (timeSpan == null)
-                    {
-                        continue;
-                    }
 
-                    if ((curDateTime < timeSpan.Item1) || (curDateTime > timeSpan.Item2))
-                    {
-                        continue;
-                    }
-
-                    List<IoffeVesselDualNavDataConverted> dataHasBeenRead = IoffeVesselNavDataReader.ReadNavFile(navFilename);
-                    if (dataHasBeenRead == null)
-                    {
-                        continue;
-                    }
-                    Application.DoEvents();
-                    lAllNavData.AddRange(dataHasBeenRead);
-                }
-            }
-
-            lAllNavData.Sort((gpsRecord1, gpsRecord2) =>
-            {
-                double dev1 = Math.Abs((gpsRecord1.gps.dateTimeUTC - curDateTime).TotalMilliseconds);
-                double dev2 = Math.Abs((gpsRecord2.gps.dateTimeUTC - curDateTime).TotalMilliseconds);
-                return (dev1 >= dev2) ? (1) : (-1);
-            });
-            neededGPSdata = lAllNavData[0].gps;
-
-            retRes.gpsData = neededGPSdata;
-
-            double lat = neededGPSdata.LatDec;
-            double lon = neededGPSdata.LonDec;
-
-
-            SPA spaCalc = new SPA(curDateTime.Year, curDateTime.Month, curDateTime.Day, curDateTime.Hour,
-                curDateTime.Minute, curDateTime.Second, (float)lon, (float)lat,
-                (float)SPAConst.DeltaT(curDateTime));
-            int res = spaCalc.spa_calculate();
-            AzimuthZenithAngle sunPositionSPAext = new AzimuthZenithAngle(spaCalc.spa.azimuth,
-                spaCalc.spa.zenith);
-            currImageLogWindow = ServiceTools.LogAText(currImageLogWindow,
-                "SPA ext sun position for " + curDateTime.ToString("s") + ": " + sunPositionSPAext);
             retRes.sunSPAcomputedPosition = sunPositionSPAext;
 
 
@@ -561,7 +638,7 @@ namespace SkyImagesAnalyzer
 
 
     [Serializable]
-    public class AzimuthSunDeviationCalcResult
+    public class AngleSunDeviationCalcResult
     {
         public string fileName = "";
         public bool calculationSucceeded = false;
@@ -577,6 +654,9 @@ namespace SkyImagesAnalyzer
         public RoundDataWithUnderlyingImgSize imageEdgesDetected;
         public RoundDataWithUnderlyingImgSize sunDiskDetectedPosition;
 
+
+
+
         public double detectedSunPositionAzimuth
         {
             get
@@ -587,12 +667,34 @@ namespace SkyImagesAnalyzer
                     PointD ptdImageNorthRelativeToCenter = ptdImageNorth -
                                                            imageEdgesDetected.circle.pointDCircleCenter();
                     ptdImageNorthRelativeToCenter.Y = -ptdImageNorthRelativeToCenter.Y;
+                    Vector2D ImageNorth = new Vector2D(ptdImageNorthRelativeToCenter);
+
                     PointPolar ptpImageNorth = new PointPolar(ptdImageNorthRelativeToCenter, true);
                     PointD ptdSunCenterRelativeToCenter = sunDiskDetectedPosition.circle.pointDCircleCenter() -
                                                           imageEdgesDetected.circle.pointDCircleCenter();
                     ptdSunCenterRelativeToCenter.Y = -ptdSunCenterRelativeToCenter.Y;
-                    PointPolar ptpSunCenterAzimuthFromImageNorth = new PointPolar(ptdSunCenterRelativeToCenter, true);
-                    return ptpSunCenterAzimuthFromImageNorth.Phi - ptpImageNorth.Phi;
+                    Vector2D sunPositionRelToImageCenter = new Vector2D(ptdSunCenterRelativeToCenter);
+                    double cos = ImageNorth*sunPositionRelToImageCenter/
+                                 (ImageNorth.VectorLength*sunPositionRelToImageCenter.VectorLength);
+
+                    double retval = 0.0d;
+
+                    if (ptdSunCenterRelativeToCenter.X >= 0)
+                    {
+                        retval = Math.Acos(cos);
+                    }
+                    else
+                    {
+                        retval = 2.0d*Math.PI - Math.Acos(cos);
+                    }
+
+                    return -retval;
+
+                    //PointPolar ptpSunCenterAzimuthFromImageNorth = new PointPolar(ptdSunCenterRelativeToCenter, true);
+                    ////измеряем в сторону по часовой стрелке - в направлении Azimuth и heading
+                    //// при этом картинка относительно остальных показателей (азимут и хединг) отраженная - поэтому возвращаем
+                    //// угол со знаком минус.
+                    //return (ptpSunCenterAzimuthFromImageNorth.Phi - ptpImageNorth.Phi);
                 }
                 else
                 {
@@ -601,21 +703,129 @@ namespace SkyImagesAnalyzer
             }
         }
 
+
+
+        public double detectedSunPositionZenith
+        {
+            get
+            {
+                if ((sunDiskDetectedPosition.circle != null) && (imageEdgesDetected.circle != null))
+                {
+                    double radius90deg = imageEdgesDetected.circle.DRadius;
+                    double radiusSunPosition =
+                        (new Vector2D(sunDiskDetectedPosition.circle.pointDCircleCenter() -
+                                     imageEdgesDetected.circle.pointDCircleCenter())).VectorLength;
+                    return (radiusSunPosition / radius90deg) * (Math.PI / 2.0d);
+                }
+                else
+                {
+                    throw new Exception("not enough data to compute zenith deviation");
+                }
+            }
+        }
+
+
+
+
+
         public AzimuthZenithAngle sunSPAcomputedPosition = null;
+
+
+
+        public bool AzimuthDeviationCanBeComputed
+        {
+            get
+            {
+                if (gpsData.dataSource != GPSdatasources.IOFFEvesselDataServer)
+                {
+                    // нет данных по хедингу судна - непонятно, какое должно быть смещение из-за поворота судна
+                    return false;
+                }
+
+                if (sunSPAcomputedPosition == null)
+                {
+                    // невозможно было вычислить положение солнца по GPS
+                    return false;
+                }
+
+                return true;
+            }
+        }
+
+
 
         public double computedAzimuthDeviation
         {
             get
             {
+                if (gpsData.dataSource != GPSdatasources.IOFFEvesselDataServer)
+                {
+                    throw new Exception("not enough data to compute azimuth deviation");
+                }
+
                 if ((sunSPAcomputedPosition != null) && (gpsData.dataSource == GPSdatasources.IOFFEvesselDataServer))
                 {
-                    return detectedSunPositionAzimuth - sunSPAcomputedPosition.AzimuthRad;
+                    double angRad = sunSPAcomputedPosition.AzimuthRad - detectedSunPositionAzimuth -
+                                    (Math.PI*gpsData.IOFFEdataHeadingTrue/180.0d);
+
+                    return PointPolar.CropAngleRad(angRad, true);
                 }
                 else
                 {
                     throw new Exception("not enough data to compute azimuth deviation");
                 }
             }
+        }
+
+
+
+
+        public double computedAzimuthDeviationDeg
+        {
+            get { return (computedAzimuthDeviation / Math.PI) * 180.0d; }
+        }
+
+
+
+
+        public bool ZenithDeviationCanBeComputed
+        {
+            get
+            {
+                if (sunSPAcomputedPosition == null)
+                {
+                    // невозможно было вычислить положение солнца по GPS
+                    return false;
+                }
+
+                return true;
+            }
+        }
+
+
+
+
+        public double computedZenithDeviation
+        {
+            get
+            {
+                if (sunSPAcomputedPosition != null)
+                {
+                    return detectedSunPositionZenith - sunSPAcomputedPosition.ZenithAngleRad;
+                }
+                else
+                {
+                    throw new Exception("not enough data to compute azimuth deviation");
+                }
+            }
+        }
+
+
+
+
+        public double computedZenithDeviationDeg
+        {
+            get { return (computedZenithDeviation / Math.PI) * 180.0d; }
         }
     }
 }

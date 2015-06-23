@@ -83,6 +83,10 @@
             this.btnSwapBcstLog = new System.Windows.Forms.Button();
             this.label11 = new System.Windows.Forms.Label();
             this.btnSwitchShowingTotalLog = new System.Windows.Forms.Button();
+            this.lblUDPpacketsRecievingSpeedTitle = new System.Windows.Forms.Label();
+            this.lblUDPpacketsProcessingSpeedTitle = new System.Windows.Forms.Label();
+            this.lblUDPpacketsRecievingSpeedValue = new System.Windows.Forms.Label();
+            this.lblUDPpacketsProcessingSpeedValue = new System.Windows.Forms.Label();
             this.SensorsCalibration = new System.Windows.Forms.TabPage();
             this.tableLayoutPanel3 = new System.Windows.Forms.TableLayoutPanel();
             this.label4 = new System.Windows.Forms.Label();
@@ -121,10 +125,6 @@
             this.dataCollector = new System.ComponentModel.BackgroundWorker();
             this.accelCalibrator = new System.ComponentModel.BackgroundWorker();
             this.bgwUDPmessagesParser = new System.ComponentModel.BackgroundWorker();
-            this.lblUDPpacketsRecievingSpeedTitle = new System.Windows.Forms.Label();
-            this.lblUDPpacketsProcessingSpeedTitle = new System.Windows.Forms.Label();
-            this.lblUDPpacketsRecievingSpeedValue = new System.Windows.Forms.Label();
-            this.lblUDPpacketsProcessingSpeedValue = new System.Windows.Forms.Label();
             this.tabControl1.SuspendLayout();
             this.tabPageMain.SuspendLayout();
             this.tableLayoutPanel1.SuspendLayout();
@@ -1060,6 +1060,62 @@
             this.btnSwitchShowingTotalLog.UseVisualStyleBackColor = true;
             this.btnSwitchShowingTotalLog.Click += new System.EventHandler(this.btnSwitchShowingTotalLog_Click);
             // 
+            // lblUDPpacketsRecievingSpeedTitle
+            // 
+            this.lblUDPpacketsRecievingSpeedTitle.AutoSize = true;
+            this.lblUDPpacketsRecievingSpeedTitle.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.tableLayoutPanel2.SetColumnSpan(this.lblUDPpacketsRecievingSpeedTitle, 2);
+            this.lblUDPpacketsRecievingSpeedTitle.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.lblUDPpacketsRecievingSpeedTitle.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.lblUDPpacketsRecievingSpeedTitle.Location = new System.Drawing.Point(3, 767);
+            this.lblUDPpacketsRecievingSpeedTitle.Name = "lblUDPpacketsRecievingSpeedTitle";
+            this.lblUDPpacketsRecievingSpeedTitle.Size = new System.Drawing.Size(471, 60);
+            this.lblUDPpacketsRecievingSpeedTitle.TabIndex = 13;
+            this.lblUDPpacketsRecievingSpeedTitle.Text = "UDP packets recieving speed:";
+            this.lblUDPpacketsRecievingSpeedTitle.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            // 
+            // lblUDPpacketsProcessingSpeedTitle
+            // 
+            this.lblUDPpacketsProcessingSpeedTitle.AutoSize = true;
+            this.lblUDPpacketsProcessingSpeedTitle.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.tableLayoutPanel2.SetColumnSpan(this.lblUDPpacketsProcessingSpeedTitle, 2);
+            this.lblUDPpacketsProcessingSpeedTitle.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.lblUDPpacketsProcessingSpeedTitle.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.lblUDPpacketsProcessingSpeedTitle.Location = new System.Drawing.Point(3, 827);
+            this.lblUDPpacketsProcessingSpeedTitle.Name = "lblUDPpacketsProcessingSpeedTitle";
+            this.lblUDPpacketsProcessingSpeedTitle.Size = new System.Drawing.Size(471, 60);
+            this.lblUDPpacketsProcessingSpeedTitle.TabIndex = 14;
+            this.lblUDPpacketsProcessingSpeedTitle.Text = "UDP packets processing speed:";
+            this.lblUDPpacketsProcessingSpeedTitle.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            // 
+            // lblUDPpacketsRecievingSpeedValue
+            // 
+            this.lblUDPpacketsRecievingSpeedValue.AutoSize = true;
+            this.lblUDPpacketsRecievingSpeedValue.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.tableLayoutPanel2.SetColumnSpan(this.lblUDPpacketsRecievingSpeedValue, 4);
+            this.lblUDPpacketsRecievingSpeedValue.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.lblUDPpacketsRecievingSpeedValue.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.lblUDPpacketsRecievingSpeedValue.Location = new System.Drawing.Point(480, 767);
+            this.lblUDPpacketsRecievingSpeedValue.Name = "lblUDPpacketsRecievingSpeedValue";
+            this.lblUDPpacketsRecievingSpeedValue.Size = new System.Drawing.Size(951, 60);
+            this.lblUDPpacketsRecievingSpeedValue.TabIndex = 15;
+            this.lblUDPpacketsRecievingSpeedValue.Text = "---";
+            this.lblUDPpacketsRecievingSpeedValue.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
+            // lblUDPpacketsProcessingSpeedValue
+            // 
+            this.lblUDPpacketsProcessingSpeedValue.AutoSize = true;
+            this.lblUDPpacketsProcessingSpeedValue.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.tableLayoutPanel2.SetColumnSpan(this.lblUDPpacketsProcessingSpeedValue, 4);
+            this.lblUDPpacketsProcessingSpeedValue.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.lblUDPpacketsProcessingSpeedValue.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.lblUDPpacketsProcessingSpeedValue.Location = new System.Drawing.Point(480, 827);
+            this.lblUDPpacketsProcessingSpeedValue.Name = "lblUDPpacketsProcessingSpeedValue";
+            this.lblUDPpacketsProcessingSpeedValue.Size = new System.Drawing.Size(951, 60);
+            this.lblUDPpacketsProcessingSpeedValue.TabIndex = 16;
+            this.lblUDPpacketsProcessingSpeedValue.Text = "---";
+            this.lblUDPpacketsProcessingSpeedValue.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
             // SensorsCalibration
             // 
             this.SensorsCalibration.Controls.Add(this.tableLayoutPanel3);
@@ -1610,62 +1666,6 @@
             // 
             this.bgwUDPmessagesParser.WorkerSupportsCancellation = true;
             this.bgwUDPmessagesParser.DoWork += new System.ComponentModel.DoWorkEventHandler(this.bgwUDPmessagesParser_DoWork);
-            // 
-            // lblUDPpacketsRecievingSpeedTitle
-            // 
-            this.lblUDPpacketsRecievingSpeedTitle.AutoSize = true;
-            this.lblUDPpacketsRecievingSpeedTitle.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.tableLayoutPanel2.SetColumnSpan(this.lblUDPpacketsRecievingSpeedTitle, 2);
-            this.lblUDPpacketsRecievingSpeedTitle.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.lblUDPpacketsRecievingSpeedTitle.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.lblUDPpacketsRecievingSpeedTitle.Location = new System.Drawing.Point(3, 767);
-            this.lblUDPpacketsRecievingSpeedTitle.Name = "lblUDPpacketsRecievingSpeedTitle";
-            this.lblUDPpacketsRecievingSpeedTitle.Size = new System.Drawing.Size(471, 60);
-            this.lblUDPpacketsRecievingSpeedTitle.TabIndex = 13;
-            this.lblUDPpacketsRecievingSpeedTitle.Text = "UDP packets recieving speed:";
-            this.lblUDPpacketsRecievingSpeedTitle.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
-            // 
-            // lblUDPpacketsProcessingSpeedTitle
-            // 
-            this.lblUDPpacketsProcessingSpeedTitle.AutoSize = true;
-            this.lblUDPpacketsProcessingSpeedTitle.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.tableLayoutPanel2.SetColumnSpan(this.lblUDPpacketsProcessingSpeedTitle, 2);
-            this.lblUDPpacketsProcessingSpeedTitle.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.lblUDPpacketsProcessingSpeedTitle.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.lblUDPpacketsProcessingSpeedTitle.Location = new System.Drawing.Point(3, 827);
-            this.lblUDPpacketsProcessingSpeedTitle.Name = "lblUDPpacketsProcessingSpeedTitle";
-            this.lblUDPpacketsProcessingSpeedTitle.Size = new System.Drawing.Size(471, 60);
-            this.lblUDPpacketsProcessingSpeedTitle.TabIndex = 14;
-            this.lblUDPpacketsProcessingSpeedTitle.Text = "UDP packets processing speed:";
-            this.lblUDPpacketsProcessingSpeedTitle.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
-            // 
-            // lblUDPpacketsRecievingSpeedValue
-            // 
-            this.lblUDPpacketsRecievingSpeedValue.AutoSize = true;
-            this.lblUDPpacketsRecievingSpeedValue.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.tableLayoutPanel2.SetColumnSpan(this.lblUDPpacketsRecievingSpeedValue, 4);
-            this.lblUDPpacketsRecievingSpeedValue.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.lblUDPpacketsRecievingSpeedValue.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.lblUDPpacketsRecievingSpeedValue.Location = new System.Drawing.Point(480, 767);
-            this.lblUDPpacketsRecievingSpeedValue.Name = "lblUDPpacketsRecievingSpeedValue";
-            this.lblUDPpacketsRecievingSpeedValue.Size = new System.Drawing.Size(951, 60);
-            this.lblUDPpacketsRecievingSpeedValue.TabIndex = 15;
-            this.lblUDPpacketsRecievingSpeedValue.Text = "---";
-            this.lblUDPpacketsRecievingSpeedValue.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            // 
-            // lblUDPpacketsProcessingSpeedValue
-            // 
-            this.lblUDPpacketsProcessingSpeedValue.AutoSize = true;
-            this.lblUDPpacketsProcessingSpeedValue.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.tableLayoutPanel2.SetColumnSpan(this.lblUDPpacketsProcessingSpeedValue, 4);
-            this.lblUDPpacketsProcessingSpeedValue.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.lblUDPpacketsProcessingSpeedValue.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.lblUDPpacketsProcessingSpeedValue.Location = new System.Drawing.Point(480, 827);
-            this.lblUDPpacketsProcessingSpeedValue.Name = "lblUDPpacketsProcessingSpeedValue";
-            this.lblUDPpacketsProcessingSpeedValue.Size = new System.Drawing.Size(951, 60);
-            this.lblUDPpacketsProcessingSpeedValue.TabIndex = 16;
-            this.lblUDPpacketsProcessingSpeedValue.Text = "---";
-            this.lblUDPpacketsProcessingSpeedValue.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // DataCollectorMainForm
             // 

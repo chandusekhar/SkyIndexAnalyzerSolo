@@ -199,7 +199,7 @@ namespace SkyImagesAnalyzerLibraries
         {
             Image<Gray, Byte> emguImage = img2process.Copy().Convert<Gray, Byte>();
             Image<Bgr, Byte> contourImage = emguImage.CopyBlank().Convert<Bgr, Byte>();
-            Image<Gray, Byte> BinaryEmguImage = emguImage.ThresholdBinary(new Gray(50), new Gray(256));
+            Image<Gray, Byte> BinaryEmguImage = emguImage.ThresholdBinary(new Gray(30), new Gray(255));
             Contour<Point> imageContours = BinaryEmguImage.FindContours(CHAIN_APPROX_METHOD.CV_CHAIN_APPROX_SIMPLE, RETR_TYPE.CV_RETR_EXTERNAL);
 
             int lineWidth = (int)Math.Round(emguImage.Width / 150.0);
@@ -226,7 +226,7 @@ namespace SkyImagesAnalyzerLibraries
             emguImage.Dispose();
             BinaryEmguImage.Dispose();
             ServiceTools.FlushMemory();
-            
+
             significantMaskContourImage = contourImage.Copy();
         }
 
@@ -245,7 +245,7 @@ namespace SkyImagesAnalyzerLibraries
             RoundData rd = imageRD;
             CircleF Circle2Draw = new CircleF(rd.pointfCircleCenter(), (float)rd.DRadius);
             circleImage.Draw(Circle2Draw, new Bgr(Color.Green), lineWidth);
-            
+
             significantMaskContourImageCircled = circleImage.Copy();
 
             significantMaskImageCircled = img2process.CopyBlank().Convert<Gray, byte>();
@@ -272,11 +272,14 @@ namespace SkyImagesAnalyzerLibraries
             octLinedImage.Draw(Circle2Draw, lineColor, lineWidth);
             Circle2Draw = new CircleF(rd.pointfCircleCenter(), ((float)rd.DRadius) * Constants.CosPIhalfF);
             octLinedImage.Draw(Circle2Draw, lineColor, lineWidth);
-            LineSegment2DF ls2d = new LineSegment2DF(new PointF((float)(rd.DCenterX - rd.DRadius), (float)(rd.DCenterY)), new PointF((float)(rd.DCenterX + rd.DRadius), (float)(rd.DCenterY)));
+            LineSegment2DF ls2d =
+                new LineSegment2DF(new PointF((float)(rd.DCenterX - rd.DRadius), (float)(rd.DCenterY)),
+                    new PointF((float)(rd.DCenterX + rd.DRadius), (float)(rd.DCenterY)));
             octLinedImage.Draw(ls2d, lineColor, lineWidth);
-            ls2d = new LineSegment2DF(new PointF((float)(rd.DCenterX), (float)(rd.DCenterY - rd.DRadius)), new PointF((float)(rd.DCenterX), (float)(rd.DCenterY + rd.DRadius)));
+            ls2d = new LineSegment2DF(new PointF((float)(rd.DCenterX), (float)(rd.DCenterY - rd.DRadius)),
+                new PointF((float)(rd.DCenterX), (float)(rd.DCenterY + rd.DRadius)));
             octLinedImage.Draw(ls2d, lineColor, lineWidth);
-            
+
             significantMaskImageOctLined = octLinedImage.Copy();
         }
 
@@ -294,7 +297,7 @@ namespace SkyImagesAnalyzerLibraries
             Contour<Point> contoursDetected = tmpMaskImage.FindContours(Emgu.CV.CvEnum.CHAIN_APPROX_METHOD.CV_CHAIN_APPROX_NONE, Emgu.CV.CvEnum.RETR_TYPE.CV_RETR_LIST);
             Contour<Point> contourFound = contoursDetected;
             double areaDetected = contourFound.Area;
-            
+
             while (true)
             {
                 Contour<Point> currContour = contoursDetected;
@@ -318,6 +321,21 @@ namespace SkyImagesAnalyzerLibraries
                 pointsList.Add(new PointD(contourPoint));
             }
 
+
+//#if DEBUG
+//            Image<Bgr, byte> tmpDebugImg = img2process.Copy().Mul(0.7d);
+//            foreach (PointD ptd in pointsList)
+//            {
+//                tmpDebugImg.Draw(new CircleF(ptd.PointF(), 1), new Bgr(Color.LightYellow), 1);
+//            }
+//            if (ServiceTools.CheckIfDirectoryExists("D:\\_gulevlab\\SkyImagesAnalysis_appData\\output\\"))
+//            {
+//                tmpDebugImg.Save("D:\\_gulevlab\\SkyImagesAnalysis_appData\\output\\test.jpg");
+//            }
+//#endif
+
+
+
             Func<DenseVector, PointD, double> minimizingFunc = (dvParameters, pt) =>
             {
                 double centerX = dvParameters[0];
@@ -327,9 +345,10 @@ namespace SkyImagesAnalyzerLibraries
                 return (r - pt.Distance(ptdCenter));
             };
 
+
             List<double> parametersList = new List<double>();
-            parametersList.Add(((double)tmpMaskImage.Width)/2.0d);
-            parametersList.Add(((double)tmpMaskImage.Height)/2.0d);
+            parametersList.Add(((double)tmpMaskImage.Width) / 2.0d);
+            parametersList.Add(((double)tmpMaskImage.Height) / 2.0d);
             parametersList.Add(((double)tmpMaskImage.Width) / 2.0d);
             DenseVector dvInitialParameters = DenseVector.OfEnumerable(parametersList);
 
@@ -337,8 +356,8 @@ namespace SkyImagesAnalyzerLibraries
             //
             //GradientDescentApproximator approximator = new GradientDescentApproximator(pointsList, minimizingFunc);
             //DenseVector approximatedParameters = approximator.ApproximationGradientDescent2DPt(dvInitialParameters, initialParametersIncremnt, 0.000001d);
-            double[] dvLowerBoundsConstraints = {0.0d, 0.0d, 0.0d};
-            double[] dvUpperBoundsConstraints = {tmpMaskImage.Width, tmpMaskImage.Height, tmpMaskImage.Width/2.0d};
+            double[] dvLowerBoundsConstraints = { 0.0d, 0.0d, 0.0d };
+            double[] dvUpperBoundsConstraints = { tmpMaskImage.Width, tmpMaskImage.Height, tmpMaskImage.Width };
             NonLinLeastSqProbWithBC<PointD> approximator = new NonLinLeastSqProbWithBC<PointD>();
             approximator.nXspacePoint = dvInitialParameters.Copy();
             approximator.mFittingValuesVector = DenseVector.Create(pointsList.Count, 0.0d);
@@ -346,10 +365,19 @@ namespace SkyImagesAnalyzerLibraries
             approximator.fittingFunction = (iEnumVec, ptD) => minimizingFunc(DenseVector.OfEnumerable(iEnumVec), ptD);
             approximator.lowerBoundConstraints = dvLowerBoundsConstraints;
             approximator.upperBoundConstraints = dvUpperBoundsConstraints;
-            
+
             List<double> approximatedParameters = new List<double>(approximator.SolveOptimizationProblem());
 
             imageRD = new RoundData(approximatedParameters[0], approximatedParameters[1], approximatedParameters[2]);
+
+//#if DEBUG
+//            tmpDebugImg.Draw(imageRD.CircleF(), new Bgr(Color.Red), 1);
+//
+//            if (ServiceTools.CheckIfDirectoryExists("D:\\_gulevlab\\SkyImagesAnalysis_appData\\output\\"))
+//            {
+//                tmpDebugImg.Save("D:\\_gulevlab\\SkyImagesAnalysis_appData\\output\\test2.jpg");
+//            }
+//#endif
         }
 
 
@@ -368,78 +396,6 @@ namespace SkyImagesAnalyzerLibraries
         }
 
 
-
-        //private void getMaskImageControlPoints()
-        //{
-        //    Point mask1stIntersectionPoint = new Point(0, 0);
-        //    Point mask2ndIntersectionPoint = new Point(0, 0);
-        //    Point mask3rdIntersectionPoint = new Point(0, 0);
-            
-        //    Image<Gray, Byte> tmpMaskImage = significantMaskImage.Copy();
-        //    //Gray prevColor = new Gray(0);
-        //    Byte prevColor = 0, curColor;
-
-        //    for (int i = 1; i < tmpMaskImage.Width; i++)
-        //    {
-        //        Point prevPoint = new Point(i - 1, Convert.ToInt32(Math.Round(((double)(i - 1) * tmpMaskImage.Height / tmpMaskImage.Width), 0)));
-        //        Point curPoint = new Point(i, Convert.ToInt32(Math.Round(((double)(i) * tmpMaskImage.Height / tmpMaskImage.Width), 0)));
-        //        prevColor = tmpMaskImage.Data[prevPoint.Y, prevPoint.X, 0];
-        //        curColor = tmpMaskImage.Data[curPoint.Y, curPoint.X, 0];
-        //        if (prevColor < curColor)
-        //        {
-        //            mask1stIntersectionPoint = curPoint;
-        //            if (IsPointEmpty(mask2ndIntersectionPoint))
-        //            {
-        //                continue;
-        //            }
-        //            else break;
-        //        }
-
-        //        if (prevColor > curColor)
-        //        {
-        //            mask2ndIntersectionPoint = prevPoint;
-        //            if (IsPointEmpty(mask1stIntersectionPoint))
-        //            {
-        //                continue;
-        //            }
-        //            else break;
-        //        }
-        //    }
-
-        //    for (int i = 1; i < tmpMaskImage.Width; i++)
-        //    {
-        //        Point prevPoint = new Point(i - 1, Convert.ToInt32(tmpMaskImage.Height - 1 - Math.Round(((double)(i - 1) * tmpMaskImage.Height / tmpMaskImage.Width), 0)));
-        //        Point curPoint = new Point(i, Convert.ToInt32(tmpMaskImage.Height - 1 - Math.Round(((double)(i) * tmpMaskImage.Height / tmpMaskImage.Width), 0)));
-        //        prevColor = tmpMaskImage.Data[prevPoint.Y, prevPoint.X, 0];
-        //        curColor = tmpMaskImage.Data[curPoint.Y, curPoint.X, 0];
-        //        if (prevColor < curColor)
-        //        {
-        //            Point tmpPoint = curPoint;
-        //            continue;
-        //        }
-
-        //        if (prevColor > curColor)
-        //        {
-        //            mask3rdIntersectionPoint = prevPoint;
-        //            break;
-        //        }
-        //    }
-
-        //    imageControlPoints = new Point[] { mask1stIntersectionPoint, mask3rdIntersectionPoint, mask2ndIntersectionPoint };
-        //    //return imageControlPoints;
-        //}
-
-
-        //private void Report(string text)
-        //{
-        //    if (reportingTextBox == null)
-        //    {
-        //        return;
-        //    }
-
-        //    ThreadSafeOperations.SetTextTB(reportingTextBox, Environment.NewLine + text + Environment.NewLine, true);
-
-        //}
 
 
         public Bitmap getMaskedImageChannelBitmap(int channelNum = 0)
@@ -527,7 +483,7 @@ namespace SkyImagesAnalyzerLibraries
         }
 
 
-        
+
         public static void maskedImageChannelDenseMatrixThresholdedTopInplace
             (
             DenseMatrix dmImageToProcess,
@@ -660,7 +616,7 @@ namespace SkyImagesAnalyzerLibraries
             imageBlueChannelByte = imageBlueChannelByte.Mul(significantMaskImageCircled);
             imageRedChannelByte = imageRedChannelByte.Mul(significantMaskImageCircled);
             imageGreenChannelByte = imageGreenChannelByte.Mul(significantMaskImageCircled);
-            
+
             aoi.dmR = DenseMatrixFromImage(imageRedChannelByte);
             aoi.dmG = DenseMatrixFromImage(imageBlueChannelByte);
             aoi.dmB = DenseMatrixFromImage(imageGreenChannelByte);
@@ -882,11 +838,11 @@ namespace SkyImagesAnalyzerLibraries
             //dmColCh.MapInplace(new Func<double, double>((dValue) => { return usedColorScheme.getColorByValueAndRange(dValue, minValue, maxValue).Red; }), true);
             if (!invertScale)
                 dmColCh.MapInplace(
-                    new Func<double, double>((dValue) => { return 255.0d*((dValue - minVal)/valuesRange); }),
+                    new Func<double, double>((dValue) => { return 255.0d * ((dValue - minVal) / valuesRange); }),
                     MathNet.Numerics.LinearAlgebra.Zeros.AllowSkip);
             else
                 dmColCh.MapInplace(
-                    new Func<double, double>((dValue) => { return 255.0d*((maxVal - dValue)/valuesRange); }),
+                    new Func<double, double>((dValue) => { return 255.0d * ((maxVal - dValue) / valuesRange); }),
                     MathNet.Numerics.LinearAlgebra.Zeros.AllowSkip);
             //dmColCh = (MathNet.Numerics.LinearAlgebra.Double.DenseMatrix)dmColCh.PointwiseMultiply(dmMask);
 
@@ -912,11 +868,11 @@ namespace SkyImagesAnalyzerLibraries
             double valuesRange = maxVal - minVal;
             if (!invertScale)
                 dmColCh.MapInplace(
-                    new Func<double, double>((dValue) => { return 255.0d*((dValue - minVal)/valuesRange); }),
+                    new Func<double, double>((dValue) => { return 255.0d * ((dValue - minVal) / valuesRange); }),
                     MathNet.Numerics.LinearAlgebra.Zeros.AllowSkip);
             else
                 dmColCh.MapInplace(
-                    new Func<double, double>((dValue) => { return 255.0d*((maxVal - dValue)/valuesRange); }),
+                    new Func<double, double>((dValue) => { return 255.0d * ((maxVal - dValue) / valuesRange); }),
                     MathNet.Numerics.LinearAlgebra.Zeros.AllowSkip);
 
             //dmColCh = (MathNet.Numerics.LinearAlgebra.Double.DenseMatrix)dmColCh.PointwiseMultiply(dmMask);

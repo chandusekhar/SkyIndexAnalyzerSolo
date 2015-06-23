@@ -2,6 +2,8 @@
 using System.ComponentModel;
 using System.Drawing;
 using System.Windows.Forms;
+using Emgu.CV;
+using Emgu.CV.Structure;
 using MRG.Controls.UI;
 
 
@@ -150,7 +152,20 @@ namespace SkyImagesAnalyzerLibraries
             }
         }
 
-        public static int[] UpdatePictureBox(System.Windows.Forms.PictureBox PictureBoxControl, Image Image2Show, bool NormalizeImage = false)
+
+
+
+        public static int[] UpdatePictureBox(System.Windows.Forms.PictureBox PictureBoxControl, Image<Bgr, byte> Image2Show,
+            bool NormalizeImage = false)
+        {
+            return UpdatePictureBox(PictureBoxControl, Image2Show.Bitmap, NormalizeImage);
+        }
+
+
+
+
+        public static int[] UpdatePictureBox(System.Windows.Forms.PictureBox PictureBoxControl, Image Image2Show,
+            bool NormalizeImage = false)
         {
             int[] retval = new int[2]; retval[0] = 0; retval[1] = 0;
             int[] nullretval = new int[2]; retval[0] = 0; retval[1] = 0;

@@ -14,8 +14,9 @@ using System.Threading;
 using System.Windows.Forms;
 using Emgu.CV;
 using Emgu.CV.Structure;
-using IoffeVesselDataReader;
+//using IoffeVesselDataReader;
 using MathNet.Numerics.LinearAlgebra.Double;
+using MathNet.Numerics.Statistics;
 using SkyImagesAnalyzer;
 using SkyImagesAnalyzerLibraries;
 using SolarPositioning;
@@ -50,6 +51,7 @@ namespace IofffeVesselInfoStream
 
         private BackgroundWorker bgwGraphsPresenter = null;
         private static bool showGraphs = false;
+        private int graphsUpdatingPeriodSec = 60;
 
         private static LogWindow theLogWindow = null;
 
@@ -1373,6 +1375,7 @@ namespace IofffeVesselInfoStream
 
             bcstServerIP = (string)defaultProperties["DefaultDataBroadcastingServerIP"];
             bcstServerPort = Convert.ToInt32(defaultProperties["DefaultDataBroadcastingServerPort"]);
+            graphsUpdatingPeriodSec = Convert.ToInt32(defaultProperties["GraphsUpdatingPeriodSec"]);
         }
 
 
@@ -1443,24 +1446,15 @@ namespace IofffeVesselInfoStream
 
 
 
-        private void pbGraphs_Click(object sender, EventArgs e)
-        {
 
-        }
 
+        #region graphs representing
 
         private System.Threading.Timer timerGraphUpdate;
         private void btnToggleShowGraphs_Click(object sender, EventArgs e)
         {
             showGraphs = !showGraphs;
-            if (showGraphs)
-            {
-                ThreadSafeOperations.ToggleButtonState(btnToggleShowGraphs, true, "ON", true);
-            }
-            else
-            {
-                ThreadSafeOperations.ToggleButtonState(btnToggleShowGraphs, true, "OFF", true);
-            }
+            ThreadSafeOperations.ToggleButtonState(btnToggleShowGraphs, true, showGraphs ? "ON" : "OFF", true);
 
 
             if (showGraphs)
@@ -1468,12 +1462,13 @@ namespace IofffeVesselInfoStream
                 if (timerGraphUpdate == null)
                 {
                     TimerCallback tcbRenderAndShowGraph = RenderAndShowGraph;
-                    timerGraphUpdate = new System.Threading.Timer(tcbRenderAndShowGraph, null, 0, 10000);
+                    timerGraphUpdate = new System.Threading.Timer(tcbRenderAndShowGraph, null, 0, graphsUpdatingPeriodSec*1000);
                 }
                 else
                 {
                     bgwGraphsPresenter.RunWorkerAsync();
                 }
+                //RenderAndShowGraph(null);
             }
             else
             {
@@ -1492,13 +1487,53 @@ namespace IofffeVesselInfoStream
             bgwGraphsPresenter = new BackgroundWorker();
             bgwGraphsPresenter.DoWork += bgwGraphsPresenter_DoWork;
 
-
+            bgwGraphsPresenter.RunWorkerAsync();
 
         }
 
 
 
+
         void bgwGraphsPresenter_DoWork(object sender, DoWorkEventArgs e)
+        {
+            Image<Bgr, byte> img = FillGraphImage(pbGraphs.Size);
+            if (img != null)
+            {
+                ThreadSafeOperations.UpdatePictureBox(pbGraphs, img, false);
+            }
+        }
+
+
+
+
+        private void pbGraphs_Click(object sender, EventArgs e)
+        {
+            BackgroundWorker bgwGraphsPresenterInSeparateWindow = new BackgroundWorker();
+            bgwGraphsPresenterInSeparateWindow.DoWork += bgwGraphsPresenterInSeparateWindow_DoWork;
+
+            bgwGraphsPresenterInSeparateWindow.RunWorkerAsync();
+        }
+
+
+
+
+        void bgwGraphsPresenterInSeparateWindow_DoWork(object sender, DoWorkEventArgs e)
+        {
+            Image<Bgr, byte> img = FillGraphImage(new Size(1280, 1024));
+
+            if (img != null)
+            {
+                ServiceTools.ExecMethodInSeparateThread(this, delegate()
+                {
+                    ServiceTools.ShowPicture(img, "");
+                });
+            }
+        }
+
+
+
+
+        private Image<Bgr, byte> FillGraphImage(Size imgSize)
         {
             string curDirPath = Directory.GetCurrentDirectory() + "\\logs\\";
 
@@ -1509,49 +1544,238 @@ namespace IofffeVesselInfoStream
 
             if (!File.Exists(todaysMeteoDataFileName))
             {
-                return;
+                return null;
             }
 
-            Dictionary<string, object> dictCurrFileData = NetCDFoperations.ReadDataFromFile(todaysMeteoDataFileName);
+            Dictionary<string, object> dictCurrFileData = null;
+
+            try
+            {
+                dictCurrFileData = NetCDFoperations.ReadDataFromFile(todaysMeteoDataFileName);
+            }
+            catch (Exception)
+            {
+                return null;
+            }
+            
             string varNameDateTime = "DateTime";
 
             List<long> currFileDateTimeLongTicksList = new List<long>((dictCurrFileData[varNameDateTime] as long[]));
             List<DateTime> currFileDateTimeList = currFileDateTimeLongTicksList.ConvertAll(longVal => new DateTime(longVal));
-            List<double> currFileSecondsList = currFileDateTimeList.ConvertAll(dt => dt.TimeOfDay.TotalSeconds);
 
             string varNameMeteoData = "MeteoData";
             List<MeteoData> currFileMeteoDataList =
                 MeteoData.OfDenseMatrix(dictCurrFileData[varNameMeteoData] as DenseMatrix);
 
+
+            TimeSeries<MeteoData> tsMeteoData = new TimeSeries<MeteoData>(currFileMeteoDataList, currFileDateTimeList);
+            tsMeteoData.SortByTimeStamps();
+            tsMeteoData.RemoveDuplicatedTimeStamps();
+            List<TimeSeries<MeteoData>> subSeriesBy1Minute = tsMeteoData.SplitByTimeSpan(new TimeSpan(0, 1, 0));
+            List<double> lSubSeriesEntriesCount = subSeriesBy1Minute.ConvertAll(subs => (double)subs.Count);
+            DescriptiveStatistics statsCounts = new DescriptiveStatistics(lSubSeriesEntriesCount);
+            int aveMinuteEntriesCount = Convert.ToInt32(statsCounts.Mean);
+            currFileMeteoDataList = tsMeteoData.DataValues;
+
+            DateTime maxDateTime = tsMeteoData.TimeStamps.Max();
+            List<double> currFileSecondsList = new List<double>(); // = tsMeteoData.TimeStamps.ConvertAll(dt => (dt - maxDateTime).TotalSeconds);
+
+            MultipleScatterAndFunctionsRepresentation fRenderer = new MultipleScatterAndFunctionsRepresentation(imgSize);
+
+            double minVarValue = 0.0d;
+            double maxVarValue = 1.0d;
+            Bgr currValueColor = new Bgr(Color.Black);
             List<double> currVarToShowValues = new List<double>();
             if (rbtnPressureGraph.Checked)
             {
                 currVarToShowValues = currFileMeteoDataList.ConvertAll(mdt => mdt.pressure);
+
+                TimeSeries<double> currVarTS = new TimeSeries<double>(currVarToShowValues, tsMeteoData.TimeStamps);
+                currVarTS.RemoveValues(dVal => dVal <= 900.0d);
+
+                currVarToShowValues = new List<double>(currVarTS.DataValues);
+                currFileSecondsList = currVarTS.TimeStamps.ConvertAll(dt => (dt - maxDateTime).TotalSeconds);
+
+                currValueColor = new Bgr(Color.Blue);
             }
             else if (rbtnAirTempGraph.Checked)
             {
                 currVarToShowValues = currFileMeteoDataList.ConvertAll(mdt => mdt.airTemperature);
+
+                TimeSeries<double> currVarTS = new TimeSeries<double>(currVarToShowValues, tsMeteoData.TimeStamps);
+                currVarTS.RemoveValues(dVal => ((dVal < -20.0d) || (dVal > 50.0d)));
+
+                currVarToShowValues = new List<double>(currVarTS.DataValues);
+                currFileSecondsList = currVarTS.TimeStamps.ConvertAll(dt => (dt - maxDateTime).TotalSeconds);
+
+                currValueColor = new Bgr(Color.Red);
             }
             else if (rbtnWaterTempGraph.Checked)
             {
                 currVarToShowValues = currFileMeteoDataList.ConvertAll(mdt => mdt.waterTemperature);
+
+                TimeSeries<double> currVarTS = new TimeSeries<double>(currVarToShowValues, tsMeteoData.TimeStamps);
+                currVarTS.RemoveValues(dVal => ((dVal < -20.0d) || (dVal > 50.0d)));
+
+                currVarToShowValues = new List<double>(currVarTS.DataValues);
+                currFileSecondsList = currVarTS.TimeStamps.ConvertAll(dt => (dt - maxDateTime).TotalSeconds);
+
+                currValueColor = new Bgr(Color.RoyalBlue);
             }
             else if (rbtnWindSpeedGraph.Checked)
             {
                 currVarToShowValues = currFileMeteoDataList.ConvertAll(mdt => mdt.windSpeed);
+
+                TimeSeries<double> currVarTS = new TimeSeries<double>(currVarToShowValues, tsMeteoData.TimeStamps);
+                currVarTS.RemoveValues(dVal => ((dVal < 0.0d) || (dVal > 50.0d)));
+
+                currVarToShowValues = new List<double>(currVarTS.DataValues);
+                currFileSecondsList = currVarTS.TimeStamps.ConvertAll(dt => (dt - maxDateTime).TotalSeconds);
+
+                currValueColor = new Bgr(Color.Gray);
+            }
+
+            DenseVector dvVarValues = DenseVector.OfEnumerable(currVarToShowValues);
+            dvVarValues = dvVarValues.Conv(StandardConvolutionKernels.gauss, aveMinuteEntriesCount * 10);
+
+
+
+            fRenderer.dvScatterFuncValues.Add(dvVarValues);
+            fRenderer.dvScatterXSpace.Add(DenseVector.OfEnumerable(currFileSecondsList));
+            fRenderer.scatterLineColors.Add(currValueColor);
+            fRenderer.scatterDrawingVariants.Add(SequencesDrawingVariants.polyline);
+            fRenderer.xSpaceMin = currFileSecondsList.Min();
+            fRenderer.xSpaceMax = currFileSecondsList.Max();
+            fRenderer.overallFuncMin = dvVarValues.Min();
+            fRenderer.overallFuncMax = dvVarValues.Max();
+            fRenderer.fixSpecifiedMargins = true;
+
+            fRenderer.Represent();
+
+            Image<Bgr, byte> retImg = fRenderer.TheImage;
+
+            // расположим надпись
+            string strSign = "current value: " + dvVarValues.Last().ToString("F2");
+
+            List<TextBarImage> textBarsCases = new List<TextBarImage>();
+
+            TextBarImage tbimTopLeftSign = new TextBarImage(strSign, retImg);
+            tbimTopLeftSign.PtSurroundingBarStart =
+                new Point(fRenderer.ServiceSpaceGapX + tbimTopLeftSign.textHalfHeight,
+                    fRenderer.ServiceSpaceGapY + tbimTopLeftSign.textHalfHeight);
+            textBarsCases.Add(tbimTopLeftSign);
+
+            TextBarImage tbimBtmLeftSign = new TextBarImage(strSign, retImg);
+            tbimBtmLeftSign.PtSurroundingBarStart = new Point(fRenderer.ServiceSpaceGapX + tbimBtmLeftSign.textHalfHeight,
+                retImg.Height - fRenderer.ServiceSpaceGapY - tbimBtmLeftSign.textHalfHeight - tbimBtmLeftSign.textHeight * 2);
+            textBarsCases.Add(tbimBtmLeftSign);
+
+            TextBarImage tbimTopRightSign = new TextBarImage(strSign, retImg);
+            tbimTopRightSign.PtSurroundingBarStart =
+                new Point(
+                    retImg.Width - fRenderer.ServiceSpaceGapX - tbimTopRightSign.textHalfHeight -
+                    tbimTopRightSign.textBarSize.Width, fRenderer.ServiceSpaceGapY + tbimTopLeftSign.textHalfHeight);
+            textBarsCases.Add(tbimTopRightSign);
+
+            TextBarImage tbimBtmRightSign = new TextBarImage(strSign, retImg);
+            tbimBtmRightSign.PtSurroundingBarStart =
+                new Point(
+                    retImg.Width - fRenderer.ServiceSpaceGapX - tbimBtmRightSign.textHalfHeight -
+                    tbimBtmRightSign.textBarSize.Width,
+                    retImg.Height - fRenderer.ServiceSpaceGapY - tbimBtmRightSign.textHalfHeight -
+                    tbimBtmRightSign.textHeight * 2);
+            textBarsCases.Add(tbimBtmRightSign);
+
+            textBarsCases.Sort((case1, case2) => (case1.SubImageInTextRect.CountNonzero().Sum() > case2.SubImageInTextRect.CountNonzero().Sum()) ? 1 : -1);
+
+            MCvFont theFont = new MCvFont(Emgu.CV.CvEnum.FONT.CV_FONT_HERSHEY_PLAIN, 2.0d, 2.0d)
+            {
+                thickness = 2,
+            };
+            retImg.Draw(strSign, ref theFont, textBarsCases[0].ptTextBaselineStart, new Bgr(Color.Green));
+            retImg.Draw(textBarsCases[0].rectSurroundingBar, new Bgr(Color.Green), 2);
+
+            
+            return retImg;
+        }
+
+
+
+        private class TextBarImage
+        {
+            public string strText = "";
+            public MCvFont fnTextFont = new MCvFont(Emgu.CV.CvEnum.FONT.CV_FONT_HERSHEY_PLAIN, 2.0d, 2.0d)
+            {
+                thickness = 2,
+            };
+            public Point ptTextBaselineStart;
+            private Point ptSurroundingBarStart;
+            public Rectangle rectSurroundingBar;
+            public readonly Size textBarSize;
+            public readonly int textHalfHeight;
+            public readonly int textHeight;
+            private Image<Bgr, byte> originalImage;
+
+
+
+            public Point PtSurroundingBarStart
+            {
+                get { return ptSurroundingBarStart; }
+                set
+                {
+                    ptSurroundingBarStart = value;
+                    rectSurroundingBar = new Rectangle(ptSurroundingBarStart, textBarSize);
+                    ptTextBaselineStart = ptSurroundingBarStart + new Size(textHalfHeight, textHeight * 2 - textHalfHeight);
+                }
+
             }
 
 
-            MultipleScatterAndFunctionsRepresentation fRenderer =
-                new MultipleScatterAndFunctionsRepresentation(pbGraphs.Size);
-            fRenderer.dvScatterFuncValues.Add(DenseVector.OfEnumerable(currVarToShowValues));
-            fRenderer.dvScatterXSpace.Add(DenseVector.OfEnumerable(currFileSecondsList));
+            public TextBarImage(string text, Image<Bgr, byte> origImage)
+            {
+                strText = text;
+                Size retTextSize = new Size(0, 0);
+                int baseline = 0;
+                CvInvoke.cvGetTextSize(strText, ref fnTextFont, ref retTextSize, ref baseline);
+                textHeight = retTextSize.Height + baseline;
+                textHalfHeight = Convert.ToInt32(textHeight / 2.0d);
+                textBarSize = new System.Drawing.Size(retTextSize.Width + textHeight, textHeight * 2);
+                originalImage = origImage.Copy();
+            }
 
+
+            public Image<Bgr, byte> SubImageInTextRect
+            {
+                get
+                {
+                    originalImage.ROI = rectSurroundingBar;
+                    Image<Bgr, byte> subImg = originalImage.Copy();
+                    originalImage.ROI = Rectangle.Empty;
+                    return subImg;
+                }
+            }
         }
 
 
 
 
+
+        private void rbtnGraphVarChanged(object sender, EventArgs e)
+        {
+            if ((sender as RadioButton).Checked)
+            {
+                RenderAndShowGraph(null);
+            }
+        }
+
+
+
+        #endregion graphs representing
+
+
+
+
+        #region backward reading and showing nav,meteo data
 
         private IoffeVesselDualNavDataConverted neededNavdata = null;
         private IoffeVesselMetDataConverted neededMeteodata = null;
@@ -1563,209 +1787,211 @@ namespace IofffeVesselInfoStream
                 if (bgwInfoSearcher.IsBusy)
                 {
                     bgwInfoSearcher.CancelAsync();
+                    return;
                 }
             }
-            else
+
+            DateTime curDateTime = DateTime.UtcNow;
+
+            theLogWindow = ServiceTools.LogAText(theLogWindow,
+                "started at " + DateTime.Now.ToString("u").Replace("Z", ""));
+
+            if (!DateTime.TryParse(maskedTextBox1.Text, out curDateTime))
             {
-                DateTime curDateTime = DateTime.UtcNow;
+                theLogWindow = ServiceTools.LogAText(theLogWindow, "couldn`t parse date-time.");
+                return;
+            }
 
-                theLogWindow = ServiceTools.LogAText(theLogWindow,
-                    "started at " + DateTime.Now.ToString("u").Replace("Z", ""));
+            curDateTime = DateTime.SpecifyKind(curDateTime, DateTimeKind.Utc);
 
-                if (!DateTime.TryParse(maskedTextBox1.Text, out curDateTime))
+
+            bgwInfoSearcher = new BackgroundWorker();
+            bgwInfoSearcher.WorkerReportsProgress = true;
+            bgwInfoSearcher.WorkerSupportsCancellation = true;
+            bgwInfoSearcher.DoWork += ((obj, evArgs) =>
+            {
+                BackgroundWorker selfWorker = obj as BackgroundWorker;
+                object[] inArgs = (object[])evArgs.Argument;
+                Dictionary<string, object> defProperties = inArgs[0] as Dictionary<string, object>;
+                LogWindow bgwLogWindow = inArgs[1] as LogWindow;
+
+                string navMetFilesPath = defProperties["IoffeNavMeteoDataFilesDirectory"] as string;
+                List<IoffeVesselDualNavDataConverted> lAllNavData = new List<IoffeVesselDualNavDataConverted>();
+
+                string[] sNavFilenames = Directory.GetFiles(navMetFilesPath, "*.nv2", SearchOption.AllDirectories);
+                string[] sMetFilenames = Directory.GetFiles(navMetFilesPath, "*.met", SearchOption.AllDirectories);
+
+                int totalFilesCount = sNavFilenames.Count() + sMetFilenames.Count();
+                int ProgressPercentagePrev = 0;
+                int processedFiles = 0;
+
+                if (!sNavFilenames.Any())
                 {
-                    theLogWindow = ServiceTools.LogAText(theLogWindow, "couldn`t parse date-time.");
+                    bgwLogWindow = ServiceTools.LogAText(bgwLogWindow, "Не найдено файлов данных навигации", true);
+                    return;
+                }
+                else
+                {
+                    foreach (string navFilename in sNavFilenames)
+                    {
+                        processedFiles++;
+                        int ProgressPercentage = Convert.ToInt32(100.0d * processedFiles / totalFilesCount);
+                        if (ProgressPercentage > ProgressPercentagePrev)
+                        {
+                            ProgressPercentagePrev = ProgressPercentage;
+                            selfWorker.ReportProgress(ProgressPercentage);
+                        }
+
+
+                        if (selfWorker.CancellationPending)
+                        {
+                            break;
+                        }
+
+                        Tuple<DateTime, DateTime> timeSpan =
+                            IoffeVesselNavDataReader.GetNavFileDateTimeMargins(navFilename);
+                        if (timeSpan == null)
+                        {
+                            continue;
+                        }
+
+                        if ((curDateTime < timeSpan.Item1) || (curDateTime > timeSpan.Item2))
+                        {
+                            continue;
+                        }
+
+                        List<IoffeVesselDualNavDataConverted> dataHasBeenRead =
+                            IoffeVesselNavDataReader.ReadNavFile(navFilename);
+                        if (dataHasBeenRead == null)
+                        {
+                            continue;
+                        }
+                        bgwLogWindow = ServiceTools.LogAText(bgwLogWindow, "файл навигации прочитан: " + navFilename,
+                            true);
+                        Application.DoEvents();
+                        lAllNavData.AddRange(dataHasBeenRead);
+                    }
+                }
+
+                if (selfWorker.CancellationPending)
+                {
+                    evArgs.Result = null;
                     return;
                 }
 
-                curDateTime = DateTime.SpecifyKind(curDateTime, DateTimeKind.Utc);
-
-
-                bgwInfoSearcher = new BackgroundWorker();
-                bgwInfoSearcher.WorkerReportsProgress = true;
-                bgwInfoSearcher.WorkerSupportsCancellation = true;
-                bgwInfoSearcher.DoWork += ((obj, evArgs) =>
+                lAllNavData.Sort((gpsRecord1, gpsRecord2) =>
                 {
-                    BackgroundWorker selfWorker = obj as BackgroundWorker;
-                    object[] inArgs = (object[]) evArgs.Argument;
-                    Dictionary<string, object> defProperties = inArgs[0] as Dictionary<string, object>;
-                    LogWindow bgwLogWindow = inArgs[1] as LogWindow;
+                    double dev1 = Math.Abs((gpsRecord1.gps.dateTimeUTC - curDateTime).TotalMilliseconds);
+                    double dev2 = Math.Abs((gpsRecord2.gps.dateTimeUTC - curDateTime).TotalMilliseconds);
+                    return (dev1 >= dev2) ? (1) : (-1);
+                });
+                IoffeVesselDualNavDataConverted foundNavdata = lAllNavData[0];
 
-                    string navMetFilesPath = defProperties["IoffeNavMeteoDataFilesDirectory"] as string;
-                    List<IoffeVesselDualNavDataConverted> lAllNavData = new List<IoffeVesselDualNavDataConverted>();
 
-                    string[] sNavFilenames = Directory.GetFiles(navMetFilesPath, "*.nv2", SearchOption.AllDirectories);
-                    string[] sMetFilenames = Directory.GetFiles(navMetFilesPath, "*.met", SearchOption.AllDirectories);
+                List<IoffeVesselMetDataConverted> lAllMetData = new List<IoffeVesselMetDataConverted>();
 
-                    int totalFilesCount = sNavFilenames.Count() + sMetFilenames.Count();
-                    int ProgressPercentagePrev = 0;
-                    int processedFiles = 0;
 
-                    if (!sNavFilenames.Any())
+                if (!sMetFilenames.Any())
+                {
+                    bgwLogWindow = ServiceTools.LogAText(bgwLogWindow, "Не найдено файлов данных метео", true);
+                    return;
+                }
+                else
+                {
+                    foreach (string meteoFilename in sMetFilenames)
                     {
-                        bgwLogWindow = ServiceTools.LogAText(bgwLogWindow, "Не найдено файлов данных навигации", true);
-                        return;
-                    }
-                    else
-                    {
-                        foreach (string navFilename in sNavFilenames)
+                        processedFiles++;
+                        int ProgressPercentage = Convert.ToInt32(100.0d * processedFiles / totalFilesCount);
+                        if (ProgressPercentage > ProgressPercentagePrev)
                         {
-                            processedFiles++;
-                            int ProgressPercentage = Convert.ToInt32(100.0d * processedFiles / totalFilesCount);
-                            if (ProgressPercentage > ProgressPercentagePrev)
-                            {
-                                ProgressPercentagePrev = ProgressPercentage;
-                                selfWorker.ReportProgress(ProgressPercentage);
-                            }
-
-
-                            if (selfWorker.CancellationPending)
-                            {
-                                break;
-                            }
-
-                            Tuple<DateTime, DateTime> timeSpan =
-                                IoffeVesselNavDataReader.GetNavFileDateTimeMargins(navFilename);
-                            if (timeSpan == null)
-                            {
-                                continue;
-                            }
-
-                            if ((curDateTime < timeSpan.Item1) || (curDateTime > timeSpan.Item2))
-                            {
-                                continue;
-                            }
-
-                            List<IoffeVesselDualNavDataConverted> dataHasBeenRead =
-                                IoffeVesselNavDataReader.ReadNavFile(navFilename);
-                            if (dataHasBeenRead == null)
-                            {
-                                continue;
-                            }
-                            bgwLogWindow = ServiceTools.LogAText(bgwLogWindow, "файл навигации прочитан: " + navFilename,
-                                true);
-                            Application.DoEvents();
-                            lAllNavData.AddRange(dataHasBeenRead);
+                            ProgressPercentagePrev = ProgressPercentage;
+                            selfWorker.ReportProgress(ProgressPercentage);
                         }
-                    }
-
-                    if (selfWorker.CancellationPending)
-                    {
-                        evArgs.Result = null;
-                        return;
-                    }
-
-                    lAllNavData.Sort((gpsRecord1, gpsRecord2) =>
-                    {
-                        double dev1 = Math.Abs((gpsRecord1.gps.dateTimeUTC - curDateTime).TotalMilliseconds);
-                        double dev2 = Math.Abs((gpsRecord2.gps.dateTimeUTC - curDateTime).TotalMilliseconds);
-                        return (dev1 >= dev2) ? (1) : (-1);
-                    });
-                    IoffeVesselDualNavDataConverted foundNavdata = lAllNavData[0];
 
 
-                    List<IoffeVesselMetDataConverted> lAllMetData = new List<IoffeVesselMetDataConverted>();
-
-                    
-                    if (!sMetFilenames.Any())
-                    {
-                        bgwLogWindow = ServiceTools.LogAText(bgwLogWindow, "Не найдено файлов данных метео", true);
-                        return;
-                    }
-                    else
-                    {
-                        foreach (string meteoFilename in sMetFilenames)
+                        if (selfWorker.CancellationPending)
                         {
-                            processedFiles++;
-                            int ProgressPercentage = Convert.ToInt32(100.0d * processedFiles / totalFilesCount);
-                            if (ProgressPercentage > ProgressPercentagePrev)
-                            {
-                                ProgressPercentagePrev = ProgressPercentage;
-                                selfWorker.ReportProgress(ProgressPercentage);
-                            }
-
-
-                            if (selfWorker.CancellationPending)
-                            {
-                                break;
-                            }
-
-                            Tuple<DateTime, DateTime> timeSpan =
-                                IoffeVesselMeteoDataReader.GetMetFileDateTimeMargins(meteoFilename);
-                            if (timeSpan == null)
-                            {
-                                continue;
-                            }
-
-                            if ((curDateTime < timeSpan.Item1) || (curDateTime > timeSpan.Item2))
-                            {
-                                continue;
-                            }
-
-                            List<IoffeVesselMetDataConverted> dataHasBeenRead =
-                                IoffeVesselMeteoDataReader.ReadMetFile(meteoFilename);
-                            if (dataHasBeenRead == null)
-                            {
-                                continue;
-                            }
-                            bgwLogWindow = ServiceTools.LogAText(bgwLogWindow,
-                                "файл метеоданных прочитан: " + meteoFilename, true);
-                            Application.DoEvents();
-                            lAllMetData.AddRange(dataHasBeenRead);
+                            break;
                         }
+
+                        Tuple<DateTime, DateTime> timeSpan =
+                            IoffeVesselMeteoDataReader.GetMetFileDateTimeMargins(meteoFilename);
+                        if (timeSpan == null)
+                        {
+                            continue;
+                        }
+
+                        if ((curDateTime < timeSpan.Item1) || (curDateTime > timeSpan.Item2))
+                        {
+                            continue;
+                        }
+
+                        List<IoffeVesselMetDataConverted> dataHasBeenRead =
+                            IoffeVesselMeteoDataReader.ReadMetFile(meteoFilename);
+                        if (dataHasBeenRead == null)
+                        {
+                            continue;
+                        }
+                        bgwLogWindow = ServiceTools.LogAText(bgwLogWindow,
+                            "файл метеоданных прочитан: " + meteoFilename, true);
+                        Application.DoEvents();
+                        lAllMetData.AddRange(dataHasBeenRead);
                     }
+                }
 
-                    if (selfWorker.CancellationPending)
-                    {
-                        evArgs.Result = null;
-                        return;
-                    }
-
-                    lAllMetData.Sort((gpsRecord1, gpsRecord2) =>
-                    {
-                        double dev1 = Math.Abs((gpsRecord1.dateTime - curDateTime).TotalMilliseconds);
-                        double dev2 = Math.Abs((gpsRecord2.dateTime - curDateTime).TotalMilliseconds);
-                        return (dev1 >= dev2) ? (1) : (-1);
-                    });
-                    IoffeVesselMetDataConverted foundMeteodata = lAllMetData[0];
-
-
-                    evArgs.Result = new object[] {foundNavdata, foundMeteodata};
-                });
-
-
-                bgwInfoSearcher.RunWorkerCompleted += ((obj, evArgs) =>
+                if (selfWorker.CancellationPending)
                 {
-                    if (evArgs.Result == null)
-                    {
-                        return;
-                    }
-                    
-                    object[] res = evArgs.Result as object[];
-                    neededNavdata = res[0] as IoffeVesselDualNavDataConverted;
-                    neededMeteodata = res[1] as IoffeVesselMetDataConverted;
-                    ThreadSafeOperations.UpdateProgressBar(prbSearchingProgress, 0);
-                    ThreadSafeOperations.ToggleButtonState(btnFindInfo, true, "find closest records", true);
+                    evArgs.Result = null;
+                    return;
+                }
 
-                    ThreadSafeOperations.SetText(lblFoundNavData, neededNavdata.ToString(), false);
-                    ThreadSafeOperations.SetText(lblFoundMetData, neededMeteodata.ToString(), false);
-                });
-
-
-                bgwInfoSearcher.ProgressChanged += ((bgwSender, prChangedArgs) =>
+                lAllMetData.Sort((gpsRecord1, gpsRecord2) =>
                 {
-                    ThreadSafeOperations.UpdateProgressBar(prbSearchingProgress, prChangedArgs.ProgressPercentage);
+                    double dev1 = Math.Abs((gpsRecord1.dateTime - curDateTime).TotalMilliseconds);
+                    double dev2 = Math.Abs((gpsRecord2.dateTime - curDateTime).TotalMilliseconds);
+                    return (dev1 >= dev2) ? (1) : (-1);
                 });
+                IoffeVesselMetDataConverted foundMeteodata = lAllMetData[0];
 
 
-                object[] bgwInfoSearcherArgs = new object[] {defaultProperties, theLogWindow};
-                bgwInfoSearcher.RunWorkerAsync(bgwInfoSearcherArgs);
+                evArgs.Result = new object[] { foundNavdata, foundMeteodata };
+            });
 
-                ThreadSafeOperations.ToggleButtonState(btnFindInfo, true, "CANCEL", true);
-            }
+
+            bgwInfoSearcher.RunWorkerCompleted += ((obj, evArgs) =>
+            {
+                if (evArgs.Result == null)
+                {
+                    return;
+                }
+
+                object[] res = evArgs.Result as object[];
+                neededNavdata = res[0] as IoffeVesselDualNavDataConverted;
+                neededMeteodata = res[1] as IoffeVesselMetDataConverted;
+                ThreadSafeOperations.UpdateProgressBar(prbSearchingProgress, 0);
+                ThreadSafeOperations.ToggleButtonState(btnFindInfo, true, "find closest records", true);
+
+                ThreadSafeOperations.SetTextTB(lblFoundNavData, neededNavdata.ToString() + Environment.NewLine + "sun position: " + neededNavdata.gps.SunZenithAzimuth().ToString(), false);
+                ThreadSafeOperations.SetTextTB(lblFoundMetData, neededMeteodata.ToString(), false);
+
+                bgwInfoSearcher.Dispose();
+                bgwInfoSearcher = null;
+            });
+
+
+            bgwInfoSearcher.ProgressChanged += ((bgwSender, prChangedArgs) =>
+            {
+                ThreadSafeOperations.UpdateProgressBar(prbSearchingProgress, prChangedArgs.ProgressPercentage);
+            });
+
+
+            object[] bgwInfoSearcherArgs = new object[] { defaultProperties, theLogWindow };
+            bgwInfoSearcher.RunWorkerAsync(bgwInfoSearcherArgs);
+
+            ThreadSafeOperations.ToggleButtonState(btnFindInfo, true, "CANCEL", true);
         }
 
-        
+
 
 
 
@@ -1844,13 +2070,45 @@ namespace IofffeVesselInfoStream
                     ServiceTools.logToTextFile(filename, strDataToObservationsLog, true);
                 }
             }
-
-
         }
 
 
 
+        private void lblPlusOneHour_Click(object sender, EventArgs e)
+        {
+            DateTime curDateTime = DateTime.UtcNow;
+            if (!DateTime.TryParse(maskedTextBox1.Text, out curDateTime))
+            {
+                theLogWindow = ServiceTools.LogAText(theLogWindow, "couldn`t parse date-time.");
+                return;
+            }
+            curDateTime = DateTime.SpecifyKind(curDateTime, DateTimeKind.Utc);
 
+            curDateTime = curDateTime.AddHours(1);
+            maskedTextBox1.Text = curDateTime.ToString("s");
+
+            btnFindInfo_Click(null, null);
+        }
+
+
+
+        private void btnPlusOneDay_Click(object sender, EventArgs e)
+        {
+            DateTime curDateTime = DateTime.UtcNow;
+            if (!DateTime.TryParse(maskedTextBox1.Text, out curDateTime))
+            {
+                theLogWindow = ServiceTools.LogAText(theLogWindow, "couldn`t parse date-time.");
+                return;
+            }
+            curDateTime = DateTime.SpecifyKind(curDateTime, DateTimeKind.Utc);
+
+            curDateTime = curDateTime.AddDays(1);
+            maskedTextBox1.Text = curDateTime.ToString("s");
+
+            btnFindInfo_Click(null, null);
+        }
+
+        #endregion backward reading and showing nav,meteo data
 
 
     }

@@ -143,6 +143,7 @@
     <Compile Include="HistogramDataAndProperties.cs" />
     <Compile Include="IncomingUDPmessageBoundle.cs" />
     <Compile Include="InteractiveImage.cs" />
+    <Compile Include="IoffeVesselDataReader.cs" />
     <Compile Include="MultipleProgressIndicatingForm.cs">
       <SubType>Form</SubType>
     </Compile>

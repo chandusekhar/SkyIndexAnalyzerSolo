@@ -36,7 +36,7 @@ namespace SkyImagesAnalyzerLibraries
         }
 
 
-        public TimeSeries(List<T> dataSeriaList, List<DateTime> dateTimeStamps)
+        public TimeSeries(IEnumerable<T> dataSeriaList, IEnumerable<DateTime> dateTimeStamps)
         {
             dataSeria = new List<T>(dataSeriaList);
             lDateTimeStamps = new List<DateTime>(dateTimeStamps);
@@ -46,31 +46,27 @@ namespace SkyImagesAnalyzerLibraries
 
 
 
-        public void AddSubseriaData(List<T> lDataToAdd, List<DateTime> lDateTimeStampsRoAdd)
+        /// <summary>
+        /// Adds the subseria data and orders the resulting serie by entries timestamps.
+        /// </summary>
+        /// <param name="lDataToAdd">The data to add.</param>
+        /// <param name="lDateTimeStampsRoAdd">TimeStamps ro add.</param>
+        public void AddSubseriaData(IEnumerable<T> lDataToAdd, IEnumerable<DateTime> lDateTimeStampsRoAdd)
         {
-            if (lDataToAdd.Count != lDateTimeStampsRoAdd.Count)
+            if (lDataToAdd.Count() != lDateTimeStampsRoAdd.Count())
             {
                 return;
             }
 
             // будем сохранять исходный индекс для сохранения исходного порядка значений с равными штампами времени
             // для этого будем запоминать третий член совокупности - исходный индекс
-            List<Tuple<DateTime, T, int>> listToSort = new List<Tuple<DateTime, T, int>>();
+            List<Tuple<DateTime, T, int>> listToSort = lDateTimeStamps.Select((t, i) => new Tuple<DateTime, T, int>(t, dataSeria[i], i)).ToList();
+            listToSort.AddRange(lDateTimeStampsRoAdd.Select((t, i) => new Tuple<DateTime, T, int>(t, lDataToAdd.ElementAt(i), i)));
 
 
-            for (int i = 0; i < lDateTimeStamps.Count; i++)
+            listToSort.Sort((tpl1, tpl2) =>
             {
-                listToSort.Add(new Tuple<DateTime, T, int>(lDateTimeStamps[i], dataSeria[i], i));
-            }
-
-            for (int i = 0; i < lDateTimeStampsRoAdd.Count; i++)
-            {
-                listToSort.Add(new Tuple<DateTime, T, int>(lDateTimeStampsRoAdd[i], lDataToAdd[i], i));
-            }
-
-
-            listToSort.Sort(new Comparison<Tuple<DateTime, T, int>>((tpl1, tpl2) =>
-            {
+                #region comparison description
                 if (tpl1.Item1 < tpl2.Item1)
                 {
                     return -1;
@@ -95,22 +91,67 @@ namespace SkyImagesAnalyzerLibraries
                     }
                 }
                 return 0;
-            }));
+                #endregion
+            });
 
-
-            lDateTimeStamps.Clear();
-            dataSeria.Clear();
-            foreach (Tuple<DateTime, T, int> tpl in listToSort)
-            {
-                lDateTimeStamps.Add(tpl.Item1);
-                dataSeria.Add(tpl.Item2);
-            }
+            lDateTimeStamps = listToSort.ConvertAll(tpl => tpl.Item1);
+            dataSeria = listToSort.ConvertAll(tpl => tpl.Item2);
         }
 
 
 
+
+
+
         /// <summary>
-        /// Splits the timeserie with time span condition.
+        /// Sorts the timeserie by timestamps values
+        /// </summary>
+        public void SortByTimeStamps()
+        {
+            List<Tuple<DateTime, T, int>> listToSort = lDateTimeStamps.Select((t, i) => new Tuple<DateTime, T, int>(t, dataSeria[i], i)).ToList();
+
+            listToSort.Sort((tpl1, tpl2) =>
+            {
+                #region comparison description
+                if (tpl1.Item1 < tpl2.Item1)
+                {
+                    return -1;
+                }
+                else if (tpl1.Item1 > tpl2.Item1)
+                {
+                    return 1;
+                }
+                else
+                {
+                    if (tpl1.Item3 < tpl2.Item3)
+                    {
+                        return -1;
+                    }
+                    else if (tpl1.Item3 > tpl2.Item3)
+                    {
+                        return 1;
+                    }
+                    else
+                    {
+                        return 0;
+                    }
+                }
+                return 0;
+                #endregion comparison description
+            });
+
+
+            lDateTimeStamps = listToSort.ConvertAll(tpl => tpl.Item1);
+            dataSeria = listToSort.ConvertAll(tpl => tpl.Item2);
+        }
+
+
+
+
+
+
+        /// <summary>
+        /// Splits the timeserie using condition on entry-to-entry timespan.
         /// </summary>
         /// <param name="theSerieBreakCondition">The timespan break condition.</param>
         /// <returns>List&lt;TimeSeries&lt;T&gt;&gt;.</returns>
@@ -153,6 +194,29 @@ namespace SkyImagesAnalyzerLibraries
             }
 
             return retList;
+        }
+
+
+
+
+
+        public List<TimeSeries<T>> SplitByTimeSpan(TimeSpan tSpan)
+        {
+            List<TimeSeries<T>> retListSubseries = new List<TimeSeries<T>>();
+            int startIdx = 0;
+            int endIdx = 0;
+            while (true)
+            {
+                TimeSeries<T> subSeria = SubSeria(startIdx, tSpan, out endIdx);
+                retListSubseries.Add(subSeria);
+                startIdx = endIdx + 1;
+                if (endIdx >= lDateTimeStamps.Count-1)
+                {
+                    break;
+                }
+            }
+
+            return retListSubseries;
         }
 
 
@@ -253,21 +317,52 @@ namespace SkyImagesAnalyzerLibraries
 
 
 
-        public void RemoveDuplicatedTimeStamps()
-        {
-            List<DateTime> lDateTimeStampsFiltered = new List<DateTime>(lDateTimeStamps.Distinct<DateTime>());
 
-            List<T> dataSeriaFiltered = new List<T>();
-            int idx = 0;
-            foreach (DateTime dtStamp in lDateTimeStampsFiltered)
+
+
+
+        #region class TimeSerieEntriesTupleComparerByTimeStamp
+        class TimeSerieEntriesTupleComparerByTimeStamp : IEqualityComparer<Tuple<DateTime, T>>
+        {
+            // Products are equal if their names and product numbers are equal. 
+            public bool Equals(Tuple<DateTime, T> x, Tuple<DateTime, T> y)
             {
-                idx = lDateTimeStamps.FindIndex(idx, datetimeValue => datetimeValue == dtStamp);
-                dataSeriaFiltered.Add(dataSeria[idx]);
+
+                //Check whether the compared objects reference the same data. 
+                if (Object.ReferenceEquals(x, y)) return true;
+
+                //Check whether any of the compared objects is null. 
+                if (Object.ReferenceEquals(x, null) || Object.ReferenceEquals(y, null))
+                    return false;
+
+                //Check whether the products' properties are equal. 
+                return x.Item1 == y.Item1;
             }
 
-            lDateTimeStamps = lDateTimeStampsFiltered;
-            dataSeria = dataSeriaFiltered;
+
+            // If Equals() returns true for a pair of objects  
+            // then GetHashCode() must return the same value for these objects. 
+            public int GetHashCode(Tuple<DateTime, T> tpl)
+            {
+                return tpl.Item1.GetHashCode();
+            }
+
         }
+        #endregion class TimeSerieEntriesTupleComparerByTimeStamp
+
+        public void RemoveDuplicatedTimeStamps()
+        {
+            //List<Tuple<DateTime, T>> listToSort = lDateTimeStamps.Select((t, i) => new Tuple<DateTime, T>(t, dataSeria[i])).ToList();
+            List<Tuple<DateTime, T>> listToSort = new List<Tuple<DateTime,T>>(lDateTimeStamps.Zip(dataSeria,
+                (dt, val) => new Tuple<DateTime, T>(dt, val)));
+            List<Tuple<DateTime, T>> lDateTimeStampsFiltered =
+                new List<Tuple<DateTime, T>>(listToSort.Distinct(new TimeSerieEntriesTupleComparerByTimeStamp()));
+
+            lDateTimeStamps = lDateTimeStampsFiltered.ConvertAll(tpl => tpl.Item1);
+            dataSeria = lDateTimeStampsFiltered.ConvertAll(tpl => tpl.Item2);
+        }
+
+
 
 
 
@@ -284,6 +379,8 @@ namespace SkyImagesAnalyzerLibraries
             dataSeria = filteredTuplesList.ConvertAll<T>(tpl => tpl.Item2);
             lDateTimeStamps = filteredTuplesList.ConvertAll<DateTime>(tpl => tpl.Item1);
         }
+
+
 
 
 
@@ -338,18 +435,6 @@ namespace SkyImagesAnalyzerLibraries
             }
 
             return new TimeSeries<T>(interpolatedValues as List<T>, resDateTimeList);
-
-            //int tmpTSendIndex;
-            //DateTime startDT = lDateTimeStamps[startIndex];
-            //int idx = lDateTimeStamps.FindIndex(stamp => (stamp - startDT >= dt));
-            //if (idx == -1)
-            //{
-            //    endIndex = lDateTimeStamps.Count - 1;
-            //    return SubSeria(startIndex, out tmpTSendIndex);
-            //}
-
-            //endIndex = idx;
-            //return SubSeria(startIndex, idx - startIndex + 1, out tmpTSendIndex);
         }
 
 
@@ -389,7 +474,10 @@ namespace SkyImagesAnalyzerLibraries
 
 
 
-        public DenseVector DataValues
+
+
+
+        public DenseVector dvDoubleDataValues
         {
             get
             {
@@ -401,6 +489,30 @@ namespace SkyImagesAnalyzerLibraries
                 return dvRetVector;
             }
         }
+
+
+
+
+        public List<T> DataValues
+        {
+            get
+            {
+                return dataSeria;
+            }
+        }
+
+
+
+
+        public List<DateTime> TimeStamps
+        {
+            get
+            {
+                return lDateTimeStamps;
+            }
+        }
+
+
 
 
 

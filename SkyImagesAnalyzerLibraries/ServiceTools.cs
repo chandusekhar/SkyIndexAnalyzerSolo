@@ -36,7 +36,7 @@ namespace SkyImagesAnalyzerLibraries
         }
 
 
-        public static void FlushMemory(System.Windows.Forms.TextBox tb = null, string mark = "")
+        public static void FlushMemory(TextBox tb = null, string mark = "")
         {
             GC.Collect();
             GC.WaitForPendingFinalizers();
@@ -80,7 +80,7 @@ namespace SkyImagesAnalyzerLibraries
 
 
 
-        public static void ShowPicture(Image<Gray, Byte> imgToShow, string pictureTitle = "")
+        public static void ShowPicture(Image<Gray, byte> imgToShow, string pictureTitle = "")
         {
             SimpleShowImageForm SimpleShowImageForm1 = new SimpleShowImageForm(imgToShow, pictureTitle);
             SimpleShowImageForm1.Show();
@@ -88,7 +88,7 @@ namespace SkyImagesAnalyzerLibraries
 
 
 
-        public static void ShowPicture(Image<Gray, Byte> imgToShow, string pictureTitle = "", int timeout = 5000)
+        public static void ShowPicture(Image<Gray, byte> imgToShow, string pictureTitle = "", int timeout = 5000)
         {
             BackgroundWorker bgwShowPicture = new BackgroundWorker();
             bgwShowPicture.WorkerSupportsCancellation = false;
@@ -103,7 +103,7 @@ namespace SkyImagesAnalyzerLibraries
 
 
 
-        public static void ShowPicture(Image<Bgr, Byte> imgToShow, string pictureTitle = "")
+        public static void ShowPicture(Image<Bgr, byte> imgToShow, string pictureTitle = "")
         {
 
             SimpleShowImageForm SimpleShowImageForm1 = new SimpleShowImageForm(imgToShow, pictureTitle);
@@ -113,7 +113,7 @@ namespace SkyImagesAnalyzerLibraries
 
 
 
-        public static void ShowPicture(Image<Bgr, Byte> imgToShow, string pictureTitle = "", int timeout = 5000)
+        public static void ShowPicture(Image<Bgr, byte> imgToShow, string pictureTitle = "", int timeout = 5000)
         {
             BackgroundWorker bgwShowPicture = new BackgroundWorker();
             bgwShowPicture.WorkerSupportsCancellation = false;
@@ -142,9 +142,9 @@ namespace SkyImagesAnalyzerLibraries
             int timeout = Convert.ToInt32(args[2]);
             SimpleShowImageForm SimpleShowImageForm1 = new SimpleShowImageForm();
 
-            if (img.GetType() == typeof(Image<Bgr, Byte>))
+            if (img.GetType() == typeof(Image<Bgr, byte>))
             {
-                Image<Bgr, Byte> imgToShow = img as Image<Bgr, Byte>;
+                Image<Bgr, byte> imgToShow = img as Image<Bgr, byte>;
                 SimpleShowImageForm1 = new SimpleShowImageForm(imgToShow, pictureTitle);
                 SimpleShowImageForm1.Show();
 
@@ -154,9 +154,9 @@ namespace SkyImagesAnalyzerLibraries
                 //SimpleShowImageForm1.Close();
                 //SimpleShowImageForm1.Dispose();
             }
-            else if (img.GetType() == typeof(Image<Gray, Byte>))
+            else if (img.GetType() == typeof(Image<Gray, byte>))
             {
-                Image<Gray, Byte> imgToShow = img as Image<Gray, Byte>;
+                Image<Gray, byte> imgToShow = img as Image<Gray, byte>;
                 SimpleShowImageForm1 = new SimpleShowImageForm(imgToShow, pictureTitle);
                 SimpleShowImageForm1.Show();
 
@@ -227,7 +227,7 @@ namespace SkyImagesAnalyzerLibraries
                 for (int j = 0; j < in_arr.GetLength(1); j++)
                 {
                     double x = in_arr[i, j];
-                    if (double.IsNaN(x)) x = 0.0;
+                    if (Double.IsNaN(x)) x = 0.0;
                     if (x <= 0.0) x = 0.0;
                     out_arr[i, j] = (byte)Math.Round(x, 0);
                 }
@@ -664,12 +664,10 @@ namespace SkyImagesAnalyzerLibraries
                 {
                     Directory.CreateDirectory(finfo.DirectoryName);
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
                     return false;
-                    throw;
                 }
-
             }
             return true;
         }
@@ -801,7 +799,7 @@ namespace SkyImagesAnalyzerLibraries
             string codeSource = ReadTextFromFile(textFilePath);
             Assembly executingAssembly = Assembly.GetExecutingAssembly();
             Dictionary<string, string> providerOptions = new Dictionary<string, string>
-                {
+            {
                     {"CompilerVersion", "v4.0"}
                 };
             CSharpCodeProvider provider = new CSharpCodeProvider(providerOptions);
@@ -833,5 +831,122 @@ namespace SkyImagesAnalyzerLibraries
             return results.CompiledAssembly;
         }
 
+
+
+
+
+        public static GPSdata FindProperGPSdataForImage(string imgFileName, LogWindow theLogWindow, Dictionary<string, object> defaultProperties)
+        {
+            DateTime curDateTime = DateTime.UtcNow;
+
+            string ImageFileName = imgFileName;
+            Image anImage = Image.FromFile(imgFileName);
+            ImageInfo newIInfo = new ImageInfo(anImage);
+
+            String dateTime = (String)newIInfo.getValueByKey("ExifDTOrig");
+            if (dateTime == null)
+            {
+                //попробуем вытащить из имени файла
+                string strDateTime = Path.GetFileName(ImageFileName);
+                strDateTime = strDateTime.Substring(4, 19);
+                dateTime = strDateTime;
+            }
+
+            try
+            {
+                curDateTime = CommonTools.DateTimeOfString(dateTime);
+                theLogWindow = ServiceTools.LogAText(theLogWindow,
+                    "picture got date/time: " + curDateTime.ToString("s"));
+            }
+            catch (Exception)
+            {
+                theLogWindow = ServiceTools.LogAText(theLogWindow,
+                    "couldn`t get picture get date/time for file: " + Environment.NewLine + ImageFileName);
+                return null;
+            }
+            curDateTime = DateTime.SpecifyKind(curDateTime, DateTimeKind.Utc);
+
+            GPSdata neededGPSdata = new GPSdata();
+            string currPath = Path.GetDirectoryName(ImageFileName);
+            string[] xmlFileNames = Directory.GetFiles(currPath,
+                "*data*" + curDateTime.ToString("s").Substring(0, 13).Replace(":", "-") + "*.xml"); // с точностью до часа
+            if (xmlFileNames.Count() > 0)
+            {
+                List<GPSdata> lReadGPSdata = new List<GPSdata>();
+                foreach (string xmlFileName in xmlFileNames)
+                {
+                    Dictionary<string, object> dictSavedData = ServiceTools.ReadDictionaryFromXML(xmlFileName);
+                    //GPSdata gps = new GPSdata((string)dictSavedData["GPSdata"], GPSdatasources.CloudCamArduinoGPS);
+                    GPSdata gps =
+                        new GPSdata(new double[] { Convert.ToDouble(dictSavedData["GPSLat"]), Convert.ToDouble(dictSavedData["GPSLon"]) });
+                    lReadGPSdata.Add(gps);
+                }
+                lReadGPSdata.Sort((gpsRecord1, gpsRecord2) =>
+                {
+                    double dev1 = Math.Abs((gpsRecord1.dateTimeUTC - curDateTime).TotalMilliseconds);
+                    double dev2 = Math.Abs((gpsRecord2.dateTimeUTC - curDateTime).TotalMilliseconds);
+                    return (dev1 >= dev2) ? (1) : (-1);
+                });
+                neededGPSdata = lReadGPSdata[0];
+
+
+            }
+            else
+            {
+                //string navFilesPath =
+                //    "D:\\_gulevlab\\SkyImagesAnalysis_appData\\images_complete\\IOFFE\\NIKON-D80\\IOFFE-Mission34-Marina-2011\\data-meteo-nav\\";
+                string navFilesPath = defaultProperties["IoffeMeteoNavFilesDirectory"] as string;
+                List<IoffeVesselDualNavDataConverted> lAllNavData = new List<IoffeVesselDualNavDataConverted>();
+
+                string[] sNavFilenames = Directory.GetFiles(navFilesPath, "*.nv2", SearchOption.AllDirectories);
+                if (!sNavFilenames.Any())
+                {
+                    theLogWindow = ServiceTools.LogAText(theLogWindow, "Не найдено файлов данных навигации", true);
+                    return null;
+                }
+                else
+                {
+                    foreach (string navFilename in sNavFilenames)
+                    {
+                        Tuple<DateTime, DateTime> timeSpan =
+                            IoffeVesselNavDataReader.GetNavFileDateTimeMargins(navFilename);
+                        if (timeSpan == null)
+                        {
+                            continue;
+                        }
+
+                        if ((curDateTime < timeSpan.Item1) || (curDateTime > timeSpan.Item2))
+                        {
+                            continue;
+                        }
+
+                        List<IoffeVesselDualNavDataConverted> dataHasBeenRead = IoffeVesselNavDataReader.ReadNavFile(navFilename);
+                        if (dataHasBeenRead == null)
+                        {
+                            continue;
+                        }
+                        theLogWindow = ServiceTools.LogAText(theLogWindow, "файл навигации прочитан: " + navFilename, true);
+                        Application.DoEvents();
+                        lAllNavData.AddRange(dataHasBeenRead);
+                    }
+                }
+
+                if (!lAllNavData.Any())
+                {
+                    theLogWindow = ServiceTools.LogAText(theLogWindow, "Не найдено файлов данных с нужными данными", true);
+                    return null;
+                }
+
+                lAllNavData.Sort((gpsRecord1, gpsRecord2) =>
+                {
+                    double dev1 = Math.Abs((gpsRecord1.gps.dateTimeUTC - curDateTime).TotalMilliseconds);
+                    double dev2 = Math.Abs((gpsRecord2.gps.dateTimeUTC - curDateTime).TotalMilliseconds);
+                    return (dev1 >= dev2) ? (1) : (-1);
+                });
+                neededGPSdata = lAllNavData[0].gps;
+            }
+
+            return neededGPSdata;
+        }
     }
 }

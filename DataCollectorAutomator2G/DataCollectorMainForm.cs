@@ -985,7 +985,7 @@ namespace DataCollectorAutomator
 
             try
             {
-                List<accelerometerData> dataToPassToSensorsDataPresentation = state as List<accelerometerData>;
+                List<accelerometerData> dataToPassToSensorsDataPresentation = new List<accelerometerData>((List<accelerometerData>) state);
                 latestAccDataID1 = dataToPassToSensorsDataPresentation[0] as accelerometerData;
                 accCalibrationDataID1 = dataToPassToSensorsDataPresentation[1] as accelerometerData;
                 latestAccDataID2 = dataToPassToSensorsDataPresentation[2] as accelerometerData;
@@ -995,16 +995,19 @@ namespace DataCollectorAutomator
             {
                 return;
             }
-            
 
-            double accDevAngleID1 = (latestAccDataID1 * accCalibrationDataID1) / (latestAccDataID1.AccMagnitude * accCalibrationDataID1.AccMagnitude);
-            accDevAngleID1 = Math.Acos(accDevAngleID1) * 180.0d / Math.PI;
-            double accDevAngleID2 = (latestAccDataID2 * accCalibrationDataID2) / (latestAccDataID2.AccMagnitude * accCalibrationDataID2.AccMagnitude);
-            accDevAngleID2 = Math.Acos(accDevAngleID2) * 180.0d / Math.PI;
-            ThreadSafeOperations.SetText(lblAccMagnValueID1, (latestAccDataID1.AccMagnitude / accCalibrationDataID1.AccMagnitude).ToString("F2"), false);
-            ThreadSafeOperations.SetText(lblAccDevAngleValueID1, accDevAngleID1.ToString("F3"), false);
-            ThreadSafeOperations.SetText(lblAccMagnValueID2, (latestAccDataID2.AccMagnitude / accCalibrationDataID2.AccMagnitude).ToString("F2"), false);
-            ThreadSafeOperations.SetText(lblAccDevAngleValueID2, accDevAngleID2.ToString("F3"), false);
+
+            if ((latestAccDataID1 != null) && (accCalibrationDataID1 != null) && (latestAccDataID2 != null) && (accCalibrationDataID2 != null))
+            {
+                double accDevAngleID1 = (latestAccDataID1 * accCalibrationDataID1) / (latestAccDataID1.AccMagnitude * accCalibrationDataID1.AccMagnitude);
+                accDevAngleID1 = Math.Acos(accDevAngleID1) * 180.0d / Math.PI;
+                double accDevAngleID2 = (latestAccDataID2 * accCalibrationDataID2) / (latestAccDataID2.AccMagnitude * accCalibrationDataID2.AccMagnitude);
+                accDevAngleID2 = Math.Acos(accDevAngleID2) * 180.0d / Math.PI;
+                ThreadSafeOperations.SetText(lblAccMagnValueID1, (latestAccDataID1.AccMagnitude / accCalibrationDataID1.AccMagnitude).ToString("F2"), false);
+                ThreadSafeOperations.SetText(lblAccDevAngleValueID1, accDevAngleID1.ToString("F3"), false);
+                ThreadSafeOperations.SetText(lblAccMagnValueID2, (latestAccDataID2.AccMagnitude / accCalibrationDataID2.AccMagnitude).ToString("F2"), false);
+                ThreadSafeOperations.SetText(lblAccDevAngleValueID2, accDevAngleID2.ToString("F3"), false);
+            }
         }
 
 

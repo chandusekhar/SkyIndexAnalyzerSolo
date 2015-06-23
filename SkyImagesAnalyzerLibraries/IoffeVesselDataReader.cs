@@ -3,12 +3,12 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
-using SkyImagesAnalyzerLibraries;
+using System.Text;
+using System.Threading.Tasks;
 
-//using SkyImagesAnalyzerLibraries;
-
-namespace IoffeVesselDataReader
+namespace SkyImagesAnalyzerLibraries
 {
+
     public struct IoffeVesselDualNavData
     {
         public int DateGPS;
@@ -59,7 +59,7 @@ namespace IoffeVesselDataReader
             {
                 return null;
             }
-            
+
 
             BinaryReader reader = new BinaryReader(File.Open(InputFilename, FileMode.Open, FileAccess.Read, FileShare.Read));
             char[] dualmode = reader.ReadChars(4);
@@ -103,14 +103,14 @@ namespace IoffeVesselDataReader
             timeStr = timeStr.Substring(0, timeStr.Length - 2);
             int hour = (timeStr.Length > 0) ? (Convert.ToInt32(timeStr)) : (0);
 
-            int year = 2000 + Convert.ToInt32(dateStr.Substring(dateStr.Length-2, 2));
+            int year = 2000 + Convert.ToInt32(dateStr.Substring(dateStr.Length - 2, 2));
             dateStr = dateStr.Substring(0, dateStr.Length - 2);
             int month = Convert.ToInt32(dateStr.Substring(dateStr.Length - 2, 2));
             dateStr = dateStr.Substring(0, dateStr.Length - 2);
             int day = Convert.ToInt32(dateStr);
 
             DateTime dt = new DateTime(year, month, day, hour, min, sec, DateTimeKind.Utc);
-            
+
             return dt;
         }
 
@@ -131,15 +131,15 @@ namespace IoffeVesselDataReader
                 return null;
             }
             reader.Close();
-            
+
             byte[] fileData = File.ReadAllBytes(InputFilename);
-            
+
             reader = new BinaryReader(new MemoryStream(fileData));
             reader.ReadChars(4);
 
             List<IoffeVesselDualNavData> lFileNavData = new List<IoffeVesselDualNavData>();
 
-            int structCount = Convert.ToInt32((fileData.Count() - 4)/bytesCountPerObj);
+            int structCount = Convert.ToInt32((fileData.Count() - 4) / bytesCountPerObj);
             if (structCount == 0)
             {
                 return null;
@@ -152,7 +152,7 @@ namespace IoffeVesselDataReader
                 GCHandle handle = GCHandle.Alloc(readBuffer, GCHandleType.Pinned);
                 IoffeVesselDualNavData curRecord =
                     (IoffeVesselDualNavData)
-                        Marshal.PtrToStructure(handle.AddrOfPinnedObject(), typeof (IoffeVesselDualNavData));
+                        Marshal.PtrToStructure(handle.AddrOfPinnedObject(), typeof(IoffeVesselDualNavData));
                 readStructs++;
                 lFileNavData.Add(curRecord);
                 //if ((readStructs >= structCount) || (readOnlyThe1stRecord))
@@ -165,61 +165,61 @@ namespace IoffeVesselDataReader
 
 
             List<IoffeVesselDualNavDataConverted> lRetList = lFileNavData.ConvertAll(navData =>
+            {
+                IoffeVesselDualNavDataConverted retNavData = new IoffeVesselDualNavDataConverted();
+
+                #region // -> ExtractDateTime()
+                //string dateStr = navData.DateGPS.ToString();
+                //string timeStr = navData.curtime.ToString("D4");
+                //DateTime dt;
+                //if (navData.curtime >= 2400)
+                //{
+                //    int daysToAdd = 0;
+                //    while (navData.curtime >= 2400)
+                //    {
+                //        navData.curtime -= 2400;
+                //        daysToAdd ++;
+                //    }
+                //    timeStr = (navData.curtime).ToString("D4");
+                //    dt = new DateTime(2000 + Convert.ToInt32(dateStr.Substring(dateStr.Length - 2, 2)),
+                //        Convert.ToInt32(dateStr.Substring(dateStr.Length - 4, 2)),
+                //        Convert.ToInt32(dateStr.Substring(0, dateStr.Length - 4)),
+                //        Convert.ToInt32(timeStr.Substring(0, 2)),
+                //        Convert.ToInt32(timeStr.Substring(2, 2)),
+                //        0);
+                //    dt = dt.AddDays(daysToAdd);
+                //}
+                //else
+                //{
+                //    dt = new DateTime(2000 + Convert.ToInt32(dateStr.Substring(dateStr.Length - 2, 2)),
+                //        Convert.ToInt32(dateStr.Substring(dateStr.Length - 4, 2)),
+                //        Convert.ToInt32(dateStr.Substring(0, dateStr.Length - 4)),
+                //        Convert.ToInt32(timeStr.Substring(0, 2)),
+                //        Convert.ToInt32(timeStr.Substring(2, 2)),
+                //        0);
+                //}
+                #endregion // -> ExtractDateTime()
+
+                retNavData.dateTime = ExtractDateTime(navData);
+                GPSdata curGPS = new GPSdata()
                 {
-                    IoffeVesselDualNavDataConverted retNavData = new IoffeVesselDualNavDataConverted();
-
-                    #region // -> ExtractDateTime()
-                    //string dateStr = navData.DateGPS.ToString();
-                    //string timeStr = navData.curtime.ToString("D4");
-                    //DateTime dt;
-                    //if (navData.curtime >= 2400)
-                    //{
-                    //    int daysToAdd = 0;
-                    //    while (navData.curtime >= 2400)
-                    //    {
-                    //        navData.curtime -= 2400;
-                    //        daysToAdd ++;
-                    //    }
-                    //    timeStr = (navData.curtime).ToString("D4");
-                    //    dt = new DateTime(2000 + Convert.ToInt32(dateStr.Substring(dateStr.Length - 2, 2)),
-                    //        Convert.ToInt32(dateStr.Substring(dateStr.Length - 4, 2)),
-                    //        Convert.ToInt32(dateStr.Substring(0, dateStr.Length - 4)),
-                    //        Convert.ToInt32(timeStr.Substring(0, 2)),
-                    //        Convert.ToInt32(timeStr.Substring(2, 2)),
-                    //        0);
-                    //    dt = dt.AddDays(daysToAdd);
-                    //}
-                    //else
-                    //{
-                    //    dt = new DateTime(2000 + Convert.ToInt32(dateStr.Substring(dateStr.Length - 2, 2)),
-                    //        Convert.ToInt32(dateStr.Substring(dateStr.Length - 4, 2)),
-                    //        Convert.ToInt32(dateStr.Substring(0, dateStr.Length - 4)),
-                    //        Convert.ToInt32(timeStr.Substring(0, 2)),
-                    //        Convert.ToInt32(timeStr.Substring(2, 2)),
-                    //        0);
-                    //}
-                    #endregion // -> ExtractDateTime()
-
-                    retNavData.dateTime = ExtractDateTime(navData);
-                    GPSdata curGPS = new GPSdata()
-                    {
-                        GPSstring = "",
-                        lat = (double)navData.Lat,
-                        latHemisphere = "" + navData.SimLat,
-                        lon = (double)navData.Lon,
-                        lonHemisphere = "" + navData.SimLon,
-                        dateTimeUTC = retNavData.dateTime,
-                        validGPSdata = true,
-                        IOFFEdataHeadingTrue = navData.trueHead,
-                        IOFFEdataHeadingGyro = navData.Gyro,
-                        IOFFEdataSpeedKnots = navData.Speed,
-                        IOFFEdataDepth = navData.Depth,
-                        dataSource = GPSdatasources.IOFFEvesselDataServer
-                    };
-                    retNavData.gps = curGPS;
-                    retNavData.Course = navData.Course;
-                    return retNavData;
-                });
+                    GPSstring = "",
+                    lat = (double)navData.Lat,
+                    latHemisphere = "" + navData.SimLat,
+                    lon = (double)navData.Lon,
+                    lonHemisphere = "" + navData.SimLon,
+                    dateTimeUTC = retNavData.dateTime,
+                    validGPSdata = true,
+                    IOFFEdataHeadingTrue = navData.trueHead,
+                    IOFFEdataHeadingGyro = navData.Gyro,
+                    IOFFEdataSpeedKnots = navData.Speed,
+                    IOFFEdataDepth = navData.Depth,
+                    dataSource = GPSdatasources.IOFFEvesselDataServer
+                };
+                retNavData.gps = curGPS;
+                retNavData.Course = navData.Course;
+                return retNavData;
+            });
 
 
             return lRetList;
@@ -412,7 +412,8 @@ namespace IoffeVesselDataReader
                       " : Ta=" + tAir.ToString("F2") +
                       " Wspd=" + windSpeed.ToString("F2") +
                       " Wdir=" + windDirection.ToString() +
-                      " P=" + pressure.ToString("F1");
+                      " P=" + pressure.ToString("F1") +
+                      " Rhum=" + rHumidity.ToString("F1");
 
             return retStr;
         }
@@ -489,13 +490,13 @@ namespace IoffeVesselDataReader
                 return null;
             }
             BinaryReader reader = new BinaryReader(File.Open(InputFilename, FileMode.Open, FileAccess.Read, FileShare.Read));
-            
+
             reader.Close();
 
             byte[] fileData = File.ReadAllBytes(InputFilename);
 
             reader = new BinaryReader(new MemoryStream(fileData));
-            
+
             List<IoffeVesselMetData> lFileMetData = new List<IoffeVesselMetData>();
 
             int structCount = Convert.ToInt32(fileData.Count() / bytesCountPerObj);

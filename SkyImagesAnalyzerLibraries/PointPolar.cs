@@ -448,6 +448,7 @@ namespace SkyImagesAnalyzerLibraries
 
 
 
+
         public static double CropAngleDegrees(double angle)
         {
             double retAngle = angle;
@@ -464,6 +465,9 @@ namespace SkyImagesAnalyzerLibraries
         }
 
 
+
+
+
         public static double CropAngleRad(double angle)
         {
             double retAngle = angle;
@@ -474,6 +478,29 @@ namespace SkyImagesAnalyzerLibraries
             if (Math.Sin(angleInput) < 0.0d) retAngle = 2.0d * Math.PI - retAnglesignif;
             else retAngle = retAnglesignif;
             
+            return retAngle;
+        }
+
+
+
+        public static double CropAngleRad(double angleRad, bool symmetricScale = false)
+        {
+            double retAngle = angleRad;
+            double angleInput = angleRad;
+
+            if (symmetricScale)
+            {
+                double retAngleSignif = Math.Asin(Math.Sin(angleInput));
+                if (Math.Cos(angleInput) < 0.0d) retAngle = (double)Math.Sign(retAngleSignif) * Math.PI - retAngleSignif;
+                else retAngle = retAngleSignif;
+            }
+            else
+            {
+                double retAnglesignif = Math.Acos(Math.Cos(angleInput));
+                if (Math.Sin(angleInput) < 0.0d) retAngle = 2.0d * Math.PI - retAnglesignif;
+                else retAngle = retAnglesignif;
+            }
+
             return retAngle;
         }
 

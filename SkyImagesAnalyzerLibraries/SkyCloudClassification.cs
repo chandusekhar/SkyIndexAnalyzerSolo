@@ -3906,5 +3906,102 @@ namespace SkyImagesAnalyzerLibraries
             //defaultProgressBarControl.Dispose();
             //ParentForm.Dispose();
         }
+
+
+
+
+
+
+
+        public static RoundData ObtainSunPosition(string currImgFilename, Dictionary<string, object> defaultProps, Form currParentForm, LogWindow currImageLogWindow = null, GPSdata gps = null, bool saveObtainedPosition = true)
+        {
+            #region проверка входных параметров
+
+            if (currImgFilename == "") return null;
+            if (!File.Exists(currImgFilename)) return null;
+            if (defaultProps == null) return null;
+            if (defaultProps.GetType() != typeof(Dictionary<string, object>)) return null;
+            if (!defaultProps.Any()) return null;
+
+            #endregion проверка входных параметров
+
+            FileInfo currFileInfo = new FileInfo(currImgFilename);
+            Image<Bgr, Byte> img2process = new Image<Bgr, byte>(currFileInfo.FullName);
+            img2process = ImageProcessing.ImageResizer(img2process, Convert.ToInt32(defaultProps["DefaultMaxImageSize"]));
+            Image<Bgr, Byte> LocalProcessingImage = ImageProcessing.SquareImageDimensions(img2process);
+
+            RoundData sunRoundData = RoundData.nullRoundData();
+
+            //посмотрим, нет ли уже имеющихся данных о положении и размере солнечного диска на изображении
+            string sunDiskInfoFileName = currFileInfo.DirectoryName + "\\" +
+                                         Path.GetFileNameWithoutExtension(currFileInfo.FullName) + "-SunDiskInfo.xml";
+
+            RoundData existingRoundData = RoundData.nullRoundData();
+            Size imgSizeUnderExistingRoundData = LocalProcessingImage.Bitmap.Size;
+            object existingRoundDataObj = ServiceTools.ReadObjectFromXML(sunDiskInfoFileName, typeof(RoundDataWithUnderlyingImgSize));
+
+            if (existingRoundDataObj != null)
+            {
+                existingRoundData = ((RoundDataWithUnderlyingImgSize)existingRoundDataObj).circle;
+                imgSizeUnderExistingRoundData = ((RoundDataWithUnderlyingImgSize)existingRoundDataObj).imgSize;
+            }
+
+            double currScale = (double)LocalProcessingImage.Width / (double)imgSizeUnderExistingRoundData.Width;
+            if (currScale != 1.0d)
+            {
+                existingRoundData.DCenterX *= currScale;
+                existingRoundData.DCenterY *= currScale;
+                existingRoundData.DRadius *= currScale;
+            }
+            if (!existingRoundData.IsNull)
+            {
+                sunRoundData = existingRoundData;
+            }
+
+            ImageProcessing imgP = new ImageProcessing(LocalProcessingImage, true);
+
+            if (sunRoundData.IsNull)
+            {
+                SkyCloudClassification classificator = new SkyCloudClassification(img2process, defaultProps);
+                classificator.verbosityLevel = 0;
+                classificator.ParentForm = currParentForm;
+                classificator.theLogWindow = currImageLogWindow;
+                classificator.ClassificationMethod = ClassificationMethods.GrIx;
+                classificator.isCalculatingUsingBgWorker = false;
+                // classificator.SelfWorker = currBGWsender as BackgroundWorker;
+                classificator.defaultOutputDataDirectory = (string)defaultProps["DefaultDataFilesLocation"];
+                classificator.theStdDevMarginValueDefiningSkyCloudSeparation =
+                    Convert.ToDouble(defaultProps["GrIxDefaultSkyCloudMarginWithoutSun"]);
+                classificator.sourceImageFileName = currFileInfo.FullName;
+
+                //retRes.imageEdgesDetected = new RoundDataWithUnderlyingImgSize()
+                //{
+                //    circle = imgP.imageRD,
+                //    imgSize = LocalProcessingImage.Size,
+                //};
+                DenseMatrix dmProcessingData = (DenseMatrix)imgP.eval("grix").Clone();
+                try
+                {
+                    sunRoundData = classificator.DetectSunWithSerieOfArcs(imgP, dmProcessingData);
+                    if (!sunRoundData.IsNull)
+                    {
+                        RoundDataWithUnderlyingImgSize infoToSave = new RoundDataWithUnderlyingImgSize()
+                        {
+                            circle = sunRoundData,
+                            imgSize = LocalProcessingImage.Size,
+                        };
+                        ServiceTools.WriteObjectToXML(infoToSave, sunDiskInfoFileName);
+                        return sunRoundData;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    currImageLogWindow = ServiceTools.LogAText(currImageLogWindow, "exception caught: " + ex.Message);
+                    return null;
+                }
+                ServiceTools.FlushMemory();
+            }
+            return null;
+        }
     }
 }

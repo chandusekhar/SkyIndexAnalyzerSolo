@@ -347,7 +347,7 @@ namespace SkyImagesAnalyzer
                 return;
             }
 
-            ThreadSafeOperations.UpdatePictureBox(currentResultPictureBox, null, false);
+            ThreadSafeOperations.UpdatePictureBox(currentResultPictureBox, (Image)null, false);
 
 
             String currentColorSchemeFileName = currentColorSchemePathTextbox.Text;// = Directory.GetCurrentDirectory() + "\\" + tbColorSchemePath1.Text;

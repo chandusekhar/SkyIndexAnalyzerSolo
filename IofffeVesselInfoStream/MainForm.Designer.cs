@@ -92,8 +92,6 @@
             this.maskedTextBox1 = new System.Windows.Forms.MaskedTextBox();
             this.btnFindInfo = new System.Windows.Forms.Button();
             this.btnWriteFile = new System.Windows.Forms.Button();
-            this.lblFoundNavData = new System.Windows.Forms.Label();
-            this.lblFoundMetData = new System.Windows.Forms.Label();
             this.lblFoundNavDataTitle = new System.Windows.Forms.Label();
             this.lblFoundMeteoDataTitle = new System.Windows.Forms.Label();
             this.prbSearchingProgress = new System.Windows.Forms.ProgressBar();
@@ -103,6 +101,10 @@
             this.tbSeaSaveLog = new System.Windows.Forms.TextBox();
             this.bgwSeaSaveSocketStreamReader = new System.ComponentModel.BackgroundWorker();
             this.bgwSeaSaveStreamTextParser = new System.ComponentModel.BackgroundWorker();
+            this.lblFoundNavData = new System.Windows.Forms.TextBox();
+            this.lblFoundMetData = new System.Windows.Forms.TextBox();
+            this.lblPlusOneHour = new System.Windows.Forms.Button();
+            this.btnPlusOneDay = new System.Windows.Forms.Button();
             this.tabControl1.SuspendLayout();
             this.tpNavAndMeteo.SuspendLayout();
             this.tableLayoutPanel1.SuspendLayout();
@@ -653,7 +655,7 @@
             this.lblPressureGraphTitle.Name = "lblPressureGraphTitle";
             this.lblPressureGraphTitle.Size = new System.Drawing.Size(617, 61);
             this.lblPressureGraphTitle.TabIndex = 31;
-            this.lblPressureGraphTitle.Text = "Pressure, Temp., W.Speed";
+            this.lblPressureGraphTitle.Text = "Pressure, Temp., W.Speed, W.temp.";
             this.lblPressureGraphTitle.TextAlign = System.Drawing.ContentAlignment.BottomCenter;
             // 
             // pbGraphs
@@ -908,6 +910,7 @@
             this.rbtnWaterTempGraph.TabStop = true;
             this.rbtnWaterTempGraph.Text = "Water temp.";
             this.rbtnWaterTempGraph.UseVisualStyleBackColor = true;
+            this.rbtnWaterTempGraph.CheckedChanged += new System.EventHandler(this.rbtnGraphVarChanged);
             // 
             // rbtnWindSpeedGraph
             // 
@@ -919,6 +922,7 @@
             this.rbtnWindSpeedGraph.TabStop = true;
             this.rbtnWindSpeedGraph.Text = "W.speed";
             this.rbtnWindSpeedGraph.UseVisualStyleBackColor = true;
+            this.rbtnWindSpeedGraph.CheckedChanged += new System.EventHandler(this.rbtnGraphVarChanged);
             // 
             // rbtnAirTempGraph
             // 
@@ -930,6 +934,7 @@
             this.rbtnAirTempGraph.TabStop = true;
             this.rbtnAirTempGraph.Text = "Air temp.";
             this.rbtnAirTempGraph.UseVisualStyleBackColor = true;
+            this.rbtnAirTempGraph.CheckedChanged += new System.EventHandler(this.rbtnGraphVarChanged);
             // 
             // rbtnPressureGraph
             // 
@@ -942,6 +947,7 @@
             this.rbtnPressureGraph.TabStop = true;
             this.rbtnPressureGraph.Text = "Pressure";
             this.rbtnPressureGraph.UseVisualStyleBackColor = true;
+            this.rbtnPressureGraph.CheckedChanged += new System.EventHandler(this.rbtnGraphVarChanged);
             // 
             // btnProperties
             // 
@@ -1025,19 +1031,22 @@
             this.tableLayoutPanel3.Controls.Add(this.maskedTextBox1, 4, 0);
             this.tableLayoutPanel3.Controls.Add(this.btnFindInfo, 7, 0);
             this.tableLayoutPanel3.Controls.Add(this.btnWriteFile, 9, 0);
-            this.tableLayoutPanel3.Controls.Add(this.lblFoundNavData, 1, 2);
-            this.tableLayoutPanel3.Controls.Add(this.lblFoundMetData, 1, 3);
-            this.tableLayoutPanel3.Controls.Add(this.lblFoundNavDataTitle, 0, 2);
-            this.tableLayoutPanel3.Controls.Add(this.lblFoundMeteoDataTitle, 0, 3);
-            this.tableLayoutPanel3.Controls.Add(this.prbSearchingProgress, 0, 1);
+            this.tableLayoutPanel3.Controls.Add(this.lblFoundNavDataTitle, 0, 3);
+            this.tableLayoutPanel3.Controls.Add(this.lblFoundMeteoDataTitle, 0, 4);
+            this.tableLayoutPanel3.Controls.Add(this.prbSearchingProgress, 0, 2);
+            this.tableLayoutPanel3.Controls.Add(this.lblFoundNavData, 1, 3);
+            this.tableLayoutPanel3.Controls.Add(this.lblFoundMetData, 1, 4);
+            this.tableLayoutPanel3.Controls.Add(this.lblPlusOneHour, 5, 1);
+            this.tableLayoutPanel3.Controls.Add(this.btnPlusOneDay, 4, 1);
             this.tableLayoutPanel3.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tableLayoutPanel3.Location = new System.Drawing.Point(3, 3);
             this.tableLayoutPanel3.Name = "tableLayoutPanel3";
-            this.tableLayoutPanel3.RowCount = 6;
+            this.tableLayoutPanel3.RowCount = 7;
+            this.tableLayoutPanel3.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 60F));
             this.tableLayoutPanel3.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 60F));
             this.tableLayoutPanel3.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 20F));
-            this.tableLayoutPanel3.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 60F));
-            this.tableLayoutPanel3.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 60F));
+            this.tableLayoutPanel3.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 180F));
+            this.tableLayoutPanel3.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 180F));
             this.tableLayoutPanel3.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 50F));
             this.tableLayoutPanel3.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 50F));
             this.tableLayoutPanel3.Size = new System.Drawing.Size(1497, 1042);
@@ -1094,43 +1103,15 @@
             this.btnWriteFile.UseVisualStyleBackColor = true;
             this.btnWriteFile.Click += new System.EventHandler(this.btnWriteFile_Click);
             // 
-            // lblFoundNavData
-            // 
-            this.lblFoundNavData.AutoSize = true;
-            this.lblFoundNavData.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.tableLayoutPanel3.SetColumnSpan(this.lblFoundNavData, 9);
-            this.lblFoundNavData.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.lblFoundNavData.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.lblFoundNavData.Location = new System.Drawing.Point(152, 80);
-            this.lblFoundNavData.Name = "lblFoundNavData";
-            this.lblFoundNavData.Size = new System.Drawing.Size(1342, 60);
-            this.lblFoundNavData.TabIndex = 4;
-            this.lblFoundNavData.Text = "---";
-            this.lblFoundNavData.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            // 
-            // lblFoundMetData
-            // 
-            this.lblFoundMetData.AutoSize = true;
-            this.lblFoundMetData.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.tableLayoutPanel3.SetColumnSpan(this.lblFoundMetData, 9);
-            this.lblFoundMetData.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.lblFoundMetData.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.lblFoundMetData.Location = new System.Drawing.Point(152, 140);
-            this.lblFoundMetData.Name = "lblFoundMetData";
-            this.lblFoundMetData.Size = new System.Drawing.Size(1342, 60);
-            this.lblFoundMetData.TabIndex = 5;
-            this.lblFoundMetData.Text = "---";
-            this.lblFoundMetData.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            // 
             // lblFoundNavDataTitle
             // 
             this.lblFoundNavDataTitle.AutoSize = true;
             this.lblFoundNavDataTitle.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.lblFoundNavDataTitle.Dock = System.Windows.Forms.DockStyle.Fill;
             this.lblFoundNavDataTitle.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.lblFoundNavDataTitle.Location = new System.Drawing.Point(3, 80);
+            this.lblFoundNavDataTitle.Location = new System.Drawing.Point(3, 140);
             this.lblFoundNavDataTitle.Name = "lblFoundNavDataTitle";
-            this.lblFoundNavDataTitle.Size = new System.Drawing.Size(143, 60);
+            this.lblFoundNavDataTitle.Size = new System.Drawing.Size(143, 180);
             this.lblFoundNavDataTitle.TabIndex = 6;
             this.lblFoundNavDataTitle.Text = "nav:";
             this.lblFoundNavDataTitle.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
@@ -1141,9 +1122,9 @@
             this.lblFoundMeteoDataTitle.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.lblFoundMeteoDataTitle.Dock = System.Windows.Forms.DockStyle.Fill;
             this.lblFoundMeteoDataTitle.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.lblFoundMeteoDataTitle.Location = new System.Drawing.Point(3, 140);
+            this.lblFoundMeteoDataTitle.Location = new System.Drawing.Point(3, 320);
             this.lblFoundMeteoDataTitle.Name = "lblFoundMeteoDataTitle";
-            this.lblFoundMeteoDataTitle.Size = new System.Drawing.Size(143, 60);
+            this.lblFoundMeteoDataTitle.Size = new System.Drawing.Size(143, 180);
             this.lblFoundMeteoDataTitle.TabIndex = 7;
             this.lblFoundMeteoDataTitle.Text = "meteo:";
             this.lblFoundMeteoDataTitle.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
@@ -1152,7 +1133,7 @@
             // 
             this.tableLayoutPanel3.SetColumnSpan(this.prbSearchingProgress, 10);
             this.prbSearchingProgress.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.prbSearchingProgress.Location = new System.Drawing.Point(3, 63);
+            this.prbSearchingProgress.Location = new System.Drawing.Point(3, 123);
             this.prbSearchingProgress.Name = "prbSearchingProgress";
             this.prbSearchingProgress.Size = new System.Drawing.Size(1491, 14);
             this.prbSearchingProgress.TabIndex = 8;
@@ -1222,6 +1203,60 @@
             // bgwSeaSaveStreamTextParser
             // 
             this.bgwSeaSaveStreamTextParser.WorkerSupportsCancellation = true;
+            // 
+            // lblFoundNavData
+            // 
+            this.tableLayoutPanel3.SetColumnSpan(this.lblFoundNavData, 9);
+            this.lblFoundNavData.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.lblFoundNavData.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.lblFoundNavData.Location = new System.Drawing.Point(152, 143);
+            this.lblFoundNavData.Multiline = true;
+            this.lblFoundNavData.Name = "lblFoundNavData";
+            this.lblFoundNavData.ReadOnly = true;
+            this.lblFoundNavData.ScrollBars = System.Windows.Forms.ScrollBars.Both;
+            this.lblFoundNavData.Size = new System.Drawing.Size(1342, 174);
+            this.lblFoundNavData.TabIndex = 9;
+            this.lblFoundNavData.Text = "---";
+            // 
+            // lblFoundMetData
+            // 
+            this.tableLayoutPanel3.SetColumnSpan(this.lblFoundMetData, 9);
+            this.lblFoundMetData.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.lblFoundMetData.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.lblFoundMetData.Location = new System.Drawing.Point(152, 323);
+            this.lblFoundMetData.Multiline = true;
+            this.lblFoundMetData.Name = "lblFoundMetData";
+            this.lblFoundMetData.ReadOnly = true;
+            this.lblFoundMetData.ScrollBars = System.Windows.Forms.ScrollBars.Both;
+            this.lblFoundMetData.Size = new System.Drawing.Size(1342, 174);
+            this.lblFoundMetData.TabIndex = 10;
+            this.lblFoundMetData.Text = "---";
+            // 
+            // lblPlusOneHour
+            // 
+            this.lblPlusOneHour.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.lblPlusOneHour.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.lblPlusOneHour.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.lblPlusOneHour.Location = new System.Drawing.Point(748, 63);
+            this.lblPlusOneHour.Name = "lblPlusOneHour";
+            this.lblPlusOneHour.Size = new System.Drawing.Size(143, 54);
+            this.lblPlusOneHour.TabIndex = 11;
+            this.lblPlusOneHour.Text = "+1 hour";
+            this.lblPlusOneHour.UseVisualStyleBackColor = true;
+            this.lblPlusOneHour.Click += new System.EventHandler(this.lblPlusOneHour_Click);
+            // 
+            // btnPlusOneDay
+            // 
+            this.btnPlusOneDay.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.btnPlusOneDay.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnPlusOneDay.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.btnPlusOneDay.Location = new System.Drawing.Point(599, 63);
+            this.btnPlusOneDay.Name = "btnPlusOneDay";
+            this.btnPlusOneDay.Size = new System.Drawing.Size(143, 54);
+            this.btnPlusOneDay.TabIndex = 12;
+            this.btnPlusOneDay.Text = "+1 day";
+            this.btnPlusOneDay.UseVisualStyleBackColor = true;
+            this.btnPlusOneDay.Click += new System.EventHandler(this.btnPlusOneDay_Click);
             // 
             // MainForm
             // 
@@ -1326,11 +1361,13 @@
         private System.Windows.Forms.MaskedTextBox maskedTextBox1;
         private System.Windows.Forms.Button btnFindInfo;
         private System.Windows.Forms.Button btnWriteFile;
-        private System.Windows.Forms.Label lblFoundNavData;
-        private System.Windows.Forms.Label lblFoundMetData;
         private System.Windows.Forms.Label lblFoundNavDataTitle;
         private System.Windows.Forms.Label lblFoundMeteoDataTitle;
         private System.Windows.Forms.ProgressBar prbSearchingProgress;
+        private System.Windows.Forms.TextBox lblFoundNavData;
+        private System.Windows.Forms.TextBox lblFoundMetData;
+        private System.Windows.Forms.Button lblPlusOneHour;
+        private System.Windows.Forms.Button btnPlusOneDay;
 
     }
 }

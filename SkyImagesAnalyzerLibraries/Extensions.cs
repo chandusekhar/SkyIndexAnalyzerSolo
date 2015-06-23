@@ -252,6 +252,13 @@ namespace SkyImagesAnalyzerLibraries
                 DenseVector dvSourceSubvector = (DenseVector)dvSource.SubVector(dvSourceStartIdx, elementsCount);
                 DenseVector dvKernelSubvector =
                     (DenseVector)dvKernel.SubVector(kernelStartIdx, elementsCount);
+                // renorm dvKernelSubvector values if it is shorter than original
+                if (dvKernelSubvector.Count < dvKernel.Count)
+                {
+                    double dvKernelSubvectorSum = dvKernelSubvector.Sum();
+                    dvKernelSubvector = (DenseVector) dvKernelSubvector/dvKernelSubvectorSum;
+                }
+
                 DenseVector sumVector = (DenseVector)(dvSourceSubvector.PointwiseMultiply(dvKernelSubvector));
                 return sumVector.Values.Sum();
             });
@@ -284,7 +291,7 @@ namespace SkyImagesAnalyzerLibraries
                     double curDist =
                         (new PointD(idx - (double)kernelHalfWidth, 0.0d)).Distance(
                             new PointD(0.0d, 0.0d));
-                    return Math.Exp(-curDist * curDist / (2.0d * (maxL / 3.0d)));
+                    return Math.Exp(-curDist * curDist / (2.0d * (maxL * maxL / 9.0d)));
                 });
             }
             else if (kernelType == StandardConvolutionKernels.flat)

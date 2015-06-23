@@ -441,7 +441,7 @@ namespace SeaTripdataAnalysisApp
                             new MultipleScatterAndFunctionsRepresentation(2048, 1536);
 
                             renderer.dvScatterXSpace.Add(currTimeSeria.TimeStampsValuesSeconds);
-                            renderer.dvScatterFuncValues.Add(currTimeSeria.DataValues);
+                            renderer.dvScatterFuncValues.Add(currTimeSeria.dvDoubleDataValues);
                             renderer.scatterLineColors.Add(new Bgr(255, 50, 50));
                             renderer.scatterDrawingVariants.Add(SequencesDrawingVariants.polyline);
 
