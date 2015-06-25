@@ -10,7 +10,11 @@
   </table>
   <table>
     <key>GraphsUpdatingPeriodSec</key>
-    <value>10</value>
+    <value>300</value>
+  </table>
+  <table>
+    <key>GeotrackUpdatingPeriodSec</key>
+    <value>600</value>
   </table>
   <table>
     <key>IoffeNavMeteoDataFilesDirectory</key>

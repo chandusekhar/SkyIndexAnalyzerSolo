@@ -11,6 +11,7 @@ using System.Net.Sockets;
 using System.Reflection;
 using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 using Emgu.CV;
 using Emgu.CV.Structure;
@@ -20,21 +21,22 @@ using MathNet.Numerics.Statistics;
 using SkyImagesAnalyzer;
 using SkyImagesAnalyzerLibraries;
 using SolarPositioning;
+using System.Collections.Specialized;
+
 
 
 namespace IofffeVesselInfoStream
 {
     public partial class MainForm : Form
     {
-        //private static Queue<string> quStreamTextStrings = new Queue<string>();
-        private static ConcurrentQueue<string> cquStreamTextStrings = new ConcurrentQueue<string>();
+        private static ObservableConcurrentQueue<string> cquStreamTextStrings = new ObservableConcurrentQueue<string>();
         private Socket s;
         private Socket scktSeaSave;
 
         //private Queue<GPSdata> quGPSDataQueue = new Queue<GPSdata>();
-        private static ConcurrentQueue<GPSdata> cquGPSDataQueue = new ConcurrentQueue<GPSdata>();
+        private static ObservableConcurrentQueue<GPSdata> cquGPSDataQueue = new ObservableConcurrentQueue<GPSdata>();
         //private Queue<MeteoData> quMeteoDataQueue = new Queue<MeteoData>();
-        private ConcurrentQueue<MeteoData> cquMeteoDataQueue = new ConcurrentQueue<MeteoData>();
+        private ObservableConcurrentQueue<MeteoData> cquMeteoDataQueue = new ObservableConcurrentQueue<MeteoData>();
 
         private static GPSdata actualGPSdata = null;
         private static MeteoData actualMeteoData = null;
@@ -48,10 +50,15 @@ namespace IofffeVesselInfoStream
         private int bcstServerPort = 0;
 
         private static bool showGeoTrack = false;
+        private int updateGeoTrackPeriodSec = 60;
 
         private BackgroundWorker bgwGraphsPresenter = null;
         private static bool showGraphs = false;
         private int graphsUpdatingPeriodSec = 60;
+        private static Image<Bgr, byte> graphImage = null;
+        private bool defaultGraphsTimeSpan = true;
+        private Tuple<DateTime, DateTime> graphsTimeSpan = new Tuple<DateTime, DateTime>(DateTime.UtcNow.AddDays(-1),
+            DateTime.UtcNow);
 
         private static LogWindow theLogWindow = null;
 
@@ -65,43 +72,11 @@ namespace IofffeVesselInfoStream
             InitializeComponent();
         }
 
-        private void btnConnect_Click(object sender, EventArgs e)
-        {
-            if (bgwSocketStreamReader.IsBusy)
-            {
-                bgwSocketStreamReader.CancelAsync();
-                bgwStreamTextParser.CancelAsync();
-                bgwStreamDataProcessing.CancelAsync();
-                bgwGeotrackRenderer.CancelAsync();
-                ThreadSafeOperations.ToggleButtonState(btnConnect, true, "CONNECT", true);
-            }
-            else
-            {
-                try
-                {
-                    s = ConnectSocket(bcstServerIP, bcstServerPort);
-                }
-                catch (Exception ex)
-                {
-                    theLogWindow = ServiceTools.LogAText(theLogWindow, "couldn`t connect: " + ex.Message);
-                }
-
-                if (s == null) return;
-                else
-                {
-                    bgwStreamDataProcessing.RunWorkerAsync();
-                    bgwStreamTextParser.RunWorkerAsync();
-                    bgwSocketStreamReader.RunWorkerAsync(new object[] { s });
-                    ThreadSafeOperations.ToggleButtonState(btnConnect, true, "STOP", true);
-                    if (showGeoTrack)
-                    {
-                        bgwGeotrackRenderer.RunWorkerAsync();
-                    }
-                }
-            }
-        }
 
 
+
+
+        #region Connection listener
 
         private Socket ConnectSocket(string server, int port)
         {
@@ -141,8 +116,6 @@ namespace IofffeVesselInfoStream
 
 
 
-
-
         private void bgwSocketStreamReader_DoWork(object sender, DoWorkEventArgs e)
         {
             BackgroundWorker selfWorker = sender as BackgroundWorker;
@@ -179,52 +152,47 @@ namespace IofffeVesselInfoStream
             while (bytes > 0);
         }
 
+        #endregion Connection listener
 
 
 
 
-        private void bgwStreamTextParser_DoWork(object sender, DoWorkEventArgs e)
+
+
+        #region incoming strings processing
+
+        private List<string> listStreamLogStrings = new List<string>();
+
+        void cquStreamTextStrings_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
         {
-            BackgroundWorker selfWorker = sender as BackgroundWorker;
-            string strCurrentCatchedStreamString = "";
-            List<string> listStreamLogStrings = new List<string>();
-
-            while (true)
+            if (e.Action != System.Collections.Specialized.NotifyCollectionChangedAction.Add)
             {
-                if (selfWorker.CancellationPending)
-                {
-                    break;
-                }
+                return;
+                // чтобы не реагировать на собственные TryDequeue()
+            }
 
-                //if (quStreamTextStrings.Count > 0)
+
+            while (cquStreamTextStrings.Count > 0)
+            {
                 if (cquStreamTextStrings.Count > 0)
                 {
-                    strCurrentCatchedStreamString = "";
+                    string strCurrentCatchedStreamString = "";
                     while (!cquStreamTextStrings.TryDequeue(out strCurrentCatchedStreamString))
                     {
-                        // Application.DoEvents();
-
-                        if (selfWorker.CancellationPending)
-                        {
-                            break;
-                        }
-
+                        Application.DoEvents();
                         Thread.Sleep(0);
                         continue;
                     }
 
-                    //strCurrentCatchedStreamString = quStreamTextStrings.Dequeue();
                     if (strCurrentCatchedStreamString == "")
                     {
-                        // Application.DoEvents();
+                        Application.DoEvents();
                         Thread.Sleep(0);
                         continue;
                     }
 
                     if (strCurrentCatchedStreamString != "")
                     {
-                        //ThreadSafeOperations.SetTextTB(tbLog, strCurrentCatchedStreamString + Environment.NewLine, true);
-
                         listStreamLogStrings.Add(strCurrentCatchedStreamString);
 
                         if (listStreamLogStrings.Count >= 30)
@@ -233,7 +201,8 @@ namespace IofffeVesselInfoStream
                                               DateTime.UtcNow.ToString("yyyy-MM-dd-HH-mm") + ".log";
 
                             string strToWrite = "";
-                            foreach (string logString in listStreamLogStrings) strToWrite += logString + Environment.NewLine;
+                            foreach (string logString in listStreamLogStrings)
+                                strToWrite += logString + Environment.NewLine;
 
                             if (cbLogNCdata.Checked)
                             {
@@ -242,25 +211,96 @@ namespace IofffeVesselInfoStream
                             listStreamLogStrings.Clear();
                         }
 
-                        ParseStreamString(strCurrentCatchedStreamString);
+                        Task tsk = Task.Factory.StartNew(() => ParseStreamString(strCurrentCatchedStreamString));
                     }
                     else
                     {
-                        // Application.DoEvents();
+                        Application.DoEvents();
                         Thread.Sleep(0);
                         continue;
                     }
                 }
-                else
-                {
-                    // Application.DoEvents();
-                    Thread.Sleep(0);
-                    continue;
-                }
             }
         }
 
+        #region // obsolete
+        //private void bgwStreamTextParser_DoWork(object sender, DoWorkEventArgs e)
+        //{
+        //    BackgroundWorker selfWorker = sender as BackgroundWorker;
+        //    string strCurrentCatchedStreamString = "";
+        //    //List<string> listStreamLogStrings = new List<string>();
 
+        //    while (true)
+        //    {
+        //        if (selfWorker.CancellationPending)
+        //        {
+        //            break;
+        //        }
+
+        //        //if (quStreamTextStrings.Count > 0)
+        //        if (cquStreamTextStrings.Count > 0)
+        //        {
+        //            strCurrentCatchedStreamString = "";
+        //            while (!cquStreamTextStrings.TryDequeue(out strCurrentCatchedStreamString))
+        //            {
+        //                // Application.DoEvents();
+
+        //                if (selfWorker.CancellationPending)
+        //                {
+        //                    break;
+        //                }
+
+        //                Thread.Sleep(0);
+        //                continue;
+        //            }
+
+        //            //strCurrentCatchedStreamString = quStreamTextStrings.Dequeue();
+        //            if (strCurrentCatchedStreamString == "")
+        //            {
+        //                // Application.DoEvents();
+        //                Thread.Sleep(0);
+        //                continue;
+        //            }
+
+        //            if (strCurrentCatchedStreamString != "")
+        //            {
+        //                //ThreadSafeOperations.SetTextTB(tbLog, strCurrentCatchedStreamString + Environment.NewLine, true);
+
+        //                listStreamLogStrings.Add(strCurrentCatchedStreamString);
+
+        //                if (listStreamLogStrings.Count >= 30)
+        //                {
+        //                    string filename = Directory.GetCurrentDirectory() + "\\logs\\IoffeVesselInfoStream-log-" +
+        //                                      DateTime.UtcNow.ToString("yyyy-MM-dd-HH-mm") + ".log";
+
+        //                    string strToWrite = "";
+        //                    foreach (string logString in listStreamLogStrings) strToWrite += logString + Environment.NewLine;
+
+        //                    if (cbLogNCdata.Checked)
+        //                    {
+        //                        ServiceTools.logToTextFile(filename, strToWrite, true);
+        //                    }
+        //                    listStreamLogStrings.Clear();
+        //                }
+
+        //                ParseStreamString(strCurrentCatchedStreamString);
+        //            }
+        //            else
+        //            {
+        //                // Application.DoEvents();
+        //                Thread.Sleep(0);
+        //                continue;
+        //            }
+        //        }
+        //        else
+        //        {
+        //            // Application.DoEvents();
+        //            Thread.Sleep(0);
+        //            continue;
+        //        }
+        //    }
+        //}
+        #endregion // obsolete
 
 
         private void ParseStreamString(string strData)
@@ -308,6 +348,140 @@ namespace IofffeVesselInfoStream
 
 
 
+        #endregion incoming strings processing
+
+
+
+
+
+
+        #region process recieved GPS and METEO data packets
+
+        //Внимение! Monitor.Enter и Monitor.Exit для dmGPSDataMatrix и dmMeteoDataMatrix используется по ссылке на
+        // gpsDateTimeValuesList и meteoDateTimeValuesList соответственно - ибо при модификакии этих матриц используется
+        // создание новых с новыми ссылками, что нарушает контекст блокировки. А листы модифицируются без изменения ссылки
+        // поэтому контекст блокировки не нарушается.
+        private DenseMatrix dmGPSDataMatrix = null;
+        private List<long> gpsDateTimeValuesList = new List<long>();
+        private DenseMatrix dmMeteoDataMatrix = null;
+        private List<long> meteoDateTimeValuesList = new List<long>();
+
+        private int gpsDataPacksCount = 0;
+        private int meteoDataPacksCount = 0;
+
+
+
+
+        private void DataRateControlTimerCallback(object state)
+        {
+            object[] stopWatches = state as object[];
+            Stopwatch swGPSDataRateWatch = stopWatches[0] as Stopwatch;
+            Stopwatch swMeteoDataRateWatch = stopWatches[1] as Stopwatch;
+
+            double meteoDataRate = 0.0d;
+            double gpsDataRate = 0.0d;
+
+
+
+            double GPSStopWatchSec = ((double)swGPSDataRateWatch.ElapsedMilliseconds) / 1000.0d;
+            if (GPSStopWatchSec >= 2.0d)
+            {
+                gpsDataRate = (double)gpsDataPacksCount / GPSStopWatchSec;
+
+                if (gpsDataRate == 0.0d)
+                {
+                    ThreadSafeOperations.SetLoadingCircleState(wcNavDataSoeedControl, false, true, Color.Red, 100);
+                }
+                else
+                {
+                    ThreadSafeOperations.SetLoadingCircleState(wcNavDataSoeedControl, true, true, Color.Green,
+                        Convert.ToInt32(50.0d + 50.0d * gpsDataRate / 10.0d));
+                }
+
+                gpsDataPacksCount = 0;
+                swGPSDataRateWatch.Restart();
+            }
+
+
+            double meteoStopWatchSec = ((double)swMeteoDataRateWatch.ElapsedMilliseconds) / 1000.0d;
+            if (meteoStopWatchSec >= 2.0d)
+            {
+                meteoDataRate = (double)meteoDataPacksCount / meteoStopWatchSec;
+
+                if (meteoDataRate == 0.0d)
+                {
+                    ThreadSafeOperations.SetLoadingCircleState(wcMeteoDataSpeedControl, false, true, Color.Red, 100);
+                }
+                else
+                {
+                    ThreadSafeOperations.SetLoadingCircleState(wcMeteoDataSpeedControl, true, true, Color.Green,
+                        Convert.ToInt32(50.0d + 50.0d * meteoDataRate / 10.0d));
+                }
+
+                meteoDataPacksCount = 0;
+                swMeteoDataRateWatch.Restart();
+            }
+        }
+
+
+
+        private void CheckAndWriteObservationsFile(object state)
+        {
+            if (DateTime.Now.Minute == 0)
+            {
+                string filename = Directory.GetCurrentDirectory() + "\\logs\\ObservationsData-" +
+                                  DateTime.UtcNow.ToString("yyyy-MM-dd-HH-mm") + ".log";
+
+                if (!File.Exists(filename))
+                {
+                    string strDataToObservationsLog = DateTime.UtcNow.ToString("u").Replace("Z", "") + "; ";
+
+                    if (actualGPSdata != null)
+                    {
+                        SPA spaCalc = new SPA(actualGPSdata.dateTimeUTC.Year, actualGPSdata.dateTimeUTC.Month,
+                            actualGPSdata.dateTimeUTC.Day, actualGPSdata.dateTimeUTC.Hour,
+                            actualGPSdata.dateTimeUTC.Minute, actualGPSdata.dateTimeUTC.Second,
+                            (float)actualGPSdata.LonDec, (float)actualGPSdata.LatDec,
+                            (float)SPAConst.DeltaT(actualGPSdata.dateTimeUTC));
+                        int res = spaCalc.spa_calculate();
+                        AzimuthZenithAngle sunPositionSPAext = new AzimuthZenithAngle(spaCalc.spa.azimuth,
+                            spaCalc.spa.zenith);
+                        double sunElevCalc = sunPositionSPAext.ElevationAngle;
+                        double sunAzimuth = sunPositionSPAext.Azimuth;
+
+
+
+                        strDataToObservationsLog += actualGPSdata.Lat.ToString().Replace(".", ",") + "; ";
+                        strDataToObservationsLog += actualGPSdata.Lon.ToString().Replace(".", ",") + "; ";
+                        strDataToObservationsLog += sunElevCalc.ToString("F2").Replace(".", ",") + "; "; // Sun elevation
+                        strDataToObservationsLog +=
+                            actualGPSdata.IOFFEdataHeadingTrue.ToString().Replace(".", ",") + "; ";
+                        strDataToObservationsLog +=
+                            actualGPSdata.IOFFEdataHeadingGyro.ToString().Replace(".", ",") + "; ";
+                        strDataToObservationsLog += actualGPSdata.IOFFEdataSpeedKnots.ToString().Replace(".", ",") +
+                                                    "; ";
+                    }
+
+                    if (actualMeteoData != null)
+                    {
+                        strDataToObservationsLog += actualMeteoData.pressure.ToString().Replace(".", ",") + "; ";
+                        strDataToObservationsLog += actualMeteoData.airTemperature.ToString().Replace(".", ",") +
+                                                    "; ";
+                        strDataToObservationsLog += actualMeteoData.waterTemperature.ToString().Replace(".", ",") +
+                                                    "; ";
+                        strDataToObservationsLog += actualMeteoData.windSpeed.ToString().Replace(".", ",") + "; ";
+                        strDataToObservationsLog += actualMeteoData.windDirection.ToString().Replace(".", ",") +
+                                                    "; ";
+                        strDataToObservationsLog += actualMeteoData.Rhumidity.ToString().Replace(".", ",") + "; ";
+                    }
+
+                    if (cbLogMeasurementsData.Checked)
+                    {
+                        ServiceTools.logToTextFile(filename, strDataToObservationsLog, true);
+                    }
+                }
+            }
+        }
 
 
 
@@ -317,392 +491,270 @@ namespace IofffeVesselInfoStream
         private void bgwStreamDataProcessing_DoWork(object sender, DoWorkEventArgs e)
         {
             BackgroundWorker selfWorker = sender as BackgroundWorker;
-            DenseMatrix dmGPSDataMatrix = null;
-            List<long> gpsDateTimeValuesList = new List<long>();
-
-            DenseMatrix dmMeteoDataMatrix = null;
-            List<long> meteoDateTimeValuesList = new List<long>();
-
-            int gpsDataPacksCount = 0;
-            Stopwatch swGPSDataRateWatch = Stopwatch.StartNew();
-            double gpsDataRate = 0.0d;
-            int meteoDataPacksCount = 0;
             Stopwatch swMeteoDataRateWatch = Stopwatch.StartNew();
-            double meteoDataRate = 0.0d;
+            Stopwatch swGPSDataRateWatch = Stopwatch.StartNew();
+
+
+            TimerCallback tmrDataRateControlTimerCallback = DataRateControlTimerCallback;
+            System.Threading.Timer tmrDataRateControlTimer = new System.Threading.Timer(
+                tmrDataRateControlTimerCallback, new object[] { swGPSDataRateWatch, swMeteoDataRateWatch }, 0, 1000);
+
+            TimerCallback tmrCheckAndWriteObservationsFileCallback = CheckAndWriteObservationsFile;
+            System.Threading.Timer tmrCheckAndWriteObservationsFile =
+                new System.Threading.Timer(tmrCheckAndWriteObservationsFileCallback, null, 0, 10000);
+
 
 
             while (true)
             {
                 if (selfWorker.CancellationPending)
                 {
-                    #region dunp the rest of data
+                    #region dump the rest of data
 
                     if (dmGPSDataMatrix != null)
                     {
-                        Dictionary<string, object> dataToSave = new Dictionary<string, object>();
-                        dataToSave.Add("DateTime", gpsDateTimeValuesList.ToArray());
-                        dataToSave.Add("GPSdata", dmGPSDataMatrix);
-
-                        if (cbLogNCdata.Checked)
-                        {
-                            NetCDFoperations.AddVariousDataToFile(dataToSave,
-                                Directory.GetCurrentDirectory() + "\\logs\\IoffeVesselInfoStream-GPSDataLog-" +
-                                DateTime.UtcNow.Date.ToString("yyyy-MM-dd") + ".nc");
-                        }
-
-
-                        //List<DateTime> listDateTimeValuesToUpdateTrack =
-                        //    gpsDateTimeValuesList.ConvertAll(longVal => new DateTime(longVal));
-                        //geoRenderer.lTracksData[0].AddGPSsubtrackData(GPSdata.OfDenseMatrix(dmGPSDataMatrix),
-                        //  listDateTimeValuesToUpdateTrack);
-
-                        dmGPSDataMatrix = null;
-                        gpsDateTimeValuesList.Clear();
+                        DumpCollectedGPSdata();
                     }
 
 
                     if (dmMeteoDataMatrix != null)
                     {
-                        Dictionary<string, object> dataToSave = new Dictionary<string, object>();
-                        dataToSave.Add("DateTime", meteoDateTimeValuesList.ToArray());
-                        dataToSave.Add("MeteoData", dmMeteoDataMatrix);
-
-                        if (cbLogNCdata.Checked)
-                        {
-                            NetCDFoperations.AddVariousDataToFile(dataToSave,
-                                Directory.GetCurrentDirectory() + "\\logs\\IoffeVesselInfoStream-MeteoDataLog-" +
-                                DateTime.UtcNow.Date.ToString("yyyy-MM-dd") + ".nc");
-                        }
-
-
-                        dmMeteoDataMatrix = null;
-                        meteoDateTimeValuesList.Clear();
+                        DumpCollectedMeteoData();
                     }
 
                     ThreadSafeOperations.SetLoadingCircleState(wcNavDataSoeedControl, false, true, Color.Red, 100);
                     ThreadSafeOperations.SetLoadingCircleState(wcMeteoDataSpeedControl, false, true, Color.Red, 100);
 
+                    #endregion dump the rest of data
+
+                    #region switch off all timers
+
+                    tmrDataRateControlTimer.Change(Timeout.Infinite, Timeout.Infinite);
+                    tmrDataRateControlTimer.Dispose();
+                    tmrCheckAndWriteObservationsFile.Change(Timeout.Infinite, Timeout.Infinite);
+                    tmrCheckAndWriteObservationsFile.Dispose();
+
+                    #endregion switch off all timers
+
                     break;
-
-                    #endregion dunp the rest of data
                 }
 
-
-                #region data rate controls
-
-                double GPSStopWatchSec = ((double)swGPSDataRateWatch.ElapsedMilliseconds) / 1000.0d;
-                if (GPSStopWatchSec >= 2.0d)
-                {
-                    gpsDataRate = (double)gpsDataPacksCount / GPSStopWatchSec;
-
-                    if (gpsDataRate == 0.0d)
-                    {
-                        ThreadSafeOperations.SetLoadingCircleState(wcNavDataSoeedControl, false, true, Color.Red, 100);
-                    }
-                    else
-                    {
-                        ThreadSafeOperations.SetLoadingCircleState(wcNavDataSoeedControl, true, true, Color.Green,
-                            Convert.ToInt32(50.0d + 50.0d * gpsDataRate / 10.0d));
-                    }
-
-                    gpsDataPacksCount = 0;
-                    swGPSDataRateWatch.Restart();
-                }
-
-
-                double meteoStopWatchSec = ((double)swMeteoDataRateWatch.ElapsedMilliseconds) / 1000.0d;
-                if (meteoStopWatchSec >= 2.0d)
-                {
-                    meteoDataRate = (double)meteoDataPacksCount / meteoStopWatchSec;
-
-                    if (meteoDataRate == 0.0d)
-                    {
-                        ThreadSafeOperations.SetLoadingCircleState(wcMeteoDataSpeedControl, false, true, Color.Red, 100);
-                    }
-                    else
-                    {
-                        ThreadSafeOperations.SetLoadingCircleState(wcMeteoDataSpeedControl, true, true, Color.Green,
-                            Convert.ToInt32(50.0d + 50.0d * meteoDataRate / 10.0d));
-                    }
-
-                    meteoDataPacksCount = 0;
-                    swMeteoDataRateWatch.Restart();
-                }
-
-
-
-                #endregion data rate controls
-
-
-
-                if (cquGPSDataQueue.Count > 0)
-                {
-                    //while (quGPSDataQueue.Count > 0)
-                    while (cquGPSDataQueue.Count > 0)
-                    {
-                        GPSdata currQueuedGPSdata = null;
-
-                        while (!cquGPSDataQueue.TryDequeue(out currQueuedGPSdata))
-                        {
-                            // Application.DoEvents();
-
-                            if (selfWorker.CancellationPending)
-                            {
-                                break;
-                            }
-
-                            Thread.Sleep(0);
-                            continue;
-                        }
-
-                        //currQueuedGPSdata = quGPSDataQueue.Dequeue();
-
-                        if (selfWorker.CancellationPending)
-                        {
-                            break;
-                        }
-
-                        if (currQueuedGPSdata == null)
-                        {
-                            break;
-                        }
-
-                        gpsDataPacksCount++;
-
-                        gpsDateTimeValuesList.Add(currQueuedGPSdata.dateTimeUTC.Ticks);
-
-                        actualGPSdata = currQueuedGPSdata;
-
-                        if (dmGPSDataMatrix == null)
-                        {
-                            dmGPSDataMatrix = currQueuedGPSdata.ToOneRowDenseMatrix();
-                        }
-                        else
-                        {
-                            DenseVector dvGPSDataVectorToAdd = currQueuedGPSdata.ToDenseVector();
-                            dmGPSDataMatrix =
-                                (DenseMatrix)dmGPSDataMatrix.InsertRow(dmGPSDataMatrix.RowCount, dvGPSDataVectorToAdd);
-                        }
-                    }
-
-
-
-                    if (actualGPSdata != null)
-                    {
-                        ThreadSafeOperations.SetTextTB(tbGPSlatValue, actualGPSdata.lat.ToString() + actualGPSdata.latHemisphere, false);
-                        ThreadSafeOperations.SetTextTB(tbGPSlonValue, actualGPSdata.lon.ToString() + actualGPSdata.lonHemisphere, false);
-                        ThreadSafeOperations.SetTextTB(tbGPSDateTimeValue, actualGPSdata.dateTimeUTC.ToString("u").Replace("Z", ""), false);
-
-                        // double sunHeight = actualGPSdata.SunAlt();
-                        // ThreadSafeOperations.SetTextTB(tbSunAltValue, sunHeight.ToString(), false);
-
-                        if (actualGPSdata.dataSource == GPSdatasources.IOFFEvesselDataServer)
-                        {
-                            //public double IOFFEdataHeadingTrue = 0.0d;
-                            //public double IOFFEdataHeadingGyro = 0.0d;
-                            //public double IOFFEdataSpeedKnots = 0.0d;
-                            //public double IOFFEdataDepth = 0.0d;
-
-                            ThreadSafeOperations.SetTextTB(tbTrueHeadValue,
-                                actualGPSdata.IOFFEdataHeadingTrue.ToString(), false);
-                            ThreadSafeOperations.SetTextTB(tbGyroHeadValue,
-                                actualGPSdata.IOFFEdataHeadingGyro.ToString(), false);
-                            ThreadSafeOperations.SetTextTB(tbSpeedKnotsValue,
-                                actualGPSdata.IOFFEdataSpeedKnots.ToString(), false);
-                            ThreadSafeOperations.SetTextTB(tbDepthValue, actualGPSdata.IOFFEdataDepth.ToString(), false);
-                        }
-                    }
-
-
-
-                    if (gpsDateTimeValuesList.Count >= 50)
-                    {
-                        if (showGeoTrack)
-                        {
-                            List<DateTime> listDateTimeValuesToUpdateTrack = gpsDateTimeValuesList.ConvertAll(longVal => new DateTime(longVal));
-
-                            while (!Monitor.TryEnter(geoRenderer, 100))
-                            {
-                                // Application.DoEvents();
-                                Thread.Sleep(0);
-                            }
-
-                            try
-                            {
-                                geoRenderer.lTracksData[0].AddGPSsubtrackData(GPSdata.OfDenseMatrix(dmGPSDataMatrix),
-                                    listDateTimeValuesToUpdateTrack);
-                                if (geoRenderer.mapFollowsActualGPSposition)
-                                {
-                                    geoRenderer.gpsMapCenteredPoint = actualGPSdata.Clone();
-                                }
-                            }
-                            finally
-                            {
-                                Monitor.Exit(geoRenderer);
-
-                            }
-
-                        }
-
-                        Dictionary<string, object> dataToSave = new Dictionary<string, object>();
-                        dataToSave.Add("DateTime", gpsDateTimeValuesList.ToArray());
-                        dataToSave.Add("GPSdata", dmGPSDataMatrix);
-
-                        if (cbLogNCdata.Checked)
-                        {
-                            NetCDFoperations.AddVariousDataToFile(dataToSave,
-                                Directory.GetCurrentDirectory() + "\\logs\\IoffeVesselInfoStream-GPSDataLog-" +
-                                DateTime.UtcNow.Date.ToString("yyyy-MM-dd") + ".nc");
-                        }
-
-                        dmGPSDataMatrix = null;
-                        gpsDateTimeValuesList.Clear();
-                    }
-                }
-
-
-
-
-
-                //if (quMeteoDataQueue.Count > 0)
-                if (cquMeteoDataQueue.Count > 0)
-                {
-                    //while (quMeteoDataQueue.Count > 0)
-                    while (cquMeteoDataQueue.Count > 0)
-                    {
-                        meteoDateTimeValuesList.Add(DateTime.UtcNow.Ticks);
-                        MeteoData currQueuedMeteoData = null;
-
-                        while (!cquMeteoDataQueue.TryDequeue(out currQueuedMeteoData))
-                        {
-                            // Application.DoEvents();
-
-                            if (selfWorker.CancellationPending)
-                            {
-                                break;
-                            }
-
-                            Thread.Sleep(0);
-                            continue;
-                        }
-
-                        if (selfWorker.CancellationPending)
-                        {
-                            break;
-                        }
-
-                        if (currQueuedMeteoData == null)
-                        {
-                            break;
-                        }
-
-                        meteoDataPacksCount++;
-
-                        actualMeteoData = currQueuedMeteoData;
-
-                        int columnsCount = 5;
-
-                        if (dmMeteoDataMatrix == null)
-                        {
-                            dmMeteoDataMatrix = currQueuedMeteoData.ToOneRowDenseMatrix();
-                        }
-                        else
-                        {
-                            DenseVector dvMeteoDataVectorToAdd = currQueuedMeteoData.ToDenseVector();
-                            dmMeteoDataMatrix =
-                                (DenseMatrix)dmMeteoDataMatrix.InsertRow(dmMeteoDataMatrix.RowCount, dvMeteoDataVectorToAdd);
-                        }
-                    }
-
-                    if (actualMeteoData != null)
-                    {
-                        ThreadSafeOperations.SetTextTB(tbPressureValue, actualMeteoData.pressure.ToString(), false);
-                        ThreadSafeOperations.SetTextTB(tbAirTemperatureValue, actualMeteoData.airTemperature.ToString(), false);
-                        ThreadSafeOperations.SetTextTB(tbWindSpeedValue, actualMeteoData.windSpeed.ToString(), false);
-                        ThreadSafeOperations.SetTextTB(tbWindDirectionValue, actualMeteoData.windDirection.ToString(), false);
-                        ThreadSafeOperations.SetTextTB(tbRelHumidityValue, actualMeteoData.Rhumidity.ToString(), false);
-                        ThreadSafeOperations.SetTextTB(tbWaterTemperatureValue,
-                            actualMeteoData.waterTemperature.ToString(), false);
-                        ThreadSafeOperations.SetTextTB(tbWaterSalinityValue, actualMeteoData.waterSalinity.ToString(),
-                            false);
-                    }
-
-
-
-                    if (meteoDateTimeValuesList.Count >= 50)
-                    {
-                        Dictionary<string, object> dataToSave = new Dictionary<string, object>();
-                        dataToSave.Add("DateTime", meteoDateTimeValuesList.ToArray());
-                        dataToSave.Add("MeteoData", dmMeteoDataMatrix);
-
-                        if (cbLogNCdata.Checked)
-                        {
-                            NetCDFoperations.AddVariousDataToFile(dataToSave,
-                                Directory.GetCurrentDirectory() + "\\logs\\IoffeVesselInfoStream-MeteoDataLog-" +
-                                DateTime.UtcNow.Date.ToString("yyyy-MM-dd") + ".nc");
-                        }
-
-                        dmMeteoDataMatrix = null;
-                        meteoDateTimeValuesList.Clear();
-                    }
-                }
-
-
-
-                if (DateTime.Now.Minute == 0)
-                {
-                    string filename = Directory.GetCurrentDirectory() + "\\logs\\ObservationsData-" +
-                                      DateTime.UtcNow.ToString("yyyy-MM-dd-HH-mm") + ".log";
-
-                    if (!File.Exists(filename))
-                    {
-                        string strDataToObservationsLog = DateTime.UtcNow.ToString("u").Replace("Z", "") + "; ";
-
-                        if (actualGPSdata != null)
-                        {
-                            SPA spaCalc = new SPA(actualGPSdata.dateTimeUTC.Year, actualGPSdata.dateTimeUTC.Month,
-                                actualGPSdata.dateTimeUTC.Day, actualGPSdata.dateTimeUTC.Hour,
-                                actualGPSdata.dateTimeUTC.Minute, actualGPSdata.dateTimeUTC.Second,
-                                (float)actualGPSdata.LonDec, (float)actualGPSdata.LatDec,
-                                (float)SPAConst.DeltaT(actualGPSdata.dateTimeUTC));
-                            int res = spaCalc.spa_calculate();
-                            AzimuthZenithAngle sunPositionSPAext = new AzimuthZenithAngle(spaCalc.spa.azimuth,
-                                spaCalc.spa.zenith);
-                            double sunElevCalc = sunPositionSPAext.ElevationAngle;
-                            double sunAzimuth = sunPositionSPAext.Azimuth;
-
-
-
-                            strDataToObservationsLog += actualGPSdata.Lat.ToString().Replace(".", ",") + "; ";
-                            strDataToObservationsLog += actualGPSdata.Lon.ToString().Replace(".", ",") + "; ";
-                            strDataToObservationsLog += sunElevCalc.ToString("F2").Replace(".", ",") + "; "; // Sun elevation
-                            strDataToObservationsLog +=
-                                actualGPSdata.IOFFEdataHeadingTrue.ToString().Replace(".", ",") + "; ";
-                            strDataToObservationsLog +=
-                                actualGPSdata.IOFFEdataHeadingGyro.ToString().Replace(".", ",") + "; ";
-                            strDataToObservationsLog += actualGPSdata.IOFFEdataSpeedKnots.ToString().Replace(".", ",") +
-                                                        "; ";
-                        }
-
-                        if (actualMeteoData != null)
-                        {
-                            strDataToObservationsLog += actualMeteoData.pressure.ToString().Replace(".", ",") + "; ";
-                            strDataToObservationsLog += actualMeteoData.airTemperature.ToString().Replace(".", ",") +
-                                                        "; ";
-                            strDataToObservationsLog += actualMeteoData.waterTemperature.ToString().Replace(".", ",") +
-                                                        "; ";
-                            strDataToObservationsLog += actualMeteoData.windSpeed.ToString().Replace(".", ",") + "; ";
-                            strDataToObservationsLog += actualMeteoData.windDirection.ToString().Replace(".", ",") +
-                                                        "; ";
-                            strDataToObservationsLog += actualMeteoData.Rhumidity.ToString().Replace(".", ",") + "; ";
-                        }
-
-                        if (cbLogMeasurementsData.Checked)
-                        {
-                            ServiceTools.logToTextFile(filename, strDataToObservationsLog, true);
-                        }
-                    }
-                }
+                Thread.Sleep(500);
+
+                #region // obsolete - GPS data processing moved to CollectionChanged event handler on cquGPSDataQueue
+
+                //if (cquGPSDataQueue.Count > 0)
+                //{
+                //    //while (quGPSDataQueue.Count > 0)
+                //    while (cquGPSDataQueue.Count > 0)
+                //    {
+                //        GPSdata currQueuedGPSdata = null;
+
+                //        while (!cquGPSDataQueue.TryDequeue(out currQueuedGPSdata))
+                //        {
+                //            // Application.DoEvents();
+
+                //            if (selfWorker.CancellationPending)
+                //            {
+                //                break;
+                //            }
+
+                //            Thread.Sleep(0);
+                //            continue;
+                //        }
+
+                //        //currQueuedGPSdata = quGPSDataQueue.Dequeue();
+
+                //        if (selfWorker.CancellationPending)
+                //        {
+                //            break;
+                //        }
+
+                //        if (currQueuedGPSdata == null)
+                //        {
+                //            break;
+                //        }
+
+                //        gpsDataPacksCount++;
+
+                //        gpsDateTimeValuesList.Add(currQueuedGPSdata.dateTimeUTC.Ticks);
+
+                //        actualGPSdata = currQueuedGPSdata;
+
+                //        if (dmGPSDataMatrix == null)
+                //        {
+                //            dmGPSDataMatrix = currQueuedGPSdata.ToOneRowDenseMatrix();
+                //        }
+                //        else
+                //        {
+                //            DenseVector dvGPSDataVectorToAdd = currQueuedGPSdata.ToDenseVector();
+                //            dmGPSDataMatrix =
+                //                (DenseMatrix)dmGPSDataMatrix.InsertRow(dmGPSDataMatrix.RowCount, dvGPSDataVectorToAdd);
+                //        }
+                //    }
+
+
+
+                //    if (actualGPSdata != null)
+                //    {
+                //        ThreadSafeOperations.SetTextTB(tbGPSlatValue, actualGPSdata.lat.ToString() + actualGPSdata.latHemisphere, false);
+                //        ThreadSafeOperations.SetTextTB(tbGPSlonValue, actualGPSdata.lon.ToString() + actualGPSdata.lonHemisphere, false);
+                //        ThreadSafeOperations.SetTextTB(tbGPSDateTimeValue, actualGPSdata.dateTimeUTC.ToString("u").Replace("Z", ""), false);
+
+                //        // double sunHeight = actualGPSdata.SunAlt();
+                //        // ThreadSafeOperations.SetTextTB(tbSunAltValue, sunHeight.ToString(), false);
+
+                //        if (actualGPSdata.dataSource == GPSdatasources.IOFFEvesselDataServer)
+                //        {
+                //            //public double IOFFEdataHeadingTrue = 0.0d;
+                //            //public double IOFFEdataHeadingGyro = 0.0d;
+                //            //public double IOFFEdataSpeedKnots = 0.0d;
+                //            //public double IOFFEdataDepth = 0.0d;
+
+                //            ThreadSafeOperations.SetTextTB(tbTrueHeadValue,
+                //                actualGPSdata.IOFFEdataHeadingTrue.ToString(), false);
+                //            ThreadSafeOperations.SetTextTB(tbGyroHeadValue,
+                //                actualGPSdata.IOFFEdataHeadingGyro.ToString(), false);
+                //            ThreadSafeOperations.SetTextTB(tbSpeedKnotsValue,
+                //                actualGPSdata.IOFFEdataSpeedKnots.ToString(), false);
+                //            ThreadSafeOperations.SetTextTB(tbDepthValue, actualGPSdata.IOFFEdataDepth.ToString(), false);
+                //        }
+                //    }
+
+
+
+                //    if (gpsDateTimeValuesList.Count >= 50)
+                //    {
+                //        if (showGeoTrack)
+                //        {
+                //            List<DateTime> listDateTimeValuesToUpdateTrack = gpsDateTimeValuesList.ConvertAll(longVal => new DateTime(longVal));
+
+                //            while (!Monitor.TryEnter(geoRenderer, 100))
+                //            {
+                //                // Application.DoEvents();
+                //                Thread.Sleep(0);
+                //            }
+
+                //            try
+                //            {
+                //                geoRenderer.lTracksData[0].AddGPSsubtrackData(GPSdata.OfDenseMatrix(dmGPSDataMatrix),
+                //                    listDateTimeValuesToUpdateTrack);
+                //                if (geoRenderer.mapFollowsActualGPSposition)
+                //                {
+                //                    geoRenderer.gpsMapCenteredPoint = actualGPSdata.Clone();
+                //                }
+                //            }
+                //            finally
+                //            {
+                //                Monitor.Exit(geoRenderer);
+
+                //            }
+
+                //        }
+
+                //        Dictionary<string, object> dataToSave = new Dictionary<string, object>();
+                //        dataToSave.Add("DateTime", gpsDateTimeValuesList.ToArray());
+                //        dataToSave.Add("GPSdata", dmGPSDataMatrix);
+
+                //        if (cbLogNCdata.Checked)
+                //        {
+                //            NetCDFoperations.AddVariousDataToFile(dataToSave,
+                //                Directory.GetCurrentDirectory() + "\\logs\\IoffeVesselInfoStream-GPSDataLog-" +
+                //                DateTime.UtcNow.Date.ToString("yyyy-MM-dd") + ".nc");
+                //        }
+
+                //        dmGPSDataMatrix = null;
+                //        gpsDateTimeValuesList.Clear();
+                //    }
+                //}
+
+                #endregion // obsolete - GPS data processing moved to CollectionChanged event handler on cquGPSDataQueue
+
+
+                #region // obsolete - Meteo data processing moved to CollectionChanged event handler on cquMeteoDataQueue
+
+                //if (cquMeteoDataQueue.Count > 0)
+                //{
+                //    while (cquMeteoDataQueue.Count > 0)
+                //    {
+                //        meteoDateTimeValuesList.Add(DateTime.UtcNow.Ticks);
+                //        MeteoData currQueuedMeteoData = null;
+
+                //        while (!cquMeteoDataQueue.TryDequeue(out currQueuedMeteoData))
+                //        {
+                //            // Application.DoEvents();
+
+                //            if (selfWorker.CancellationPending)
+                //            {
+                //                break;
+                //            }
+
+                //            Thread.Sleep(0);
+                //            continue;
+                //        }
+
+                //        if (selfWorker.CancellationPending)
+                //        {
+                //            break;
+                //        }
+
+                //        if (currQueuedMeteoData == null)
+                //        {
+                //            break;
+                //        }
+
+                //        meteoDataPacksCount++;
+
+                //        actualMeteoData = currQueuedMeteoData;
+
+                //        int columnsCount = 5;
+
+                //        if (dmMeteoDataMatrix == null)
+                //        {
+                //            dmMeteoDataMatrix = currQueuedMeteoData.ToOneRowDenseMatrix();
+                //        }
+                //        else
+                //        {
+                //            DenseVector dvMeteoDataVectorToAdd = currQueuedMeteoData.ToDenseVector();
+                //            dmMeteoDataMatrix =
+                //                (DenseMatrix)dmMeteoDataMatrix.InsertRow(dmMeteoDataMatrix.RowCount, dvMeteoDataVectorToAdd);
+                //        }
+                //    }
+
+                //    if (actualMeteoData != null)
+                //    {
+                //        ThreadSafeOperations.SetTextTB(tbPressureValue, actualMeteoData.pressure.ToString(), false);
+                //        ThreadSafeOperations.SetTextTB(tbAirTemperatureValue, actualMeteoData.airTemperature.ToString(), false);
+                //        ThreadSafeOperations.SetTextTB(tbWindSpeedValue, actualMeteoData.windSpeed.ToString(), false);
+                //        ThreadSafeOperations.SetTextTB(tbWindDirectionValue, actualMeteoData.windDirection.ToString(), false);
+                //        ThreadSafeOperations.SetTextTB(tbRelHumidityValue, actualMeteoData.Rhumidity.ToString(), false);
+                //        ThreadSafeOperations.SetTextTB(tbWaterTemperatureValue,
+                //            actualMeteoData.waterTemperature.ToString(), false);
+                //        ThreadSafeOperations.SetTextTB(tbWaterSalinityValue, actualMeteoData.waterSalinity.ToString(),
+                //            false);
+                //    }
+
+
+
+                //    if (meteoDateTimeValuesList.Count >= 50)
+                //    {
+                //        Dictionary<string, object> dataToSave = new Dictionary<string, object>();
+                //        dataToSave.Add("DateTime", meteoDateTimeValuesList.ToArray());
+                //        dataToSave.Add("MeteoData", dmMeteoDataMatrix);
+
+                //        if (cbLogNCdata.Checked)
+                //        {
+                //            NetCDFoperations.AddVariousDataToFile(dataToSave,
+                //                Directory.GetCurrentDirectory() + "\\logs\\IoffeVesselInfoStream-MeteoDataLog-" +
+                //                DateTime.UtcNow.Date.ToString("yyyy-MM-dd") + ".nc");
+                //        }
+
+                //        dmMeteoDataMatrix = null;
+                //        meteoDateTimeValuesList.Clear();
+                //    }
+                //}
+
+                #endregion // obsolete - Meteo data processing moved to CollectionChanged event handler on cquMeteoDataQueue
 
             }
         }
@@ -710,7 +762,357 @@ namespace IofffeVesselInfoStream
 
 
 
+        #region for Meteo data
 
+        private void DumpCollectedMeteoData()
+        {
+            Dictionary<string, object> dataToSave = new Dictionary<string, object>();
+
+            #region unload shared collections data to dataToSave
+
+            Monitor.Enter(meteoDateTimeValuesList);
+            try
+            {
+                dataToSave.Add("DateTime", meteoDateTimeValuesList.ToArray());
+                meteoDateTimeValuesList.Clear();
+                dataToSave.Add("MeteoData", dmMeteoDataMatrix.Copy());
+                dmMeteoDataMatrix = null;
+            }
+            finally
+            {
+                Monitor.Exit(meteoDateTimeValuesList);
+            }
+
+            #endregion unload shared collections data to dataToSave
+
+            if (cbLogNCdata.Checked)
+            {
+                NetCDFoperations.AddVariousDataToFile(dataToSave,
+                    Directory.GetCurrentDirectory() + "\\logs\\IoffeVesselInfoStream-MeteoDataLog-" +
+                    DateTime.UtcNow.Date.ToString("yyyy-MM-dd") + ".nc");
+            }
+        }
+
+
+
+
+        private void UpdateActualMeteoDataOnForm()
+        {
+            if (actualMeteoData != null)
+            {
+                ThreadSafeOperations.SetTextTB(tbPressureValue, actualMeteoData.pressure.ToString(), false);
+                ThreadSafeOperations.SetTextTB(tbAirTemperatureValue, actualMeteoData.airTemperature.ToString(), false);
+                ThreadSafeOperations.SetTextTB(tbWindSpeedValue, actualMeteoData.windSpeed.ToString(), false);
+                ThreadSafeOperations.SetTextTB(tbWindDirectionValue, actualMeteoData.windDirection.ToString(), false);
+                ThreadSafeOperations.SetTextTB(tbRelHumidityValue, actualMeteoData.Rhumidity.ToString(), false);
+                ThreadSafeOperations.SetTextTB(tbWaterTemperatureValue,
+                    actualMeteoData.waterTemperature.ToString(), false);
+                ThreadSafeOperations.SetTextTB(tbWaterSalinityValue, actualMeteoData.waterSalinity.ToString(),
+                    false);
+            }
+        }
+
+
+
+
+        async void cquMeteoDataQueue_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+        {
+            if (e.Action != NotifyCollectionChangedAction.Add)
+            {
+                return;
+                // чтобы не реагировать на собственные TryDequeue()
+            }
+
+
+
+
+            while (cquMeteoDataQueue.Count > 0)
+            {
+                MeteoData currQueuedMeteoData = null;
+
+                while (!cquMeteoDataQueue.TryDequeue(out currQueuedMeteoData))
+                {
+                    Thread.Sleep(0);
+                    continue;
+                }
+
+                if (currQueuedMeteoData == null)
+                {
+                    continue;
+                }
+
+                Interlocked.Increment(ref meteoDataPacksCount);
+
+                actualMeteoData = currQueuedMeteoData;
+
+                #region store data in shared data collections
+
+
+                Monitor.Enter(meteoDateTimeValuesList);
+                try
+                {
+                    meteoDateTimeValuesList.Add(DateTime.UtcNow.Ticks);
+                    if (dmMeteoDataMatrix == null)
+                    {
+                        dmMeteoDataMatrix = currQueuedMeteoData.ToOneRowDenseMatrix();
+                    }
+                    else
+                    {
+                        DenseVector dvMeteoDataVectorToAdd = currQueuedMeteoData.ToDenseVector();
+                        dmMeteoDataMatrix =
+                            (DenseMatrix)
+                                dmMeteoDataMatrix.InsertRow(dmMeteoDataMatrix.RowCount, dvMeteoDataVectorToAdd);
+                    }
+                }
+                finally
+                {
+                    Monitor.Exit(meteoDateTimeValuesList);
+                }
+
+
+                #endregion store data in shared data collections
+            }
+
+
+
+
+
+            Task tskUpdateMeteoDataOnForm = Task.Factory.StartNew(UpdateActualMeteoDataOnForm);
+
+            Task tskDumpCollectedMeteoData = null;
+
+
+            if (meteoDateTimeValuesList.Count >= 50)
+            {
+                tskDumpCollectedMeteoData = Task.Factory.StartNew(DumpCollectedMeteoData);
+            }
+
+            await tskUpdateMeteoDataOnForm;
+            if (tskDumpCollectedMeteoData != null)
+            {
+                await tskDumpCollectedMeteoData;
+            }
+        }
+
+        #endregion for Meteo data
+
+
+
+
+
+
+        #region for GPS data
+
+
+
+        private void DumpCollectedGPSdata()
+        {
+            Dictionary<string, object> dataToSave = new Dictionary<string, object>();
+
+            #region unload shared collections data to dataToSave
+            DenseMatrix dmGPSDataMatrixCopy;
+            try
+            {
+                dmGPSDataMatrixCopy = dmGPSDataMatrix.Copy();
+            }
+            catch (Exception ex)
+            {
+                theLogWindow = ServiceTools.LogAText(theLogWindow,
+                    "exception was caught: " + Environment.NewLine + ServiceTools.CurrentCodeLineDescription() +
+                    Environment.NewLine + "message: " + ex.Message);
+                return;
+            }
+            
+
+            Monitor.Enter(gpsDateTimeValuesList);
+            try
+            {
+                dataToSave.Add("DateTime", gpsDateTimeValuesList.ToArray());
+                gpsDateTimeValuesList.Clear();
+                dataToSave.Add("GPSdata", dmGPSDataMatrixCopy);
+                dmGPSDataMatrix = null;
+            }
+            finally
+            {
+                Monitor.Exit(gpsDateTimeValuesList);
+            }
+
+            #endregion unload shared collections data to dataToSave
+
+            if (cbLogNCdata.Checked)
+            {
+                NetCDFoperations.AddVariousDataToFile(dataToSave,
+                    Directory.GetCurrentDirectory() + "\\logs\\IoffeVesselInfoStream-GPSDataLog-" +
+                    DateTime.UtcNow.Date.ToString("yyyy-MM-dd") + ".nc");
+            }
+        }
+
+
+
+
+        private void UpdateActualGPSdataOnForm()
+        {
+            if (actualGPSdata != null)
+            {
+                ThreadSafeOperations.SetTextTB(tbGPSlatValue, actualGPSdata.lat.ToString() + actualGPSdata.latHemisphere, false);
+                ThreadSafeOperations.SetTextTB(tbGPSlonValue, actualGPSdata.lon.ToString() + actualGPSdata.lonHemisphere, false);
+                ThreadSafeOperations.SetTextTB(tbGPSDateTimeValue, actualGPSdata.dateTimeUTC.ToString("u").Replace("Z", ""), false);
+
+                if (actualGPSdata.dataSource == GPSdatasources.IOFFEvesselDataServer)
+                {
+                    ThreadSafeOperations.SetTextTB(tbTrueHeadValue,
+                        actualGPSdata.IOFFEdataHeadingTrue.ToString(), false);
+                    ThreadSafeOperations.SetTextTB(tbGyroHeadValue,
+                        actualGPSdata.IOFFEdataHeadingGyro.ToString(), false);
+                    ThreadSafeOperations.SetTextTB(tbSpeedKnotsValue,
+                        actualGPSdata.IOFFEdataSpeedKnots.ToString(), false);
+                    ThreadSafeOperations.SetTextTB(tbDepthValue, actualGPSdata.IOFFEdataDepth.ToString(), false);
+                }
+            }
+        }
+
+
+
+
+        private void UpdateGPSdataForGeotrackRenderer()
+        {
+            if (showGeoTrack)
+            {
+                List<DateTime> listDateTimeValuesToUpdateTrack;
+                DenseMatrix dmGPSDataMatrixCopy = null;
+
+                Monitor.Enter(gpsDateTimeValuesList);
+                try
+                {
+                    listDateTimeValuesToUpdateTrack = gpsDateTimeValuesList.ConvertAll(longVal => new DateTime(longVal));
+                    dmGPSDataMatrixCopy = dmGPSDataMatrix.Copy();
+                }
+                finally
+                {
+                    Monitor.Exit(gpsDateTimeValuesList);
+                }
+
+
+                while (!Monitor.TryEnter(geoRenderer, 100))
+                {
+                    Thread.Sleep(0);
+                }
+
+                try
+                {
+                    geoRenderer.lTracksData[0].AddGPSsubtrackData(GPSdata.OfDenseMatrix(dmGPSDataMatrixCopy),
+                        listDateTimeValuesToUpdateTrack);
+                    if (geoRenderer.mapFollowsActualGPSposition)
+                    {
+                        geoRenderer.gpsMapCenteredPoint = actualGPSdata.Clone();
+                    }
+                }
+                finally
+                {
+                    Monitor.Exit(geoRenderer);
+                    dmGPSDataMatrixCopy = null;
+                    listDateTimeValuesToUpdateTrack = null;
+                }
+            }
+        }
+
+
+
+
+
+        async void cquGPSDataQueue_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+        {
+            if (e.Action != NotifyCollectionChangedAction.Add)
+            {
+                return;
+                // чтобы не реагировать на собственные TryDequeue()
+            }
+
+
+
+            while (cquGPSDataQueue.Count > 0)
+            {
+                GPSdata currQueuedGPSdata = null;
+
+                while (!cquGPSDataQueue.TryDequeue(out currQueuedGPSdata))
+                {
+                    Thread.Sleep(0);
+                    continue;
+                }
+
+
+                if (currQueuedGPSdata == null)
+                {
+                    continue;
+                }
+
+                Interlocked.Increment(ref gpsDataPacksCount);
+                actualGPSdata = currQueuedGPSdata;
+
+
+                #region store data in shared data collections
+
+                Monitor.Enter(gpsDateTimeValuesList);
+                try
+                {
+                    gpsDateTimeValuesList.Add(currQueuedGPSdata.dateTimeUTC.Ticks);
+                    if (dmGPSDataMatrix == null)
+                    {
+                        dmGPSDataMatrix = currQueuedGPSdata.ToOneRowDenseMatrix();
+                    }
+                    else
+                    {
+                        DenseVector dvGPSDataVectorToAdd = currQueuedGPSdata.ToDenseVector();
+                        dmGPSDataMatrix =
+                            (DenseMatrix)dmGPSDataMatrix.InsertRow(dmGPSDataMatrix.RowCount, dvGPSDataVectorToAdd);
+                    }
+                }
+                finally
+                {
+                    Monitor.Exit(gpsDateTimeValuesList);
+                }
+
+
+
+                #endregion store data in shared data collections
+
+            }
+
+
+
+            Task tskUpdateGPSdataOnForm = Task.Factory.StartNew(UpdateActualGPSdataOnForm);
+
+            Task tskDumpCollectedGPSdata = null;
+            Task tskUpdateGPSdataForGeotrackRenderer = null;
+
+            if (gpsDateTimeValuesList.Count >= 50)
+            {
+                tskDumpCollectedGPSdata = Task.Factory.StartNew(DumpCollectedGPSdata);
+                tskUpdateGPSdataForGeotrackRenderer = Task.Factory.StartNew(UpdateGPSdataForGeotrackRenderer);
+            }
+
+            await tskUpdateGPSdataOnForm;
+            if (tskDumpCollectedGPSdata != null)
+            {
+                await tskDumpCollectedGPSdata;
+            }
+
+            if (tskUpdateGPSdataForGeotrackRenderer != null)
+            {
+                await tskUpdateGPSdataForGeotrackRenderer;
+            }
+        }
+
+        #endregion for GPS data
+
+        #endregion process recieved GPS and METEO data packets
+
+
+
+
+
+
+        #region Geotrack
 
         private static bool needToUpdateGeoTrackNow = false;
         private void bgwGraphsRenderer_DoWork(object sender, DoWorkEventArgs e)
@@ -719,7 +1121,7 @@ namespace IofffeVesselInfoStream
             MultipleScatterAndFunctionsRepresentation graphsRenderer =
                 new MultipleScatterAndFunctionsRepresentation(pbGraphs.Size);
 
-            ThreadSafeOperations.SetLoadingCircleState(wcUpdatimgGraphs, true, true, wcUpdatimgGraphs.Color);
+            ThreadSafeOperations.SetLoadingCircleState(wcUpdatimgGeoTrack, true, true, wcUpdatimgGeoTrack.Color);
             if (showGeoTrack)
             {
                 // пропишем в рисователь трека имена файлов, содержащих логи данных GPS
@@ -753,33 +1155,30 @@ namespace IofffeVesselInfoStream
                 {
                     Monitor.Exit(geoRenderer);
                 }
-
-
-
             }
 
 
-            Stopwatch swGraphsUpdateWatch = new Stopwatch();
-            swGraphsUpdateWatch.Start();
+
+            TimerCallback tmrGeoTrackUpdateCallback = new TimerCallback((obj) =>
+            {
+                if (showGeoTrack)
+                {
+                    UpdateGeoTrack();
+                    needToUpdateGeoTrackNow = false;
+                }
+            });
+            System.Threading.Timer tmrGeoTrackUpdate = new System.Threading.Timer(tmrGeoTrackUpdateCallback, null, 0, updateGeoTrackPeriodSec * 1000);
 
             while (true)
             {
                 if (selfWorker.CancellationPending)
                 {
+                    tmrGeoTrackUpdate.Change(Timeout.Infinite, Timeout.Infinite);
+                    tmrGeoTrackUpdate.Dispose();
                     break;
                 }
 
-                if (showGeoTrack)
-                {
-                    if ((swGraphsUpdateWatch.ElapsedMilliseconds >= 10000) || (needToUpdateGeoTrackNow))
-                    {
-                        UpdateGeoTrack();
-
-                        needToUpdateGeoTrackNow = false;
-                        swGraphsUpdateWatch.Restart();
-                    }
-                }
-
+                Thread.Sleep(500);
             }
         }
 
@@ -790,7 +1189,7 @@ namespace IofffeVesselInfoStream
             while (!Monitor.TryEnter(geoRenderer, 100))
             {
                 Application.DoEvents();
-                Thread.Sleep(0);
+                Thread.Sleep(100);
             }
 
             try
@@ -804,16 +1203,14 @@ namespace IofffeVesselInfoStream
                     geoRenderer.gpsMapCenteredPoint = actualGPSdata.Clone();
                 }
 
-                ThreadSafeOperations.SetLoadingCircleState(wcUpdatimgGraphs, true, true, wcUpdatimgGraphs.Color);
+                ThreadSafeOperations.SetLoadingCircleState(wcUpdatimgGeoTrack, true, true, wcUpdatimgGeoTrack.Color);
                 ThreadSafeOperations.UpdatePictureBox(pbGeoTrack, geoRenderer.RepresentTopo(pbGeoTrack.Size));
-                ThreadSafeOperations.SetLoadingCircleState(wcUpdatimgGraphs, false, false, wcUpdatimgGraphs.Color);
+                ThreadSafeOperations.SetLoadingCircleState(wcUpdatimgGeoTrack, false, false, wcUpdatimgGeoTrack.Color);
             }
             finally
             {
                 Monitor.Exit(geoRenderer);
             }
-
-            //geoTrackIsUpdatingNow = false;
 
             return true;
         }
@@ -823,7 +1220,7 @@ namespace IofffeVesselInfoStream
         private void ShowGeoTrackOnce()
         {
             // пропишем в рисователь трека имена файлов, содержащих логи данных GPS
-            ThreadSafeOperations.SetLoadingCircleState(wcUpdatimgGraphs, true, true, wcUpdatimgGraphs.Color);
+            ThreadSafeOperations.SetLoadingCircleState(wcUpdatimgGeoTrack, true, true, wcUpdatimgGeoTrack.Color);
 
             while (!Monitor.TryEnter(geoRenderer, 100))
             {
@@ -862,7 +1259,7 @@ namespace IofffeVesselInfoStream
                 Monitor.Exit(geoRenderer);
             }
 
-            ThreadSafeOperations.SetLoadingCircleState(wcUpdatimgGraphs, false, false, wcUpdatimgGraphs.Color);
+            ThreadSafeOperations.SetLoadingCircleState(wcUpdatimgGeoTrack, false, false, wcUpdatimgGeoTrack.Color);
         }
 
 
@@ -968,52 +1365,55 @@ namespace IofffeVesselInfoStream
         }
 
 
+        #region // obsolete
 
-        private void cbShowGeoTrack_CheckedChanged(object sender, EventArgs e)
-        {
-            if (((sender as CheckBox).Checked) && (!bgwGeotrackRenderer.IsBusy) && (!bgwStreamDataProcessing.IsBusy))
-            {
-                var repl = MessageBox.Show("Wanna watch right now?", "Right now?", MessageBoxButtons.YesNoCancel,
-                    MessageBoxIcon.Question, MessageBoxDefaultButton.Button3);
-                if (repl == System.Windows.Forms.DialogResult.Yes)
-                {
-
-
-                    DoWorkEventHandler bgw1DoWorkHandler = delegate(object currBGWsender, DoWorkEventArgs args)
-                    {
-                        ThreadSafeOperations.SetLoadingCircleState(wcUpdatimgGraphs, true, true, wcUpdatimgGraphs.Color);
-                        BackgroundWorker selfWorker = currBGWsender as BackgroundWorker;
-                        object[] currBGWarguments = (object[])args.Argument;
-
-                        ShowGeoTrackOnce();
-
-                        args.Result = new object[] { "" };
-                    };
+        //private void cbShowGeoTrack_CheckedChanged(object sender, EventArgs e)
+        //{
+        //    if (((sender as CheckBox).Checked) && (!bgwGeotrackRenderer.IsBusy) && (!bgwStreamDataProcessing.IsBusy))
+        //    {
+        //        var repl = MessageBox.Show("Wanna watch right now?", "Right now?", MessageBoxButtons.YesNoCancel,
+        //            MessageBoxIcon.Question, MessageBoxDefaultButton.Button3);
+        //        if (repl == System.Windows.Forms.DialogResult.Yes)
+        //        {
 
 
-                    RunWorkerCompletedEventHandler currWorkCompletedHandler = delegate(object currBGWCompletedSender, RunWorkerCompletedEventArgs args)
-                    {
-                        object[] currentBGWResults = (object[])args.Result;
-                        ThreadSafeOperations.SetLoadingCircleState(wcUpdatimgGraphs, false, false, wcUpdatimgGraphs.Color);
-                    };
+        //            DoWorkEventHandler bgw1DoWorkHandler = delegate(object currBGWsender, DoWorkEventArgs args)
+        //            {
+        //                ThreadSafeOperations.SetLoadingCircleState(wcUpdatimgGeoTrack, true, true, wcUpdatimgGeoTrack.Color);
+        //                BackgroundWorker selfWorker = currBGWsender as BackgroundWorker;
+        //                object[] currBGWarguments = (object[])args.Argument;
+
+        //                ShowGeoTrackOnce();
+
+        //                args.Result = new object[] { "" };
+        //            };
 
 
-                    BackgroundWorker bgw1 = new BackgroundWorker();
-                    bgw1.DoWork += bgw1DoWorkHandler;
-                    bgw1.RunWorkerCompleted += currWorkCompletedHandler;
-                    object[] BGWargs = new object[] { "" };
-                    bgw1.RunWorkerAsync(BGWargs);
-                }
-            }
-            else if ((!(sender as CheckBox).Checked) && (bgwGeotrackRenderer.IsBusy))
-            {
-                bgwGeotrackRenderer.CancelAsync();
-            }
-            else if (((sender as CheckBox).Checked) && (!bgwGeotrackRenderer.IsBusy) && (bgwStreamDataProcessing.IsBusy))
-            {
-                bgwGeotrackRenderer.RunWorkerAsync();
-            }
-        }
+        //            RunWorkerCompletedEventHandler currWorkCompletedHandler = delegate(object currBGWCompletedSender, RunWorkerCompletedEventArgs args)
+        //            {
+        //                object[] currentBGWResults = (object[])args.Result;
+        //                ThreadSafeOperations.SetLoadingCircleState(wcUpdatimgGeoTrack, false, false, wcUpdatimgGeoTrack.Color);
+        //            };
+
+
+        //            BackgroundWorker bgw1 = new BackgroundWorker();
+        //            bgw1.DoWork += bgw1DoWorkHandler;
+        //            bgw1.RunWorkerCompleted += currWorkCompletedHandler;
+        //            object[] BGWargs = new object[] { "" };
+        //            bgw1.RunWorkerAsync(BGWargs);
+        //        }
+        //    }
+        //    else if ((!(sender as CheckBox).Checked) && (bgwGeotrackRenderer.IsBusy))
+        //    {
+        //        bgwGeotrackRenderer.CancelAsync();
+        //    }
+        //    else if (((sender as CheckBox).Checked) && (!bgwGeotrackRenderer.IsBusy) && (bgwStreamDataProcessing.IsBusy))
+        //    {
+        //        bgwGeotrackRenderer.RunWorkerAsync();
+        //    }
+        //}
+
+        #endregion // obsolete
 
 
 
@@ -1063,7 +1463,7 @@ namespace IofffeVesselInfoStream
 
                     while (true)
                     {
-                        ThreadSafeOperations.SetLoadingCircleState(wcUpdatimgGraphs, true, true, wcUpdatimgGraphs.Color);
+                        ThreadSafeOperations.SetLoadingCircleState(wcUpdatimgGeoTrack, true, true, wcUpdatimgGeoTrack.Color);
                         if (UpdateGeoTrack())
                         {
                             retResult = true;
@@ -1074,7 +1474,7 @@ namespace IofffeVesselInfoStream
                             retResult = false;
                             break;
                         }
-                        ThreadSafeOperations.SetLoadingCircleState(wcUpdatimgGraphs, false, false, wcUpdatimgGraphs.Color);
+                        ThreadSafeOperations.SetLoadingCircleState(wcUpdatimgGeoTrack, false, false, wcUpdatimgGeoTrack.Color);
                         Application.DoEvents();
                         Thread.Sleep(0);
                     }
@@ -1091,7 +1491,7 @@ namespace IofffeVesselInfoStream
                     {
                         ThreadSafeOperations.SetText(lblStatusString, DateTime.Now.ToString("s").Replace("T", " ") + ": Geogtrack failed to be updated.", false);
                     }
-                    ThreadSafeOperations.SetLoadingCircleState(wcUpdatimgGraphs, false, false, wcUpdatimgGraphs.Color);
+                    ThreadSafeOperations.SetLoadingCircleState(wcUpdatimgGeoTrack, false, false, wcUpdatimgGeoTrack.Color);
                 };
 
                 bgwGraphUpdater.DoWork += bgwGraphUpdaterDoWorkHandler;
@@ -1149,7 +1549,7 @@ namespace IofffeVesselInfoStream
 
                     while (true)
                     {
-                        ThreadSafeOperations.SetLoadingCircleState(wcUpdatimgGraphs, true, true, wcUpdatimgGraphs.Color);
+                        ThreadSafeOperations.SetLoadingCircleState(wcUpdatimgGeoTrack, true, true, wcUpdatimgGeoTrack.Color);
                         if (UpdateGeoTrack())
                         {
                             retResult = true;
@@ -1160,7 +1560,7 @@ namespace IofffeVesselInfoStream
                             retResult = false;
                             break;
                         }
-                        ThreadSafeOperations.SetLoadingCircleState(wcUpdatimgGraphs, false, false, wcUpdatimgGraphs.Color);
+                        ThreadSafeOperations.SetLoadingCircleState(wcUpdatimgGeoTrack, false, false, wcUpdatimgGeoTrack.Color);
                         Application.DoEvents();
                         Thread.Sleep(0);
                     }
@@ -1177,7 +1577,7 @@ namespace IofffeVesselInfoStream
                     {
                         ThreadSafeOperations.SetText(lblStatusString, DateTime.Now.ToString("s").Replace("T", " ") + ": Geogtrack failed to be updated.", false);
                     }
-                    ThreadSafeOperations.SetLoadingCircleState(wcUpdatimgGraphs, false, false, wcUpdatimgGraphs.Color);
+                    ThreadSafeOperations.SetLoadingCircleState(wcUpdatimgGeoTrack, false, false, wcUpdatimgGeoTrack.Color);
                 };
 
                 bgwGraphUpdater.DoWork += bgwGraphUpdaterDoWorkHandler;
@@ -1229,7 +1629,7 @@ namespace IofffeVesselInfoStream
 
                     while (true)
                     {
-                        ThreadSafeOperations.SetLoadingCircleState(wcUpdatimgGraphs, true, true, wcUpdatimgGraphs.Color);
+                        ThreadSafeOperations.SetLoadingCircleState(wcUpdatimgGeoTrack, true, true, wcUpdatimgGeoTrack.Color);
                         if (UpdateGeoTrack())
                         {
                             retResult = true;
@@ -1240,7 +1640,7 @@ namespace IofffeVesselInfoStream
                             retResult = false;
                             break;
                         }
-                        ThreadSafeOperations.SetLoadingCircleState(wcUpdatimgGraphs, false, false, wcUpdatimgGraphs.Color);
+                        ThreadSafeOperations.SetLoadingCircleState(wcUpdatimgGeoTrack, false, false, wcUpdatimgGeoTrack.Color);
                         Application.DoEvents();
                         Thread.Sleep(0);
                     }
@@ -1257,7 +1657,7 @@ namespace IofffeVesselInfoStream
                     {
                         ThreadSafeOperations.SetText(lblStatusString, DateTime.Now.ToString("s").Replace("T", " ") + ": Geogtrack failed to be updated.", false);
                     }
-                    ThreadSafeOperations.SetLoadingCircleState(wcUpdatimgGraphs, false, false, wcUpdatimgGraphs.Color);
+                    ThreadSafeOperations.SetLoadingCircleState(wcUpdatimgGeoTrack, false, false, wcUpdatimgGeoTrack.Color);
                 };
 
                 bgwGraphUpdater.DoWork += bgwGraphUpdaterDoWorkHandler;
@@ -1266,126 +1666,6 @@ namespace IofffeVesselInfoStream
                 //}
             }
         }
-
-
-
-
-        #region SeaBird SeaSave processor
-
-
-        private void button1_Click(object sender, EventArgs e)
-        {
-            if (!bgwSeaSaveSocketStreamReader.IsBusy)
-            {
-                //scktSeaSave = ConnectSocket("169.254.249.87", 49161);
-                scktSeaSave = ConnectSocket("192.168.192.218", 4001);
-                if (scktSeaSave == null) return;
-                bgwSeaSaveSocketStreamReader.RunWorkerAsync(new object[] { scktSeaSave });
-                ThreadSafeOperations.ToggleButtonState(btnStartStopSeaSave, true, "STOP", true);
-            }
-            else
-            {
-                bgwSeaSaveSocketStreamReader.CancelAsync();
-                ThreadSafeOperations.ToggleButtonState(btnStartStopSeaSave, true, "CONNECT SeaSave", true);
-            }
-        }
-
-
-
-
-        private void bgwSeaSaveSocketStreamReader_DoWork(object sender, DoWorkEventArgs e)
-        {
-            BackgroundWorker selfWorker = sender as BackgroundWorker;
-            Socket sckt = ((object[])e.Argument)[0] as Socket;
-
-
-            Byte[] bytesReceived = new Byte[1024];
-
-            int bytes = 0;
-            string gotString = "";
-            do
-            {
-                if (selfWorker.CancellationPending)
-                {
-                    sckt.Disconnect(false);
-                    sckt.Dispose();
-                    sckt = null;
-                    break;
-                }
-
-                if (sckt != null)
-                {
-                    bytes = sckt.Receive(bytesReceived, bytesReceived.Length, 0);
-                    gotString = Encoding.ASCII.GetString(bytesReceived, 0, bytes);
-
-                    ThreadSafeOperations.SetTextTB(tbSeaSaveLog, gotString + Environment.NewLine, true);
-
-                    //string[] gotStrings = gotString.Split('%');
-                    //foreach (string s in gotStrings)
-                    //{
-                    //    quStreamTextStrings.Enqueue(s);
-                    //}
-                }
-            }
-            while (bytes > 0);
-        }
-
-
-
-
-
-
-
-        #endregion
-
-        private void MainForm_KeyPress(object sender, KeyPressEventArgs e)
-        {
-            if (e.KeyChar == 27)//escape key
-            {
-                this.Close();
-            }
-        }
-
-
-
-
-        private void btnProperties_Click(object sender, EventArgs e)
-        {
-            PropertiesEditor propForm = new PropertiesEditor(defaultProperties, defaultPropertiesXMLfileName);
-            propForm.FormClosed += new FormClosedEventHandler(PropertiesFormClosed);
-            propForm.ShowDialog();
-        }
-
-
-
-        public void PropertiesFormClosed(object sender, FormClosedEventArgs e)
-        {
-            readDefaultProperties();
-        }
-
-
-
-        private void readDefaultProperties()
-        {
-            defaultProperties = new Dictionary<string, object>();
-            defaultPropertiesXMLfileName = Directory.GetCurrentDirectory() +
-                                         "\\settings\\IofffeVesselInfoStreamSettings.xml";
-            if (!File.Exists(defaultPropertiesXMLfileName)) return;
-            defaultProperties = ServiceTools.ReadDictionaryFromXML(defaultPropertiesXMLfileName);
-
-            bcstServerIP = (string)defaultProperties["DefaultDataBroadcastingServerIP"];
-            bcstServerPort = Convert.ToInt32(defaultProperties["DefaultDataBroadcastingServerPort"]);
-            graphsUpdatingPeriodSec = Convert.ToInt32(defaultProperties["GraphsUpdatingPeriodSec"]);
-        }
-
-
-
-
-        private void MainForm_Shown(object sender, EventArgs e)
-        {
-            readDefaultProperties();
-        }
-
 
 
 
@@ -1409,7 +1689,7 @@ namespace IofffeVesselInfoStream
                 {
                     DoWorkEventHandler bgw1DoWorkHandler = delegate(object currBGWsender, DoWorkEventArgs args)
                     {
-                        ThreadSafeOperations.SetLoadingCircleState(wcUpdatimgGraphs, true, true, wcUpdatimgGraphs.Color);
+                        ThreadSafeOperations.SetLoadingCircleState(wcUpdatimgGeoTrack, true, true, wcUpdatimgGeoTrack.Color);
                         BackgroundWorker selfWorker = currBGWsender as BackgroundWorker;
                         object[] currBGWarguments = (object[])args.Argument;
 
@@ -1422,7 +1702,7 @@ namespace IofffeVesselInfoStream
                     RunWorkerCompletedEventHandler currWorkCompletedHandler = delegate(object currBGWCompletedSender, RunWorkerCompletedEventArgs args)
                     {
                         object[] currentBGWResults = (object[])args.Result;
-                        ThreadSafeOperations.SetLoadingCircleState(wcUpdatimgGraphs, false, false, wcUpdatimgGraphs.Color);
+                        ThreadSafeOperations.SetLoadingCircleState(wcUpdatimgGeoTrack, false, false, wcUpdatimgGeoTrack.Color);
                     };
 
 
@@ -1443,7 +1723,104 @@ namespace IofffeVesselInfoStream
             }
         }
 
+        #endregion Geotrack
 
+
+
+
+
+
+        #region form behaviour
+
+        private void MainForm_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            if (e.KeyChar == 27)//escape key
+            {
+                this.Close();
+            }
+        }
+
+
+        private void btnProperties_Click(object sender, EventArgs e)
+        {
+            PropertiesEditor propForm = new PropertiesEditor(defaultProperties, defaultPropertiesXMLfileName);
+            propForm.FormClosed += new FormClosedEventHandler(PropertiesFormClosed);
+            propForm.ShowDialog();
+        }
+
+
+        public void PropertiesFormClosed(object sender, FormClosedEventArgs e)
+        {
+            readDefaultProperties();
+        }
+
+
+        private void readDefaultProperties()
+        {
+            defaultProperties = new Dictionary<string, object>();
+            defaultPropertiesXMLfileName = Directory.GetCurrentDirectory() +
+                                         "\\settings\\IofffeVesselInfoStreamSettings.xml";
+            if (!File.Exists(defaultPropertiesXMLfileName)) return;
+            defaultProperties = ServiceTools.ReadDictionaryFromXML(defaultPropertiesXMLfileName);
+
+            bcstServerIP = (string)defaultProperties["DefaultDataBroadcastingServerIP"];
+            bcstServerPort = Convert.ToInt32(defaultProperties["DefaultDataBroadcastingServerPort"]);
+            graphsUpdatingPeriodSec = Convert.ToInt32(defaultProperties["GraphsUpdatingPeriodSec"]);
+            updateGeoTrackPeriodSec = Convert.ToInt32(defaultProperties["GeotrackUpdatingPeriodSec"]);
+        }
+
+
+        private void MainForm_Shown(object sender, EventArgs e)
+        {
+            readDefaultProperties();
+
+            cquStreamTextStrings.CollectionChanged += cquStreamTextStrings_CollectionChanged;
+
+            cquMeteoDataQueue.CollectionChanged += cquMeteoDataQueue_CollectionChanged;
+
+            cquGPSDataQueue.CollectionChanged += cquGPSDataQueue_CollectionChanged;
+        }
+
+
+
+        private void btnConnect_Click(object sender, EventArgs e)
+        {
+            if (bgwSocketStreamReader.IsBusy)
+            {
+                bgwSocketStreamReader.CancelAsync();
+                //bgwStreamTextParser.CancelAsync();
+                bgwStreamDataProcessing.CancelAsync();
+                bgwGeotrackRenderer.CancelAsync();
+                ThreadSafeOperations.ToggleButtonState(btnConnect, true, "CONNECT", true);
+            }
+            else
+            {
+                try
+                {
+                    s = ConnectSocket(bcstServerIP, bcstServerPort);
+                }
+                catch (Exception ex)
+                {
+                    theLogWindow = ServiceTools.LogAText(theLogWindow, "couldn`t connect: " + ex.Message);
+                }
+
+                if (s == null) return;
+                else
+                {
+                    bgwStreamDataProcessing.RunWorkerAsync();
+                    //bgwStreamTextParser.RunWorkerAsync();
+                    bgwSocketStreamReader.RunWorkerAsync(new object[] { s });
+                    ThreadSafeOperations.ToggleButtonState(btnConnect, true, "STOP", true);
+                    if (showGeoTrack)
+                    {
+                        bgwGeotrackRenderer.RunWorkerAsync();
+                    }
+                }
+            }
+        }
+
+
+        #endregion form behaviour
 
 
 
@@ -1462,7 +1839,7 @@ namespace IofffeVesselInfoStream
                 if (timerGraphUpdate == null)
                 {
                     TimerCallback tcbRenderAndShowGraph = RenderAndShowGraph;
-                    timerGraphUpdate = new System.Threading.Timer(tcbRenderAndShowGraph, null, 0, graphsUpdatingPeriodSec*1000);
+                    timerGraphUpdate = new System.Threading.Timer(tcbRenderAndShowGraph, null, 0, graphsUpdatingPeriodSec * 1000);
                 }
                 else
                 {
@@ -1484,11 +1861,19 @@ namespace IofffeVesselInfoStream
 
         private void RenderAndShowGraph(object state)
         {
+            ThreadSafeOperations.SetLoadingCircleState(wcUpdatimgGraph, true, true, wcUpdatimgGraph.Color);
+
             bgwGraphsPresenter = new BackgroundWorker();
             bgwGraphsPresenter.DoWork += bgwGraphsPresenter_DoWork;
+            bgwGraphsPresenter.RunWorkerCompleted += bgwGraphsPresenter_RunWorkerCompleted;
 
             bgwGraphsPresenter.RunWorkerAsync();
+        }
 
+
+        void bgwGraphsPresenter_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
+        {
+            ThreadSafeOperations.SetLoadingCircleState(wcUpdatimgGraph, false, false, wcUpdatimgGraph.Color);
         }
 
 
@@ -1496,10 +1881,13 @@ namespace IofffeVesselInfoStream
 
         void bgwGraphsPresenter_DoWork(object sender, DoWorkEventArgs e)
         {
-            Image<Bgr, byte> img = FillGraphImage(pbGraphs.Size);
-            if (img != null)
+
+            Thread.CurrentThread.Priority = ThreadPriority.Lowest;
+
+            graphImage = FillGraphImage(pbGraphs.Size);
+            if (graphImage != null)
             {
-                ThreadSafeOperations.UpdatePictureBox(pbGraphs, img, false);
+                ThreadSafeOperations.UpdatePictureBox(pbGraphs, graphImage, false);
             }
         }
 
@@ -1533,46 +1921,71 @@ namespace IofffeVesselInfoStream
 
 
 
+
         private Image<Bgr, byte> FillGraphImage(Size imgSize)
         {
             string curDirPath = Directory.GetCurrentDirectory() + "\\logs\\";
 
             DirectoryInfo dirInfo = new DirectoryInfo(curDirPath);
 
-            string yesterdaysMeteoDataFileName = curDirPath + "IoffeVesselInfoStream-MeteoDataLog-" +
-                                             DateTime.UtcNow.Date.AddDays(-1).ToString("yyyy-MM-dd") + ".nc";
+            List<Dictionary<string, object>> lReadData = new List<Dictionary<string, object>>();
 
-            string todaysMeteoDataFileName = curDirPath + "IoffeVesselInfoStream-MeteoDataLog-" +
-                                             DateTime.UtcNow.Date.ToString("yyyy-MM-dd") + ".nc";
-
-            if (!File.Exists(todaysMeteoDataFileName) && !File.Exists(yesterdaysMeteoDataFileName))
+            if (defaultGraphsTimeSpan)
             {
-                return null;
+                graphsTimeSpan = new Tuple<DateTime, DateTime>(DateTime.UtcNow.AddDays(-1), DateTime.UtcNow);
             }
 
-            Dictionary<string, object> dictTodaysFileData = null;
-            Dictionary<string, object> dictYesterdaysFileData = null;
 
-            try
+            if (defaultGraphsTimeSpan)
             {
-                dictTodaysFileData = NetCDFoperations.ReadDataFromFile(todaysMeteoDataFileName);
-                dictYesterdaysFileData = NetCDFoperations.ReadDataFromFile(yesterdaysMeteoDataFileName);
+                string yesterdaysMeteoDataFileName = curDirPath + "IoffeVesselInfoStream-MeteoDataLog-" +
+                                                     DateTime.UtcNow.Date.AddDays(-1).ToString("yyyy-MM-dd") + ".nc";
+
+                string todaysMeteoDataFileName = curDirPath + "IoffeVesselInfoStream-MeteoDataLog-" +
+                                                 DateTime.UtcNow.Date.ToString("yyyy-MM-dd") + ".nc";
+                if (!File.Exists(todaysMeteoDataFileName) && !File.Exists(yesterdaysMeteoDataFileName))
+                {
+                    return null;
+                }
+
+                Dictionary<string, object> dictTodaysFileData = null;
+                Dictionary<string, object> dictYesterdaysFileData = null;
+
+                try
+                {
+                    dictTodaysFileData = NetCDFoperations.ReadDataFromFile(todaysMeteoDataFileName);
+                    dictYesterdaysFileData = NetCDFoperations.ReadDataFromFile(yesterdaysMeteoDataFileName);
+                }
+                catch (Exception)
+                {
+                    //return null;
+                }
+                if ((dictTodaysFileData == null) && (dictYesterdaysFileData == null))
+                {
+                    return null;
+                }
+
+                lReadData.AddRange(new[] { dictYesterdaysFileData, dictTodaysFileData });
             }
-            catch (Exception)
+            else
             {
-                //return null;
+                IEnumerable<string> ncFileNames = Directory.EnumerateFiles(curDirPath, "IoffeVesselInfoStream-MeteoDataLog-*.nc",
+                    SearchOption.TopDirectoryOnly);
+                foreach (string ncFileName in ncFileNames)
+                {
+                    Tuple<DateTime, DateTime> currFileDateTimeRange =
+                        ServiceTools.GetNetCDFfileTimeStampsRange(ncFileName);
+                    if (currFileDateTimeRange == null) continue;
+
+                    if ((currFileDateTimeRange.Item1 >= graphsTimeSpan.Item1) && (currFileDateTimeRange.Item1 <= graphsTimeSpan.Item2) ||
+                        (currFileDateTimeRange.Item2 >= graphsTimeSpan.Item1) && (currFileDateTimeRange.Item2 <= graphsTimeSpan.Item2))
+                    {
+                        Dictionary<string, object> dictFileData = NetCDFoperations.ReadDataFromFile(ncFileName);
+                        lReadData.Add(dictFileData);
+                    }
+                }
             }
 
-            if ((dictTodaysFileData == null) && (dictYesterdaysFileData == null))
-            {
-                return null;
-            }
-
-            List<Dictionary<string, object>> lReadData = new List<Dictionary<string, object>>()
-            {
-                dictYesterdaysFileData,
-                dictTodaysFileData
-            };
 
 
             TimeSeries<MeteoData> tsMeteoData = null;
@@ -1612,7 +2025,15 @@ namespace IofffeVesselInfoStream
             tsMeteoData.RemoveDuplicatedTimeStamps();
 
             DateTime utcNow = DateTime.UtcNow;
-            tsMeteoData.RemoveValues(new Predicate<DateTime>(dt => (utcNow - dt).TotalSeconds > 86400));
+            if (defaultGraphsTimeSpan)
+            {
+                tsMeteoData.RemoveValues(dt => (utcNow - dt).TotalSeconds > 86400);
+            }
+            else
+            {
+                tsMeteoData.RemoveValues(dt => !((dt >= graphsTimeSpan.Item1) && (dt <= graphsTimeSpan.Item2)));
+            }
+
 
             List<TimeSeries<MeteoData>> subSeriesBy1Minute = tsMeteoData.SplitByTimeSpan(new TimeSpan(0, 1, 0));
             List<double> lSubSeriesEntriesCount = subSeriesBy1Minute.ConvertAll(subs => (double)subs.Count);
@@ -1738,7 +2159,7 @@ namespace IofffeVesselInfoStream
             retImg.Draw(strSign, ref theFont, textBarsCases[0].ptTextBaselineStart, new Bgr(Color.Green));
             retImg.Draw(textBarsCases[0].rectSurroundingBar, new Bgr(Color.Green), 2);
 
-            
+
             return retImg;
         }
 
@@ -1813,7 +2234,72 @@ namespace IofffeVesselInfoStream
 
 
 
+
+        private void btnGraphMoveFocusLeft_Click(object sender, EventArgs e)
+        {
+            defaultGraphsTimeSpan = false;
+            graphsTimeSpan = new Tuple<DateTime, DateTime>(graphsTimeSpan.Item1.AddHours(-12), graphsTimeSpan.Item2.AddHours(-12));
+            RenderAndShowGraph(null);
+        }
+
+
+
+        private void btnGraphMoveFocusRight_Click(object sender, EventArgs e)
+        {
+            defaultGraphsTimeSpan = false;
+            graphsTimeSpan = new Tuple<DateTime, DateTime>(graphsTimeSpan.Item1.AddHours(12), graphsTimeSpan.Item2.AddHours(12));
+            if (graphsTimeSpan.Item2 > DateTime.UtcNow)
+            {
+                graphsTimeSpan = new Tuple<DateTime, DateTime>(graphsTimeSpan.Item1 + (DateTime.UtcNow - graphsTimeSpan.Item2), DateTime.UtcNow);
+            }
+            RenderAndShowGraph(null);
+        }
+
+
+
+        private void btnGraphDefault_Click(object sender, EventArgs e)
+        {
+            defaultGraphsTimeSpan = true;
+            graphsTimeSpan = new Tuple<DateTime, DateTime>(DateTime.UtcNow.AddDays(-1), DateTime.UtcNow);
+            RenderAndShowGraph(null);
+        }
+
+
+
+
+        private void btnGraphZoomOut_Click(object sender, EventArgs e)
+        {
+            defaultGraphsTimeSpan = false;
+            graphsTimeSpan = new Tuple<DateTime, DateTime>(graphsTimeSpan.Item1.AddHours(-6), graphsTimeSpan.Item2.AddHours(6));
+            if (graphsTimeSpan.Item2 > DateTime.UtcNow)
+            {
+                graphsTimeSpan = new Tuple<DateTime, DateTime>(graphsTimeSpan.Item1, DateTime.UtcNow);
+            }
+            RenderAndShowGraph(null);
+        }
+
+
+
+        private void btnGraphZoomIn_Click(object sender, EventArgs e)
+        {
+            defaultGraphsTimeSpan = false;
+            graphsTimeSpan = new Tuple<DateTime, DateTime>(graphsTimeSpan.Item1.AddHours(6), graphsTimeSpan.Item2.AddHours(-6));
+
+            if (graphsTimeSpan.Item1 >= graphsTimeSpan.Item2)
+            {
+                btnGraphDefault_Click(null, null);
+            }
+            else
+            {
+                RenderAndShowGraph(null);
+            }
+        }
+
+
+
         #endregion graphs representing
+
+
 
 
 
@@ -2152,6 +2638,396 @@ namespace IofffeVesselInfoStream
         }
 
         #endregion backward reading and showing nav,meteo data
+
+
+
+
+
+
+        #region backward repair missing data of nc-files using IOFFE met-files data
+
+        private List<IoffeVesselDualNavDataConverted> lFoundNavData = null;
+        private List<IoffeVesselMetDataConverted> lFoundMeteoData = null;
+        private BackgroundWorker bgwMissingInfoSearcher = null;
+        private void btnFindIOFFEdataFiles_Click(object sender, EventArgs e)
+        {
+            if (bgwMissingInfoSearcher != null)
+            {
+                if (bgwMissingInfoSearcher.IsBusy)
+                {
+                    bgwMissingInfoSearcher.CancelAsync();
+                    return;
+                }
+            }
+
+            DateTime curDateTime = DateTime.UtcNow;
+
+            theLogWindow = ServiceTools.LogAText(theLogWindow,
+                "started at " + DateTime.Now.ToString("u").Replace("Z", ""));
+
+            if (!DateTime.TryParse(maskedTextBox2.Text, out curDateTime))
+            {
+                theLogWindow = ServiceTools.LogAText(theLogWindow, "couldn`t parse date-time.");
+                return;
+            }
+
+            curDateTime = DateTime.SpecifyKind(curDateTime, DateTimeKind.Utc);
+
+
+            bgwMissingInfoSearcher = new BackgroundWorker();
+            bgwMissingInfoSearcher.WorkerReportsProgress = true;
+            bgwMissingInfoSearcher.WorkerSupportsCancellation = true;
+
+            bgwMissingInfoSearcher.DoWork += ((obj, evArgs) =>
+            {
+                BackgroundWorker selfWorker = obj as BackgroundWorker;
+                object[] inArgs = (object[])evArgs.Argument;
+                Dictionary<string, object> defProperties = inArgs[0] as Dictionary<string, object>;
+                LogWindow bgwLogWindow = inArgs[1] as LogWindow;
+
+                string navMetFilesPath = defProperties["IoffeNavMeteoDataFilesDirectory"] as string;
+                List<IoffeVesselDualNavDataConverted> lAllNavData = new List<IoffeVesselDualNavDataConverted>();
+
+                string[] sNavFilenames = Directory.GetFiles(navMetFilesPath, "*.nv2", SearchOption.AllDirectories);
+                string[] sMetFilenames = Directory.GetFiles(navMetFilesPath, "*.met", SearchOption.AllDirectories);
+
+                #region NAV data
+
+                int totalFilesCount = sNavFilenames.Count() + sMetFilenames.Count();
+                int ProgressPercentagePrev = 0;
+                int processedFiles = 0;
+
+                if (!sNavFilenames.Any())
+                {
+                    bgwLogWindow = ServiceTools.LogAText(bgwLogWindow, "Не найдено подходящих файлов данных навигации", true);
+                    return;
+                }
+                else
+                {
+                    foreach (string navFilename in sNavFilenames)
+                    {
+                        processedFiles++;
+                        int ProgressPercentage = Convert.ToInt32(100.0d * processedFiles / totalFilesCount);
+                        if (ProgressPercentage > ProgressPercentagePrev)
+                        {
+                            ProgressPercentagePrev = ProgressPercentage;
+                            selfWorker.ReportProgress(ProgressPercentage);
+                        }
+
+
+                        if (selfWorker.CancellationPending)
+                        {
+                            break;
+                        }
+
+                        Tuple<DateTime, DateTime> timeSpan =
+                            IoffeVesselNavDataReader.GetNavFileDateTimeMargins(navFilename);
+                        if (timeSpan == null)
+                        {
+                            continue;
+                        }
+
+                        if ((curDateTime.Date != timeSpan.Item1.Date) && (curDateTime.Date != timeSpan.Item2.Date))
+                        {
+                            continue;
+                        }
+
+                        List<IoffeVesselDualNavDataConverted> dataHasBeenRead =
+                            IoffeVesselNavDataReader.ReadNavFile(navFilename);
+                        if (dataHasBeenRead == null)
+                        {
+                            continue;
+                        }
+                        bgwLogWindow = ServiceTools.LogAText(bgwLogWindow, "файл навигации прочитан: " + navFilename,
+                            true);
+                        Application.DoEvents();
+                        lAllNavData.AddRange(dataHasBeenRead);
+                    }
+                }
+
+                if (selfWorker.CancellationPending)
+                {
+                    evArgs.Result = null;
+                    return;
+                }
+
+                lAllNavData.Sort((gpsRecord1, gpsRecord2) => (gpsRecord1.gps.dateTimeUTC >= gpsRecord2.gps.dateTimeUTC) ? (1) : (-1));
+
+                #endregion NAV data
+
+                #region MET data
+
+                List<IoffeVesselMetDataConverted> lAllMetData = new List<IoffeVesselMetDataConverted>();
+
+
+                if (!sMetFilenames.Any())
+                {
+                    bgwLogWindow = ServiceTools.LogAText(bgwLogWindow, "Не найдено подходящих файлов данных метео", true);
+                    return;
+                }
+                else
+                {
+                    foreach (string meteoFilename in sMetFilenames)
+                    {
+                        processedFiles++;
+                        int ProgressPercentage = Convert.ToInt32(100.0d * processedFiles / totalFilesCount);
+                        if (ProgressPercentage > ProgressPercentagePrev)
+                        {
+                            ProgressPercentagePrev = ProgressPercentage;
+                            selfWorker.ReportProgress(ProgressPercentage);
+                        }
+
+
+                        if (selfWorker.CancellationPending)
+                        {
+                            break;
+                        }
+
+                        Tuple<DateTime, DateTime> timeSpan =
+                            IoffeVesselMeteoDataReader.GetMetFileDateTimeMargins(meteoFilename);
+                        if (timeSpan == null)
+                        {
+                            continue;
+                        }
+
+                        if ((curDateTime.Date != timeSpan.Item1.Date) && (curDateTime.Date != timeSpan.Item2.Date))
+                        {
+                            continue;
+                        }
+
+                        List<IoffeVesselMetDataConverted> dataHasBeenRead =
+                            IoffeVesselMeteoDataReader.ReadMetFile(meteoFilename);
+                        if (dataHasBeenRead == null)
+                        {
+                            continue;
+                        }
+                        bgwLogWindow = ServiceTools.LogAText(bgwLogWindow,
+                            "файл метеоданных прочитан: " + meteoFilename, true);
+                        Application.DoEvents();
+                        lAllMetData.AddRange(dataHasBeenRead);
+                    }
+                }
+
+                if (selfWorker.CancellationPending)
+                {
+                    evArgs.Result = null;
+                    return;
+                }
+
+                lAllMetData.Sort((metRecord1, metRecord2) => (metRecord1.dateTime >= metRecord2.dateTime) ? (1) : (-1));
+
+                #endregion MET data
+
+                evArgs.Result = new object[] { lAllNavData, lAllMetData };
+            });
+
+
+            bgwMissingInfoSearcher.RunWorkerCompleted += ((obj, evArgs) =>
+            {
+                if (evArgs.Result == null)
+                {
+                    return;
+                }
+
+                object[] res = evArgs.Result as object[];
+                lFoundNavData = res[0] as List<IoffeVesselDualNavDataConverted>;
+                lFoundMeteoData = res[1] as List<IoffeVesselMetDataConverted>;
+                ThreadSafeOperations.UpdateProgressBar(prbMissingInfoSearchingProgress, 0);
+                ThreadSafeOperations.ToggleButtonState(btnFindIOFFEdataFiles, true, "find IOFFE data files", true);
+
+                theLogWindow = ServiceTools.LogAText(theLogWindow,
+                    "finished at " + DateTime.Now.ToString("u").Replace("Z", ""));
+
+                bgwMissingInfoSearcher.Dispose();
+                bgwMissingInfoSearcher = null;
+            });
+
+
+            bgwMissingInfoSearcher.ProgressChanged += ((bgwSender, prChangedArgs) =>
+            {
+                ThreadSafeOperations.UpdateProgressBar(prbMissingInfoSearchingProgress, prChangedArgs.ProgressPercentage);
+            });
+
+
+            object[] bgwMissingInfoSearcherArgs = new object[] { defaultProperties, theLogWindow };
+            bgwMissingInfoSearcher.RunWorkerAsync(bgwMissingInfoSearcherArgs);
+
+            ThreadSafeOperations.ToggleButtonState(btnFindIOFFEdataFiles, true, "CANCEL", true);
+        }
+
+
+
+
+
+
+        private void btnRepairAndWriteNCfile_Click(object sender, EventArgs e)
+        {
+            if (lFoundNavData == null || lFoundMeteoData == null)
+            {
+                theLogWindow = ServiceTools.LogAText(theLogWindow,
+                    "can`t write data - it hasn`t been found yet. Use \"find closest records\" first.");
+                return;
+            }
+
+            DateTime curDateTime = DateTime.UtcNow;
+
+            if (!DateTime.TryParse(maskedTextBox2.Text, out curDateTime))
+            {
+                theLogWindow = ServiceTools.LogAText(theLogWindow, "couldn`t parse date-time.");
+                return;
+            }
+
+            curDateTime = DateTime.SpecifyKind(curDateTime, DateTimeKind.Utc);
+
+            /// todo: сделать и для GPS
+            //string ncFileNameNav = Directory.GetCurrentDirectory() + "\\logs\\IoffeVesselInfoStream-GPSDataLog-" +
+            //                       curDateTime.Date.ToString("yyyy-MM-dd") + ".nc";
+
+            string ncFileNameMet = Directory.GetCurrentDirectory() + "\\logs\\IoffeVesselInfoStream-MeteoDataLog-" +
+                                   curDateTime.Date.ToString("yyyy-MM-dd") + ".nc";
+
+            /// todo: сделать и для GPS
+            //File.Copy(ncFileNameNav, ncFileNameNav + ".bak");
+
+
+            File.Copy(ncFileNameMet, ncFileNameMet + ".bak");
+
+
+
+
+            #region meteo
+
+
+            Dictionary<string, object> dictMeteoFileData = null;
+
+
+            try
+            {
+                dictMeteoFileData = NetCDFoperations.ReadDataFromFile(ncFileNameMet);
+            }
+            catch (Exception)
+            {
+                theLogWindow = ServiceTools.LogAText(theLogWindow, "не получилось прочитать файл данных метео, который надо корректировать.");
+                return;
+            }
+
+            if (dictMeteoFileData == null)
+            {
+                theLogWindow = ServiceTools.LogAText(theLogWindow, "не получилось прочитать файл данных метео, который надо корректировать.");
+                return;
+            }
+
+            string varNameDateTime = "DateTime";
+            List<long> currFileDateTimeLongTicksList = new List<long>((dictMeteoFileData[varNameDateTime] as long[]));
+            List<DateTime> currFileDateTimeList =
+                currFileDateTimeLongTicksList.ConvertAll(longVal => new DateTime(longVal));
+            string varNameMeteoData = "MeteoData";
+            List<MeteoData> currFileMeteoDataList =
+                MeteoData.OfDenseMatrix(dictMeteoFileData[varNameMeteoData] as DenseMatrix);
+
+            TimeSeries<MeteoData> tsMeteoData = new TimeSeries<MeteoData>(currFileMeteoDataList, currFileDateTimeList);
+            tsMeteoData.SortByTimeStamps();
+
+            List<DateTime> lFoundMeteoDataDTvalues = lFoundMeteoData.ConvertAll(foundMetDatum => foundMetDatum.dateTime);
+            List<MeteoData> lFoundMeteoDataMeteoValues = lFoundMeteoData.ConvertAll(foundMetDatum => new MeteoData()
+            {
+                pressure = foundMetDatum.pressure,
+                Rhumidity = foundMetDatum.rHumidity,
+                airTemperature = foundMetDatum.tAir,
+                windSpeed = foundMetDatum.windSpeed,
+                windDirection = foundMetDatum.windDirection,
+                waterTemperature = 0.0d,
+                waterSalinity = 0.0d,
+            });
+
+            tsMeteoData.AddSubseriaData(lFoundMeteoDataMeteoValues, lFoundMeteoDataDTvalues);
+
+            Dictionary<string, object> dataToSave = new Dictionary<string, object>();
+
+            dataToSave.Add("DateTime", tsMeteoData.TimeStamps.ConvertAll(dt => dt.Ticks).ToArray());
+
+            DenseMatrix dvMeteoDataVectorToAdd = MeteoData.ToDenseMatrix(tsMeteoData.DataValues);
+
+            dataToSave.Add("MeteoData", dvMeteoDataVectorToAdd);
+
+            File.Delete(ncFileNameMet);
+            NetCDFoperations.AddVariousDataToFile(dataToSave, ncFileNameMet);
+
+
+            #endregion
+
+        }
+
+
+
+
+        #endregion backward repair missing data of nc-files using IOFFE met-files data
+
+
+
+
+
+
+        #region // SeaBird SeaSave processor
+
+        //private void button1_Click(object sender, EventArgs e)
+        //{
+        //    if (!bgwSeaSaveSocketStreamReader.IsBusy)
+        //    {
+        //        scktSeaSave = ConnectSocket("169.254.249.87", 49161);
+        //        //scktSeaSave = ConnectSocket("192.168.192.218", 4001);
+        //        if (scktSeaSave == null) return;
+        //        bgwSeaSaveSocketStreamReader.RunWorkerAsync(new object[] { scktSeaSave });
+        //        ThreadSafeOperations.ToggleButtonState(btnStartStopSeaSave, true, "STOP", true);
+        //    }
+        //    else
+        //    {
+        //        bgwSeaSaveSocketStreamReader.CancelAsync();
+        //        ThreadSafeOperations.ToggleButtonState(btnStartStopSeaSave, true, "CONNECT SeaSave", true);
+        //    }
+        //}
+
+
+
+
+        //private void bgwSeaSaveSocketStreamReader_DoWork(object sender, DoWorkEventArgs e)
+        //{
+        //    BackgroundWorker selfWorker = sender as BackgroundWorker;
+        //    Socket sckt = ((object[])e.Argument)[0] as Socket;
+
+
+        //    Byte[] bytesReceived = new Byte[1024];
+
+        //    int bytes = 0;
+        //    string gotString = "";
+        //    do
+        //    {
+        //        if (selfWorker.CancellationPending)
+        //        {
+        //            sckt.Disconnect(false);
+        //            sckt.Dispose();
+        //            sckt = null;
+        //            break;
+        //        }
+
+        //        if (sckt != null)
+        //        {
+        //            bytes = sckt.Receive(bytesReceived, bytesReceived.Length, 0);
+        //            gotString = Encoding.ASCII.GetString(bytesReceived, 0, bytes);
+
+        //            ThreadSafeOperations.SetTextTB(tbSeaSaveLog, gotString + Environment.NewLine, true);
+
+        //            //string[] gotStrings = gotString.Split('%');
+        //            //foreach (string s in gotStrings)
+        //            //{
+        //            //    quStreamTextStrings.Enqueue(s);
+        //            //}
+        //        }
+        //    }
+        //    while (bytes > 0);
+        //}
+
+        #endregion // SeaBird SeaSave processor
 
 
     }

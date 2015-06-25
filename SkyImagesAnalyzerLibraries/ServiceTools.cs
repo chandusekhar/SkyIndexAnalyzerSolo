@@ -374,6 +374,21 @@ namespace SkyImagesAnalyzerLibraries
 
 
 
+
+        public static string CurrentCodeLineDescription(
+            [CallerMemberName] string callingMethod = "",
+            [CallerFilePath] string callingFilePath = "",
+            [CallerLineNumber] int callingFileLineNumber = 0)
+        {
+            string str = "line " + callingFileLineNumber + Environment.NewLine
+                + "in method " + callingMethod + Environment.NewLine
+                + "in file " + callingFilePath;
+            return str;
+        }
+
+
+
+
         public static void ReportProgressByIndicator(MultipleProgressIndicatingForm theForm, ProgressVisualizationStruct theIndicator, int codeLineNumber, int methodLinesNumber)
         {
             theForm.UpdateIndicator(theIndicator, (double)codeLineNumber / (double)methodLinesNumber);
@@ -947,6 +962,41 @@ namespace SkyImagesAnalyzerLibraries
             }
 
             return neededGPSdata;
+        }
+
+
+
+
+
+
+        public static Tuple<DateTime, DateTime> GetNetCDFfileTimeStampsRange(string strFileName)
+        {
+            if (!strFileName.Any())
+            {
+                return null;
+            }
+            if (!File.Exists(strFileName))
+            {
+                return null;
+            }
+            List<DateTime> currFileDateTimeList = null;
+            try
+            {
+                Dictionary<string, object> dictDTdata = NetCDFoperations.ReadDataFromFile(strFileName, new List<string>() { "DateTime" });
+                List<long> currFileDateTimeLongTicksList = new List<long>((dictDTdata["DateTime"] as long[]));
+                currFileDateTimeList = currFileDateTimeLongTicksList.ConvertAll(longVal => new DateTime(longVal));
+            }
+            catch (Exception ex)
+            {
+                return null;
+            }
+
+            currFileDateTimeList.Sort();
+            if (currFileDateTimeList.Count >= 2)
+            {
+                return new Tuple<DateTime, DateTime>(currFileDateTimeList.First(), currFileDateTimeList.Last());
+            }
+            else return null;
         }
     }
 }

@@ -29,7 +29,6 @@
         private void InitializeComponent()
         {
             this.bgwSocketStreamReader = new System.ComponentModel.BackgroundWorker();
-            this.bgwStreamTextParser = new System.ComponentModel.BackgroundWorker();
             this.bgwGeotrackRenderer = new System.ComponentModel.BackgroundWorker();
             this.bgwStreamDataProcessing = new System.ComponentModel.BackgroundWorker();
             this.tabControl1 = new System.Windows.Forms.TabControl();
@@ -64,7 +63,7 @@
             this.lblPressureGraphTitle = new System.Windows.Forms.Label();
             this.pbGraphs = new System.Windows.Forms.PictureBox();
             this.trbGeoTrackScale = new System.Windows.Forms.TrackBar();
-            this.wcUpdatimgGraphs = new MRG.Controls.UI.LoadingCircle();
+            this.wcUpdatimgGeoTrack = new MRG.Controls.UI.LoadingCircle();
             this.lblWaterTemperatureTitle = new System.Windows.Forms.Label();
             this.lblWaterSalinityTitle = new System.Windows.Forms.Label();
             this.tbWaterTemperatureValue = new System.Windows.Forms.TextBox();
@@ -86,6 +85,13 @@
             this.btnToggleShowGeotrack = new System.Windows.Forms.Button();
             this.label1 = new System.Windows.Forms.Label();
             this.btnToggleShowGraphs = new System.Windows.Forms.Button();
+            this.wcUpdatimgGraph = new MRG.Controls.UI.LoadingCircle();
+            this.tableLayoutPanel4 = new System.Windows.Forms.TableLayoutPanel();
+            this.btnGraphMoveFocusRight = new System.Windows.Forms.Button();
+            this.btnGraphZoomIn = new System.Windows.Forms.Button();
+            this.btnGraphDefault = new System.Windows.Forms.Button();
+            this.btnGraphMoveFocusLeft = new System.Windows.Forms.Button();
+            this.btnGraphZoomOut = new System.Windows.Forms.Button();
             this.tpNavAndMeteoOverview = new System.Windows.Forms.TabPage();
             this.tableLayoutPanel3 = new System.Windows.Forms.TableLayoutPanel();
             this.label2 = new System.Windows.Forms.Label();
@@ -95,16 +101,19 @@
             this.lblFoundNavDataTitle = new System.Windows.Forms.Label();
             this.lblFoundMeteoDataTitle = new System.Windows.Forms.Label();
             this.prbSearchingProgress = new System.Windows.Forms.ProgressBar();
-            this.tpSeaSaveStream = new System.Windows.Forms.TabPage();
-            this.tableLayoutPanel2 = new System.Windows.Forms.TableLayoutPanel();
-            this.btnStartStopSeaSave = new System.Windows.Forms.Button();
-            this.tbSeaSaveLog = new System.Windows.Forms.TextBox();
-            this.bgwSeaSaveSocketStreamReader = new System.ComponentModel.BackgroundWorker();
-            this.bgwSeaSaveStreamTextParser = new System.ComponentModel.BackgroundWorker();
             this.lblFoundNavData = new System.Windows.Forms.TextBox();
             this.lblFoundMetData = new System.Windows.Forms.TextBox();
             this.lblPlusOneHour = new System.Windows.Forms.Button();
             this.btnPlusOneDay = new System.Windows.Forms.Button();
+            this.label3 = new System.Windows.Forms.Label();
+            this.maskedTextBox2 = new System.Windows.Forms.MaskedTextBox();
+            this.btnFindIOFFEdataFiles = new System.Windows.Forms.Button();
+            this.btnRepairAndWriteNCfile = new System.Windows.Forms.Button();
+            this.prbMissingInfoSearchingProgress = new System.Windows.Forms.ProgressBar();
+            this.tpSeaSaveStream = new System.Windows.Forms.TabPage();
+            this.tableLayoutPanel2 = new System.Windows.Forms.TableLayoutPanel();
+            this.btnStartStopSeaSave = new System.Windows.Forms.Button();
+            this.tbSeaSaveLog = new System.Windows.Forms.TextBox();
             this.tabControl1.SuspendLayout();
             this.tpNavAndMeteo.SuspendLayout();
             this.tableLayoutPanel1.SuspendLayout();
@@ -112,6 +121,7 @@
             ((System.ComponentModel.ISupportInitialize)(this.pbGraphs)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.trbGeoTrackScale)).BeginInit();
             this.groupBox1.SuspendLayout();
+            this.tableLayoutPanel4.SuspendLayout();
             this.tpNavAndMeteoOverview.SuspendLayout();
             this.tableLayoutPanel3.SuspendLayout();
             this.tpSeaSaveStream.SuspendLayout();
@@ -122,11 +132,6 @@
             // 
             this.bgwSocketStreamReader.WorkerSupportsCancellation = true;
             this.bgwSocketStreamReader.DoWork += new System.ComponentModel.DoWorkEventHandler(this.bgwSocketStreamReader_DoWork);
-            // 
-            // bgwStreamTextParser
-            // 
-            this.bgwStreamTextParser.WorkerSupportsCancellation = true;
-            this.bgwStreamTextParser.DoWork += new System.ComponentModel.DoWorkEventHandler(this.bgwStreamTextParser_DoWork);
             // 
             // bgwGeotrackRenderer
             // 
@@ -202,31 +207,33 @@
             this.tableLayoutPanel1.Controls.Add(this.tbRelHumidityValue, 6, 7);
             this.tableLayoutPanel1.Controls.Add(this.pbGeoTrack, 1, 12);
             this.tableLayoutPanel1.Controls.Add(this.lblPressureGraphTitle, 5, 11);
-            this.tableLayoutPanel1.Controls.Add(this.pbGraphs, 5, 12);
+            this.tableLayoutPanel1.Controls.Add(this.pbGraphs, 5, 13);
             this.tableLayoutPanel1.Controls.Add(this.trbGeoTrackScale, 4, 12);
-            this.tableLayoutPanel1.Controls.Add(this.wcUpdatimgGraphs, 4, 11);
+            this.tableLayoutPanel1.Controls.Add(this.wcUpdatimgGeoTrack, 4, 11);
             this.tableLayoutPanel1.Controls.Add(this.lblWaterTemperatureTitle, 5, 8);
             this.tableLayoutPanel1.Controls.Add(this.lblWaterSalinityTitle, 5, 9);
             this.tableLayoutPanel1.Controls.Add(this.tbWaterTemperatureValue, 6, 8);
             this.tableLayoutPanel1.Controls.Add(this.tbWaterSalinityValue, 6, 9);
-            this.tableLayoutPanel1.Controls.Add(this.lblStatusString, 0, 16);
+            this.tableLayoutPanel1.Controls.Add(this.lblStatusString, 0, 17);
             this.tableLayoutPanel1.Controls.Add(this.scrbGeoTrackScrollLatValues, 0, 12);
-            this.tableLayoutPanel1.Controls.Add(this.scrbGeoTrackScrollLonValues, 1, 15);
+            this.tableLayoutPanel1.Controls.Add(this.scrbGeoTrackScrollLonValues, 1, 16);
             this.tableLayoutPanel1.Controls.Add(this.wcNavDataSoeedControl, 2, 2);
             this.tableLayoutPanel1.Controls.Add(this.wcMeteoDataSpeedControl, 6, 2);
             this.tableLayoutPanel1.Controls.Add(this.btnCenterToActualPosition, 0, 11);
             this.tableLayoutPanel1.Controls.Add(this.cbLogNCdata, 0, 1);
             this.tableLayoutPanel1.Controls.Add(this.cbLogMeasurementsData, 5, 1);
-            this.tableLayoutPanel1.Controls.Add(this.groupBox1, 5, 15);
+            this.tableLayoutPanel1.Controls.Add(this.groupBox1, 5, 12);
             this.tableLayoutPanel1.Controls.Add(this.btnProperties, 7, 0);
             this.tableLayoutPanel1.Controls.Add(this.btnToggleShowGeotrack, 3, 11);
             this.tableLayoutPanel1.Controls.Add(this.label1, 1, 11);
             this.tableLayoutPanel1.Controls.Add(this.btnToggleShowGraphs, 7, 11);
+            this.tableLayoutPanel1.Controls.Add(this.wcUpdatimgGraph, 7, 12);
+            this.tableLayoutPanel1.Controls.Add(this.tableLayoutPanel4, 5, 16);
             this.tableLayoutPanel1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tableLayoutPanel1.Location = new System.Drawing.Point(4, 5);
             this.tableLayoutPanel1.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.tableLayoutPanel1.Name = "tableLayoutPanel1";
-            this.tableLayoutPanel1.RowCount = 17;
+            this.tableLayoutPanel1.RowCount = 18;
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 61F));
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 46F));
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 46F));
@@ -239,11 +246,13 @@
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 46F));
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 15F));
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 61F));
+            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 60F));
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 33.33333F));
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 33.33334F));
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 33.33333F));
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 46F));
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 46F));
+            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 20F));
             this.tableLayoutPanel1.Size = new System.Drawing.Size(1495, 1038);
             this.tableLayoutPanel1.TabIndex = 1;
             // 
@@ -638,7 +647,7 @@
             this.pbGeoTrack.Location = new System.Drawing.Point(49, 556);
             this.pbGeoTrack.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.pbGeoTrack.Name = "pbGeoTrack";
-            this.tableLayoutPanel1.SetRowSpan(this.pbGeoTrack, 3);
+            this.tableLayoutPanel1.SetRowSpan(this.pbGeoTrack, 4);
             this.pbGeoTrack.Size = new System.Drawing.Size(687, 383);
             this.pbGeoTrack.TabIndex = 29;
             this.pbGeoTrack.TabStop = false;
@@ -663,11 +672,11 @@
             this.pbGraphs.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.tableLayoutPanel1.SetColumnSpan(this.pbGraphs, 3);
             this.pbGraphs.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.pbGraphs.Location = new System.Drawing.Point(804, 556);
+            this.pbGraphs.Location = new System.Drawing.Point(804, 616);
             this.pbGraphs.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.pbGraphs.Name = "pbGraphs";
             this.tableLayoutPanel1.SetRowSpan(this.pbGraphs, 3);
-            this.pbGraphs.Size = new System.Drawing.Size(687, 383);
+            this.pbGraphs.Size = new System.Drawing.Size(687, 323);
             this.pbGraphs.TabIndex = 32;
             this.pbGraphs.TabStop = false;
             this.pbGraphs.Click += new System.EventHandler(this.pbGraphs_Click);
@@ -680,29 +689,29 @@
             this.trbGeoTrackScale.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.trbGeoTrackScale.Name = "trbGeoTrackScale";
             this.trbGeoTrackScale.Orientation = System.Windows.Forms.Orientation.Vertical;
-            this.tableLayoutPanel1.SetRowSpan(this.trbGeoTrackScale, 3);
+            this.tableLayoutPanel1.SetRowSpan(this.trbGeoTrackScale, 4);
             this.trbGeoTrackScale.Size = new System.Drawing.Size(52, 383);
             this.trbGeoTrackScale.TabIndex = 33;
             this.trbGeoTrackScale.ValueChanged += new System.EventHandler(this.trbGeoTrackScale_ValueChanged);
             // 
-            // wcUpdatimgGraphs
+            // wcUpdatimgGeoTrack
             // 
-            this.wcUpdatimgGraphs.Active = false;
-            this.wcUpdatimgGraphs.Color = System.Drawing.Color.FromArgb(((int)(((byte)(128)))), ((int)(((byte)(128)))), ((int)(((byte)(255)))));
-            this.wcUpdatimgGraphs.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.wcUpdatimgGraphs.InnerCircleRadius = 8;
-            this.wcUpdatimgGraphs.Location = new System.Drawing.Point(744, 495);
-            this.wcUpdatimgGraphs.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
-            this.wcUpdatimgGraphs.Name = "wcUpdatimgGraphs";
-            this.wcUpdatimgGraphs.NumberSpoke = 24;
-            this.wcUpdatimgGraphs.OuterCircleRadius = 9;
-            this.wcUpdatimgGraphs.RotationSpeed = 100;
-            this.wcUpdatimgGraphs.Size = new System.Drawing.Size(52, 51);
-            this.wcUpdatimgGraphs.SpokeThickness = 4;
-            this.wcUpdatimgGraphs.StylePreset = MRG.Controls.UI.LoadingCircle.StylePresets.IE7;
-            this.wcUpdatimgGraphs.TabIndex = 35;
-            this.wcUpdatimgGraphs.Text = "loadingCircle1";
-            this.wcUpdatimgGraphs.Visible = false;
+            this.wcUpdatimgGeoTrack.Active = false;
+            this.wcUpdatimgGeoTrack.Color = System.Drawing.Color.FromArgb(((int)(((byte)(128)))), ((int)(((byte)(128)))), ((int)(((byte)(255)))));
+            this.wcUpdatimgGeoTrack.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.wcUpdatimgGeoTrack.InnerCircleRadius = 8;
+            this.wcUpdatimgGeoTrack.Location = new System.Drawing.Point(744, 495);
+            this.wcUpdatimgGeoTrack.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.wcUpdatimgGeoTrack.Name = "wcUpdatimgGeoTrack";
+            this.wcUpdatimgGeoTrack.NumberSpoke = 24;
+            this.wcUpdatimgGeoTrack.OuterCircleRadius = 9;
+            this.wcUpdatimgGeoTrack.RotationSpeed = 100;
+            this.wcUpdatimgGeoTrack.Size = new System.Drawing.Size(52, 51);
+            this.wcUpdatimgGeoTrack.SpokeThickness = 4;
+            this.wcUpdatimgGeoTrack.StylePreset = MRG.Controls.UI.LoadingCircle.StylePresets.IE7;
+            this.wcUpdatimgGeoTrack.TabIndex = 35;
+            this.wcUpdatimgGeoTrack.Text = "loadingCircle1";
+            this.wcUpdatimgGeoTrack.Visible = false;
             // 
             // lblWaterTemperatureTitle
             // 
@@ -786,7 +795,7 @@
             this.scrbGeoTrackScrollLatValues.Maximum = 1;
             this.scrbGeoTrackScrollLatValues.Minimum = -1;
             this.scrbGeoTrackScrollLatValues.Name = "scrbGeoTrackScrollLatValues";
-            this.tableLayoutPanel1.SetRowSpan(this.scrbGeoTrackScrollLatValues, 3);
+            this.tableLayoutPanel1.SetRowSpan(this.scrbGeoTrackScrollLatValues, 4);
             this.scrbGeoTrackScrollLatValues.Size = new System.Drawing.Size(45, 393);
             this.scrbGeoTrackScrollLatValues.TabIndex = 42;
             this.scrbGeoTrackScrollLatValues.ValueChanged += new System.EventHandler(this.scrbGeoTrackScrollLatValues_ValueChanged);
@@ -888,22 +897,22 @@
             // 
             // groupBox1
             // 
-            this.tableLayoutPanel1.SetColumnSpan(this.groupBox1, 3);
+            this.tableLayoutPanel1.SetColumnSpan(this.groupBox1, 2);
             this.groupBox1.Controls.Add(this.rbtnWaterTempGraph);
             this.groupBox1.Controls.Add(this.rbtnWindSpeedGraph);
             this.groupBox1.Controls.Add(this.rbtnAirTempGraph);
             this.groupBox1.Controls.Add(this.rbtnPressureGraph);
             this.groupBox1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.groupBox1.Location = new System.Drawing.Point(803, 947);
+            this.groupBox1.Location = new System.Drawing.Point(803, 554);
             this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(689, 40);
+            this.groupBox1.Size = new System.Drawing.Size(619, 54);
             this.groupBox1.TabIndex = 49;
             this.groupBox1.TabStop = false;
             // 
             // rbtnWaterTempGraph
             // 
             this.rbtnWaterTempGraph.AutoSize = true;
-            this.rbtnWaterTempGraph.Location = new System.Drawing.Point(366, 5);
+            this.rbtnWaterTempGraph.Location = new System.Drawing.Point(372, 19);
             this.rbtnWaterTempGraph.Name = "rbtnWaterTempGraph";
             this.rbtnWaterTempGraph.Size = new System.Drawing.Size(143, 29);
             this.rbtnWaterTempGraph.TabIndex = 3;
@@ -915,7 +924,7 @@
             // rbtnWindSpeedGraph
             // 
             this.rbtnWindSpeedGraph.AutoSize = true;
-            this.rbtnWindSpeedGraph.Location = new System.Drawing.Point(244, 5);
+            this.rbtnWindSpeedGraph.Location = new System.Drawing.Point(250, 19);
             this.rbtnWindSpeedGraph.Name = "rbtnWindSpeedGraph";
             this.rbtnWindSpeedGraph.Size = new System.Drawing.Size(116, 29);
             this.rbtnWindSpeedGraph.TabIndex = 2;
@@ -927,7 +936,7 @@
             // rbtnAirTempGraph
             // 
             this.rbtnAirTempGraph.AutoSize = true;
-            this.rbtnAirTempGraph.Location = new System.Drawing.Point(127, 5);
+            this.rbtnAirTempGraph.Location = new System.Drawing.Point(133, 19);
             this.rbtnAirTempGraph.Name = "rbtnAirTempGraph";
             this.rbtnAirTempGraph.Size = new System.Drawing.Size(114, 29);
             this.rbtnAirTempGraph.TabIndex = 1;
@@ -940,7 +949,7 @@
             // 
             this.rbtnPressureGraph.AutoSize = true;
             this.rbtnPressureGraph.Checked = true;
-            this.rbtnPressureGraph.Location = new System.Drawing.Point(6, 5);
+            this.rbtnPressureGraph.Location = new System.Drawing.Point(12, 19);
             this.rbtnPressureGraph.Name = "rbtnPressureGraph";
             this.rbtnPressureGraph.Size = new System.Drawing.Size(115, 29);
             this.rbtnPressureGraph.TabIndex = 0;
@@ -1003,6 +1012,101 @@
             this.btnToggleShowGraphs.UseVisualStyleBackColor = false;
             this.btnToggleShowGraphs.Click += new System.EventHandler(this.btnToggleShowGraphs_Click);
             // 
+            // wcUpdatimgGraph
+            // 
+            this.wcUpdatimgGraph.Active = false;
+            this.wcUpdatimgGraph.Color = System.Drawing.Color.FromArgb(((int)(((byte)(128)))), ((int)(((byte)(128)))), ((int)(((byte)(255)))));
+            this.wcUpdatimgGraph.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.wcUpdatimgGraph.InnerCircleRadius = 8;
+            this.wcUpdatimgGraph.Location = new System.Drawing.Point(1428, 554);
+            this.wcUpdatimgGraph.Name = "wcUpdatimgGraph";
+            this.wcUpdatimgGraph.NumberSpoke = 24;
+            this.wcUpdatimgGraph.OuterCircleRadius = 9;
+            this.wcUpdatimgGraph.RotationSpeed = 100;
+            this.wcUpdatimgGraph.Size = new System.Drawing.Size(64, 54);
+            this.wcUpdatimgGraph.SpokeThickness = 4;
+            this.wcUpdatimgGraph.StylePreset = MRG.Controls.UI.LoadingCircle.StylePresets.IE7;
+            this.wcUpdatimgGraph.TabIndex = 54;
+            this.wcUpdatimgGraph.Text = "loadingCircle1";
+            this.wcUpdatimgGraph.Visible = false;
+            // 
+            // tableLayoutPanel4
+            // 
+            this.tableLayoutPanel4.ColumnCount = 5;
+            this.tableLayoutPanel1.SetColumnSpan(this.tableLayoutPanel4, 3);
+            this.tableLayoutPanel4.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 80F));
+            this.tableLayoutPanel4.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 33.33333F));
+            this.tableLayoutPanel4.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 33.33333F));
+            this.tableLayoutPanel4.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 33.33333F));
+            this.tableLayoutPanel4.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 81F));
+            this.tableLayoutPanel4.Controls.Add(this.btnGraphMoveFocusRight, 4, 0);
+            this.tableLayoutPanel4.Controls.Add(this.btnGraphZoomIn, 3, 0);
+            this.tableLayoutPanel4.Controls.Add(this.btnGraphDefault, 2, 0);
+            this.tableLayoutPanel4.Controls.Add(this.btnGraphMoveFocusLeft, 0, 0);
+            this.tableLayoutPanel4.Controls.Add(this.btnGraphZoomOut, 1, 0);
+            this.tableLayoutPanel4.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.tableLayoutPanel4.Location = new System.Drawing.Point(803, 947);
+            this.tableLayoutPanel4.Name = "tableLayoutPanel4";
+            this.tableLayoutPanel4.RowCount = 1;
+            this.tableLayoutPanel4.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
+            this.tableLayoutPanel4.Size = new System.Drawing.Size(689, 40);
+            this.tableLayoutPanel4.TabIndex = 56;
+            // 
+            // btnGraphMoveFocusRight
+            // 
+            this.btnGraphMoveFocusRight.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.btnGraphMoveFocusRight.Location = new System.Drawing.Point(611, 3);
+            this.btnGraphMoveFocusRight.Name = "btnGraphMoveFocusRight";
+            this.btnGraphMoveFocusRight.Size = new System.Drawing.Size(75, 34);
+            this.btnGraphMoveFocusRight.TabIndex = 1;
+            this.btnGraphMoveFocusRight.Text = ">>";
+            this.btnGraphMoveFocusRight.UseVisualStyleBackColor = true;
+            this.btnGraphMoveFocusRight.Click += new System.EventHandler(this.btnGraphMoveFocusRight_Click);
+            // 
+            // btnGraphZoomIn
+            // 
+            this.btnGraphZoomIn.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.btnGraphZoomIn.Location = new System.Drawing.Point(435, 3);
+            this.btnGraphZoomIn.Name = "btnGraphZoomIn";
+            this.btnGraphZoomIn.Size = new System.Drawing.Size(170, 34);
+            this.btnGraphZoomIn.TabIndex = 3;
+            this.btnGraphZoomIn.Text = "zoom in";
+            this.btnGraphZoomIn.UseVisualStyleBackColor = true;
+            this.btnGraphZoomIn.Click += new System.EventHandler(this.btnGraphZoomIn_Click);
+            // 
+            // btnGraphDefault
+            // 
+            this.btnGraphDefault.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.btnGraphDefault.Location = new System.Drawing.Point(259, 3);
+            this.btnGraphDefault.Name = "btnGraphDefault";
+            this.btnGraphDefault.Size = new System.Drawing.Size(170, 34);
+            this.btnGraphDefault.TabIndex = 4;
+            this.btnGraphDefault.Text = "default";
+            this.btnGraphDefault.UseVisualStyleBackColor = true;
+            this.btnGraphDefault.Click += new System.EventHandler(this.btnGraphDefault_Click);
+            // 
+            // btnGraphMoveFocusLeft
+            // 
+            this.btnGraphMoveFocusLeft.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.btnGraphMoveFocusLeft.Location = new System.Drawing.Point(3, 3);
+            this.btnGraphMoveFocusLeft.Name = "btnGraphMoveFocusLeft";
+            this.btnGraphMoveFocusLeft.Size = new System.Drawing.Size(74, 34);
+            this.btnGraphMoveFocusLeft.TabIndex = 0;
+            this.btnGraphMoveFocusLeft.Text = "<<";
+            this.btnGraphMoveFocusLeft.UseVisualStyleBackColor = true;
+            this.btnGraphMoveFocusLeft.Click += new System.EventHandler(this.btnGraphMoveFocusLeft_Click);
+            // 
+            // btnGraphZoomOut
+            // 
+            this.btnGraphZoomOut.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.btnGraphZoomOut.Location = new System.Drawing.Point(83, 3);
+            this.btnGraphZoomOut.Name = "btnGraphZoomOut";
+            this.btnGraphZoomOut.Size = new System.Drawing.Size(170, 34);
+            this.btnGraphZoomOut.TabIndex = 2;
+            this.btnGraphZoomOut.Text = "zoom out";
+            this.btnGraphZoomOut.UseVisualStyleBackColor = true;
+            this.btnGraphZoomOut.Click += new System.EventHandler(this.btnGraphZoomOut_Click);
+            // 
             // tpNavAndMeteoOverview
             // 
             this.tpNavAndMeteoOverview.BackColor = System.Drawing.SystemColors.Control;
@@ -1038,16 +1142,24 @@
             this.tableLayoutPanel3.Controls.Add(this.lblFoundMetData, 1, 4);
             this.tableLayoutPanel3.Controls.Add(this.lblPlusOneHour, 5, 1);
             this.tableLayoutPanel3.Controls.Add(this.btnPlusOneDay, 4, 1);
+            this.tableLayoutPanel3.Controls.Add(this.label3, 0, 6);
+            this.tableLayoutPanel3.Controls.Add(this.maskedTextBox2, 4, 6);
+            this.tableLayoutPanel3.Controls.Add(this.btnFindIOFFEdataFiles, 6, 6);
+            this.tableLayoutPanel3.Controls.Add(this.btnRepairAndWriteNCfile, 6, 7);
+            this.tableLayoutPanel3.Controls.Add(this.prbMissingInfoSearchingProgress, 0, 8);
             this.tableLayoutPanel3.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tableLayoutPanel3.Location = new System.Drawing.Point(3, 3);
             this.tableLayoutPanel3.Name = "tableLayoutPanel3";
-            this.tableLayoutPanel3.RowCount = 7;
+            this.tableLayoutPanel3.RowCount = 10;
             this.tableLayoutPanel3.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 60F));
             this.tableLayoutPanel3.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 60F));
             this.tableLayoutPanel3.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 20F));
             this.tableLayoutPanel3.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 180F));
             this.tableLayoutPanel3.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 180F));
             this.tableLayoutPanel3.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 50F));
+            this.tableLayoutPanel3.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 60F));
+            this.tableLayoutPanel3.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 60F));
+            this.tableLayoutPanel3.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 20F));
             this.tableLayoutPanel3.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 50F));
             this.tableLayoutPanel3.Size = new System.Drawing.Size(1497, 1042);
             this.tableLayoutPanel3.TabIndex = 0;
@@ -1138,72 +1250,6 @@
             this.prbSearchingProgress.Size = new System.Drawing.Size(1491, 14);
             this.prbSearchingProgress.TabIndex = 8;
             // 
-            // tpSeaSaveStream
-            // 
-            this.tpSeaSaveStream.BackColor = System.Drawing.SystemColors.Control;
-            this.tpSeaSaveStream.Controls.Add(this.tableLayoutPanel2);
-            this.tpSeaSaveStream.Location = new System.Drawing.Point(4, 34);
-            this.tpSeaSaveStream.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
-            this.tpSeaSaveStream.Name = "tpSeaSaveStream";
-            this.tpSeaSaveStream.Padding = new System.Windows.Forms.Padding(4, 5, 4, 5);
-            this.tpSeaSaveStream.Size = new System.Drawing.Size(1503, 1048);
-            this.tpSeaSaveStream.TabIndex = 1;
-            this.tpSeaSaveStream.Text = "SeaSave";
-            // 
-            // tableLayoutPanel2
-            // 
-            this.tableLayoutPanel2.ColumnCount = 2;
-            this.tableLayoutPanel2.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50F));
-            this.tableLayoutPanel2.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50F));
-            this.tableLayoutPanel2.Controls.Add(this.btnStartStopSeaSave, 0, 0);
-            this.tableLayoutPanel2.Controls.Add(this.tbSeaSaveLog, 0, 1);
-            this.tableLayoutPanel2.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.tableLayoutPanel2.Location = new System.Drawing.Point(4, 5);
-            this.tableLayoutPanel2.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
-            this.tableLayoutPanel2.Name = "tableLayoutPanel2";
-            this.tableLayoutPanel2.RowCount = 2;
-            this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 61F));
-            this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            this.tableLayoutPanel2.Size = new System.Drawing.Size(1495, 1038);
-            this.tableLayoutPanel2.TabIndex = 0;
-            // 
-            // btnStartStopSeaSave
-            // 
-            this.tableLayoutPanel2.SetColumnSpan(this.btnStartStopSeaSave, 2);
-            this.btnStartStopSeaSave.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.btnStartStopSeaSave.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnStartStopSeaSave.Font = new System.Drawing.Font("Microsoft Sans Serif", 15.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.btnStartStopSeaSave.ForeColor = System.Drawing.Color.Red;
-            this.btnStartStopSeaSave.Location = new System.Drawing.Point(4, 5);
-            this.btnStartStopSeaSave.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
-            this.btnStartStopSeaSave.Name = "btnStartStopSeaSave";
-            this.btnStartStopSeaSave.Size = new System.Drawing.Size(1487, 51);
-            this.btnStartStopSeaSave.TabIndex = 0;
-            this.btnStartStopSeaSave.Text = "CONNECT SeaSave";
-            this.btnStartStopSeaSave.UseVisualStyleBackColor = true;
-            this.btnStartStopSeaSave.Click += new System.EventHandler(this.button1_Click);
-            // 
-            // tbSeaSaveLog
-            // 
-            this.tableLayoutPanel2.SetColumnSpan(this.tbSeaSaveLog, 2);
-            this.tbSeaSaveLog.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.tbSeaSaveLog.Location = new System.Drawing.Point(4, 66);
-            this.tbSeaSaveLog.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
-            this.tbSeaSaveLog.Multiline = true;
-            this.tbSeaSaveLog.Name = "tbSeaSaveLog";
-            this.tbSeaSaveLog.ScrollBars = System.Windows.Forms.ScrollBars.Both;
-            this.tbSeaSaveLog.Size = new System.Drawing.Size(1487, 967);
-            this.tbSeaSaveLog.TabIndex = 1;
-            // 
-            // bgwSeaSaveSocketStreamReader
-            // 
-            this.bgwSeaSaveSocketStreamReader.WorkerSupportsCancellation = true;
-            this.bgwSeaSaveSocketStreamReader.DoWork += new System.ComponentModel.DoWorkEventHandler(this.bgwSeaSaveSocketStreamReader_DoWork);
-            // 
-            // bgwSeaSaveStreamTextParser
-            // 
-            this.bgwSeaSaveStreamTextParser.WorkerSupportsCancellation = true;
-            // 
             // lblFoundNavData
             // 
             this.tableLayoutPanel3.SetColumnSpan(this.lblFoundNavData, 9);
@@ -1258,6 +1304,125 @@
             this.btnPlusOneDay.UseVisualStyleBackColor = true;
             this.btnPlusOneDay.Click += new System.EventHandler(this.btnPlusOneDay_Click);
             // 
+            // label3
+            // 
+            this.label3.AutoSize = true;
+            this.label3.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.tableLayoutPanel3.SetColumnSpan(this.label3, 4);
+            this.label3.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.label3.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.label3.Location = new System.Drawing.Point(3, 701);
+            this.label3.Name = "label3";
+            this.label3.Size = new System.Drawing.Size(590, 60);
+            this.label3.TabIndex = 13;
+            this.label3.Text = "find and repair lost data records for date:";
+            this.label3.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            // 
+            // maskedTextBox2
+            // 
+            this.tableLayoutPanel3.SetColumnSpan(this.maskedTextBox2, 2);
+            this.maskedTextBox2.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.maskedTextBox2.Font = new System.Drawing.Font("Microsoft Sans Serif", 16F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.maskedTextBox2.Location = new System.Drawing.Point(599, 704);
+            this.maskedTextBox2.Mask = "0000-00-00";
+            this.maskedTextBox2.Name = "maskedTextBox2";
+            this.maskedTextBox2.Size = new System.Drawing.Size(292, 44);
+            this.maskedTextBox2.TabIndex = 14;
+            // 
+            // btnFindIOFFEdataFiles
+            // 
+            this.tableLayoutPanel3.SetColumnSpan(this.btnFindIOFFEdataFiles, 4);
+            this.btnFindIOFFEdataFiles.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.btnFindIOFFEdataFiles.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnFindIOFFEdataFiles.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.btnFindIOFFEdataFiles.Location = new System.Drawing.Point(897, 704);
+            this.btnFindIOFFEdataFiles.Name = "btnFindIOFFEdataFiles";
+            this.btnFindIOFFEdataFiles.Size = new System.Drawing.Size(597, 54);
+            this.btnFindIOFFEdataFiles.TabIndex = 15;
+            this.btnFindIOFFEdataFiles.Text = "find IOFFE data files";
+            this.btnFindIOFFEdataFiles.UseVisualStyleBackColor = true;
+            this.btnFindIOFFEdataFiles.Click += new System.EventHandler(this.btnFindIOFFEdataFiles_Click);
+            // 
+            // btnRepairAndWriteNCfile
+            // 
+            this.tableLayoutPanel3.SetColumnSpan(this.btnRepairAndWriteNCfile, 4);
+            this.btnRepairAndWriteNCfile.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.btnRepairAndWriteNCfile.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnRepairAndWriteNCfile.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.btnRepairAndWriteNCfile.Location = new System.Drawing.Point(897, 764);
+            this.btnRepairAndWriteNCfile.Name = "btnRepairAndWriteNCfile";
+            this.btnRepairAndWriteNCfile.Size = new System.Drawing.Size(597, 54);
+            this.btnRepairAndWriteNCfile.TabIndex = 16;
+            this.btnRepairAndWriteNCfile.Text = "re-form nc-file with additional data";
+            this.btnRepairAndWriteNCfile.UseVisualStyleBackColor = true;
+            this.btnRepairAndWriteNCfile.Click += new System.EventHandler(this.btnRepairAndWriteNCfile_Click);
+            // 
+            // prbMissingInfoSearchingProgress
+            // 
+            this.tableLayoutPanel3.SetColumnSpan(this.prbMissingInfoSearchingProgress, 10);
+            this.prbMissingInfoSearchingProgress.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.prbMissingInfoSearchingProgress.Location = new System.Drawing.Point(3, 824);
+            this.prbMissingInfoSearchingProgress.Name = "prbMissingInfoSearchingProgress";
+            this.prbMissingInfoSearchingProgress.Size = new System.Drawing.Size(1491, 14);
+            this.prbMissingInfoSearchingProgress.TabIndex = 17;
+            // 
+            // tpSeaSaveStream
+            // 
+            this.tpSeaSaveStream.BackColor = System.Drawing.SystemColors.Control;
+            this.tpSeaSaveStream.Controls.Add(this.tableLayoutPanel2);
+            this.tpSeaSaveStream.Location = new System.Drawing.Point(4, 34);
+            this.tpSeaSaveStream.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.tpSeaSaveStream.Name = "tpSeaSaveStream";
+            this.tpSeaSaveStream.Padding = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.tpSeaSaveStream.Size = new System.Drawing.Size(1503, 1048);
+            this.tpSeaSaveStream.TabIndex = 1;
+            this.tpSeaSaveStream.Text = "SeaSave";
+            // 
+            // tableLayoutPanel2
+            // 
+            this.tableLayoutPanel2.ColumnCount = 2;
+            this.tableLayoutPanel2.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50F));
+            this.tableLayoutPanel2.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50F));
+            this.tableLayoutPanel2.Controls.Add(this.btnStartStopSeaSave, 0, 0);
+            this.tableLayoutPanel2.Controls.Add(this.tbSeaSaveLog, 0, 1);
+            this.tableLayoutPanel2.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.tableLayoutPanel2.Location = new System.Drawing.Point(4, 5);
+            this.tableLayoutPanel2.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.tableLayoutPanel2.Name = "tableLayoutPanel2";
+            this.tableLayoutPanel2.RowCount = 2;
+            this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 61F));
+            this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
+            this.tableLayoutPanel2.Size = new System.Drawing.Size(1495, 1038);
+            this.tableLayoutPanel2.TabIndex = 0;
+            // 
+            // btnStartStopSeaSave
+            // 
+            this.tableLayoutPanel2.SetColumnSpan(this.btnStartStopSeaSave, 2);
+            this.btnStartStopSeaSave.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.btnStartStopSeaSave.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnStartStopSeaSave.Font = new System.Drawing.Font("Microsoft Sans Serif", 15.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.btnStartStopSeaSave.ForeColor = System.Drawing.Color.Red;
+            this.btnStartStopSeaSave.Location = new System.Drawing.Point(4, 5);
+            this.btnStartStopSeaSave.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.btnStartStopSeaSave.Name = "btnStartStopSeaSave";
+            this.btnStartStopSeaSave.Size = new System.Drawing.Size(1487, 51);
+            this.btnStartStopSeaSave.TabIndex = 0;
+            this.btnStartStopSeaSave.Text = "CONNECT SeaSave";
+            this.btnStartStopSeaSave.UseVisualStyleBackColor = true;
+            //this.btnStartStopSeaSave.Click += new System.EventHandler(this.button1_Click);
+            // 
+            // tbSeaSaveLog
+            // 
+            this.tableLayoutPanel2.SetColumnSpan(this.tbSeaSaveLog, 2);
+            this.tbSeaSaveLog.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.tbSeaSaveLog.Location = new System.Drawing.Point(4, 66);
+            this.tbSeaSaveLog.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.tbSeaSaveLog.Multiline = true;
+            this.tbSeaSaveLog.Name = "tbSeaSaveLog";
+            this.tbSeaSaveLog.ScrollBars = System.Windows.Forms.ScrollBars.Both;
+            this.tbSeaSaveLog.Size = new System.Drawing.Size(1487, 967);
+            this.tbSeaSaveLog.TabIndex = 1;
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 20F);
@@ -1279,6 +1444,7 @@
             ((System.ComponentModel.ISupportInitialize)(this.trbGeoTrackScale)).EndInit();
             this.groupBox1.ResumeLayout(false);
             this.groupBox1.PerformLayout();
+            this.tableLayoutPanel4.ResumeLayout(false);
             this.tpNavAndMeteoOverview.ResumeLayout(false);
             this.tableLayoutPanel3.ResumeLayout(false);
             this.tableLayoutPanel3.PerformLayout();
@@ -1292,7 +1458,6 @@
         #endregion
 
         private System.ComponentModel.BackgroundWorker bgwSocketStreamReader;
-        private System.ComponentModel.BackgroundWorker bgwStreamTextParser;
         private System.ComponentModel.BackgroundWorker bgwGeotrackRenderer;
         private System.ComponentModel.BackgroundWorker bgwStreamDataProcessing;
         private System.Windows.Forms.TabControl tabControl1;
@@ -1327,7 +1492,7 @@
         private System.Windows.Forms.Label lblPressureGraphTitle;
         private System.Windows.Forms.PictureBox pbGraphs;
         private System.Windows.Forms.TrackBar trbGeoTrackScale;
-        private MRG.Controls.UI.LoadingCircle wcUpdatimgGraphs;
+        private MRG.Controls.UI.LoadingCircle wcUpdatimgGeoTrack;
         private System.Windows.Forms.Label lblWaterTemperatureTitle;
         private System.Windows.Forms.Label lblWaterSalinityTitle;
         private System.Windows.Forms.TextBox tbWaterTemperatureValue;
@@ -1337,8 +1502,6 @@
         private System.Windows.Forms.VScrollBar scrbGeoTrackScrollLatValues;
         private System.Windows.Forms.HScrollBar scrbGeoTrackScrollLonValues;
         private System.Windows.Forms.TableLayoutPanel tableLayoutPanel2;
-        private System.ComponentModel.BackgroundWorker bgwSeaSaveSocketStreamReader;
-        private System.ComponentModel.BackgroundWorker bgwSeaSaveStreamTextParser;
         private System.Windows.Forms.Button btnStartStopSeaSave;
         private System.Windows.Forms.TextBox tbSeaSaveLog;
         private MRG.Controls.UI.LoadingCircle wcNavDataSoeedControl;
@@ -1368,6 +1531,18 @@
         private System.Windows.Forms.TextBox lblFoundMetData;
         private System.Windows.Forms.Button lblPlusOneHour;
         private System.Windows.Forms.Button btnPlusOneDay;
+        private System.Windows.Forms.Label label3;
+        private System.Windows.Forms.MaskedTextBox maskedTextBox2;
+        private System.Windows.Forms.Button btnFindIOFFEdataFiles;
+        private System.Windows.Forms.Button btnRepairAndWriteNCfile;
+        private System.Windows.Forms.ProgressBar prbMissingInfoSearchingProgress;
+        private MRG.Controls.UI.LoadingCircle wcUpdatimgGraph;
+        private System.Windows.Forms.Button btnGraphMoveFocusLeft;
+        private System.Windows.Forms.Button btnGraphMoveFocusRight;
+        private System.Windows.Forms.Button btnGraphZoomOut;
+        private System.Windows.Forms.Button btnGraphZoomIn;
+        private System.Windows.Forms.Button btnGraphDefault;
+        private System.Windows.Forms.TableLayoutPanel tableLayoutPanel4;
 
     }
 }

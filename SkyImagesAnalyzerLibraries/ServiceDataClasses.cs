@@ -1,5 +1,9 @@
 ﻿using System;
+using System.Collections;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Collections.Specialized;
+using System.ComponentModel;
 using System.Linq;
 using MathNet.Numerics.LinearAlgebra;
 using MathNet.Numerics.LinearAlgebra.Double;
@@ -1867,6 +1871,17 @@ namespace SkyImagesAnalyzerLibraries
 
 
 
+        public static DenseMatrix ToDenseMatrix(IEnumerable<MeteoData> lMeteoData)
+        {
+            IEnumerable<DenseVector> lDVdata =
+                new List<MeteoData>(lMeteoData).ConvertAll(metDat => metDat.ToDenseVector());
+            DenseMatrix dmRetMatr = DenseMatrix.OfRows(lDVdata.Count(), lDVdata.ElementAt(0).Count, lDVdata);
+            return dmRetMatr;
+        }
+
+
+
+
         public MeteoData(IEnumerable<double> source)
         {
             if (source.Count() == 7)
@@ -2015,5 +2030,342 @@ namespace SkyImagesAnalyzerLibraries
             return lRet.ToArray();
         }
     }
+
+
+
+
+
+    public class ObservableQueue<T> : Queue<T>, INotifyCollectionChanged, INotifyPropertyChanged
+    {
+        #region // obsolete
+        //private List<IObserver<T>> observersList = new List<IObserver<T>>();
+
+        //public IDisposable Subscribe(IObserver<T> observer)
+        //{
+        //    if (!observersList.Contains(observer))
+        //    {
+        //        observersList.Add(observer);
+        //    }
+        //    return new Unsubscriber(observersList, observer);
+        //}
+
+
+
+
+        //public void TrackLocation(Nullable<T> loc)
+        //{
+        //    foreach (var observer in observers)
+        //    {
+        //        if (!loc.HasValue)
+        //            observer.OnError(new LocationUnknownException());
+        //        else
+        //            observer.OnNext(loc.Value);
+        //    }
+        //}
+
+
+
+
+        //private class Unsubscriber : IDisposable
+        //{
+        //    private List<IObserver<T>> _observers;
+        //    private IObserver<T> _observer;
+
+        //    public Unsubscriber(List<IObserver<T>> observers, IObserver<T> observer)
+        //    {
+        //        this._observers = observers;
+        //        this._observer = observer;
+        //    }
+
+        //    public void Dispose()
+        //    {
+        //        if (_observer != null && _observers.Contains(_observer))
+        //            _observers.Remove(_observer);
+        //    }
+        //}
+        #endregion // obsolete
+
+        public ObservableQueue()
+        {
+        }
+
+        public ObservableQueue(IEnumerable<T> collection)
+        {
+            foreach (var item in collection)
+                base.Enqueue(item);
+        }
+
+        public ObservableQueue(List<T> list)
+        {
+            foreach (var item in list)
+                base.Enqueue(item);
+        }
+
+
+        public new virtual void Clear()
+        {
+            base.Clear();
+            this.OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
+        }
+
+        public new virtual T Dequeue()
+        {
+            var item = base.Dequeue();
+            this.OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Remove, item));
+            return item;
+        }
+
+        public new virtual void Enqueue(T item)
+        {
+            base.Enqueue(item);
+            this.OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Add, item));
+        }
+
+
+        public virtual event NotifyCollectionChangedEventHandler CollectionChanged;
+
+
+        protected virtual void OnCollectionChanged(NotifyCollectionChangedEventArgs e)
+        {
+            this.RaiseCollectionChanged(e);
+        }
+
+        protected virtual void OnPropertyChanged(PropertyChangedEventArgs e)
+        {
+            this.RaisePropertyChanged(e);
+        }
+
+
+        protected virtual event PropertyChangedEventHandler PropertyChanged;
+
+
+        private void RaiseCollectionChanged(NotifyCollectionChangedEventArgs e)
+        {
+            if (this.CollectionChanged != null)
+                this.CollectionChanged(this, e);
+        }
+
+        private void RaisePropertyChanged(PropertyChangedEventArgs e)
+        {
+            if (this.PropertyChanged != null)
+                this.PropertyChanged(this, e);
+        }
+
+
+        event PropertyChangedEventHandler INotifyPropertyChanged.PropertyChanged
+        {
+            add { this.PropertyChanged += value; }
+            remove { this.PropertyChanged -= value; }
+        }
+    }
+
+
+
+
+
+
+    public class ObservableConcurrentQueue<T> : ConcurrentQueue<T>, INotifyCollectionChanged, INotifyPropertyChanged
+    {
+        #region // obsolete
+        //private List<IObserver<T>> observersList = new List<IObserver<T>>();
+
+        //public IDisposable Subscribe(IObserver<T> observer)
+        //{
+        //    if (!observersList.Contains(observer))
+        //    {
+        //        observersList.Add(observer);
+        //    }
+        //    return new Unsubscriber(observersList, observer);
+        //}
+
+
+
+
+        //public void TrackLocation(Nullable<T> loc)
+        //{
+        //    foreach (var observer in observers)
+        //    {
+        //        if (!loc.HasValue)
+        //            observer.OnError(new LocationUnknownException());
+        //        else
+        //            observer.OnNext(loc.Value);
+        //    }
+        //}
+
+
+
+
+        //private class Unsubscriber : IDisposable
+        //{
+        //    private List<IObserver<T>> _observers;
+        //    private IObserver<T> _observer;
+
+        //    public Unsubscriber(List<IObserver<T>> observers, IObserver<T> observer)
+        //    {
+        //        this._observers = observers;
+        //        this._observer = observer;
+        //    }
+
+        //    public void Dispose()
+        //    {
+        //        if (_observer != null && _observers.Contains(_observer))
+        //            _observers.Remove(_observer);
+        //    }
+        //}
+        #endregion // obsolete
+
+
+        public ObservableConcurrentQueue()
+        {
+        }
+
+        public ObservableConcurrentQueue(IEnumerable<T> collection)
+        {
+            foreach (var item in collection)
+                base.Enqueue(item);
+        }
+
+        public ObservableConcurrentQueue(List<T> list)
+        {
+            foreach (var item in list)
+                base.Enqueue(item);
+        }
+
+
+        
+        public new virtual bool TryDequeue(out T item)
+        {
+            bool res = base.TryDequeue(out item);
+            this.OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Remove, item));
+            return res;
+        }
+
+        public new virtual void Enqueue(T item)
+        {
+            base.Enqueue(item);
+            this.OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Add, item));
+        }
+
+
+        public virtual event NotifyCollectionChangedEventHandler CollectionChanged;
+
+
+        protected virtual void OnCollectionChanged(NotifyCollectionChangedEventArgs e)
+        {
+            this.RaiseCollectionChanged(e);
+        }
+
+        protected virtual void OnPropertyChanged(PropertyChangedEventArgs e)
+        {
+            this.RaisePropertyChanged(e);
+        }
+
+
+        protected virtual event PropertyChangedEventHandler PropertyChanged;
+
+
+        private void RaiseCollectionChanged(NotifyCollectionChangedEventArgs e)
+        {
+            if (this.CollectionChanged != null)
+                this.CollectionChanged(this, e);
+        }
+
+        private void RaisePropertyChanged(PropertyChangedEventArgs e)
+        {
+            if (this.PropertyChanged != null)
+                this.PropertyChanged(this, e);
+        }
+
+
+        event PropertyChangedEventHandler INotifyPropertyChanged.PropertyChanged
+        {
+            add { this.PropertyChanged += value; }
+            remove { this.PropertyChanged -= value; }
+        }
+    }
+
+
+
+
+
+    public class ObservableStack<T> : Stack<T>, INotifyCollectionChanged, INotifyPropertyChanged
+    {
+        public ObservableStack()
+        {
+        }
+
+        public ObservableStack(IEnumerable<T> collection)
+        {
+            foreach (var item in collection)
+                base.Push(item);
+        }
+
+        public ObservableStack(List<T> list)
+        {
+            foreach (var item in list)
+                base.Push(item);
+        }
+
+
+        public new virtual void Clear()
+        {
+            base.Clear();
+            this.OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
+        }
+
+        public new virtual T Pop()
+        {
+            var item = base.Pop();
+            this.OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Remove, item));
+            return item;
+        }
+
+        public new virtual void Push(T item)
+        {
+            base.Push(item);
+            this.OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Add, item));
+        }
+
+
+        public virtual event NotifyCollectionChangedEventHandler CollectionChanged;
+
+
+        protected virtual void OnCollectionChanged(NotifyCollectionChangedEventArgs e)
+        {
+            this.RaiseCollectionChanged(e);
+        }
+
+        protected virtual void OnPropertyChanged(PropertyChangedEventArgs e)
+        {
+            this.RaisePropertyChanged(e);
+        }
+
+
+        protected virtual event PropertyChangedEventHandler PropertyChanged;
+
+
+        private void RaiseCollectionChanged(NotifyCollectionChangedEventArgs e)
+        {
+            if (this.CollectionChanged != null)
+                this.CollectionChanged(this, e);
+        }
+
+        private void RaisePropertyChanged(PropertyChangedEventArgs e)
+        {
+            if (this.PropertyChanged != null)
+                this.PropertyChanged(this, e);
+        }
+
+
+        event PropertyChangedEventHandler INotifyPropertyChanged.PropertyChanged
+        {
+            add { this.PropertyChanged += value; }
+            remove { this.PropertyChanged -= value; }
+        }
+    }
+
+
+
+
 
 }
