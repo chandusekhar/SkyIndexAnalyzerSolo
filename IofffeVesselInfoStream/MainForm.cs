@@ -770,12 +770,31 @@ namespace IofffeVesselInfoStream
 
             #region unload shared collections data to dataToSave
 
+            DenseMatrix dmMeteoDataMatrixCopy;
+            try
+            {
+                dmMeteoDataMatrixCopy = dmMeteoDataMatrix.Copy();
+            }
+            catch (Exception ex)
+            {
+#if DEBUG
+                ServiceTools.ExecMethodInSeparateThread(this, () =>
+                {
+                    theLogWindow = ServiceTools.LogAText(theLogWindow,
+                        "exception was caught: " + Environment.NewLine + ServiceTools.CurrentCodeLineDescription() +
+                        Environment.NewLine + "message: " + ex.Message);
+                });
+#endif
+                
+                return;
+            }
+
             Monitor.Enter(meteoDateTimeValuesList);
             try
             {
                 dataToSave.Add("DateTime", meteoDateTimeValuesList.ToArray());
                 meteoDateTimeValuesList.Clear();
-                dataToSave.Add("MeteoData", dmMeteoDataMatrix.Copy());
+                dataToSave.Add("MeteoData", dmMeteoDataMatrixCopy);
                 dmMeteoDataMatrix = null;
             }
             finally
@@ -917,9 +936,15 @@ namespace IofffeVesselInfoStream
             }
             catch (Exception ex)
             {
-                theLogWindow = ServiceTools.LogAText(theLogWindow,
-                    "exception was caught: " + Environment.NewLine + ServiceTools.CurrentCodeLineDescription() +
-                    Environment.NewLine + "message: " + ex.Message);
+#if DEBUG
+                ServiceTools.ExecMethodInSeparateThread(this, () =>
+                {
+                    theLogWindow = ServiceTools.LogAText(theLogWindow,
+                        "exception was caught: " + Environment.NewLine + ServiceTools.CurrentCodeLineDescription() +
+                        Environment.NewLine + "message: " + ex.Message);
+                });
+#endif
+                
                 return;
             }
             
