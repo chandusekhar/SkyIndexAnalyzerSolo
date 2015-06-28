@@ -124,7 +124,6 @@
             this.ArduinoRequestExpectant = new System.ComponentModel.BackgroundWorker();
             this.dataCollector = new System.ComponentModel.BackgroundWorker();
             this.accelCalibrator = new System.ComponentModel.BackgroundWorker();
-            this.bgwUDPmessagesParser = new System.ComponentModel.BackgroundWorker();
             this.tabControl1.SuspendLayout();
             this.tabPageMain.SuspendLayout();
             this.tableLayoutPanel1.SuspendLayout();
@@ -1662,11 +1661,6 @@
             this.accelCalibrator.DoWork += new System.ComponentModel.DoWorkEventHandler(this.accelCalibrator_DoWork);
             this.accelCalibrator.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(this.accelCalibrator_RunWorkerCompleted);
             // 
-            // bgwUDPmessagesParser
-            // 
-            this.bgwUDPmessagesParser.WorkerSupportsCancellation = true;
-            this.bgwUDPmessagesParser.DoWork += new System.ComponentModel.DoWorkEventHandler(this.bgwUDPmessagesParser_DoWork);
-            // 
             // DataCollectorMainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 20F);
@@ -1677,8 +1671,6 @@
             this.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.Name = "DataCollectorMainForm";
             this.Text = "Data collector";
-            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.DataCollectorMainForm_FormClosing);
-            this.Load += new System.EventHandler(this.DataCollectorMainForm_Load);
             this.Shown += new System.EventHandler(this.DataCollectorMainForm_Shown);
             this.Paint += new System.Windows.Forms.PaintEventHandler(this.DataCollectorMainForm_Paint);
             this.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.DataCollectorMainForm_KeyPress);
@@ -1760,7 +1752,6 @@
         private System.Windows.Forms.Label lblAccDevAngleTitleID1;
         private System.Windows.Forms.Label lblAccMagnValueID1;
         private System.Windows.Forms.Label lblAccDevAngleValueID1;
-        private System.ComponentModel.BackgroundWorker bgwUDPmessagesParser;
         private System.Windows.Forms.Button btnStartStopBdcstListening;
         private System.Windows.Forms.PictureBox pbThumbPreviewCam2;
         private System.Windows.Forms.Label lblAccelerometerSignID2;
