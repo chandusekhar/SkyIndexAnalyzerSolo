@@ -236,6 +236,7 @@
     <Compile Include="SunDiskRepresentingAndCorrectionForm.Designer.cs">
       <DependentUpon>SunDiskRepresentingAndCorrectionForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="TextBarImage.cs" />
     <Compile Include="ThreadSafeOperations.cs" />
     <Compile Include="TimeSeries.cs" />
   </ItemGroup>

@@ -36,10 +36,77 @@ namespace SkyImagesAnalyzerLibraries
         }
 
 
-        public TimeSeries(IEnumerable<T> dataSeriaList, IEnumerable<DateTime> dateTimeStamps)
+        public TimeSeries(IEnumerable<T> dataSeriaList, IEnumerable<DateTime> dateTimeStamps, bool bArrangeIfNotEqualLength = false)
         {
-            dataSeria = new List<T>(dataSeriaList);
-            lDateTimeStamps = new List<DateTime>(dateTimeStamps);
+            if (!bArrangeIfNotEqualLength && (dataSeriaList.Count() != dateTimeStamps.Count()))
+            {
+                throw new ArgumentException("Arguments must be of the same dimensions.");
+            }
+
+            if (bArrangeIfNotEqualLength && (dataSeriaList.Count() != dateTimeStamps.Count()))
+            {
+                List<T> dataSeriaListCopy = new List<T>(dataSeriaList);
+                List<DateTime> dateTimeStampsCopy = new List<DateTime>(dateTimeStamps);
+
+                if (dataSeriaListCopy.Count > dateTimeStampsCopy.Count)
+                {
+                    List<Tuple<T, int>> tplList = new List<Tuple<T,int>>(dataSeriaListCopy.Select((val, idx) => new Tuple<T, int>(val, idx)));
+                    int deltCount = dataSeriaListCopy.Count - dateTimeStampsCopy.Count;
+                    int dIdx = (dataSeriaListCopy.Count/deltCount);
+                    int removed = tplList.RemoveAll(tpl => tpl.Item2%dIdx == 0);
+                    if (removed < deltCount)
+                    {
+                        tplList.RemoveRange(0, deltCount - removed);
+                    }
+                    dataSeriaListCopy = tplList.ConvertAll(tpl => tpl.Item1);
+                }
+                else
+                {
+                    List<Tuple<DateTime, int>> tplList =
+                        new List<Tuple<DateTime, int>>(
+                            dateTimeStampsCopy.Select((val, idx) => new Tuple<DateTime, int>(val, idx)));
+                    int deltCount = dateTimeStampsCopy.Count - dataSeriaListCopy.Count;
+                    int dIdx = (dateTimeStampsCopy.Count / deltCount);
+                    int removed = tplList.RemoveAll(tpl => tpl.Item2 % dIdx == 0);
+                    if (removed < deltCount)
+                    {
+                        tplList.RemoveRange(0, deltCount - removed);
+                    }
+                    dateTimeStampsCopy = tplList.ConvertAll(tpl => tpl.Item1);
+                }
+                dataSeria = new List<T>(dataSeriaListCopy);
+                lDateTimeStamps = new List<DateTime>(dateTimeStampsCopy);
+            }
+            else
+            {
+                dataSeria = new List<T>(dataSeriaList);
+                lDateTimeStamps = new List<DateTime>(dateTimeStamps);
+            }
+        }
+
+
+
+
+
+
+        public void AddDataRecord(T datumToAdd, DateTime DateTimeStampToAdd, bool resortImmediately = false)
+        {
+            lDateTimeStamps.Add(DateTimeStampToAdd);
+            dataSeria.Add(datumToAdd);
+
+            if (resortImmediately)
+            {
+                SortByTimeStamps();
+            }
+        }
+
+
+
+
+
+        public void AddSubseriaData(TimeSeries<T> tsSubSerie, bool bArrangeIfNotEqualLength = false)
+        {
+            AddSubseriaData(tsSubSerie.DataValues, tsSubSerie.TimeStamps, bArrangeIfNotEqualLength);
         }
 
 
@@ -50,18 +117,67 @@ namespace SkyImagesAnalyzerLibraries
         /// Adds the subseria data and orders the resulting serie by entries timestamps.
         /// </summary>
         /// <param name="lDataToAdd">The data to add.</param>
-        /// <param name="lDateTimeStampsRoAdd">TimeStamps ro add.</param>
-        public void AddSubseriaData(IEnumerable<T> lDataToAdd, IEnumerable<DateTime> lDateTimeStampsRoAdd)
+        /// <param name="lDateTimeStampsToAdd">TimeStamps ro add.</param>
+        public void AddSubseriaData(IEnumerable<T> lDataToAdd, IEnumerable<DateTime> lDateTimeStampsToAdd, bool bArrangeIfNotEqualLength = false)
         {
-            if (lDataToAdd.Count() != lDateTimeStampsRoAdd.Count())
+            if ((lDataToAdd.Count() != lDateTimeStampsToAdd.Count()) && !bArrangeIfNotEqualLength)
             {
-                return;
+                throw new ArgumentException("Arguments must be of the same dimensions.");
             }
+
+
+            List<DateTime> lDateTimeStampsToAddCopy = new List<DateTime>(lDateTimeStampsToAdd);
+            List<T> lDataToAddCopy = new List<T>(lDataToAdd);
+
+            if (bArrangeIfNotEqualLength && (lDataToAdd.Count() != lDateTimeStampsToAdd.Count()))
+            {
+                if (lDataToAddCopy.Count > lDateTimeStampsToAddCopy.Count)
+                {
+                    List<Tuple<T, int>> tplList =
+                        new List<Tuple<T, int>>(lDataToAddCopy.Select((val, idx) => new Tuple<T, int>(val, idx)));
+                    int deltCount = lDataToAddCopy.Count - lDateTimeStampsToAddCopy.Count;
+                    int dIdx = (lDataToAddCopy.Count / deltCount);
+                    int removed = tplList.RemoveAll(tpl => tpl.Item2%dIdx == 0);
+                    if (removed < deltCount)
+                    {
+                        tplList.RemoveRange(0, deltCount - removed);
+                    }
+                    lDataToAddCopy = tplList.ConvertAll(tpl => tpl.Item1);
+                }
+                else
+                {
+                    List<Tuple<DateTime, int>> tplList =
+                        new List<Tuple<DateTime, int>>(
+                            lDateTimeStampsToAddCopy.Select((val, idx) => new Tuple<DateTime, int>(val, idx)));
+                    int deltCount = lDateTimeStampsToAddCopy.Count - lDataToAddCopy.Count;
+                    int dIdx = (lDateTimeStampsToAddCopy.Count / deltCount);
+                    int removed = tplList.RemoveAll(tpl => tpl.Item2%dIdx == 0);
+                    if (removed < deltCount)
+                    {
+                        tplList.RemoveRange(0, deltCount - removed);
+                    }
+                    lDateTimeStampsToAddCopy = tplList.ConvertAll(tpl => tpl.Item1);
+                }
+            }
+            
 
             // будем сохранять исходный индекс для сохранения исходного порядка значений с равными штампами времени
             // для этого будем запоминать третий член совокупности - исходный индекс
-            List<Tuple<DateTime, T, int>> listToSort = lDateTimeStamps.Select((t, i) => new Tuple<DateTime, T, int>(t, dataSeria[i], i)).ToList();
-            listToSort.AddRange(lDateTimeStampsRoAdd.Select((t, i) => new Tuple<DateTime, T, int>(t, lDataToAdd.ElementAt(i), i)));
+            List<Tuple<DateTime, T>> tplListOrig =
+                new List<Tuple<DateTime, T>>(lDateTimeStamps.Zip(dataSeria, (dt, val) => new Tuple<DateTime, T>(dt, val)));
+            List<Tuple<DateTime, T, int>> listToSort =
+                new List<Tuple<DateTime, T, int>>(
+                    tplListOrig.Select((tpl, idx) => new Tuple<DateTime, T, int>(tpl.Item1, tpl.Item2, idx)));
+
+            List<Tuple<DateTime, T>> tplListToAdd =
+                new List<Tuple<DateTime, T>>(lDateTimeStampsToAddCopy.Zip(lDataToAddCopy,
+                    (dt, val) => new Tuple<DateTime, T>(dt, val)));
+            List<Tuple<DateTime, T, int>> tplListToAddIdxed =
+                new List<Tuple<DateTime, T, int>>(
+                    tplListToAdd.Select((tpl, idx) => new Tuple<DateTime, T, int>(tpl.Item1, tpl.Item2, idx)));
+
+
+            listToSort.AddRange(tplListToAddIdxed);
 
 
             listToSort.Sort((tpl1, tpl2) =>
@@ -210,7 +326,7 @@ namespace SkyImagesAnalyzerLibraries
                 TimeSeries<T> subSeria = SubSeria(startIdx, tSpan, out endIdx);
                 retListSubseries.Add(subSeria);
                 startIdx = endIdx + 1;
-                if (endIdx >= lDateTimeStamps.Count-1)
+                if (endIdx >= lDateTimeStamps.Count - 1)
                 {
                     break;
                 }
@@ -290,23 +406,23 @@ namespace SkyImagesAnalyzerLibraries
 
         public void RepositionDuplicatedTimeStamps()
         {
-            for (int i = 0; i < lDateTimeStamps.Count-1; i++)
+            for (int i = 0; i < lDateTimeStamps.Count - 1; i++)
             {
-                if (lDateTimeStamps[i] == lDateTimeStamps[i+1])
+                if (lDateTimeStamps[i] == lDateTimeStamps[i + 1])
                 {
-                    if (i==0)
+                    if (i == 0)
                     {
                         lDateTimeStamps[i + 1] =
-                            lDateTimeStamps[i].AddMilliseconds(((lDateTimeStamps[i + 2] - lDateTimeStamps[i]).TotalMilliseconds/2.0d));
+                            lDateTimeStamps[i].AddMilliseconds(((lDateTimeStamps[i + 2] - lDateTimeStamps[i]).TotalMilliseconds / 2.0d));
                     }
                     else if (i == lDateTimeStamps.Count - 2)
                     {
                         lDateTimeStamps[i] =
-                            lDateTimeStamps[i-1].AddMilliseconds(((lDateTimeStamps[i + 1] - lDateTimeStamps[i-1]).TotalMilliseconds / 2.0d));
+                            lDateTimeStamps[i - 1].AddMilliseconds(((lDateTimeStamps[i + 1] - lDateTimeStamps[i - 1]).TotalMilliseconds / 2.0d));
                     }
                     else
                     {
-                        TimeSpan dt = new TimeSpan(Convert.ToInt64((lDateTimeStamps[i + 2] - lDateTimeStamps[i - 1]).Ticks/3.0d));
+                        TimeSpan dt = new TimeSpan(Convert.ToInt64((lDateTimeStamps[i + 2] - lDateTimeStamps[i - 1]).Ticks / 3.0d));
                         lDateTimeStamps[i] = lDateTimeStamps[i - 1] + dt;
                         lDateTimeStamps[i + 1] = lDateTimeStamps[i] + dt;
                     }
@@ -353,7 +469,7 @@ namespace SkyImagesAnalyzerLibraries
         public void RemoveDuplicatedTimeStamps()
         {
             //List<Tuple<DateTime, T>> listToSort = lDateTimeStamps.Select((t, i) => new Tuple<DateTime, T>(t, dataSeria[i])).ToList();
-            List<Tuple<DateTime, T>> listToSort = new List<Tuple<DateTime,T>>(lDateTimeStamps.Zip(dataSeria,
+            List<Tuple<DateTime, T>> listToSort = new List<Tuple<DateTime, T>>(lDateTimeStamps.Zip(dataSeria,
                 (dt, val) => new Tuple<DateTime, T>(dt, val)));
             List<Tuple<DateTime, T>> lDateTimeStampsFiltered =
                 new List<Tuple<DateTime, T>>(listToSort.Distinct(new TimeSerieEntriesTupleComparerByTimeStamp()));
@@ -418,7 +534,7 @@ namespace SkyImagesAnalyzerLibraries
                 lDateTimeStamps.ConvertAll<double>(time => (time - startTime).TotalMilliseconds);
             //List<double> currentDataList =
             //    dataSeria.ConvertAll<double>(dVal => Convert.ToDouble(dVal));
-            
+
             DateTime endTime = lDateTimeStamps[lDateTimeStamps.Count - 1];
             int dtCount = Convert.ToInt32(((double)((endTime - startTime).TotalMilliseconds) / (double)(dt.TotalMilliseconds)));
             long dtInternalTicks = Convert.ToInt64(((endTime - startTime).Ticks) / (double)dtCount);
@@ -443,11 +559,11 @@ namespace SkyImagesAnalyzerLibraries
             {
                 return this;
             }
-            
+
             List<double> interpolatedValues = new List<double>();
             foreach (DateTime time in resDateTimeList)
             {
-                interpolatedValues.Add(method.Interpolate((time-startTime).TotalMilliseconds));
+                interpolatedValues.Add(method.Interpolate((time - startTime).TotalMilliseconds));
             }
 
             return new TimeSeries<T>(interpolatedValues as List<T>, resDateTimeList);
@@ -538,7 +654,7 @@ namespace SkyImagesAnalyzerLibraries
             {
                 DateTime startTime = lDateTimeStamps[0];
                 List<double> tsValuesList =
-                    lDateTimeStamps.ConvertAll<double>(dt => (dt - startTime).TotalMilliseconds/1000.0d);
+                    lDateTimeStamps.ConvertAll<double>(dt => (dt - startTime).TotalMilliseconds / 1000.0d);
                 DenseVector dvRetVector = DenseVector.OfEnumerable(tsValuesList);
                 return dvRetVector;
             }
@@ -559,7 +675,7 @@ namespace SkyImagesAnalyzerLibraries
         {
             get
             {
-                DateTime andTime = lDateTimeStamps[lDateTimeStamps.Count-1];
+                DateTime andTime = lDateTimeStamps[lDateTimeStamps.Count - 1];
                 return andTime;
             }
         }
@@ -593,6 +709,15 @@ namespace SkyImagesAnalyzerLibraries
             return retVal;
         }
 
+
+
+
+
+        public void Clear()
+        {
+            lDateTimeStamps.Clear();
+            dataSeria.Clear();
+        }
     }
 
 
@@ -662,7 +787,7 @@ namespace SkyImagesAnalyzerLibraries
 
 
 
-        
+
 
 
         public void RemoveDuplicatedTimeStamps()

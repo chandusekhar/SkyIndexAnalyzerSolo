@@ -339,7 +339,7 @@ namespace SkyImagesAnalyzerLibraries
 
 
 
-        public static void logToTextFile(string Filename, string text = "", bool append = false, bool cp1251 = false)
+        public static void logToTextFile(string Filename, string text = "", bool append = false, bool withTimeStamp = false)
         {
             FileStream textFileStream = null;
             StreamWriter sw;
@@ -352,6 +352,11 @@ namespace SkyImagesAnalyzerLibraries
 
 
             textFileStream = new FileStream(Filename, (append) ? (FileMode.Append) : (FileMode.Create), FileAccess.Write);
+
+            if (withTimeStamp)
+            {
+                text = DateTime.UtcNow.ToString("s") + ":" + Environment.NewLine + text;
+            }
 
             byte[] info2write = new UTF8Encoding(true).GetBytes(text);
 
@@ -988,7 +993,7 @@ namespace SkyImagesAnalyzerLibraries
             }
             catch (Exception ex)
             {
-                return null;
+                throw ex;
             }
 
             currFileDateTimeList.Sort();
