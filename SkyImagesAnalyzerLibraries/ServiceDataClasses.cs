@@ -1453,16 +1453,6 @@ namespace SkyImagesAnalyzerLibraries
 
 
 
-        public static DenseMatrix ToDenseMatrix(IEnumerable<GPSdata> lGPSData)
-        {
-            IEnumerable<DenseVector> lDVdata =
-                new List<GPSdata>(lGPSData).ConvertAll(gpsDat => gpsDat.ToDenseVector());
-            DenseMatrix dmRetMatr = DenseMatrix.OfRows(lDVdata.Count(), lDVdata.ElementAt(0).Count, lDVdata);
-            return dmRetMatr;
-        }
-
-
-
 
         public GPSdata(IEnumerable<double> source)
         {
@@ -1496,10 +1486,7 @@ namespace SkyImagesAnalyzerLibraries
                     lonHemisphere = (lon >= 0.0d) ? ("E") : ("W");
                     lon = Math.Abs(lon);
 
-                    if ((source.ElementAt(2) == 1.0) || (source.ElementAt(2) == 2.0))
-                    {
-                        devID = Convert.ToInt32(source.ElementAt(2));
-                    }
+                    devID = Convert.ToInt32(source.ElementAt(2));
                 }
                 catch (Exception)
                 {
@@ -1555,10 +1542,7 @@ namespace SkyImagesAnalyzerLibraries
 
                     IOFFEdataDepth = source.ElementAt(5);
 
-                    if ((source.ElementAt(6) == 1.0) || (source.ElementAt(6) == 2.0))
-                    {
-                        devID = Convert.ToInt32(source.ElementAt(6));
-                    }
+                    devID = Convert.ToInt32(source.ElementAt(6));
                 }
                 catch (Exception)
                 {
@@ -1582,11 +1566,18 @@ namespace SkyImagesAnalyzerLibraries
                 return null;
             }
 
-            return
-                dmSource.EnumerateRowsIndexed()
-                    .Select(tplRow => new GPSdata(tplRow.Item2))
-                    .Where(newgpsDatum => newgpsDatum != null)
-                    .ToList();
+            List<GPSdata> listRetGPSdata = new List<GPSdata>();
+
+            foreach (Tuple<int, Vector<double>> tplRow in dmSource.EnumerateRowsIndexed())
+            {
+                GPSdata newgpsDatum = new GPSdata(tplRow.Item2);
+                if (newgpsDatum != null)
+                {
+                    listRetGPSdata.Add(newgpsDatum);
+                }
+            }
+
+            return listRetGPSdata;
         }
 
 
