@@ -35,7 +35,8 @@ namespace SkyImagesAnalyzerLibraries
         int pictureHeight = 600;
         int leftServiceSpaceGapX = 40;
         int rightServiceSpaceGapX = 40;
-        int serviceSpaceGapY = 40;
+        int topServiceSpaceGapY = 40;
+        int btmServiceSpaceGapY = 40;
         private Bgr colorBlack = new Bgr(0, 0, 0);
         private Bgr colorWhite = new Bgr(255, 255, 255);
         private Bgr colorGreen = new Bgr(Color.LightGreen);
@@ -61,7 +62,7 @@ namespace SkyImagesAnalyzerLibraries
 
         public int ServiceSpaceGapY
         {
-            get { return serviceSpaceGapY; }
+            get { return topServiceSpaceGapY; }
         }
 
         public int PictureWidth
@@ -109,17 +110,25 @@ namespace SkyImagesAnalyzerLibraries
 
 
 
+
+
         public MultipleScatterAndFunctionsRepresentation(Size imageSize)
         {
             pictureWidth = imageSize.Width;
             pictureHeight = imageSize.Height;
         }
 
+
+
+
+
         public MultipleScatterAndFunctionsRepresentation(int imageWidth, int imageHeight)
         {
             pictureWidth = imageWidth;
             pictureHeight = imageHeight;
         }
+
+
 
         public Image<Bgr, byte> TheImage
         {
@@ -142,6 +151,8 @@ namespace SkyImagesAnalyzerLibraries
             pictureHeight = newSize.Height;
             Represent();
         }
+
+
 
         public void ResizeCanvas(int newWidth, int newHeight)
         {
@@ -207,8 +218,8 @@ namespace SkyImagesAnalyzerLibraries
             if (leftServiceSpaceGapX < 40) leftServiceSpaceGapX = 40;
             rightServiceSpaceGapX = leftServiceSpaceGapX;
 
-            serviceSpaceGapY = Convert.ToInt32(0.05d * (double)pictureHeight);
-            if (serviceSpaceGapY < 40) serviceSpaceGapY = 40;
+            topServiceSpaceGapY = Convert.ToInt32(0.05d * (double)pictureHeight);
+            if (topServiceSpaceGapY < 40) topServiceSpaceGapY = 40;
             theImage = new Image<Bgr, Byte>(pictureWidth, pictureHeight, new Bgr(0, 0, 0));
 
 
@@ -227,11 +238,24 @@ namespace SkyImagesAnalyzerLibraries
         {
 
             #region Прописываем текстовые маркеры
+
             #region Y
 
             MCvFont theFont = new MCvFont(FONT.CV_FONT_HERSHEY_PLAIN, 1.0d, 1.0d);
             theFont.thickness = 1;
-            double dMarkersCount = (double)(pictureHeight - (2 * serviceSpaceGapY)) / 30.0d;
+
+            // замерим высоту подписей по X по значению в минимуме
+            string strMinXvalueMarker = xAxisValuesConversionToRepresentTicksValues(xSpaceMin);
+            TextBarImage minXvalueMarkerTextBar = new TextBarImage(strMinXvalueMarker,
+                new Image<Bgr, byte>(new Size(pictureWidth, pictureHeight)), ref theFont);
+            int barHeight = minXvalueMarkerTextBar.textBarSize.Height;
+            if (btmServiceSpaceGapY < 1.5 * barHeight)
+            {
+                btmServiceSpaceGapY = Convert.ToInt32(1.5*barHeight);
+            }
+
+
+            double dMarkersCount = (double)(pictureHeight - (btmServiceSpaceGapY + topServiceSpaceGapY)) / 30.0d;
             dMarkersCount = (dMarkersCount > 10.0d) ? (10.0d) : (dMarkersCount);
             double dRulerValueGap = (overallFuncMax - overallFuncMin) / (double)dMarkersCount;
             //dRulerValueGap = (dRulerValueGap < 1.0d) ? (1.0d) : dRulerValueGap;
@@ -272,10 +296,10 @@ namespace SkyImagesAnalyzerLibraries
 
 
             currentMarkerValue = lowerMarkerValue;
-            double nextYPositionDouble = (1.0d - ((currentMarkerValue - overallFuncMin) / (overallFuncMax - overallFuncMin))) * (double)(pictureHeight - 2 * serviceSpaceGapY) + serviceSpaceGapY;
-            while (nextYPositionDouble > serviceSpaceGapY)
+            double nextYPositionDouble = (1.0d - ((currentMarkerValue - overallFuncMin) / (overallFuncMax - overallFuncMin))) * (double)(pictureHeight - topServiceSpaceGapY - btmServiceSpaceGapY) + topServiceSpaceGapY;
+            while (nextYPositionDouble > topServiceSpaceGapY)
             {
-                double yPositionDouble = (1.0d - ((currentMarkerValue - overallFuncMin) / (overallFuncMax - overallFuncMin))) * (double)(pictureHeight - 2 * serviceSpaceGapY) + serviceSpaceGapY;
+                double yPositionDouble = (1.0d - ((currentMarkerValue - overallFuncMin) / (overallFuncMax - overallFuncMin))) * (double)(pictureHeight - topServiceSpaceGapY - btmServiceSpaceGapY) + topServiceSpaceGapY;
                 int yPosition = Convert.ToInt32(Math.Round(yPositionDouble));
                 LineSegment2D theLine = new LineSegment2D(new Point(leftServiceSpaceGapX, yPosition), new Point(leftServiceSpaceGapX - 5, yPosition));
                 Bgr markerColor = colorGreen;
@@ -287,14 +311,19 @@ namespace SkyImagesAnalyzerLibraries
                     currMarkerPresentation = yAxisValuesConversionToRepresentTicksValues(currentMarkerValue);
                 }
 
-                theImage.Draw(currMarkerPresentation, ref theFont, new Point(2, yPosition), markerColor);
+                //theImage.Draw(currMarkerPresentation, ref theFont, new Point(2, yPosition), markerColor);
+
+                TextBarImage currSignImage = new TextBarImage(currMarkerPresentation, theImage, ref theFont);
+                currSignImage.PtSurroundingBarStart = new Point(0, yPosition - currSignImage.textHeight);
+                theImage = theImage.Add(currSignImage.TextSignImageAtOriginalBlank(markerColor));
+
+
                 currentMarkerValue += rulerValueGap;
-                nextYPositionDouble = (1.0d - ((currentMarkerValue - overallFuncMin) / (overallFuncMax - overallFuncMin))) * (double)(pictureHeight - 2 * serviceSpaceGapY) + serviceSpaceGapY;
+                nextYPositionDouble = (1.0d - ((currentMarkerValue - overallFuncMin) / (overallFuncMax - overallFuncMin))) * (double)(pictureHeight - topServiceSpaceGapY - btmServiceSpaceGapY) + topServiceSpaceGapY;
             }
 
             #endregion Y
-
-
+            
 
 
             #region X
@@ -303,13 +332,14 @@ namespace SkyImagesAnalyzerLibraries
             double lowerMarkerValueX = 0.0d;
             bool markersCountRight = false;
             int initialDivider = 30;
+            double dMarkersCountX = (double)(pictureWidth - (leftServiceSpaceGapX + rightServiceSpaceGapX)) / (double)initialDivider;
             while (!markersCountRight)
             {
-                double dMarkersCountX = (double)(pictureWidth - (leftServiceSpaceGapX + rightServiceSpaceGapX)) / (double)initialDivider;
                 dMarkersCountX = (dMarkersCountX > 10.0d) ? (10.0d) : (dMarkersCountX);
                 double dRulerValueGapX = (xSpaceMax - xSpaceMin) / (double)dMarkersCountX;
-                int deciGapX = Convert.ToInt32(Math.Truncate(Math.Log(dRulerValueGapX, 2.0d)));
-                rulerValueGapX = Math.Pow(2.0, (double)deciGapX);
+                //int deciGapX = Convert.ToInt32(Math.Truncate(Math.Log(dRulerValueGapX, 2.0d)));
+                //rulerValueGapX = Math.Pow(2.0, (double)deciGapX);
+                rulerValueGapX = dRulerValueGapX;
                 lowerMarkerValueX = xSpaceMin - Math.IEEERemainder(xSpaceMin, rulerValueGapX);
                 lowerMarkerValueX = (lowerMarkerValueX < xSpaceMin) ? (lowerMarkerValueX + rulerValueGapX) : (lowerMarkerValueX);
                 
@@ -340,7 +370,7 @@ namespace SkyImagesAnalyzerLibraries
                 int totalTextBarsWidth = lTextBarsXaxis.Sum(textBar => textBar.textBarSize.Width);
                 if (totalTextBarsWidth > pictureWidth - leftServiceSpaceGapX - rightServiceSpaceGapX)
                 {
-                    initialDivider += 1;
+                    dMarkersCountX = dMarkersCountX - 1.0d;
                 }
                 else
                 {
@@ -352,11 +382,11 @@ namespace SkyImagesAnalyzerLibraries
             double currentMarkerValueX = lowerMarkerValueX;
 
             double nextXPositionDouble = leftServiceSpaceGapX + ((currentMarkerValueX - xSpaceMin) / (xSpaceMax - xSpaceMin)) * (double)(pictureWidth - leftServiceSpaceGapX - rightServiceSpaceGapX);
-            while (nextXPositionDouble < pictureWidth - rightServiceSpaceGapX)
+            while (nextXPositionDouble <= pictureWidth - rightServiceSpaceGapX)
             {
                 double xPositionDouble = leftServiceSpaceGapX + ((currentMarkerValueX - xSpaceMin) / (xSpaceMax - xSpaceMin)) * (double)(pictureWidth - leftServiceSpaceGapX - rightServiceSpaceGapX);
                 int xPosition = Convert.ToInt32(Math.Round(xPositionDouble));
-                LineSegment2D theLine = new LineSegment2D(new Point(xPosition, pictureHeight - serviceSpaceGapY), new Point(xPosition, pictureHeight - serviceSpaceGapY + 5));
+                LineSegment2D theLine = new LineSegment2D(new Point(xPosition, pictureHeight - btmServiceSpaceGapY), new Point(xPosition, pictureHeight - btmServiceSpaceGapY + 5));
                 Bgr markerColor = colorGreen;
                 theImage.Draw(theLine, markerColor, 2);
 
@@ -366,12 +396,10 @@ namespace SkyImagesAnalyzerLibraries
                     currMarkerPresentation = xAxisValuesConversionToRepresentTicksValues(currentMarkerValueX);
                 }
 
-                Size retTextSize = new Size(0, 0);
-                int baseline = 0;
-                CvInvoke.cvGetTextSize(currMarkerPresentation, ref theFont, ref retTextSize, ref baseline);
-                int halfTextWidth = retTextSize.Width / 2;
+                TextBarImage currSignImage = new TextBarImage(currMarkerPresentation, theImage, ref theFont);
+                currSignImage.PtSurroundingBarStart = new Point(Convert.ToInt32(xPosition - currSignImage.textBarSize.Width / 2), pictureHeight - btmServiceSpaceGapY + 10);
+                theImage = theImage.Add(currSignImage.TextSignImageAtOriginalBlank(markerColor));
 
-                theImage.Draw(currMarkerPresentation, ref theFont, new Point(xPosition - halfTextWidth, pictureHeight - 10), markerColor);
                 currentMarkerValueX += rulerValueGapX;
                 nextXPositionDouble = leftServiceSpaceGapX + ((currentMarkerValueX - xSpaceMin) / (xSpaceMax - xSpaceMin)) * (double)(pictureWidth - leftServiceSpaceGapX - rightServiceSpaceGapX);
             }
@@ -388,14 +416,14 @@ namespace SkyImagesAnalyzerLibraries
             int xValuesCount = pictureWidth - leftServiceSpaceGapX - rightServiceSpaceGapX;// оставляем место на шкалу Y
 
             List<Point> rulerVertices = new List<Point>();
-            rulerVertices.Add(new Point(leftServiceSpaceGapX, pictureHeight - serviceSpaceGapY));
-            rulerVertices.Add(new Point(pictureWidth - rightServiceSpaceGapX, pictureHeight - serviceSpaceGapY));
-            rulerVertices.Add(new Point(pictureWidth - rightServiceSpaceGapX, serviceSpaceGapY));
-            rulerVertices.Add(new Point(leftServiceSpaceGapX, serviceSpaceGapY));
+            rulerVertices.Add(new Point(leftServiceSpaceGapX, pictureHeight - btmServiceSpaceGapY));
+            rulerVertices.Add(new Point(pictureWidth - rightServiceSpaceGapX, pictureHeight - btmServiceSpaceGapY));
+            rulerVertices.Add(new Point(pictureWidth - rightServiceSpaceGapX, topServiceSpaceGapY));
+            rulerVertices.Add(new Point(leftServiceSpaceGapX, topServiceSpaceGapY));
             theImage.DrawPolyline(rulerVertices.ToArray(), true, colorGreen, 2);
 
-            double koeff = (pictureHeight - (2 * serviceSpaceGapY)) / (overallFuncMax - overallFuncMin);
-            koeffY = ((double)pictureHeight - 2.0d * (double)serviceSpaceGapY) / (overallFuncMax - overallFuncMin);
+            double koeff = (pictureHeight - btmServiceSpaceGapY - topServiceSpaceGapY) / (overallFuncMax - overallFuncMin);
+            koeffY = ((double)pictureHeight - btmServiceSpaceGapY - topServiceSpaceGapY) / (overallFuncMax - overallFuncMin);
             koeffX = ((double)pictureWidth - leftServiceSpaceGapX - rightServiceSpaceGapX) / (xSpaceMax - xSpaceMin);
             if (equalScale)
             {
@@ -407,7 +435,7 @@ namespace SkyImagesAnalyzerLibraries
 
             if (drawZeroLines)
             {
-                int zeroYcoordinate = Convert.ToInt32(pictureHeight - serviceSpaceGapY - (0 - overallFuncMin) * koeffY);
+                int zeroYcoordinate = Convert.ToInt32(pictureHeight - btmServiceSpaceGapY - (0 - overallFuncMin) * koeffY);
                 int zeroXcoordinate = Convert.ToInt32(leftServiceSpaceGapX + (0 - xSpaceMin) * koeffX);
 
                 List<Point> rulerXVertices = new List<Point>();
@@ -416,8 +444,8 @@ namespace SkyImagesAnalyzerLibraries
                 theImage.DrawPolyline(rulerXVertices.ToArray(), false, colorGreen, 2);
 
                 List<Point> rulerYVertices = new List<Point>();
-                rulerYVertices.Add(new Point(zeroXcoordinate, serviceSpaceGapY));
-                rulerYVertices.Add(new Point(zeroXcoordinate, pictureHeight - serviceSpaceGapY));
+                rulerYVertices.Add(new Point(zeroXcoordinate, topServiceSpaceGapY));
+                rulerYVertices.Add(new Point(zeroXcoordinate, pictureHeight - btmServiceSpaceGapY));
                 theImage.DrawPolyline(rulerYVertices.ToArray(), false, colorGreen, 2);
             }
 
@@ -460,7 +488,7 @@ namespace SkyImagesAnalyzerLibraries
                 DenseVector yCoordinates = DenseVector.Create(xValuesCount, new Func<int, double>(j =>
                 {
                     double pixValue = koeff * (dvFuncValues[j] - overallFuncMin);
-                    return (pictureHeight - serviceSpaceGapY - pixValue);
+                    return (pictureHeight - btmServiceSpaceGapY - pixValue);
                 }));
 
                 List<Point> funcRepresentationPoints = new List<Point>();
@@ -484,7 +512,7 @@ namespace SkyImagesAnalyzerLibraries
         {
             if ((dvScatterXSpace.Count == 0) || (dvScatterFuncValues.Count == 0)) return;
 
-            koeffY = ((double)pictureHeight - 2.0d * (double)serviceSpaceGapY) / (overallFuncMax - overallFuncMin);
+            koeffY = ((double)pictureHeight - btmServiceSpaceGapY - topServiceSpaceGapY) / (overallFuncMax - overallFuncMin);
             koeffX = ((double)pictureWidth - leftServiceSpaceGapX - rightServiceSpaceGapX) / (xSpaceMax - xSpaceMin);
             if (equalScale)
             {
@@ -499,7 +527,7 @@ namespace SkyImagesAnalyzerLibraries
                 List<Point> pointsList = new List<Point>();
                 for (int i = 0; i < dvScatterXSpace[seqIndex].Count; i++)
                 {
-                    int yCoordinate = Convert.ToInt32(pictureHeight - serviceSpaceGapY - (dvScatterFuncValues[seqIndex][i] - overallFuncMin) * koeffY);
+                    int yCoordinate = Convert.ToInt32(pictureHeight - btmServiceSpaceGapY - (dvScatterFuncValues[seqIndex][i] - overallFuncMin) * koeffY);
                     int xCoordinate = Convert.ToInt32(leftServiceSpaceGapX + (dvScatterXSpace[seqIndex][i] - xSpaceMin) * koeffX);
                     pointsList.Add(new Point(xCoordinate, yCoordinate));
                 }
@@ -585,8 +613,8 @@ namespace SkyImagesAnalyzerLibraries
             foreach (double dMarkerValue in verticalMarkersList)
             {
                 int xCoordinate = Convert.ToInt32(leftServiceSpaceGapX + (dMarkerValue - xSpaceMin) * koeffX);
-                Point p1 = new Point(xCoordinate, pictureHeight - serviceSpaceGapY);
-                Point p2 = new Point(xCoordinate, serviceSpaceGapY);
+                Point p1 = new Point(xCoordinate, pictureHeight - btmServiceSpaceGapY);
+                Point p2 = new Point(xCoordinate, topServiceSpaceGapY);
                 markersLayerImage.Draw(new LineSegment2D(p1, p2), curSeqColor, 1);
             }
         }
@@ -616,12 +644,12 @@ namespace SkyImagesAnalyzerLibraries
 
             //вернуть координату (по данным) X - часто это время
             SizeD workingSpaceOfTheImage = new SizeD(theImage.Width - leftServiceSpaceGapX - rightServiceSpaceGapX,
-                theImage.Height - 2.0d * (double)serviceSpaceGapY);
+                theImage.Height - btmServiceSpaceGapY - topServiceSpaceGapY);
             double xKoeff = (xSpaceMax - xSpaceMin) / workingSpaceOfTheImage.Width;
             double imageDataX = xKoeff * ((double)mouseClickX - (double)leftServiceSpaceGapX) + xSpaceMin;
 
             double yKoeff = (overallFuncMax - overallFuncMin) / workingSpaceOfTheImage.Height;
-            double imageDataY = yKoeff * (workingSpaceOfTheImage.Height - (double)mouseClickY + (double)serviceSpaceGapY) +
+            double imageDataY = yKoeff * (workingSpaceOfTheImage.Height - (double)mouseClickY + (double)topServiceSpaceGapY) +
                                 overallFuncMin;
 
             return new PointD(imageDataX, imageDataY);

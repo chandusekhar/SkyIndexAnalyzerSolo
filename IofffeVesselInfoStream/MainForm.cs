@@ -58,6 +58,9 @@ namespace IofffeVesselInfoStream
         private bool defaultGraphsTimeSpan = true;
         private Tuple<DateTime, DateTime> graphsTimeSpan = new Tuple<DateTime, DateTime>(DateTime.UtcNow.AddDays(-1),
             DateTime.UtcNow);
+        private Tuple<DateTime, DateTime> prevGraphsTimeSpan = new Tuple<DateTime, DateTime>(DateTime.UtcNow.AddDays(-1),
+            DateTime.UtcNow);
+        TimeSeries<MeteoData> tsMeteoDataForGraphs = null;
 
         private static LogWindow theLogWindow = null;
         private string errorLogFilename = Directory.GetCurrentDirectory() + "\\logs\\IoffeVesselInfoStream-error.log";
@@ -1633,21 +1636,74 @@ namespace IofffeVesselInfoStream
 
         void bgwGraphsPresenterInSeparateWindow_DoWork(object sender, DoWorkEventArgs e)
         {
+            ThreadSafeOperations.SetLoadingCircleState(wcUpdatimgGraph, true, true, wcUpdatimgGraph.Color);
+
             Image<Bgr, byte> img = FillGraphImage(new Size(1280, 1024));
 
             if (img != null)
             {
                 ServiceTools.ExecMethodInSeparateThread(this, delegate()
                 {
-                    ServiceTools.ShowPicture(img, "");
+                    SimpleShowImageForm f1 = new SimpleShowImageForm(img.Bitmap);
+                    f1.FormResizing += ExternalGraphImageFormResized;
+                    f1.Show();
                 });
             }
+
+            ThreadSafeOperations.SetLoadingCircleState(wcUpdatimgGraph, false, false, wcUpdatimgGraph.Color);
         }
 
 
 
 
+        private void ExternalGraphImageFormResized(object sender, EventArgs e)
+        {
+            BackgroundWorker bgwGenerateGraphImage = new BackgroundWorker();
+            SimpleShowImageForm f1 = sender as SimpleShowImageForm;
 
+            bgwGenerateGraphImage.DoWork += (sndr, args) =>
+            {
+                ThreadSafeOperations.SetLoadingCircleState(wcUpdatimgGraph, true, true, wcUpdatimgGraph.Color);
+
+                Image<Bgr, byte> img = FillGraphImage(f1.pb1.Size);
+                args.Result = new object[] { img };
+            };
+
+            bgwGenerateGraphImage.RunWorkerCompleted += (sndr, args) =>
+            {
+                Image<Bgr, byte> resImg = (args.Result as object[])[0] as Image<Bgr, byte>;
+
+                ServiceTools.ExecMethodInSeparateThread(this, delegate()
+                {
+                    f1.UpdateBitmap(resImg.Bitmap);
+                });
+
+                ThreadSafeOperations.SetLoadingCircleState(wcUpdatimgGraph, false, false, wcUpdatimgGraph.Color);
+            };
+
+            bgwGenerateGraphImage.RunWorkerAsync();
+        }
+
+
+
+
+        enum GraphVariablesTypes
+        {
+            Pressure,
+            AirTemp,
+            WaterTemp,
+            WindSpeed,
+            none,
+        }
+
+
+
+        private DenseVector dvVarValues = DenseVector.Create(1, 0.0d);
+        private List<double> currFileSecondsList = new List<double>();
+        private MultipleScatterAndFunctionsRepresentation fRenderer = null;
+        private Bgr currValueColor = new Bgr(Color.Black);
+        private GraphVariablesTypes prevGraphVariable = GraphVariablesTypes.none;
+        private int aveMinuteEntriesCount = 100;
         private Image<Bgr, byte> FillGraphImage(Size imgSize)
         {
             string curDirPath = Directory.GetCurrentDirectory() + "\\logs\\";
@@ -1661,27 +1717,82 @@ namespace IofffeVesselInfoStream
                 graphsTimeSpan = new Tuple<DateTime, DateTime>(DateTime.UtcNow.AddDays(-1), DateTime.UtcNow);
             }
 
+            GraphVariablesTypes currVarType = GraphVariablesTypes.none;
+            if (rbtnPressureGraph.Checked) currVarType = GraphVariablesTypes.Pressure;
+            if (rbtnAirTempGraph.Checked) currVarType = GraphVariablesTypes.AirTemp;
+            if (rbtnWaterTempGraph.Checked) currVarType = GraphVariablesTypes.WaterTemp;
+            if (rbtnWindSpeedGraph.Checked) currVarType = GraphVariablesTypes.WindSpeed;
 
-            IEnumerable<string> ncFileNames = Directory.EnumerateFiles(curDirPath, "IoffeVesselInfoStream-MeteoDataLog-*.nc",
-                SearchOption.TopDirectoryOnly);
-            foreach (string ncFileName in ncFileNames)
+
+            if ((fRenderer == null) || (!prevGraphsTimeSpan.Equals(graphsTimeSpan) || currVarType != prevGraphVariable))
             {
-                Tuple<DateTime, DateTime> currFileDateTimeRange = null;
-                try
+                fRenderer = new MultipleScatterAndFunctionsRepresentation(imgSize);
+                switch (currVarType)
                 {
-                    currFileDateTimeRange = ServiceTools.GetNetCDFfileTimeStampsRange(ncFileName);
-                }
-                catch (Exception ex)
-                {
-                    #region report
-#if DEBUG
-                    ServiceTools.ExecMethodInSeparateThread(this, () =>
+                    case GraphVariablesTypes.Pressure:
                     {
-                        theLogWindow = ServiceTools.LogAText(theLogWindow,
+                        currValueColor = new Bgr(Color.Blue);
+                        break;
+                    }
+                    case GraphVariablesTypes.AirTemp:
+                    {
+                        currValueColor = new Bgr(Color.Red);
+                        break;
+                    }
+                    case GraphVariablesTypes.WaterTemp:
+                    {
+                        currValueColor = new Bgr(Color.RoyalBlue);
+                        break;
+                    }
+                    case GraphVariablesTypes.WindSpeed:
+                    {
+                        currValueColor = new Bgr(Color.Gray);
+                        break;
+                    }
+                    default:
+                    {
+                        currValueColor = new Bgr(Color.Blue);
+                        break;
+                    }
+                        
+
+                }
+            }
+            else if (fRenderer != null)
+            {
+                if (fRenderer.TheImage.Size != imgSize)
+                {
+                    fRenderer.ResizeCanvas(imgSize);
+                }
+            }
+
+
+
+
+            if (!prevGraphsTimeSpan.Equals(graphsTimeSpan))
+            {
+                IEnumerable<string> ncFileNames = Directory.EnumerateFiles(curDirPath,
+                    "IoffeVesselInfoStream-MeteoDataLog-*.nc",
+                    SearchOption.TopDirectoryOnly);
+                foreach (string ncFileName in ncFileNames)
+                {
+                    Tuple<DateTime, DateTime> currFileDateTimeRange = null;
+                    try
+                    {
+                        currFileDateTimeRange = ServiceTools.GetNetCDFfileTimeStampsRange(ncFileName);
+                    }
+                    catch (Exception ex)
+                    {
+                        #region report
+
+#if DEBUG
+                        ServiceTools.ExecMethodInSeparateThread(this, () =>
+                        {
+                            theLogWindow = ServiceTools.LogAText(theLogWindow,
                                 "an exception has been thrown during file reading: " + Environment.NewLine + ncFileName +
                                 Environment.NewLine + "message: " + ex.Message + Environment.NewLine +
                                 ServiceTools.CurrentCodeLineDescription());
-                    });
+                        });
 #else
                     ServiceTools.ExecMethodInSeparateThread(this, () =>
                     {
@@ -1691,30 +1802,35 @@ namespace IofffeVesselInfoStream
                                 ServiceTools.CurrentCodeLineDescription(), true, true);
                     });
 #endif
-                    #endregion report
-                }
 
-                if (currFileDateTimeRange == null) continue;
-
-                if ((currFileDateTimeRange.Item1 >= graphsTimeSpan.Item1) && (currFileDateTimeRange.Item1 <= graphsTimeSpan.Item2) ||
-                    (currFileDateTimeRange.Item2 >= graphsTimeSpan.Item1) && (currFileDateTimeRange.Item2 <= graphsTimeSpan.Item2))
-                {
-                    Dictionary<string, object> dictFileData = null;
-                    try
-                    {
-                        dictFileData = NetCDFoperations.ReadDataFromFile(ncFileName);
+                        #endregion report
                     }
-                    catch (Exception ex)
+
+                    if (currFileDateTimeRange == null) continue;
+
+                    if ((currFileDateTimeRange.Item1 >= graphsTimeSpan.Item1) &&
+                        (currFileDateTimeRange.Item1 <= graphsTimeSpan.Item2) ||
+                        (currFileDateTimeRange.Item2 >= graphsTimeSpan.Item1) &&
+                        (currFileDateTimeRange.Item2 <= graphsTimeSpan.Item2))
                     {
-                        #region report
-#if DEBUG
-                        ServiceTools.ExecMethodInSeparateThread(this, () =>
+                        Dictionary<string, object> dictFileData = null;
+                        try
                         {
-                            theLogWindow = ServiceTools.LogAText(theLogWindow,
-                                "an exception has been thrown during file reading: " + Environment.NewLine + ncFileName +
-                                Environment.NewLine + "message: " + ex.Message + Environment.NewLine +
-                                ServiceTools.CurrentCodeLineDescription());
-                        });
+                            dictFileData = NetCDFoperations.ReadDataFromFile(ncFileName);
+                        }
+                        catch (Exception ex)
+                        {
+                            #region report
+
+#if DEBUG
+                            ServiceTools.ExecMethodInSeparateThread(this, () =>
+                            {
+                                theLogWindow = ServiceTools.LogAText(theLogWindow,
+                                    "an exception has been thrown during file reading: " + Environment.NewLine +
+                                    ncFileName +
+                                    Environment.NewLine + "message: " + ex.Message + Environment.NewLine +
+                                    ServiceTools.CurrentCodeLineDescription());
+                            });
 #else
                         ServiceTools.ExecMethodInSeparateThread(this, () =>
                         {
@@ -1725,54 +1841,55 @@ namespace IofffeVesselInfoStream
                         });
                         
 #endif
-                        #endregion report
-                    }
 
-                    if (dictFileData != null)
-                    {
-                        lReadData.Add(dictFileData);
-                    }
-                }
-            }
-            //}
+                            #endregion report
+                        }
 
-
-
-            TimeSeries<MeteoData> tsMeteoData = null;
-
-            foreach (Dictionary<string, object> currFileDataDict in lReadData)
-            {
-                if (currFileDataDict == null)
-                {
-                    continue;
-                }
-
-                string varNameDateTime = "DateTime";
-
-                List<long> currFileDateTimeLongTicksList = new List<long>((currFileDataDict[varNameDateTime] as long[]));
-                List<DateTime> currFileDateTimeList = currFileDateTimeLongTicksList.ConvertAll(longVal => new DateTime(longVal));
-
-                string varNameMeteoData = "MeteoData";
-                List<MeteoData> currFileMeteoDataList =
-                    MeteoData.OfDenseMatrix(currFileDataDict[varNameMeteoData] as DenseMatrix);
-
-                if (tsMeteoData == null)
-                {
-                    try
-                    {
-                        tsMeteoData = new TimeSeries<MeteoData>(currFileMeteoDataList, currFileDateTimeList, true);
-                    }
-                    catch (Exception ex)
-                    {
-                        #region report
-#if DEBUG
-                        ServiceTools.ExecMethodInSeparateThread(this, () =>
+                        if (dictFileData != null)
                         {
-                            theLogWindow = ServiceTools.LogAText(theLogWindow,
-                                "couldn`t create timeseries: exception has been thrown" + Environment.NewLine +
-                                ServiceTools.CurrentCodeLineDescription() + Environment.NewLine + "message: " +
-                                ex.Message);
-                        });
+                            lReadData.Add(dictFileData);
+                        }
+                    }
+                }
+
+
+                foreach (Dictionary<string, object> currFileDataDict in lReadData)
+                {
+                    if (currFileDataDict == null)
+                    {
+                        continue;
+                    }
+
+                    string varNameDateTime = "DateTime";
+
+                    List<long> currFileDateTimeLongTicksList =
+                        new List<long>((currFileDataDict[varNameDateTime] as long[]));
+                    List<DateTime> currFileDateTimeList =
+                        currFileDateTimeLongTicksList.ConvertAll(longVal => new DateTime(longVal));
+
+                    string varNameMeteoData = "MeteoData";
+                    List<MeteoData> currFileMeteoDataList =
+                        MeteoData.OfDenseMatrix(currFileDataDict[varNameMeteoData] as DenseMatrix);
+
+                    if (tsMeteoDataForGraphs == null)
+                    {
+                        try
+                        {
+                            tsMeteoDataForGraphs = new TimeSeries<MeteoData>(currFileMeteoDataList, currFileDateTimeList,
+                                true);
+                        }
+                        catch (Exception ex)
+                        {
+                            #region report
+
+#if DEBUG
+                            ServiceTools.ExecMethodInSeparateThread(this, () =>
+                            {
+                                theLogWindow = ServiceTools.LogAText(theLogWindow,
+                                    "couldn`t create timeseries: exception has been thrown" + Environment.NewLine +
+                                    ServiceTools.CurrentCodeLineDescription() + Environment.NewLine + "message: " +
+                                    ex.Message);
+                            });
 #else
                         ServiceTools.ExecMethodInSeparateThread(this, () =>
                         {
@@ -1783,127 +1900,162 @@ namespace IofffeVesselInfoStream
                         });
                         
 #endif
-                        #endregion report
-                    }
 
+                            #endregion report
+                        }
+
+                    }
+                    else
+                    {
+                        try
+                        {
+                            tsMeteoDataForGraphs.AddSubseriaData(currFileMeteoDataList, currFileDateTimeList, true);
+                        }
+                        catch (Exception ex)
+                        {
+                            #region report
+
+#if DEBUG
+                            ServiceTools.ExecMethodInSeparateThread(this, () =>
+                            {
+                                theLogWindow = ServiceTools.LogAText(theLogWindow,
+                                    "couldn`t create timeseries: exception has been thrown" + Environment.NewLine +
+                                    ServiceTools.CurrentCodeLineDescription() + Environment.NewLine + "message: " +
+                                    ex.Message);
+                            });
+#else
+                        ServiceTools.ExecMethodInSeparateThread(this, () =>
+                        {
+                            ServiceTools.logToTextFile(errorLogFilename,
+                                "couldn`t create timeseries: exception has been thrown" + Environment.NewLine +
+                                ServiceTools.CurrentCodeLineDescription() + Environment.NewLine + "message: " +
+                                ex.Message, true, true);
+                        });
+                        
+#endif
+
+                            #endregion report
+                        }
+                    }
+                }
+
+
+
+                if (tsMeteoDataForGraphs == null)
+                {
+                    return null;
+                }
+
+                tsMeteoDataForGraphs.SortByTimeStamps();
+                tsMeteoDataForGraphs.RemoveDuplicatedTimeStamps();
+
+                DateTime utcNow = DateTime.UtcNow;
+                if (defaultGraphsTimeSpan)
+                {
+                    tsMeteoDataForGraphs.RemoveValues(dt => (utcNow - dt).TotalSeconds > 86400);
                 }
                 else
                 {
-                    try
-                    {
-                        tsMeteoData.AddSubseriaData(currFileMeteoDataList, currFileDateTimeList, true);
-                    }
-                    catch (Exception ex)
-                    {
-                        #region report
-#if DEBUG
-                        ServiceTools.ExecMethodInSeparateThread(this, () =>
-                        {
-                            theLogWindow = ServiceTools.LogAText(theLogWindow,
-                                "couldn`t create timeseries: exception has been thrown" + Environment.NewLine +
-                                ServiceTools.CurrentCodeLineDescription() + Environment.NewLine + "message: " +
-                                ex.Message);
-                        });
-#else
-                        ServiceTools.ExecMethodInSeparateThread(this, () =>
-                        {
-                            ServiceTools.logToTextFile(errorLogFilename,
-                                "couldn`t create timeseries: exception has been thrown" + Environment.NewLine +
-                                ServiceTools.CurrentCodeLineDescription() + Environment.NewLine + "message: " +
-                                ex.Message, true, true);
-                        });
-                        
-#endif
-                        #endregion report
-                    }
+                    tsMeteoDataForGraphs.RemoveValues(
+                        dt => !((dt >= graphsTimeSpan.Item1) && (dt <= graphsTimeSpan.Item2)));
                 }
+
+
+                List<TimeSeries<MeteoData>> subSeriesBy1Minute =
+                    tsMeteoDataForGraphs.SplitByTimeSpan(new TimeSpan(0, 1, 0));
+                List<double> lSubSeriesEntriesCount = subSeriesBy1Minute.ConvertAll(subs => (double)subs.Count);
+                DescriptiveStatistics statsCounts = new DescriptiveStatistics(lSubSeriesEntriesCount);
+                aveMinuteEntriesCount = Convert.ToInt32(statsCounts.Mean);
+                
+
+                // = tsMeteoData.TimeStamps.ConvertAll(dt => (dt - maxDateTime).TotalSeconds);
             }
 
-            if (tsMeteoData == null)
+
+
+            List<MeteoData> meteoDataList = tsMeteoDataForGraphs.DataValues;
+            DateTime maxDateTime = tsMeteoDataForGraphs.TimeStamps.Max();
+
+
+
+            if (currVarType != prevGraphVariable)
             {
-                return null;
+
+                double minVarValue = 0.0d;
+                double maxVarValue = 1.0d;
+                List<double> currVarToShowValues = new List<double>();
+                switch (currVarType)
+                {
+                    case GraphVariablesTypes.Pressure:
+                        {
+                            currVarToShowValues = meteoDataList.ConvertAll(mdt => mdt.pressure);
+
+                            TimeSeries<double> currVarTS = new TimeSeries<double>(currVarToShowValues,
+                                tsMeteoDataForGraphs.TimeStamps);
+                            currVarTS.RemoveValues(dVal => dVal <= 900.0d);
+
+                            currVarToShowValues = new List<double>(currVarTS.DataValues);
+                            currFileSecondsList = currVarTS.TimeStamps.ConvertAll(dt => (dt - maxDateTime).TotalSeconds);
+
+                            fRenderer.yAxisValuesConversionToRepresentTicksValues =
+                                new Func<double, string>(dVal => dVal.ToString("F1"));
+                            break;
+                        }
+                    case GraphVariablesTypes.AirTemp:
+                        {
+                            currVarToShowValues = meteoDataList.ConvertAll(mdt => mdt.airTemperature);
+
+                            TimeSeries<double> currVarTS = new TimeSeries<double>(currVarToShowValues,
+                                tsMeteoDataForGraphs.TimeStamps);
+                            currVarTS.RemoveValues(dVal => ((dVal < -20.0d) || (dVal > 50.0d)));
+
+                            currVarToShowValues = new List<double>(currVarTS.DataValues);
+                            currFileSecondsList = currVarTS.TimeStamps.ConvertAll(dt => (dt - maxDateTime).TotalSeconds);
+
+                            fRenderer.yAxisValuesConversionToRepresentTicksValues =
+                                new Func<double, string>(dVal => dVal.ToString("F2"));
+                            break;
+                        }
+                    case GraphVariablesTypes.WaterTemp:
+                        {
+                            currVarToShowValues = meteoDataList.ConvertAll(mdt => mdt.waterTemperature);
+
+                            TimeSeries<double> currVarTS = new TimeSeries<double>(currVarToShowValues,
+                                tsMeteoDataForGraphs.TimeStamps);
+                            currVarTS.RemoveValues(dVal => ((dVal < -20.0d) || (dVal > 50.0d)));
+
+                            currVarToShowValues = new List<double>(currVarTS.DataValues);
+                            currFileSecondsList = currVarTS.TimeStamps.ConvertAll(dt => (dt - maxDateTime).TotalSeconds);
+
+                            
+
+                            fRenderer.yAxisValuesConversionToRepresentTicksValues =
+                                new Func<double, string>(dVal => dVal.ToString("F2"));
+                            break;
+                        }
+                    case GraphVariablesTypes.WindSpeed:
+                        {
+                            currVarToShowValues = meteoDataList.ConvertAll(mdt => mdt.windSpeed);
+
+                            TimeSeries<double> currVarTS = new TimeSeries<double>(currVarToShowValues,
+                                tsMeteoDataForGraphs.TimeStamps);
+                            currVarTS.RemoveValues(dVal => ((dVal < 0.0d) || (dVal > 50.0d)));
+
+                            currVarToShowValues = new List<double>(currVarTS.DataValues);
+                            currFileSecondsList = currVarTS.TimeStamps.ConvertAll(dt => (dt - maxDateTime).TotalSeconds);
+
+                            fRenderer.yAxisValuesConversionToRepresentTicksValues =
+                                new Func<double, string>(dVal => dVal.ToString("F1"));
+                            break;
+                        }
+                    default:
+                        return null;
+
+                }
+
+                dvVarValues = DenseVector.OfEnumerable(currVarToShowValues);
+                dvVarValues = dvVarValues.Conv(StandardConvolutionKernels.gauss, aveMinuteEntriesCount * 10);
             }
-
-            tsMeteoData.SortByTimeStamps();
-            tsMeteoData.RemoveDuplicatedTimeStamps();
-
-            DateTime utcNow = DateTime.UtcNow;
-            if (defaultGraphsTimeSpan)
-            {
-                tsMeteoData.RemoveValues(dt => (utcNow - dt).TotalSeconds > 86400);
-            }
-            else
-            {
-                tsMeteoData.RemoveValues(dt => !((dt >= graphsTimeSpan.Item1) && (dt <= graphsTimeSpan.Item2)));
-            }
-
-
-            List<TimeSeries<MeteoData>> subSeriesBy1Minute = tsMeteoData.SplitByTimeSpan(new TimeSpan(0, 1, 0));
-            List<double> lSubSeriesEntriesCount = subSeriesBy1Minute.ConvertAll(subs => (double)subs.Count);
-            DescriptiveStatistics statsCounts = new DescriptiveStatistics(lSubSeriesEntriesCount);
-            int aveMinuteEntriesCount = Convert.ToInt32(statsCounts.Mean);
-            List<MeteoData> meteoDataList = tsMeteoData.DataValues;
-
-            DateTime maxDateTime = tsMeteoData.TimeStamps.Max();
-            List<double> currFileSecondsList = new List<double>(); // = tsMeteoData.TimeStamps.ConvertAll(dt => (dt - maxDateTime).TotalSeconds);
-
-            MultipleScatterAndFunctionsRepresentation fRenderer = new MultipleScatterAndFunctionsRepresentation(imgSize);
-
-            double minVarValue = 0.0d;
-            double maxVarValue = 1.0d;
-            Bgr currValueColor = new Bgr(Color.Black);
-            List<double> currVarToShowValues = new List<double>();
-            if (rbtnPressureGraph.Checked)
-            {
-                currVarToShowValues = meteoDataList.ConvertAll(mdt => mdt.pressure);
-
-                TimeSeries<double> currVarTS = new TimeSeries<double>(currVarToShowValues, tsMeteoData.TimeStamps);
-                currVarTS.RemoveValues(dVal => dVal <= 900.0d);
-
-                currVarToShowValues = new List<double>(currVarTS.DataValues);
-                currFileSecondsList = currVarTS.TimeStamps.ConvertAll(dt => (dt - maxDateTime).TotalSeconds);
-
-                currValueColor = new Bgr(Color.Blue);
-            }
-            else if (rbtnAirTempGraph.Checked)
-            {
-                currVarToShowValues = meteoDataList.ConvertAll(mdt => mdt.airTemperature);
-
-                TimeSeries<double> currVarTS = new TimeSeries<double>(currVarToShowValues, tsMeteoData.TimeStamps);
-                currVarTS.RemoveValues(dVal => ((dVal < -20.0d) || (dVal > 50.0d)));
-
-                currVarToShowValues = new List<double>(currVarTS.DataValues);
-                currFileSecondsList = currVarTS.TimeStamps.ConvertAll(dt => (dt - maxDateTime).TotalSeconds);
-
-                currValueColor = new Bgr(Color.Red);
-            }
-            else if (rbtnWaterTempGraph.Checked)
-            {
-                currVarToShowValues = meteoDataList.ConvertAll(mdt => mdt.waterTemperature);
-
-                TimeSeries<double> currVarTS = new TimeSeries<double>(currVarToShowValues, tsMeteoData.TimeStamps);
-                currVarTS.RemoveValues(dVal => ((dVal < -20.0d) || (dVal > 50.0d)));
-
-                currVarToShowValues = new List<double>(currVarTS.DataValues);
-                currFileSecondsList = currVarTS.TimeStamps.ConvertAll(dt => (dt - maxDateTime).TotalSeconds);
-
-                currValueColor = new Bgr(Color.RoyalBlue);
-            }
-            else if (rbtnWindSpeedGraph.Checked)
-            {
-                currVarToShowValues = meteoDataList.ConvertAll(mdt => mdt.windSpeed);
-
-                TimeSeries<double> currVarTS = new TimeSeries<double>(currVarToShowValues, tsMeteoData.TimeStamps);
-                currVarTS.RemoveValues(dVal => ((dVal < 0.0d) || (dVal > 50.0d)));
-
-                currVarToShowValues = new List<double>(currVarTS.DataValues);
-                currFileSecondsList = currVarTS.TimeStamps.ConvertAll(dt => (dt - maxDateTime).TotalSeconds);
-
-                currValueColor = new Bgr(Color.Gray);
-            }
-
-            DenseVector dvVarValues = DenseVector.OfEnumerable(currVarToShowValues);
-            dvVarValues = dvVarValues.Conv(StandardConvolutionKernels.gauss, aveMinuteEntriesCount * 10);
 
 
 
@@ -1912,8 +2064,8 @@ namespace IofffeVesselInfoStream
 
             fRenderer.xAxisValuesConversionToRepresentTicksValues = (dValSec) =>
             {
-                DateTime currDT = maxDateTime.AddSeconds(dValSec);
-                return currDT.ToString("HH:mm");
+                DateTime currDT = tsMeteoDataForGraphs.TimeStamps.Max().AddSeconds(dValSec);
+                return currDT.ToString("yyyy-MM-dd" + Environment.NewLine + "HH:mm");
             };
 
             fRenderer.scatterLineColors.Add(currValueColor);
@@ -1969,6 +2121,8 @@ namespace IofffeVesselInfoStream
             retImg.Draw(strSign, ref theFont, textBarsCases[0].ptTextBaselineStart, new Bgr(Color.Green));
             retImg.Draw(textBarsCases[0].rectSurroundingBar, new Bgr(Color.Green), 2);
 
+            prevGraphsTimeSpan = graphsTimeSpan;
+            prevGraphVariable = currVarType;
 
             return retImg;
         }
@@ -1990,7 +2144,13 @@ namespace IofffeVesselInfoStream
         private void btnGraphMoveFocusLeft_Click(object sender, EventArgs e)
         {
             defaultGraphsTimeSpan = false;
-            graphsTimeSpan = new Tuple<DateTime, DateTime>(graphsTimeSpan.Item1.AddHours(-12), graphsTimeSpan.Item2.AddHours(-12));
+
+            Tuple<DateTime, DateTime> currTimeSpan = graphsTimeSpan;
+            TimeSpan currDT = currTimeSpan.Item2 - currTimeSpan.Item1;
+            long currDTticks = currDT.Ticks;
+            TimeSpan currThirdDT = new TimeSpan(Convert.ToInt64(currDTticks / 3));
+
+            graphsTimeSpan = new Tuple<DateTime, DateTime>(graphsTimeSpan.Item1 - currThirdDT, graphsTimeSpan.Item2 - currThirdDT);
             RenderAndShowGraph(null);
         }
 
@@ -1999,7 +2159,13 @@ namespace IofffeVesselInfoStream
         private void btnGraphMoveFocusRight_Click(object sender, EventArgs e)
         {
             defaultGraphsTimeSpan = false;
-            graphsTimeSpan = new Tuple<DateTime, DateTime>(graphsTimeSpan.Item1.AddHours(12), graphsTimeSpan.Item2.AddHours(12));
+
+            Tuple<DateTime, DateTime> currTimeSpan = graphsTimeSpan;
+            TimeSpan currDT = currTimeSpan.Item2 - currTimeSpan.Item1;
+            long currDTticks = currDT.Ticks;
+            TimeSpan currThirdDT = new TimeSpan(Convert.ToInt64(currDTticks / 3));
+
+            graphsTimeSpan = new Tuple<DateTime, DateTime>(graphsTimeSpan.Item1 + currThirdDT, graphsTimeSpan.Item2 + currThirdDT);
             if (graphsTimeSpan.Item2 > DateTime.UtcNow)
             {
                 graphsTimeSpan = new Tuple<DateTime, DateTime>(graphsTimeSpan.Item1 + (DateTime.UtcNow - graphsTimeSpan.Item2), DateTime.UtcNow);
@@ -2022,7 +2188,14 @@ namespace IofffeVesselInfoStream
         private void btnGraphZoomOut_Click(object sender, EventArgs e)
         {
             defaultGraphsTimeSpan = false;
-            graphsTimeSpan = new Tuple<DateTime, DateTime>(graphsTimeSpan.Item1.AddHours(-6), graphsTimeSpan.Item2.AddHours(6));
+
+            Tuple<DateTime, DateTime> currTimeSpan = graphsTimeSpan;
+            TimeSpan currDT = currTimeSpan.Item2 - currTimeSpan.Item1;
+            long currDTticks = currDT.Ticks;
+            TimeSpan currQuartDT = new TimeSpan(Convert.ToInt64(currDTticks / 4));
+
+            graphsTimeSpan = new Tuple<DateTime, DateTime>(graphsTimeSpan.Item1 - currQuartDT,
+                graphsTimeSpan.Item2 + currQuartDT);
             if (graphsTimeSpan.Item2 > DateTime.UtcNow)
             {
                 graphsTimeSpan = new Tuple<DateTime, DateTime>(graphsTimeSpan.Item1, DateTime.UtcNow);
@@ -2035,7 +2208,14 @@ namespace IofffeVesselInfoStream
         private void btnGraphZoomIn_Click(object sender, EventArgs e)
         {
             defaultGraphsTimeSpan = false;
-            graphsTimeSpan = new Tuple<DateTime, DateTime>(graphsTimeSpan.Item1.AddHours(6), graphsTimeSpan.Item2.AddHours(-6));
+
+            Tuple<DateTime, DateTime> currTimeSpan = graphsTimeSpan;
+            TimeSpan currDT = currTimeSpan.Item2 - currTimeSpan.Item1;
+            long currDTticks = currDT.Ticks;
+            TimeSpan currQuartDT = new TimeSpan(Convert.ToInt64(currDTticks / 4));
+
+            graphsTimeSpan = new Tuple<DateTime, DateTime>(graphsTimeSpan.Item1 + currQuartDT,
+                graphsTimeSpan.Item2 - currQuartDT);
 
             if (graphsTimeSpan.Item1 >= graphsTimeSpan.Item2)
             {
