@@ -193,8 +193,8 @@ namespace DataCollectorAutomator
 
             DenseVector dvDataToShowAccMagnitudeDev = DenseVector.Create(dmAccData.RowCount, i =>
             {
-                accelerometerData currAccData = new accelerometerData(dmAccData[i, 0], dmAccData[i, 1], dmAccData[i, 2]);
-                accelerometerData calibrationAccData = new accelerometerData(dmAccData[i, 3], dmAccData[i, 4], dmAccData[i, 5]);
+                AccelerometerData currAccData = new AccelerometerData(dmAccData[i, 0], dmAccData[i, 1], dmAccData[i, 2]);
+                AccelerometerData calibrationAccData = new AccelerometerData(dmAccData[i, 3], dmAccData[i, 4], dmAccData[i, 5]);
 
                 return currAccData.AccMagnitude - calibrationAccData.AccMagnitude;
             });
@@ -231,7 +231,7 @@ namespace DataCollectorAutomator
 
 
 
-            accelerometerData accCalibratedData = new accelerometerData(dmAccData[0, 3], dmAccData[0, 4],
+            AccelerometerData accCalibratedData = new AccelerometerData(dmAccData[0, 3], dmAccData[0, 4],
                 dmAccData[0, 5]);
             double phiAngle = Math.Asin(accCalibratedData.xyProjectionMagnitude() / accCalibratedData.AccMagnitude);
             double tmpL = accCalibratedData.AccMagnitude * Math.Sin(phiAngle) * Math.Cos(phiAngle);
@@ -241,21 +241,21 @@ namespace DataCollectorAutomator
                                      accCalibratedData.AccY * accCalibratedData.AccY /
                                      (accCalibratedData.AccX * accCalibratedData.AccX));
             double tmpLy = tmpLx * accCalibratedData.AccY / accCalibratedData.AccX;
-            accelerometerData unitaryAccVectorZeroAngle = new accelerometerData(tmpLx, tmpLy, tmpLz);
+            AccelerometerData unitaryAccVectorZeroAngle = new AccelerometerData(tmpLx, tmpLy, tmpLz);
             unitaryAccVectorZeroAngle = unitaryAccVectorZeroAngle / unitaryAccVectorZeroAngle.AccMagnitude;
-            accelerometerData unitaryAccVectorCalibratedAcceleration = accCalibratedData / (accCalibratedData.AccMagnitude);
+            AccelerometerData unitaryAccVectorCalibratedAcceleration = accCalibratedData / (accCalibratedData.AccMagnitude);
 
             DenseVector dvDataToShowAccDevDirection = DenseVector.Create(dmAccData.RowCount, i =>
             {
-                accelerometerData currAccData = new accelerometerData(dmAccData[i, 0], dmAccData[i, 1], dmAccData[i, 2]);
-                accelerometerData currAccDataProjectionPerpendicularToCalibratedAcc = currAccData -
+                AccelerometerData currAccData = new AccelerometerData(dmAccData[i, 0], dmAccData[i, 1], dmAccData[i, 2]);
+                AccelerometerData currAccDataProjectionPerpendicularToCalibratedAcc = currAccData -
                                                                                       unitaryAccVectorCalibratedAcceleration *
                                                                                       (currAccData * accCalibratedData / accCalibratedData.AccMagnitude);
 
                 double retAngle =
                     Math.Acos(currAccDataProjectionPerpendicularToCalibratedAcc * unitaryAccVectorZeroAngle /
                               currAccDataProjectionPerpendicularToCalibratedAcc.AccMagnitude);
-                accelerometerData vectProduct = unitaryAccVectorZeroAngle ^
+                AccelerometerData vectProduct = unitaryAccVectorZeroAngle ^
                                                 currAccDataProjectionPerpendicularToCalibratedAcc;
                 if (vectProduct * unitaryAccVectorCalibratedAcceleration > 0)
                 {
@@ -486,14 +486,14 @@ namespace DataCollectorAutomator
                     DenseVector zeroValuesVect = DenseVector.OfEnumerable(new double[] {0.0d, 0.0d});
                     DenseVector dvAccCalibrated = DenseVector.Create(3, idx => dmAccData[i, idx + 3]);
                     DenseVector dvAccCurrent = DenseVector.Create(3, idx => dmAccData[i, idx]);
-                    accelerometerData accCalibrated = new accelerometerData(dvAccCalibrated);
+                    AccelerometerData accCalibrated = new AccelerometerData(dvAccCalibrated);
                     accCalibrated.AccDoubleZ = -accCalibrated.AccDoubleZ;
-                    accelerometerData currAcc = new accelerometerData(dvAccCurrent);
+                    AccelerometerData currAcc = new AccelerometerData(dvAccCurrent);
                     currAcc.AccDoubleZ = -currAcc.AccDoubleZ;
                     double koeffToRealGravity = 9.81d/accCalibrated.AccMagnitude;
                     accCalibrated = accCalibrated*koeffToRealGravity;
                     currAcc = currAcc*koeffToRealGravity;
-                    accelerometerData dAccCalibration = accCalibrated - (new accelerometerData(0.0d, 0.0d, -9.81d));
+                    AccelerometerData dAccCalibration = accCalibrated - (new AccelerometerData(0.0d, 0.0d, -9.81d));
                     currAcc = currAcc - dAccCalibration;
                     accCalibrated = accCalibrated - dAccCalibration;
 

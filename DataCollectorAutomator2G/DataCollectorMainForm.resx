@@ -127,13 +127,13 @@
     <value>478, 17</value>
   </metadata>
   <metadata name="ArduinoRequestExpectant.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-    <value>1146, 17</value>
+    <value>751, 17</value>
   </metadata>
   <metadata name="dataCollector.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-    <value>1546, 17</value>
+    <value>1151, 17</value>
   </metadata>
   <metadata name="accelCalibrator.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-    <value>1781, 17</value>
+    <value>1386, 17</value>
   </metadata>
   <metadata name="$this.TrayHeight" type="System.Int32, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
     <value>66</value>

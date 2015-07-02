@@ -344,6 +344,7 @@ namespace IofffeVesselInfoStream
 
 
 
+
         private void CheckAndWriteObservationsFile(object state)
         {
             if (DateTime.Now.Minute == 0)
@@ -1499,6 +1500,8 @@ namespace IofffeVesselInfoStream
         }
 
 
+
+
         private void MainForm_Shown(object sender, EventArgs e)
         {
             readDefaultProperties();
@@ -1509,6 +1512,8 @@ namespace IofffeVesselInfoStream
 
             cquGPSDataQueue.CollectionChanged += cquGPSDataQueue_CollectionChanged;
         }
+
+
 
 
 
@@ -1978,7 +1983,7 @@ namespace IofffeVesselInfoStream
 
 
 
-            if (currVarType != prevGraphVariable)
+            if ((currVarType != prevGraphVariable) || !prevGraphsTimeSpan.Equals(graphsTimeSpan))
             {
 
                 double minVarValue = 0.0d;
@@ -2087,28 +2092,28 @@ namespace IofffeVesselInfoStream
 
             TextBarImage tbimTopLeftSign = new TextBarImage(strSign, retImg);
             tbimTopLeftSign.PtSurroundingBarStart =
-                new Point(fRenderer.ServiceSpaceGapX + tbimTopLeftSign.textHalfHeight,
-                    fRenderer.ServiceSpaceGapY + tbimTopLeftSign.textHalfHeight);
+                new Point(fRenderer.LeftServiceSpaceGapX + tbimTopLeftSign.textHalfHeight,
+                    fRenderer.TopServiceSpaceGapY + tbimTopLeftSign.textHalfHeight);
             textBarsCases.Add(tbimTopLeftSign);
 
             TextBarImage tbimBtmLeftSign = new TextBarImage(strSign, retImg);
-            tbimBtmLeftSign.PtSurroundingBarStart = new Point(fRenderer.ServiceSpaceGapX + tbimBtmLeftSign.textHalfHeight,
-                retImg.Height - fRenderer.ServiceSpaceGapY - tbimBtmLeftSign.textHalfHeight - tbimBtmLeftSign.textHeight * 2);
+            tbimBtmLeftSign.PtSurroundingBarStart = new Point(fRenderer.LeftServiceSpaceGapX + tbimBtmLeftSign.textHalfHeight,
+                retImg.Height - fRenderer.BtmServiceSpaceGapY - tbimBtmLeftSign.textHalfHeight - tbimBtmLeftSign.textHeight * 2);
             textBarsCases.Add(tbimBtmLeftSign);
 
             TextBarImage tbimTopRightSign = new TextBarImage(strSign, retImg);
             tbimTopRightSign.PtSurroundingBarStart =
                 new Point(
-                    retImg.Width - fRenderer.ServiceSpaceGapX - tbimTopRightSign.textHalfHeight -
-                    tbimTopRightSign.textBarSize.Width, fRenderer.ServiceSpaceGapY + tbimTopLeftSign.textHalfHeight);
+                    retImg.Width - fRenderer.RightServiceSpaceGapX - tbimTopRightSign.textHalfHeight -
+                    tbimTopRightSign.textBarSize.Width, fRenderer.TopServiceSpaceGapY + tbimTopLeftSign.textHalfHeight);
             textBarsCases.Add(tbimTopRightSign);
 
             TextBarImage tbimBtmRightSign = new TextBarImage(strSign, retImg);
             tbimBtmRightSign.PtSurroundingBarStart =
                 new Point(
-                    retImg.Width - fRenderer.ServiceSpaceGapX - tbimBtmRightSign.textHalfHeight -
+                    retImg.Width - fRenderer.RightServiceSpaceGapX - tbimBtmRightSign.textHalfHeight -
                     tbimBtmRightSign.textBarSize.Width,
-                    retImg.Height - fRenderer.ServiceSpaceGapY - tbimBtmRightSign.textHalfHeight -
+                    retImg.Height - fRenderer.BtmServiceSpaceGapY - tbimBtmRightSign.textHalfHeight -
                     tbimBtmRightSign.textHeight * 2);
             textBarsCases.Add(tbimBtmRightSign);
 

@@ -19,7 +19,7 @@ namespace SkyImagesAnalyzerLibraries
     }
 
 
-    public class accelerometerData
+    public class AccelerometerData
     {
         private int accX;
         private int accY;
@@ -107,19 +107,19 @@ namespace SkyImagesAnalyzerLibraries
             }
         }
 
-        public accelerometerData()
+        public AccelerometerData()
         {
             this.AccX = 0;
             this.AccY = 0;
             this.AccZ = 0;
         }
-        public accelerometerData(int aX, int aY, int aZ)
+        public AccelerometerData(int aX, int aY, int aZ)
         {
             this.AccX = aX;
             this.AccY = aY;
             this.AccZ = aZ;
         }
-        public accelerometerData(double aX, double aY, double aZ)
+        public AccelerometerData(double aX, double aY, double aZ)
         {
             this.AccDoubleX = aX;
             this.AccDoubleY = aY;
@@ -127,7 +127,7 @@ namespace SkyImagesAnalyzerLibraries
         }
 
 
-        public accelerometerData(IEnumerable<int> source)
+        public AccelerometerData(IEnumerable<int> source)
         {
             if (source.Count() == 3)
             {
@@ -166,7 +166,7 @@ namespace SkyImagesAnalyzerLibraries
 
 
 
-        public accelerometerData(IEnumerable<double> source)
+        public AccelerometerData(IEnumerable<double> source)
         {
             if (source.Count() == 3)
             {
@@ -207,7 +207,7 @@ namespace SkyImagesAnalyzerLibraries
 
 
 
-        public accelerometerData(IEnumerable<string> source)
+        public AccelerometerData(IEnumerable<string> source)
         {
             if (source.Count() == 3)
             {
@@ -267,9 +267,9 @@ namespace SkyImagesAnalyzerLibraries
         }
 
 
-        public static accelerometerData operator +(accelerometerData accVector1, accelerometerData accVector2)
+        public static AccelerometerData operator +(AccelerometerData accVector1, AccelerometerData accVector2)
         {
-            accelerometerData retAccData = new accelerometerData();
+            AccelerometerData retAccData = new AccelerometerData();
             retAccData.AccDoubleX = accVector1.AccDoubleX + accVector2.AccDoubleX;
             retAccData.AccDoubleY = accVector1.AccDoubleY + accVector2.AccDoubleY;
             retAccData.AccDoubleZ = accVector1.AccDoubleZ + accVector2.AccDoubleZ;
@@ -280,9 +280,9 @@ namespace SkyImagesAnalyzerLibraries
 
 
 
-        public static accelerometerData operator -(accelerometerData accVector1, accelerometerData accVector2)
+        public static AccelerometerData operator -(AccelerometerData accVector1, AccelerometerData accVector2)
         {
-            accelerometerData retAccData = new accelerometerData();
+            AccelerometerData retAccData = new AccelerometerData();
             retAccData.AccDoubleX = accVector1.AccDoubleX - accVector2.AccDoubleX;
             retAccData.AccDoubleY = accVector1.AccDoubleY - accVector2.AccDoubleY;
             retAccData.AccDoubleZ = accVector1.AccDoubleZ - accVector2.AccDoubleZ;
@@ -291,9 +291,9 @@ namespace SkyImagesAnalyzerLibraries
             return retAccData;
         }
 
-        public static accelerometerData operator /(accelerometerData accVector1, double dValue)
+        public static AccelerometerData operator /(AccelerometerData accVector1, double dValue)
         {
-            accelerometerData retAccData = new accelerometerData();
+            AccelerometerData retAccData = new AccelerometerData();
             retAccData.AccDoubleX = accVector1.AccDoubleX / dValue;
             retAccData.AccDoubleY = accVector1.AccDoubleY / dValue;
             retAccData.AccDoubleZ = accVector1.AccDoubleZ / dValue;
@@ -303,7 +303,7 @@ namespace SkyImagesAnalyzerLibraries
         }
 
 
-        public static double operator *(accelerometerData accVector1, accelerometerData accVector2)
+        public static double operator *(AccelerometerData accVector1, AccelerometerData accVector2)
         {
             double product = accVector1.AccDoubleX * accVector2.AccDoubleX +
                              accVector1.AccDoubleY * accVector2.AccDoubleY +
@@ -312,9 +312,9 @@ namespace SkyImagesAnalyzerLibraries
         }
 
 
-        public static accelerometerData operator *(accelerometerData accVector1, double dValue)
+        public static AccelerometerData operator *(AccelerometerData accVector1, double dValue)
         {
-            accelerometerData retAccData = new accelerometerData();
+            AccelerometerData retAccData = new AccelerometerData();
             retAccData.AccDoubleX = accVector1.AccDoubleX * dValue;
             retAccData.AccDoubleY = accVector1.AccDoubleY * dValue;
             retAccData.AccDoubleZ = accVector1.AccDoubleZ * dValue;
@@ -325,9 +325,9 @@ namespace SkyImagesAnalyzerLibraries
 
 
 
-        public static accelerometerData operator *(double dValue, accelerometerData accVector1)
+        public static AccelerometerData operator *(double dValue, AccelerometerData accVector1)
         {
-            accelerometerData retAccData = new accelerometerData();
+            AccelerometerData retAccData = new AccelerometerData();
             retAccData.AccDoubleX = accVector1.AccDoubleX * dValue;
             retAccData.AccDoubleY = accVector1.AccDoubleY * dValue;
             retAccData.AccDoubleZ = accVector1.AccDoubleZ * dValue;
@@ -339,15 +339,15 @@ namespace SkyImagesAnalyzerLibraries
 
 
 
-        public static accelerometerData operator ^(accelerometerData accVector1, accelerometerData accVector2)
+        public static AccelerometerData operator ^(AccelerometerData accVector1, AccelerometerData accVector2)
         {
             return VectorProduct(accVector1, accVector2);
         }
 
 
-        public static accelerometerData VectorProduct(accelerometerData accVector1, accelerometerData accVector2)
+        public static AccelerometerData VectorProduct(AccelerometerData accVector1, AccelerometerData accVector2)
         {
-            accelerometerData resVect = new accelerometerData();
+            AccelerometerData resVect = new AccelerometerData();
             resVect.AccDoubleX = accVector1.AccDoubleY * accVector2.AccDoubleZ -
                                  accVector1.AccDoubleZ * accVector2.AccDoubleY;
             resVect.AccDoubleY = -(accVector1.AccDoubleX * accVector2.AccDoubleZ -
@@ -381,18 +381,52 @@ namespace SkyImagesAnalyzerLibraries
 
 
 
-        public static List<accelerometerData> OfDenseMatrix(DenseMatrix dmSource)
+
+        public DenseVector ToDenseVector(Dictionary<string, AccelerometerData> dctCalibrationAccDataByDevID)
+        {
+            DenseVector dvRetVect = DenseVector.Create(7, i =>
+            {
+                switch (i)
+                {
+                    case 0:
+                        return accDoubleX;
+                    case 1:
+                        return accDoubleY;
+                    case 2:
+                        return accDoubleZ;
+                    case 3:
+                        return dctCalibrationAccDataByDevID["devID"+devID].accDoubleX;
+                    case 4:
+                        return dctCalibrationAccDataByDevID["devID" + devID].accDoubleY;
+                    case 5:
+                        return dctCalibrationAccDataByDevID["devID" + devID].accDoubleZ;
+                    case 6:
+                        return
+                            Math.Acos((this*dctCalibrationAccDataByDevID["devID" + devID])/
+                                      (AccMagnitude*dctCalibrationAccDataByDevID["devID" + devID].AccMagnitude));
+                    default:
+                        return 0.0d;
+                }
+            });
+            dvRetVect = DenseVector.OfEnumerable(dvRetVect.Concat(new double[] { devID }));
+            return dvRetVect;
+        }
+
+
+
+
+        public static List<AccelerometerData> OfDenseMatrix(DenseMatrix dmSource)
         {
             if (dmSource.RowCount == 0)
             {
                 return null;
             }
 
-            List<accelerometerData> listRetAccData = new List<accelerometerData>();
+            List<AccelerometerData> listRetAccData = new List<AccelerometerData>();
 
             foreach (Tuple<int, Vector<double>> tplRow in dmSource.EnumerateRowsIndexed())
             {
-                accelerometerData newAccDatum = new accelerometerData(tplRow.Item2);
+                AccelerometerData newAccDatum = new AccelerometerData(tplRow.Item2);
                 if (newAccDatum != null)
                 {
                     listRetAccData.Add(newAccDatum);
@@ -403,11 +437,34 @@ namespace SkyImagesAnalyzerLibraries
         }
 
 
-        public accelerometerData Copy()
+        public AccelerometerData Copy()
         {
-            accelerometerData newInstance = new accelerometerData(accDoubleX, accDoubleY, accDoubleZ);
+            AccelerometerData newInstance = new AccelerometerData(accDoubleX, accDoubleY, accDoubleZ);
             newInstance.devID = devID;
             return newInstance;
+        }
+
+
+
+
+
+        public static DenseMatrix ToDenseMatrix(IEnumerable<AccelerometerData> lAccData)
+        {
+            IEnumerable<DenseVector> lDVdata =
+                new List<AccelerometerData>(lAccData).ConvertAll(accDat => accDat.ToDenseVector());
+            DenseMatrix dmRetMatr = DenseMatrix.OfRows(lDVdata.Count(), lDVdata.ElementAt(0).Count, lDVdata);
+            return dmRetMatr;
+        }
+
+
+
+
+        public static DenseMatrix ToDenseMatrix(IEnumerable<AccelerometerData> lAccData, Dictionary<string, AccelerometerData> dctCalibrationAccDataByDevID)
+        {
+            IEnumerable<DenseVector> lDVdata =
+                new List<AccelerometerData>(lAccData).ConvertAll(accDat => accDat.ToDenseVector(dctCalibrationAccDataByDevID));
+            DenseMatrix dmRetMatr = DenseMatrix.OfRows(lDVdata.Count(), lDVdata.ElementAt(0).Count, lDVdata);
+            return dmRetMatr;
         }
     }
 
@@ -734,6 +791,10 @@ namespace SkyImagesAnalyzerLibraries
     }
 
 
+
+
+
+
     public class MagnetometerData
     {
         private int magnX;
@@ -1017,7 +1078,7 @@ namespace SkyImagesAnalyzerLibraries
         }
 
 
-        public double compassAngle(accelerometerData accData)
+        public double compassAngle(AccelerometerData accData)
         {
             DenseVector dvAccVector = accData.ToDenseVector();
 
@@ -1064,6 +1125,11 @@ namespace SkyImagesAnalyzerLibraries
             return newInstance;
         }
     }
+
+
+
+
+
 
 
     public class GPSdata
@@ -1603,6 +1669,9 @@ namespace SkyImagesAnalyzerLibraries
             return sunPositionSPAext;
         }
     }
+
+
+
 
 
 

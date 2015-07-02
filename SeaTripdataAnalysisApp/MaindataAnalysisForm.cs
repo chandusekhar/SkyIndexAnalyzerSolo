@@ -104,7 +104,7 @@ namespace SeaTripdataAnalysisApp
                     List<DateTime> currFileDateTimeList = currFileDateTimeLongTicksList.ConvertAll(longVal => new DateTime(longVal));
 
                     string varNameAccData = "AccelerometerData";
-                    List<accelerometerData> lAccData = accelerometerData.OfDenseMatrix(dictDataLoaded[varNameAccData] as DenseMatrix);
+                    List<AccelerometerData> lAccData = AccelerometerData.OfDenseMatrix(dictDataLoaded[varNameAccData] as DenseMatrix);
                     List<double> lAccDataToAdd = lAccData.ConvertAll<double>(acc => acc.AccMagnitude);
 
                     lTotalDataToAdd.AddRange(lAccDataToAdd);

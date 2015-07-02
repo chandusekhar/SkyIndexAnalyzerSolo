@@ -55,15 +55,29 @@ namespace SkyImagesAnalyzerLibraries
 
 
         #region readonly fields to read properties
-        public int ServiceSpaceGapX
+        public int LeftServiceSpaceGapX
         {
             get { return leftServiceSpaceGapX; }
         }
 
-        public int ServiceSpaceGapY
+
+        public int RightServiceSpaceGapX
+        {
+            get { return rightServiceSpaceGapX; }
+        }
+
+
+        public int TopServiceSpaceGapY
         {
             get { return topServiceSpaceGapY; }
         }
+
+
+        public int BtmServiceSpaceGapY
+        {
+            get { return btmServiceSpaceGapY; }
+        }
+
 
         public int PictureWidth
         {

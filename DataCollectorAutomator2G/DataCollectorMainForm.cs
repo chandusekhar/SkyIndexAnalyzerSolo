@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Data;
 using System.Diagnostics;
@@ -70,7 +71,7 @@ namespace DataCollectorAutomator
 
 
 
-    #region the form behaviour
+    #region the form class
 
     public partial class DataCollectorMainForm : Form
     {
@@ -95,10 +96,14 @@ namespace DataCollectorAutomator
         IntPtr m_ip = IntPtr.Zero;
 
         // private static Queue<accelerometerData> accDataQueue = new Queue<accelerometerData>();
-        private static Queue<Tuple<DateTime, accelerometerData>> accDataAndDTqueue = new Queue<Tuple<DateTime, accelerometerData>>();
-        private static accelerometerData latestAccData = new accelerometerData();
+        //private static Queue<Tuple<DateTime, accelerometerData>> accDataAndDTqueue = new Queue<Tuple<DateTime, accelerometerData>>();
+        private static ObservableConcurrentQueue<Tuple<DateTime, AccelerometerData>> accDataAndDTObservableConcurrentQueue =
+            new ObservableConcurrentQueue<Tuple<DateTime, AccelerometerData>>();
+
+        private static AccelerometerData latestAccData = new AccelerometerData();
         //private static Queue<GyroData> gyroDataQueue = new Queue<GyroData>();
-        private static Queue<Tuple<DateTime, GyroData>> gyroDataAndDTqueue = new Queue<Tuple<DateTime, GyroData>>();
+        //private static Queue<Tuple<DateTime, GyroData>> gyroDataAndDTqueue = new Queue<Tuple<DateTime, GyroData>>();
+        private static ObservableConcurrentQueue<Tuple<DateTime, GyroData>> gyroDataAndDTqueue = new ObservableConcurrentQueue<Tuple<DateTime, GyroData>>();
         private static GyroData latestGyroData = new GyroData();
         //private static MagnetometerData magnData = new MagnetometerData();
         private static GPSdata gpsData = new GPSdata();
@@ -113,8 +118,8 @@ namespace DataCollectorAutomator
 
         private static bool itsTimeToGetCamShot = false, getCamShotImmediately = false;
         private static WorkersRequestingArduinoDataBroadcastState theWorkerRequestedArduinoDataBroadcastState = WorkersRequestingArduinoDataBroadcastState.dataCollector;
-        private static accelerometerData accCalibrationDataID1;
-        private static accelerometerData accCalibrationDataID2;
+        private static AccelerometerData accCalibrationDataID1;
+        private static AccelerometerData accCalibrationDataID2;
         //private static MagnetometerData magnCalibrationData;
         //private static double magnCalibratedAngleShift;
         public static Image currentShowingImageID1;
@@ -311,7 +316,7 @@ namespace DataCollectorAutomator
             IPEndPoint ipEP = (IPEndPoint)(udpSt.ipEndPoint);
 
             remoteSktAddr = PropertyHelper.GetPrivatePropertyValue<SocketAddress>((object)ar, "SocketAddress");
-            
+
 
             if (udpClt.Client != null)
             {
@@ -396,7 +401,7 @@ namespace DataCollectorAutomator
             UdpState s = new UdpState();
             s.ipEndPoint = RemoteIpEndPoint;
             s.UDPclient = bcstUDPreader;
-            
+
 
             while (true)
             {
@@ -429,7 +434,7 @@ namespace DataCollectorAutomator
         {
             swapBcstLog();
         }
-        
+
 
         private void swapBcstLog()
         {
@@ -646,7 +651,7 @@ namespace DataCollectorAutomator
             {
                 return;
             }
-            
+
 
             double elapsedms = (double)(stwToEstimateUDPpacketsRecieving.ElapsedMilliseconds);
 
@@ -742,27 +747,27 @@ namespace DataCollectorAutomator
             {
                 return;
             }
-            if (state.GetType() == typeof(List<accelerometerData>))
+            if (state.GetType() == typeof(List<AccelerometerData>))
             {
-                List<accelerometerData> dataToPassToSensorsDataPresentation = state as List<accelerometerData>;
+                List<AccelerometerData> dataToPassToSensorsDataPresentation = state as List<AccelerometerData>;
                 if (dataToPassToSensorsDataPresentation.Count != 4)
                 {
                     return;
                 }
             }
 
-            accelerometerData latestAccDataID1;
-            accelerometerData accCalibrationDataID1;
-            accelerometerData latestAccDataID2;
-            accelerometerData accCalibrationDataID2;
+            AccelerometerData latestAccDataID1;
+            AccelerometerData accCalibrationDataID1;
+            AccelerometerData latestAccDataID2;
+            AccelerometerData accCalibrationDataID2;
 
             try
             {
-                List<accelerometerData> dataToPassToSensorsDataPresentation = new List<accelerometerData>((List<accelerometerData>) state);
-                latestAccDataID1 = dataToPassToSensorsDataPresentation[0] as accelerometerData;
-                accCalibrationDataID1 = dataToPassToSensorsDataPresentation[1] as accelerometerData;
-                latestAccDataID2 = dataToPassToSensorsDataPresentation[2] as accelerometerData;
-                accCalibrationDataID2 = dataToPassToSensorsDataPresentation[3] as accelerometerData;
+                List<AccelerometerData> dataToPassToSensorsDataPresentation = new List<AccelerometerData>((List<AccelerometerData>)state);
+                latestAccDataID1 = dataToPassToSensorsDataPresentation[0] as AccelerometerData;
+                accCalibrationDataID1 = dataToPassToSensorsDataPresentation[1] as AccelerometerData;
+                latestAccDataID2 = dataToPassToSensorsDataPresentation[2] as AccelerometerData;
+                accCalibrationDataID2 = dataToPassToSensorsDataPresentation[3] as AccelerometerData;
             }
             catch (Exception ex)
             {
@@ -787,11 +792,35 @@ namespace DataCollectorAutomator
 
 
 
+        #region обработка поступающих данных сенсоров
 
+        private static int tailLength = 5;
+        private FixedTimeQueue<AccelerometerData> accID1tail = new FixedTimeQueue<AccelerometerData>(tailLength);
+        private FixedTimeQueue<AccelerometerData> accID2tail = new FixedTimeQueue<AccelerometerData>(tailLength);
+        private FixedTimeQueue<GyroData> gyroID1tail = new FixedTimeQueue<GyroData>(tailLength);
+        private FixedTimeQueue<GyroData> gyroID2tail = new FixedTimeQueue<GyroData>(tailLength);
+        private DenseVector dvKernelFixedWidth = Extensions.ConvKernelAsymmetric(StandardConvolutionKernels.gauss,
+            tailLength, false);
+        private List<AccelerometerData> dataToPassToSensorsDataPresentation = new List<AccelerometerData>();
+        private double accDevAngle = 0.0d;
+
+        private TimeSeries<AccelerometerData> tsCollectedAccData = new TimeSeries<AccelerometerData>();
+        //private DenseMatrix dmAccDataMatrix = null;
+        //private List<long> accDateTimeValuesList = new List<long>();
+        //private DenseMatrix dmAccSmoothedDataMatrixID1 = null;
+        //List<long> accSmoothedDateTimeValuesListID1 = new List<long>();
+        private TimeSeries<AccelerometerData> tsCollectedAccSmoothedDataID1 = new TimeSeries<AccelerometerData>();
+        //DenseMatrix dmAccSmoothedDataMatrixID2 = null;
+        //List<long> accSmoothedDateTimeValuesListID2 = new List<long>();
+        private TimeSeries<AccelerometerData> tsCollectedAccSmoothedDataID2 = new TimeSeries<AccelerometerData>();
+
+        //DenseMatrix dmGyroDataMatrix = null;
+        //List<long> gyroDateTimeValuesList = new List<long>();
+        private TimeSeries<GyroData> tsCollectedGyroData = new TimeSeries<GyroData>();
 
         private void dataCollector_DoWork(object sender, DoWorkEventArgs e)
         {
-            double angleCamDeclinationThresholdRad = Math.PI*angleCamDeclinationThresholdDeg/180.0d;
+            double angleCamDeclinationThresholdRad = Math.PI * angleCamDeclinationThresholdDeg / 180.0d;
             DateTime datetimeCamshotTimerBegin = DateTime.Now;
             Stopwatch stwCamshotTimer = new Stopwatch();
             stwCamshotTimer.Start();
@@ -799,24 +828,16 @@ namespace DataCollectorAutomator
             TimeSpan labelsUpdatingPeriod = new TimeSpan(0, 0, 1);
             Stopwatch stwCamshotTimersUpdating = new Stopwatch();
             stwCamshotTimersUpdating.Start();
-            double accDevAngle = 0.0d;
-            System.ComponentModel.BackgroundWorker SelfWorker = sender as System.ComponentModel.BackgroundWorker;
+
+
+            BackgroundWorker SelfWorker = sender as BackgroundWorker;
             ThreadSafeOperations.ToggleButtonState(btnStartStopCollecting, true, "stop collecting data", true);
             dataCollectingState = DataCollectingStates.working;
             bool camshotTimeToGetIt = false;
             bool camshotInclinedProperly = false;
             bool camshotHasBeenTaken = false;
 
-            DenseMatrix dmAccDataMatrix = null;
-            List<long> accDateTimeValuesList = new List<long>();
-
-            DenseMatrix dmAccSmoothedDataMatrixID1 = null;
-            List<long> accSmoothedDateTimeValuesListID1 = new List<long>();
-            DenseMatrix dmAccSmoothedDataMatrixID2 = null;
-            List<long> accSmoothedDateTimeValuesListID2 = new List<long>();
-
-            DenseMatrix dmGyroDataMatrix = null;
-            List<long> gyroDateTimeValuesList = new List<long>();
+            
 
             DenseMatrix dmGPSDataMatrix = null;
             List<long> gpsDateTimeValuesList = new List<long>();
@@ -826,17 +847,7 @@ namespace DataCollectorAutomator
             Stopwatch stwToEstimateUDPpacketsRecieving = new Stopwatch();
             stwToEstimateUDPpacketsRecieving.Start();
 
-            accelerometerData latestAccDataID1 = new accelerometerData();
-            latestAccDataID1.devID = 1;
-            accelerometerData latestAccDataID2 = new accelerometerData();
-            latestAccDataID2.devID = 2;
 
-            int tailLength = 5;
-            FixedTimeQueue<accelerometerData> accID1tail = new FixedTimeQueue<accelerometerData>(tailLength);
-            FixedTimeQueue<accelerometerData> accID2tail = new FixedTimeQueue<accelerometerData>(tailLength);
-            FixedTimeQueue<GyroData> gyroID1tail = new FixedTimeQueue<GyroData>(tailLength);
-            FixedTimeQueue<GyroData> gyroID2tail = new FixedTimeQueue<GyroData>(tailLength);
-            DenseVector dvKernelFixedWidth = Extensions.ConvKernelAsymmetric(StandardConvolutionKernels.gauss, tailLength, false);
 
 
             #region timer for periodical process of UDPpackets Recieving speed estimation
@@ -851,7 +862,6 @@ namespace DataCollectorAutomator
 
             #region timer for periodical sensors values presentation updating
 
-            List<accelerometerData> dataToPassToSensorsDataPresentation = new List<accelerometerData>();
             TimerCallback UpdateSensorsDataPresentationCallback =
                 new TimerCallback(UpdateSensorsDataPresentation);
             Timer tmrUpdateSensorsDataPresentation = new Timer(UpdateSensorsDataPresentationCallback,
@@ -860,7 +870,7 @@ namespace DataCollectorAutomator
             #endregion timer for periodical sensors values presentation updating
 
 
-            cquArduinoUDPCatchedMessages.CollectionChanged += cquArduinoUDPCatchedMessages_CollectionChanged;
+
 
 
 
@@ -869,52 +879,72 @@ namespace DataCollectorAutomator
                 if (SelfWorker.CancellationPending)
                 {
                     #region dump the rest accelerometers data to nc-file
-                    if (dmAccDataMatrix != null)
+                    #region // obsolete
+                    //if (dmAccDataMatrix != null)
+                    //{
+                    //    Dictionary<string, object> dataToSave = new Dictionary<string, object>();
+                    //    dataToSave.Add("DateTime", accDateTimeValuesList.ToArray());
+                    //    dataToSave.Add("AccelerometerData", dmAccDataMatrix);
+
+                    //    NetCDFoperations.AddVariousDataToFile(dataToSave,
+                    //        Directory.GetCurrentDirectory() + "\\logs\\AccelerometerDataLog-" +
+                    //        DateTime.UtcNow.Date.ToString("yyyy-MM-dd") + ".nc");
+
+                    //    dmAccDataMatrix = null;
+                    //    accDateTimeValuesList.Clear();
+                    //}
+                    #endregion // obsolete
+
+                    if (tsCollectedAccData.Count > 0)
                     {
-                        Dictionary<string, object> dataToSave = new Dictionary<string, object>();
-                        dataToSave.Add("DateTime", accDateTimeValuesList.ToArray());
-                        dataToSave.Add("AccelerometerData", dmAccDataMatrix);
-
-                        NetCDFoperations.AddVariousDataToFile(dataToSave,
-                            Directory.GetCurrentDirectory() + "\\logs\\AccelerometerDataLog-" +
-                            DateTime.UtcNow.Date.ToString("yyyy-MM-dd") + ".nc");
-
-                        dmAccDataMatrix = null;
-                        accDateTimeValuesList.Clear();
+                        DumpCollectedAccelerometersData();
                     }
                     #endregion dump the rest accelerometers data to nc-file
-
-
-
+                    
                     #region dump the rest smoothed accelerometers data to nc-file
-                    if (dmAccSmoothedDataMatrixID1 != null)
+
+                    if (tsCollectedAccSmoothedDataID1.Count > 0)
                     {
-                        Dictionary<string, object> dataToSave = new Dictionary<string, object>();
-                        dataToSave.Add("DateTime", accSmoothedDateTimeValuesListID1.ToArray());
-                        dataToSave.Add("AccelerometerData", dmAccSmoothedDataMatrixID1);
-
-                        NetCDFoperations.AddVariousDataToFile(dataToSave,
-                            Directory.GetCurrentDirectory() + "\\logs\\AccelerometerID1-Smoothed-DataLog-" +
-                            DateTime.UtcNow.Date.ToString("yyyy-MM-dd") + ".nc");
-
-                        dmAccSmoothedDataMatrixID1 = null;
-                        accSmoothedDateTimeValuesListID1.Clear();
+                        DumpCollectedAccelerometersSmoothedDataDevID1();
                     }
 
-                    if (dmAccSmoothedDataMatrixID2 != null)
+                    if (tsCollectedAccSmoothedDataID2.Count > 0)
                     {
-                        Dictionary<string, object> dataToSave = new Dictionary<string, object>();
-                        dataToSave.Add("DateTime", accSmoothedDateTimeValuesListID2.ToArray());
-                        dataToSave.Add("AccelerometerData", dmAccSmoothedDataMatrixID2);
-
-                        NetCDFoperations.AddVariousDataToFile(dataToSave,
-                            Directory.GetCurrentDirectory() + "\\logs\\AccelerometerID2-Smoothed-DataLog-" +
-                            DateTime.UtcNow.Date.ToString("yyyy-MM-dd") + ".nc");
-
-                        dmAccSmoothedDataMatrixID2 = null;
-                        accSmoothedDateTimeValuesListID2.Clear();
+                        DumpCollectedAccelerometersSmoothedDataDevID2();
                     }
+
+                    #region // obsolete
+                    //if (dmAccSmoothedDataMatrixID1 != null)
+                    //{
+                    //    Dictionary<string, object> dataToSave = new Dictionary<string, object>();
+                    //    dataToSave.Add("DateTime", accSmoothedDateTimeValuesListID1.ToArray());
+                    //    dataToSave.Add("AccelerometerData", dmAccSmoothedDataMatrixID1);
+
+                    //    NetCDFoperations.AddVariousDataToFile(dataToSave,
+                    //        Directory.GetCurrentDirectory() + "\\logs\\AccelerometerID1-Smoothed-DataLog-" +
+                    //        DateTime.UtcNow.Date.ToString("yyyy-MM-dd") + ".nc");
+
+                    //    dmAccSmoothedDataMatrixID1 = null;
+                    //    accSmoothedDateTimeValuesListID1.Clear();
+                    //}
+
+                    //if (dmAccSmoothedDataMatrixID2 != null)
+                    //{
+                    //    Dictionary<string, object> dataToSave = new Dictionary<string, object>();
+                    //    dataToSave.Add("DateTime", accSmoothedDateTimeValuesListID2.ToArray());
+                    //    dataToSave.Add("AccelerometerData", dmAccSmoothedDataMatrixID2);
+
+                    //    NetCDFoperations.AddVariousDataToFile(dataToSave,
+                    //        Directory.GetCurrentDirectory() + "\\logs\\AccelerometerID2-Smoothed-DataLog-" +
+                    //        DateTime.UtcNow.Date.ToString("yyyy-MM-dd") + ".nc");
+
+                    //    dmAccSmoothedDataMatrixID2 = null;
+                    //    accSmoothedDateTimeValuesListID2.Clear();
+                    //}
+                    #endregion // obsolete
+
                     #endregion dump the rest smoothed accelerometers data to nc-file
+                    
 
 
 
@@ -974,370 +1004,371 @@ namespace DataCollectorAutomator
                     break;
                 }
 
-                
+
 
                 #region обработка очередей разобранных данных
 
-                #region accelerometers
-                if (accDataAndDTqueue.Count > 0)
-                {
-                    //accDatahasBeenChanged = false;
 
-                    Tuple<DateTime, accelerometerData> tplAccDT = accDataAndDTqueue.Dequeue();
+                #region // accelerometers - вынесено в CollectionChanged событие коллекции accDataAndDTObservableConcurrentQueue
+                //if (accDataAndDTObservableConcurrentQueue.Count > 0)
+                //{
+                //    //accDatahasBeenChanged = false;
 
-                    if (tplAccDT == null) continue;
+                //    Tuple<DateTime, accelerometerData> tplAccDT = accDataAndDTObservableConcurrentQueue.Dequeue();
 
-                    //accelerometerData accData = accDataQueue.Dequeue();
-                    accelerometerData accData = tplAccDT.Item2;
-                    DateTime dtAccDataRecieved = tplAccDT.Item1;
+                //    if (tplAccDT == null) continue;
 
-                    if (accData.devID <= 1) accID1tail.Enqueue(accData, dtAccDataRecieved);
-                    else accID2tail.Enqueue(accData, dtAccDataRecieved);
+                //    //accelerometerData accData = accDataQueue.Dequeue();
+                //    accelerometerData accData = tplAccDT.Item2;
+                //    DateTime dtAccDataRecieved = tplAccDT.Item1;
 
-
-                    accelerometerData accCalibrationData = (accData.devID <= 1)
-                        ? (accCalibrationDataID1)
-                        : (accCalibrationDataID2);
+                //    if (accData.devID <= 1) accID1tail.Enqueue(accData, dtAccDataRecieved);
+                //    else accID2tail.Enqueue(accData, dtAccDataRecieved);
 
 
-                    // пересчитать хвост
-                    if (accData.devID <= 1)
-                    {
-                        List<accelerometerData> accDataTail = new List<accelerometerData>(accID1tail.DataValues);
-                        DenseVector dvAccXvaluesTail =
-                            DenseVector.OfEnumerable(accDataTail.ConvertAll(accDt => accDt.AccDoubleX));
-                        DenseVector dvAccYvaluesTail =
-                            DenseVector.OfEnumerable(accDataTail.ConvertAll(accDt => accDt.AccDoubleY));
-                        DenseVector dvAccZvaluesTail =
-                            DenseVector.OfEnumerable(accDataTail.ConvertAll(accDt => accDt.AccDoubleZ));
-
-                        if (accDataTail.Count < tailLength)
-                        {
-                            dvAccXvaluesTail = DenseVector.OfEnumerable(dvAccXvaluesTail.Concat(DenseVector.Create(tailLength - accDataTail.Count, 0.0d)));
-                            dvAccYvaluesTail = DenseVector.OfEnumerable(dvAccYvaluesTail.Concat(DenseVector.Create(tailLength - accDataTail.Count, 0.0d)));
-                            dvAccZvaluesTail = DenseVector.OfEnumerable(dvAccZvaluesTail.Concat(DenseVector.Create(tailLength - accDataTail.Count, 0.0d)));
-                        }
+                //    accelerometerData accCalibrationData = (accData.devID <= 1)
+                //        ? (accCalibrationDataID1)
+                //        : (accCalibrationDataID2);
 
 
-                        latestAccDataID1 = new accelerometerData(dvKernelFixedWidth * dvAccXvaluesTail,
-                            dvKernelFixedWidth * dvAccYvaluesTail, dvKernelFixedWidth * dvAccZvaluesTail);
-                        latestAccDataID1.devID = accData.devID;
+                //    // пересчитать хвост
+                //    if (accData.devID <= 1)
+                //    {
+                //        List<accelerometerData> accDataTail = new List<accelerometerData>(accID1tail.DataValues);
+                //        DenseVector dvAccXvaluesTail =
+                //            DenseVector.OfEnumerable(accDataTail.ConvertAll(accDt => accDt.AccDoubleX));
+                //        DenseVector dvAccYvaluesTail =
+                //            DenseVector.OfEnumerable(accDataTail.ConvertAll(accDt => accDt.AccDoubleY));
+                //        DenseVector dvAccZvaluesTail =
+                //            DenseVector.OfEnumerable(accDataTail.ConvertAll(accDt => accDt.AccDoubleZ));
 
-                        accDevAngle = (latestAccDataID1 * accCalibrationData) / (latestAccDataID1.AccMagnitude * accCalibrationData.AccMagnitude);
-                        accDevAngle = Math.Acos(accDevAngle);
-                    }
-                    else
-                    {
-                        List<accelerometerData> accDataTail = new List<accelerometerData>(accID2tail.DataValues);
-                        DenseVector dvAccXvaluesTail =
-                            DenseVector.OfEnumerable(accDataTail.ConvertAll(accDt => accDt.AccDoubleX));
-                        DenseVector dvAccYvaluesTail =
-                            DenseVector.OfEnumerable(accDataTail.ConvertAll(accDt => accDt.AccDoubleY));
-                        DenseVector dvAccZvaluesTail =
-                            DenseVector.OfEnumerable(accDataTail.ConvertAll(accDt => accDt.AccDoubleZ));
-
-                        if (accDataTail.Count < tailLength)
-                        {
-                            dvAccXvaluesTail = DenseVector.OfEnumerable(dvAccXvaluesTail.Concat(DenseVector.Create(tailLength - accDataTail.Count, 0.0d)));
-                            dvAccYvaluesTail = DenseVector.OfEnumerable(dvAccYvaluesTail.Concat(DenseVector.Create(tailLength - accDataTail.Count, 0.0d)));
-                            dvAccZvaluesTail = DenseVector.OfEnumerable(dvAccZvaluesTail.Concat(DenseVector.Create(tailLength - accDataTail.Count, 0.0d)));
-                        }
-
-                        latestAccDataID2 = new accelerometerData(dvKernelFixedWidth * dvAccXvaluesTail,
-                            dvKernelFixedWidth * dvAccYvaluesTail, dvKernelFixedWidth * dvAccZvaluesTail);
-                        latestAccDataID2.devID = accData.devID;
-
-                        accDevAngle = (latestAccDataID2 * accCalibrationData) / (latestAccDataID2.AccMagnitude * accCalibrationData.AccMagnitude);
-                        accDevAngle = Math.Acos(accDevAngle);
-                    }
-
-                    #region // obsolete
-                    // сформировано наиболее актуальное значение accData для соответствующего устройства
-                    //if (accData.devID <= 1)
-                    //{
-                    //    latestAccDataID1 = accData.Copy();
-                    //}
-                    //else if (accData.devID == 2)
-                    //{
-                    //    latestAccDataID2 = accData.Copy();
-                    //}
+                //        if (accDataTail.Count < tailLength)
+                //        {
+                //            dvAccXvaluesTail = DenseVector.OfEnumerable(dvAccXvaluesTail.Concat(DenseVector.Create(tailLength - accDataTail.Count, 0.0d)));
+                //            dvAccYvaluesTail = DenseVector.OfEnumerable(dvAccYvaluesTail.Concat(DenseVector.Create(tailLength - accDataTail.Count, 0.0d)));
+                //            dvAccZvaluesTail = DenseVector.OfEnumerable(dvAccZvaluesTail.Concat(DenseVector.Create(tailLength - accDataTail.Count, 0.0d)));
+                //        }
 
 
-                    // accDateTimeValuesList.Add(DateTime.UtcNow.Ticks);
-                    #endregion // obsolete
+                //        latestAccDataID1 = new accelerometerData(dvKernelFixedWidth * dvAccXvaluesTail,
+                //            dvKernelFixedWidth * dvAccYvaluesTail, dvKernelFixedWidth * dvAccZvaluesTail);
+                //        latestAccDataID1.devID = accData.devID;
 
-                    accDateTimeValuesList.Add(dtAccDataRecieved.Ticks);
+                //        accDevAngle = (latestAccDataID1 * accCalibrationData) / (latestAccDataID1.AccMagnitude * accCalibrationData.AccMagnitude);
+                //        accDevAngle = Math.Acos(accDevAngle);
+                //    }
+                //    else
+                //    {
+                //        List<accelerometerData> accDataTail = new List<accelerometerData>(accID2tail.DataValues);
+                //        DenseVector dvAccXvaluesTail =
+                //            DenseVector.OfEnumerable(accDataTail.ConvertAll(accDt => accDt.AccDoubleX));
+                //        DenseVector dvAccYvaluesTail =
+                //            DenseVector.OfEnumerable(accDataTail.ConvertAll(accDt => accDt.AccDoubleY));
+                //        DenseVector dvAccZvaluesTail =
+                //            DenseVector.OfEnumerable(accDataTail.ConvertAll(accDt => accDt.AccDoubleZ));
 
+                //        if (accDataTail.Count < tailLength)
+                //        {
+                //            dvAccXvaluesTail = DenseVector.OfEnumerable(dvAccXvaluesTail.Concat(DenseVector.Create(tailLength - accDataTail.Count, 0.0d)));
+                //            dvAccYvaluesTail = DenseVector.OfEnumerable(dvAccYvaluesTail.Concat(DenseVector.Create(tailLength - accDataTail.Count, 0.0d)));
+                //            dvAccZvaluesTail = DenseVector.OfEnumerable(dvAccZvaluesTail.Concat(DenseVector.Create(tailLength - accDataTail.Count, 0.0d)));
+                //        }
 
+                //        latestAccDataID2 = new accelerometerData(dvKernelFixedWidth * dvAccXvaluesTail,
+                //            dvKernelFixedWidth * dvAccYvaluesTail, dvKernelFixedWidth * dvAccZvaluesTail);
+                //        latestAccDataID2.devID = accData.devID;
 
+                //        accDevAngle = (latestAccDataID2 * accCalibrationData) / (latestAccDataID2.AccMagnitude * accCalibrationData.AccMagnitude);
+                //        accDevAngle = Math.Acos(accDevAngle);
+                //    }
 
-                    #region adding latest recieved acc data to backuping datamatrix
-                    if (dmAccDataMatrix == null)
-                    {
-                        dmAccDataMatrix = DenseMatrix.Create(1, 8, 0.0d);
-                        DenseVector dvInitialData = (DenseVector)accData.ToDenseVector().SubVector(0, 3); // x,y,z
-                        DenseVector dvCalibratedData = (DenseVector)accCalibrationData.ToDenseVector().SubVector(0, 3); // x,y,z calibration data
-                        dvInitialData =
-                            DenseVector.OfEnumerable(
-                                dvInitialData.Concat(dvCalibratedData)
-                                    .Concat(new double[] { accDevAngle, accData.devID }));
-                        dmAccDataMatrix.InsertRow(0, dvInitialData);
-
-                        #region // obsolete
-                        //dmAccDataMatrix = DenseMatrix.Create(1, 8, (r, c) =>
-                        //{
-                        //    switch (c)
-                        //    {
-                        //        case 0:
-                        //            return accData.AccDoubleX;
-                        //            break;
-                        //        case 1:
-                        //            return accData.AccDoubleY;
-                        //            break;
-                        //        case 2:
-                        //            return accData.AccDoubleZ;
-                        //            break;
-                        //        case 3:
-                        //            return accCalibrationData.AccDoubleX;
-                        //            break;
-                        //        case 4:
-                        //            return accCalibrationData.AccDoubleY;
-                        //            break;
-                        //        case 5:
-                        //            return accCalibrationData.AccDoubleZ;
-                        //            break;
-                        //        case 6:
-                        //            {
-                        //                //угол отклонения от калибровочного вектора
-                        //                // В РАДИАНАХ
-                        //                return accDevAngle;
-                        //                break;
-                        //            }
-                        //        case 7:
-                        //            {
-                        //                // devID
-                        //                return accData.devID;
-                        //                break;
-                        //            }
-                        //        default:
-                        //            break;
-                        //    }
-                        //    return 0;
-                        //});
-                        #endregion // obsolete
-                    }
-                    else
-                    {
-                        DenseVector dvRowToAdd = (DenseVector)accData.ToDenseVector().SubVector(0, 3); // x,y,z
-                        DenseVector dvCalibratedData = (DenseVector)accCalibrationData.ToDenseVector().SubVector(0, 3); // x,y,z calibration data
-                        dvRowToAdd =
-                            DenseVector.OfEnumerable(
-                                dvRowToAdd.Concat(dvCalibratedData)
-                                    .Concat(new double[] { accDevAngle, accData.devID }));
-
-                        #region // obsolete
-                        //DenseVector dvAccDataVectorToAdd = DenseVector.Create(8, c =>
-                        //{
-                        //    switch (c)
-                        //    {
-                        //        case 0:
-                        //            return accData.AccDoubleX;
-                        //            break;
-                        //        case 1:
-                        //            return accData.AccDoubleY;
-                        //            break;
-                        //        case 2:
-                        //            return accData.AccDoubleZ;
-                        //            break;
-                        //        case 3:
-                        //            return accCalibrationData.AccDoubleX;
-                        //            break;
-                        //        case 4:
-                        //            return accCalibrationData.AccDoubleY;
-                        //            break;
-                        //        case 5:
-                        //            return accCalibrationData.AccDoubleZ;
-                        //            break;
-                        //        case 6:
-                        //            {
-                        //                //угол отклонения от калибровочного вектора
-                        //                // В РАДИАНАХ
-                        //                return accDevAngle;
-                        //                break;
-                        //            }
-                        //        case 7:
-                        //            {
-                        //                // devID
-                        //                return accData.devID;
-                        //                break;
-                        //            }
-                        //        default:
-                        //            break;
-                        //    }
-                        //    return 0;
-                        //});
-                        #endregion // obsolete
-
-                        dmAccDataMatrix =
-                            (DenseMatrix)dmAccDataMatrix.InsertRow(dmAccDataMatrix.RowCount, dvRowToAdd);
-                    }
-                    #endregion adding latest recieved acc data to backuping datamatrix
+                //    #region // obsolete
+                //    // сформировано наиболее актуальное значение accData для соответствующего устройства
+                //    //if (accData.devID <= 1)
+                //    //{
+                //    //    latestAccDataID1 = accData.Copy();
+                //    //}
+                //    //else if (accData.devID == 2)
+                //    //{
+                //    //    latestAccDataID2 = accData.Copy();
+                //    //}
 
 
-                    #region adding latest recieved smoothed acc data to backuping datamatrix
+                //    // accDateTimeValuesList.Add(DateTime.UtcNow.Ticks);
+                //    #endregion // obsolete
 
-                    //accelerometerData latestAccDataIDx = null;
-                    if (accData.devID <= 1)
-                    {
-                        accSmoothedDateTimeValuesListID1.Add(dtAccDataRecieved.Ticks);
-
-                        if (dmAccSmoothedDataMatrixID1 == null)
-                        {
-                            dmAccSmoothedDataMatrixID1 = DenseMatrix.Create(1, 8, 0.0d);
-                            DenseVector dvInitialData = (DenseVector)latestAccDataID1.ToDenseVector().SubVector(0, 3); // x,y,z
-                            DenseVector dvCalibratedData = (DenseVector)accCalibrationData.ToDenseVector().SubVector(0, 3); // x,y,z calibration data
-                            dvInitialData =
-                                DenseVector.OfEnumerable(
-                                    dvInitialData.Concat(dvCalibratedData)
-                                        .Concat(new double[] { accDevAngle, latestAccDataID1.devID }));
-                            dmAccSmoothedDataMatrixID1.InsertRow(0, dvInitialData);
-                        }
-                        else
-                        {
-                            DenseVector dvRowToAdd = (DenseVector)latestAccDataID1.ToDenseVector().SubVector(0, 3); // x,y,z
-                            DenseVector dvCalibratedData = (DenseVector)accCalibrationData.ToDenseVector().SubVector(0, 3); // x,y,z calibration data
-                            dvRowToAdd =
-                                DenseVector.OfEnumerable(
-                                    dvRowToAdd.Concat(dvCalibratedData)
-                                        .Concat(new double[] { accDevAngle, latestAccDataID1.devID }));
-
-                            dmAccSmoothedDataMatrixID1 =
-                                (DenseMatrix)dmAccSmoothedDataMatrixID1.InsertRow(dmAccSmoothedDataMatrixID1.RowCount, dvRowToAdd);
-                        }
-                    }
-                    else
-                    {
-                        accSmoothedDateTimeValuesListID2.Add(dtAccDataRecieved.Ticks);
-                        if (dmAccSmoothedDataMatrixID2 == null)
-                        {
-                            dmAccSmoothedDataMatrixID2 = DenseMatrix.Create(1, 8, 0.0d);
-                            DenseVector dvInitialData = (DenseVector)latestAccDataID2.ToDenseVector().SubVector(0, 3); // x,y,z
-                            DenseVector dvCalibratedData = (DenseVector)accCalibrationData.ToDenseVector().SubVector(0, 3); // x,y,z calibration data
-                            dvInitialData =
-                                DenseVector.OfEnumerable(
-                                    dvInitialData.Concat(dvCalibratedData)
-                                        .Concat(new double[] { accDevAngle, latestAccDataID2.devID }));
-                            dmAccSmoothedDataMatrixID2.InsertRow(0, dvInitialData);
-                        }
-                        else
-                        {
-                            DenseVector dvRowToAdd = (DenseVector)latestAccDataID2.ToDenseVector().SubVector(0, 3); // x,y,z
-                            DenseVector dvCalibratedData = (DenseVector)accCalibrationData.ToDenseVector().SubVector(0, 3); // x,y,z calibration data
-                            dvRowToAdd =
-                                DenseVector.OfEnumerable(
-                                    dvRowToAdd.Concat(dvCalibratedData)
-                                        .Concat(new double[] { accDevAngle, latestAccDataID2.devID }));
-
-                            dmAccSmoothedDataMatrixID2 =
-                                (DenseMatrix)dmAccSmoothedDataMatrixID2.InsertRow(dmAccSmoothedDataMatrixID2.RowCount, dvRowToAdd);
-                        }
-                    }
-
-                    #endregion adding latest recieved smoothed acc data to backuping datamatrix
-
-                    dataToPassToSensorsDataPresentation.Clear();
-                    dataToPassToSensorsDataPresentation.AddRange(new accelerometerData[] { latestAccDataID1, accCalibrationDataID1, latestAccDataID2, accCalibrationDataID2 });
-
-                    #region // obsolete - moved to timer callback mech
-                    //ThreadSafeOperations.SetText(lblGotAccDataPackCounterValue, accDateTimeValuesList.Count.ToString(), false);
-
-                    //if (stwShowActualAccData.ElapsedMilliseconds >= 500)
-                    //{
-                    //    stwShowActualAccData.Restart();
-                    //    #region // magnetometer - obsolete
-                    //    //DenseVector dvMagnDev = DenseVector.Create(dmAccDataMatrix.RowCount, i =>
-                    //    //{
-                    //    //    accelerometerData accCurrentData = new accelerometerData(dmAccDataMatrix[0, 0],
-                    //    //        dmAccDataMatrix[0, 1], dmAccDataMatrix[0, 2]);
-                    //    //    return (accCurrentData.AccMagnitude - accCalibrationData.AccMagnitude) *
-                    //    //           (accCurrentData.AccMagnitude - accCalibrationData.AccMagnitude);
-                    //    //});
-                    //    //ThreadSafeOperations.SetText(lblAccDevMeanMagnValueID1,
-                    //    //    Math.Sqrt(dvMagnDev.Sum() / dvMagnDev.Count).ToString("0.###e-00"), false);
-
-
-                    //    //DescriptiveStatistics stats1 = new DescriptiveStatistics(dmAccDataMatrix.Column(6));
-                    //    //ThreadSafeOperations.SetText(lblAccDevMeanAngleValueID1, stats1.Mean.ToString("0.###e-00"), false);
-                    //    #endregion #region // magnetometer - obsolete
-
-                    //    // =======================
-                    //    //вывести мгновенные значения, но раздельно по устройствам
-                    //    // =======================
-                    //    double accDevAngleID1 = (latestAccDataID1 * accCalibrationDataID1) / (latestAccDataID1.AccMagnitude * accCalibrationDataID1.AccMagnitude);
-                    //    accDevAngleID1 = Math.Acos(accDevAngleID1) * 180.0d / Math.PI;
-                    //    double accDevAngleID2 = (latestAccDataID2 * accCalibrationDataID2) / (latestAccDataID2.AccMagnitude * accCalibrationDataID2.AccMagnitude);
-                    //    accDevAngleID2 = Math.Acos(accDevAngleID2) * 180.0d / Math.PI;
-                    //    ThreadSafeOperations.SetText(lblAccMagnValueID1, (latestAccDataID1.AccMagnitude / accCalibrationDataID1.AccMagnitude).ToString("F2"), false);
-                    //    ThreadSafeOperations.SetText(lblAccDevAngleValueID1, accDevAngleID1.ToString("F3"), false);
-                    //    ThreadSafeOperations.SetText(lblAccMagnValueID2, (latestAccDataID2.AccMagnitude / accCalibrationDataID2.AccMagnitude).ToString("F2"), false);
-                    //    ThreadSafeOperations.SetText(lblAccDevAngleValueID2, accDevAngleID2.ToString("F3"), false);
-                    //}
-                    #endregion // obsolete - moved to timer callback mech
-
-
-                    #region swap acc data to hdd
-                    if (accDateTimeValuesList.Count >= 1000)
-                    {
-                        Dictionary<string, object> dataToSave = new Dictionary<string, object>();
-                        dataToSave.Add("DateTime", accDateTimeValuesList.ToArray());
-                        dataToSave.Add("AccelerometerData", dmAccDataMatrix);
-
-                        NetCDFoperations.AddVariousDataToFile(dataToSave,
-                            Directory.GetCurrentDirectory() + "\\logs\\AccelerometerDataLog-" +
-                            DateTime.UtcNow.Date.ToString("yyyy-MM-dd") + ".nc");
+                //    accDateTimeValuesList.Add(dtAccDataRecieved.Ticks);
 
 
 
 
-                        dmAccDataMatrix = null;
-                        accDateTimeValuesList.Clear();
-                    }
+                //    #region adding latest recieved acc data to backuping datamatrix
+                //    if (dmAccDataMatrix == null)
+                //    {
+                //        dmAccDataMatrix = DenseMatrix.Create(1, 8, 0.0d);
+                //        DenseVector dvInitialData = (DenseVector)accData.ToDenseVector().SubVector(0, 3); // x,y,z
+                //        DenseVector dvCalibratedData = (DenseVector)accCalibrationData.ToDenseVector().SubVector(0, 3); // x,y,z calibration data
+                //        dvInitialData =
+                //            DenseVector.OfEnumerable(
+                //                dvInitialData.Concat(dvCalibratedData)
+                //                    .Concat(new double[] { accDevAngle, accData.devID }));
+                //        dmAccDataMatrix.InsertRow(0, dvInitialData);
+
+                //        #region // obsolete
+                //        //dmAccDataMatrix = DenseMatrix.Create(1, 8, (r, c) =>
+                //        //{
+                //        //    switch (c)
+                //        //    {
+                //        //        case 0:
+                //        //            return accData.AccDoubleX;
+                //        //            break;
+                //        //        case 1:
+                //        //            return accData.AccDoubleY;
+                //        //            break;
+                //        //        case 2:
+                //        //            return accData.AccDoubleZ;
+                //        //            break;
+                //        //        case 3:
+                //        //            return accCalibrationData.AccDoubleX;
+                //        //            break;
+                //        //        case 4:
+                //        //            return accCalibrationData.AccDoubleY;
+                //        //            break;
+                //        //        case 5:
+                //        //            return accCalibrationData.AccDoubleZ;
+                //        //            break;
+                //        //        case 6:
+                //        //            {
+                //        //                //угол отклонения от калибровочного вектора
+                //        //                // В РАДИАНАХ
+                //        //                return accDevAngle;
+                //        //                break;
+                //        //            }
+                //        //        case 7:
+                //        //            {
+                //        //                // devID
+                //        //                return accData.devID;
+                //        //                break;
+                //        //            }
+                //        //        default:
+                //        //            break;
+                //        //    }
+                //        //    return 0;
+                //        //});
+                //        #endregion // obsolete
+                //    }
+                //    else
+                //    {
+                //        DenseVector dvRowToAdd = (DenseVector)accData.ToDenseVector().SubVector(0, 3); // x,y,z
+                //        DenseVector dvCalibratedData = (DenseVector)accCalibrationData.ToDenseVector().SubVector(0, 3); // x,y,z calibration data
+                //        dvRowToAdd =
+                //            DenseVector.OfEnumerable(
+                //                dvRowToAdd.Concat(dvCalibratedData)
+                //                    .Concat(new double[] { accDevAngle, accData.devID }));
+
+                //        #region // obsolete
+                //        //DenseVector dvAccDataVectorToAdd = DenseVector.Create(8, c =>
+                //        //{
+                //        //    switch (c)
+                //        //    {
+                //        //        case 0:
+                //        //            return accData.AccDoubleX;
+                //        //            break;
+                //        //        case 1:
+                //        //            return accData.AccDoubleY;
+                //        //            break;
+                //        //        case 2:
+                //        //            return accData.AccDoubleZ;
+                //        //            break;
+                //        //        case 3:
+                //        //            return accCalibrationData.AccDoubleX;
+                //        //            break;
+                //        //        case 4:
+                //        //            return accCalibrationData.AccDoubleY;
+                //        //            break;
+                //        //        case 5:
+                //        //            return accCalibrationData.AccDoubleZ;
+                //        //            break;
+                //        //        case 6:
+                //        //            {
+                //        //                //угол отклонения от калибровочного вектора
+                //        //                // В РАДИАНАХ
+                //        //                return accDevAngle;
+                //        //                break;
+                //        //            }
+                //        //        case 7:
+                //        //            {
+                //        //                // devID
+                //        //                return accData.devID;
+                //        //                break;
+                //        //            }
+                //        //        default:
+                //        //            break;
+                //        //    }
+                //        //    return 0;
+                //        //});
+                //        #endregion // obsolete
+
+                //        dmAccDataMatrix =
+                //            (DenseMatrix)dmAccDataMatrix.InsertRow(dmAccDataMatrix.RowCount, dvRowToAdd);
+                //    }
+                //    #endregion adding latest recieved acc data to backuping datamatrix
 
 
-                    if (accSmoothedDateTimeValuesListID1.Count >= 500)
-                    {
-                        Dictionary<string, object> dataToSave = new Dictionary<string, object>();
-                        dataToSave.Add("DateTime", accSmoothedDateTimeValuesListID1.ToArray());
-                        dataToSave.Add("AccelerometerData", dmAccSmoothedDataMatrixID1);
+                //    #region adding latest recieved smoothed acc data to backuping datamatrix
 
-                        NetCDFoperations.AddVariousDataToFile(dataToSave,
-                            Directory.GetCurrentDirectory() + "\\logs\\AccelerometerID1-Smoothed-DataLog-" +
-                            DateTime.UtcNow.Date.ToString("yyyy-MM-dd") + ".nc");
+                //    //accelerometerData latestAccDataIDx = null;
+                //    if (accData.devID <= 1)
+                //    {
+                //        accSmoothedDateTimeValuesListID1.Add(dtAccDataRecieved.Ticks);
+
+                //        if (dmAccSmoothedDataMatrixID1 == null)
+                //        {
+                //            dmAccSmoothedDataMatrixID1 = DenseMatrix.Create(1, 8, 0.0d);
+                //            DenseVector dvInitialData = (DenseVector)latestAccDataID1.ToDenseVector().SubVector(0, 3); // x,y,z
+                //            DenseVector dvCalibratedData = (DenseVector)accCalibrationData.ToDenseVector().SubVector(0, 3); // x,y,z calibration data
+                //            dvInitialData =
+                //                DenseVector.OfEnumerable(
+                //                    dvInitialData.Concat(dvCalibratedData)
+                //                        .Concat(new double[] { accDevAngle, latestAccDataID1.devID }));
+                //            dmAccSmoothedDataMatrixID1.InsertRow(0, dvInitialData);
+                //        }
+                //        else
+                //        {
+                //            DenseVector dvRowToAdd = (DenseVector)latestAccDataID1.ToDenseVector().SubVector(0, 3); // x,y,z
+                //            DenseVector dvCalibratedData = (DenseVector)accCalibrationData.ToDenseVector().SubVector(0, 3); // x,y,z calibration data
+                //            dvRowToAdd =
+                //                DenseVector.OfEnumerable(
+                //                    dvRowToAdd.Concat(dvCalibratedData)
+                //                        .Concat(new double[] { accDevAngle, latestAccDataID1.devID }));
+
+                //            dmAccSmoothedDataMatrixID1 =
+                //                (DenseMatrix)dmAccSmoothedDataMatrixID1.InsertRow(dmAccSmoothedDataMatrixID1.RowCount, dvRowToAdd);
+                //        }
+                //    }
+                //    else
+                //    {
+                //        accSmoothedDateTimeValuesListID2.Add(dtAccDataRecieved.Ticks);
+                //        if (dmAccSmoothedDataMatrixID2 == null)
+                //        {
+                //            dmAccSmoothedDataMatrixID2 = DenseMatrix.Create(1, 8, 0.0d);
+                //            DenseVector dvInitialData = (DenseVector)latestAccDataID2.ToDenseVector().SubVector(0, 3); // x,y,z
+                //            DenseVector dvCalibratedData = (DenseVector)accCalibrationData.ToDenseVector().SubVector(0, 3); // x,y,z calibration data
+                //            dvInitialData =
+                //                DenseVector.OfEnumerable(
+                //                    dvInitialData.Concat(dvCalibratedData)
+                //                        .Concat(new double[] { accDevAngle, latestAccDataID2.devID }));
+                //            dmAccSmoothedDataMatrixID2.InsertRow(0, dvInitialData);
+                //        }
+                //        else
+                //        {
+                //            DenseVector dvRowToAdd = (DenseVector)latestAccDataID2.ToDenseVector().SubVector(0, 3); // x,y,z
+                //            DenseVector dvCalibratedData = (DenseVector)accCalibrationData.ToDenseVector().SubVector(0, 3); // x,y,z calibration data
+                //            dvRowToAdd =
+                //                DenseVector.OfEnumerable(
+                //                    dvRowToAdd.Concat(dvCalibratedData)
+                //                        .Concat(new double[] { accDevAngle, latestAccDataID2.devID }));
+
+                //            dmAccSmoothedDataMatrixID2 =
+                //                (DenseMatrix)dmAccSmoothedDataMatrixID2.InsertRow(dmAccSmoothedDataMatrixID2.RowCount, dvRowToAdd);
+                //        }
+                //    }
+
+                //    #endregion adding latest recieved smoothed acc data to backuping datamatrix
+
+                //    dataToPassToSensorsDataPresentation.Clear();
+                //    dataToPassToSensorsDataPresentation.AddRange(new accelerometerData[] { latestAccDataID1, accCalibrationDataID1, latestAccDataID2, accCalibrationDataID2 });
+
+                //    #region // obsolete - moved to timer callback mech
+                //    //ThreadSafeOperations.SetText(lblGotAccDataPackCounterValue, accDateTimeValuesList.Count.ToString(), false);
+
+                //    //if (stwShowActualAccData.ElapsedMilliseconds >= 500)
+                //    //{
+                //    //    stwShowActualAccData.Restart();
+                //    //    #region // magnetometer - obsolete
+                //    //    //DenseVector dvMagnDev = DenseVector.Create(dmAccDataMatrix.RowCount, i =>
+                //    //    //{
+                //    //    //    accelerometerData accCurrentData = new accelerometerData(dmAccDataMatrix[0, 0],
+                //    //    //        dmAccDataMatrix[0, 1], dmAccDataMatrix[0, 2]);
+                //    //    //    return (accCurrentData.AccMagnitude - accCalibrationData.AccMagnitude) *
+                //    //    //           (accCurrentData.AccMagnitude - accCalibrationData.AccMagnitude);
+                //    //    //});
+                //    //    //ThreadSafeOperations.SetText(lblAccDevMeanMagnValueID1,
+                //    //    //    Math.Sqrt(dvMagnDev.Sum() / dvMagnDev.Count).ToString("0.###e-00"), false);
 
 
-                        dmAccSmoothedDataMatrixID1 = null;
-                        accSmoothedDateTimeValuesListID1.Clear();
-                    }
+                //    //    //DescriptiveStatistics stats1 = new DescriptiveStatistics(dmAccDataMatrix.Column(6));
+                //    //    //ThreadSafeOperations.SetText(lblAccDevMeanAngleValueID1, stats1.Mean.ToString("0.###e-00"), false);
+                //    //    #endregion #region // magnetometer - obsolete
+
+                //    //    // =======================
+                //    //    //вывести мгновенные значения, но раздельно по устройствам
+                //    //    // =======================
+                //    //    double accDevAngleID1 = (latestAccDataID1 * accCalibrationDataID1) / (latestAccDataID1.AccMagnitude * accCalibrationDataID1.AccMagnitude);
+                //    //    accDevAngleID1 = Math.Acos(accDevAngleID1) * 180.0d / Math.PI;
+                //    //    double accDevAngleID2 = (latestAccDataID2 * accCalibrationDataID2) / (latestAccDataID2.AccMagnitude * accCalibrationDataID2.AccMagnitude);
+                //    //    accDevAngleID2 = Math.Acos(accDevAngleID2) * 180.0d / Math.PI;
+                //    //    ThreadSafeOperations.SetText(lblAccMagnValueID1, (latestAccDataID1.AccMagnitude / accCalibrationDataID1.AccMagnitude).ToString("F2"), false);
+                //    //    ThreadSafeOperations.SetText(lblAccDevAngleValueID1, accDevAngleID1.ToString("F3"), false);
+                //    //    ThreadSafeOperations.SetText(lblAccMagnValueID2, (latestAccDataID2.AccMagnitude / accCalibrationDataID2.AccMagnitude).ToString("F2"), false);
+                //    //    ThreadSafeOperations.SetText(lblAccDevAngleValueID2, accDevAngleID2.ToString("F3"), false);
+                //    //}
+                //    #endregion // obsolete - moved to timer callback mech
 
 
-                    if (accSmoothedDateTimeValuesListID2.Count >= 500)
-                    {
-                        Dictionary<string, object> dataToSave = new Dictionary<string, object>();
-                        dataToSave.Add("DateTime", accSmoothedDateTimeValuesListID2.ToArray());
-                        dataToSave.Add("AccelerometerData", dmAccSmoothedDataMatrixID2);
+                //    #region swap acc data to hdd
+                //    if (accDateTimeValuesList.Count >= 1000)
+                //    {
+                //        Dictionary<string, object> dataToSave = new Dictionary<string, object>();
+                //        dataToSave.Add("DateTime", accDateTimeValuesList.ToArray());
+                //        dataToSave.Add("AccelerometerData", dmAccDataMatrix);
 
-                        NetCDFoperations.AddVariousDataToFile(dataToSave,
-                            Directory.GetCurrentDirectory() + "\\logs\\AccelerometerID2-Smoothed-DataLog-" +
-                            DateTime.UtcNow.Date.ToString("yyyy-MM-dd") + ".nc");
+                //        NetCDFoperations.AddVariousDataToFile(dataToSave,
+                //            Directory.GetCurrentDirectory() + "\\logs\\AccelerometerDataLog-" +
+                //            DateTime.UtcNow.Date.ToString("yyyy-MM-dd") + ".nc");
 
 
-                        dmAccSmoothedDataMatrixID2 = null;
-                        accSmoothedDateTimeValuesListID2.Clear();
-                    }
-                    #endregion swap acc data to hdd
 
-                    processedUDPPacketsCounter++;
-                }
+
+                //        dmAccDataMatrix = null;
+                //        accDateTimeValuesList.Clear();
+                //    }
+
+
+                //    if (accSmoothedDateTimeValuesListID1.Count >= 500)
+                //    {
+                //        Dictionary<string, object> dataToSave = new Dictionary<string, object>();
+                //        dataToSave.Add("DateTime", accSmoothedDateTimeValuesListID1.ToArray());
+                //        dataToSave.Add("AccelerometerData", dmAccSmoothedDataMatrixID1);
+
+                //        NetCDFoperations.AddVariousDataToFile(dataToSave,
+                //            Directory.GetCurrentDirectory() + "\\logs\\AccelerometerID1-Smoothed-DataLog-" +
+                //            DateTime.UtcNow.Date.ToString("yyyy-MM-dd") + ".nc");
+
+
+                //        dmAccSmoothedDataMatrixID1 = null;
+                //        accSmoothedDateTimeValuesListID1.Clear();
+                //    }
+
+
+                //    if (accSmoothedDateTimeValuesListID2.Count >= 500)
+                //    {
+                //        Dictionary<string, object> dataToSave = new Dictionary<string, object>();
+                //        dataToSave.Add("DateTime", accSmoothedDateTimeValuesListID2.ToArray());
+                //        dataToSave.Add("AccelerometerData", dmAccSmoothedDataMatrixID2);
+
+                //        NetCDFoperations.AddVariousDataToFile(dataToSave,
+                //            Directory.GetCurrentDirectory() + "\\logs\\AccelerometerID2-Smoothed-DataLog-" +
+                //            DateTime.UtcNow.Date.ToString("yyyy-MM-dd") + ".nc");
+
+
+                //        dmAccSmoothedDataMatrixID2 = null;
+                //        accSmoothedDateTimeValuesListID2.Clear();
+                //    }
+                //    #endregion swap acc data to hdd
+
+                //    processedUDPPacketsCounter++;
+                //}
                 #endregion accelerometers
 
 
@@ -1482,13 +1513,11 @@ namespace DataCollectorAutomator
 
                 #region if it is time to shoot - then shoot
 
-                //datetimeCamshotTimerNow = DateTime.Now;
-                //camshotTimer = datetimeCamshotTimerNow - datetimeCamshotTimerBegin;
+                
                 if (stwCamshotTimer.Elapsed >= camshotPeriod)
                 {
                     camshotTimeToGetIt = true;
                     ThreadSafeOperations.ToggleLabelTextColor(lblNextShotIn, SystemColors.Highlight);
-                    // datetimeCamshotTimerBegin = datetimeCamshotTimerNow;
                     stwCamshotTimer.Restart();
                 }
                 if (itsTimeToGetCamShot)
@@ -1504,8 +1533,8 @@ namespace DataCollectorAutomator
                 {
                     catchCameraImages();
                     camshotHasBeenTaken = true;
-                    //datetimeCamshotHasBeenTaken = DateTime.Now;
                 }
+
                 #endregion if it is time to shoot - then shoot
 
 
@@ -1541,14 +1570,567 @@ namespace DataCollectorAutomator
 
 
 
-
-
         private void updateTimersLabels(Stopwatch stwCamshotTimer, DateTime datetimePreviousTimerBegin, TimeSpan camshotPeriod)
         {
             TimeSpan nextShotIn = camshotPeriod - stwCamshotTimer.Elapsed; //(nextshotAt - datetimeNow);
             ThreadSafeOperations.SetText(lblNextShotIn, nextShotIn.RoundToSeconds().ToString("c"), false);
             ThreadSafeOperations.SetText(lblSinceLastShot, stwCamshotTimer.Elapsed.RoundToSeconds().ToString("c"), false);
         }
+
+
+
+
+
+
+
+        #region Accelerometers data processing
+
+        private Dictionary<string, AccelerometerData> dctCalibrationAccDataByDevID =
+            new Dictionary<string, AccelerometerData>();
+
+        async void accDataAndDTObservableConcurrentQueue_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+        {
+            AccelerometerData latestAccDataID1 = new AccelerometerData();
+            latestAccDataID1.devID = 1;
+            AccelerometerData latestAccDataID2 = new AccelerometerData();
+            latestAccDataID2.devID = 2;
+
+            if (e.Action != NotifyCollectionChangedAction.Add)
+            {
+                return;
+                // чтобы не реагировать на собственные TryDequeue()
+            }
+
+
+            while (accDataAndDTObservableConcurrentQueue.Count > 0)
+            {
+                Tuple<DateTime, AccelerometerData> tplAccDT;
+                while (!accDataAndDTObservableConcurrentQueue.TryDequeue(out tplAccDT))
+                {
+                    Thread.Sleep(0);
+                    continue;
+                }
+
+                if (tplAccDT == null) continue;
+
+                AccelerometerData accData = tplAccDT.Item2;
+                DateTime dtAccDataRecieved = tplAccDT.Item1;
+
+                if (accData.devID <= 1) accID1tail.Enqueue(accData, dtAccDataRecieved);
+                else accID2tail.Enqueue(accData, dtAccDataRecieved);
+
+
+                //AccelerometerData accCalibrationData = (accData.devID <= 1)
+                //    ? (accCalibrationDataID1)
+                //    : (accCalibrationDataID2);
+
+
+                // пересчитать хвост
+                if (accData.devID <= 1)
+                {
+                    List<AccelerometerData> accDataTail = new List<AccelerometerData>(accID1tail.DataValues);
+                    DenseVector dvAccXvaluesTail =
+                        DenseVector.OfEnumerable(accDataTail.ConvertAll(accDt => accDt.AccDoubleX));
+                    DenseVector dvAccYvaluesTail =
+                        DenseVector.OfEnumerable(accDataTail.ConvertAll(accDt => accDt.AccDoubleY));
+                    DenseVector dvAccZvaluesTail =
+                        DenseVector.OfEnumerable(accDataTail.ConvertAll(accDt => accDt.AccDoubleZ));
+
+                    if (accDataTail.Count < tailLength)
+                    {
+                        dvAccXvaluesTail = DenseVector.OfEnumerable(dvAccXvaluesTail.Concat(DenseVector.Create(tailLength - accDataTail.Count, 0.0d)));
+                        dvAccYvaluesTail = DenseVector.OfEnumerable(dvAccYvaluesTail.Concat(DenseVector.Create(tailLength - accDataTail.Count, 0.0d)));
+                        dvAccZvaluesTail = DenseVector.OfEnumerable(dvAccZvaluesTail.Concat(DenseVector.Create(tailLength - accDataTail.Count, 0.0d)));
+                    }
+
+
+                    latestAccDataID1 = new AccelerometerData(dvKernelFixedWidth*dvAccXvaluesTail,
+                        dvKernelFixedWidth*dvAccYvaluesTail, dvKernelFixedWidth*dvAccZvaluesTail)
+                    {
+                        devID = accData.devID
+                    };
+
+                    //accDevAngle = (latestAccDataID1 * accCalibrationData) / (latestAccDataID1.AccMagnitude * accCalibrationData.AccMagnitude);
+                    //accDevAngle = Math.Acos(accDevAngle);
+                }
+                else
+                {
+                    List<AccelerometerData> accDataTail = new List<AccelerometerData>(accID2tail.DataValues);
+                    DenseVector dvAccXvaluesTail =
+                        DenseVector.OfEnumerable(accDataTail.ConvertAll(accDt => accDt.AccDoubleX));
+                    DenseVector dvAccYvaluesTail =
+                        DenseVector.OfEnumerable(accDataTail.ConvertAll(accDt => accDt.AccDoubleY));
+                    DenseVector dvAccZvaluesTail =
+                        DenseVector.OfEnumerable(accDataTail.ConvertAll(accDt => accDt.AccDoubleZ));
+
+                    if (accDataTail.Count < tailLength)
+                    {
+                        dvAccXvaluesTail = DenseVector.OfEnumerable(dvAccXvaluesTail.Concat(DenseVector.Create(tailLength - accDataTail.Count, 0.0d)));
+                        dvAccYvaluesTail = DenseVector.OfEnumerable(dvAccYvaluesTail.Concat(DenseVector.Create(tailLength - accDataTail.Count, 0.0d)));
+                        dvAccZvaluesTail = DenseVector.OfEnumerable(dvAccZvaluesTail.Concat(DenseVector.Create(tailLength - accDataTail.Count, 0.0d)));
+                    }
+
+                    latestAccDataID2 = new AccelerometerData(dvKernelFixedWidth*dvAccXvaluesTail,
+                        dvKernelFixedWidth*dvAccYvaluesTail, dvKernelFixedWidth*dvAccZvaluesTail)
+                    {
+                        devID = accData.devID
+                    };
+
+                    //accDevAngle = (latestAccDataID2 * accCalibrationData) / (latestAccDataID2.AccMagnitude * accCalibrationData.AccMagnitude);
+                    //accDevAngle = Math.Acos(accDevAngle);
+                }
+
+
+
+                #region adding latest recieved acc data to backuping timeseries
+
+                while (!Monitor.TryEnter(tsCollectedAccData))
+                {
+                    Thread.Sleep(0);
+                }
+                try
+                {
+                    tsCollectedAccData.AddDataRecord(accData, dtAccDataRecieved);
+                }
+                finally
+                {
+                    Monitor.Exit(tsCollectedAccData);
+                }
+
+                #region // obsolete
+                //if (dmAccDataMatrix == null)
+                //{
+                //    dmAccDataMatrix = DenseMatrix.Create(1, 8, 0.0d);
+                //    DenseVector dvInitialData = (DenseVector)accData.ToDenseVector().SubVector(0, 3); // x,y,z
+                //    DenseVector dvCalibratedData = (DenseVector)accCalibrationData.ToDenseVector().SubVector(0, 3); // x,y,z calibration data
+                //    dvInitialData =
+                //        DenseVector.OfEnumerable(
+                //            dvInitialData.Concat(dvCalibratedData)
+                //                .Concat(new double[] { accDevAngle, accData.devID }));
+                //    dmAccDataMatrix.InsertRow(0, dvInitialData);
+
+                //}
+                //else
+                //{
+                //    DenseVector dvRowToAdd = (DenseVector)accData.ToDenseVector().SubVector(0, 3); // x,y,z
+                //    DenseVector dvCalibratedData = (DenseVector)accCalibrationData.ToDenseVector().SubVector(0, 3); // x,y,z calibration data
+                //    dvRowToAdd =
+                //        DenseVector.OfEnumerable(
+                //            dvRowToAdd.Concat(dvCalibratedData)
+                //                .Concat(new double[] { accDevAngle, accData.devID }));
+
+                //    dmAccDataMatrix =
+                //        (DenseMatrix)dmAccDataMatrix.InsertRow(dmAccDataMatrix.RowCount, dvRowToAdd);
+                //}
+                #endregion // obsolete
+
+                #endregion adding latest recieved acc data to backuping timeseries
+
+
+                #region adding latest recieved smoothed acc data to backuping timeseries
+
+                //accelerometerData latestAccDataIDx = null;
+                if (accData.devID <= 1)
+                {
+                    while (!Monitor.TryEnter(tsCollectedAccSmoothedDataID1))
+                    {
+                        Thread.Sleep(0);
+                    }
+                    try
+                    {
+                        tsCollectedAccSmoothedDataID1.AddDataRecord(latestAccDataID1, dtAccDataRecieved);
+                    }
+                    finally
+                    {
+                        Monitor.Exit(tsCollectedAccSmoothedDataID1);
+                    }
+                    
+
+                    #region //obsolete
+                    //accSmoothedDateTimeValuesListID1.Add(dtAccDataRecieved.Ticks);
+
+                    //if (dmAccSmoothedDataMatrixID1 == null)
+                    //{
+                    //    dmAccSmoothedDataMatrixID1 = DenseMatrix.Create(1, 8, 0.0d);
+                    //    DenseVector dvInitialData = (DenseVector)latestAccDataID1.ToDenseVector().SubVector(0, 3); // x,y,z
+                    //    DenseVector dvCalibratedData = (DenseVector)accCalibrationData.ToDenseVector().SubVector(0, 3); // x,y,z calibration data
+                    //    dvInitialData =
+                    //        DenseVector.OfEnumerable(
+                    //            dvInitialData.Concat(dvCalibratedData)
+                    //                .Concat(new double[] { accDevAngle, latestAccDataID1.devID }));
+                    //    dmAccSmoothedDataMatrixID1.InsertRow(0, dvInitialData);
+                    //}
+                    //else
+                    //{
+                    //    DenseVector dvRowToAdd = (DenseVector)latestAccDataID1.ToDenseVector().SubVector(0, 3); // x,y,z
+                    //    DenseVector dvCalibratedData = (DenseVector)accCalibrationData.ToDenseVector().SubVector(0, 3); // x,y,z calibration data
+                    //    dvRowToAdd =
+                    //        DenseVector.OfEnumerable(
+                    //            dvRowToAdd.Concat(dvCalibratedData)
+                    //                .Concat(new double[] { accDevAngle, latestAccDataID1.devID }));
+
+                    //    dmAccSmoothedDataMatrixID1 =
+                    //        (DenseMatrix)dmAccSmoothedDataMatrixID1.InsertRow(dmAccSmoothedDataMatrixID1.RowCount, dvRowToAdd);
+                    //}
+                    #endregion //obsolete
+                }
+                else
+                {
+                    while (!Monitor.TryEnter(tsCollectedAccSmoothedDataID2))
+                    {
+                        Thread.Sleep(0);
+                    }
+                    try
+                    {
+                        tsCollectedAccSmoothedDataID2.AddDataRecord(latestAccDataID2, dtAccDataRecieved);
+                    }
+                    finally
+                    {
+                        Monitor.Exit(tsCollectedAccSmoothedDataID2);
+                    }
+
+                    #region //obsolete
+                    //accSmoothedDateTimeValuesListID2.Add(dtAccDataRecieved.Ticks);
+                    //if (dmAccSmoothedDataMatrixID2 == null)
+                    //{
+                    //    dmAccSmoothedDataMatrixID2 = DenseMatrix.Create(1, 8, 0.0d);
+                    //    DenseVector dvInitialData = (DenseVector)latestAccDataID2.ToDenseVector().SubVector(0, 3); // x,y,z
+                    //    DenseVector dvCalibratedData = (DenseVector)accCalibrationData.ToDenseVector().SubVector(0, 3); // x,y,z calibration data
+                    //    dvInitialData =
+                    //        DenseVector.OfEnumerable(
+                    //            dvInitialData.Concat(dvCalibratedData)
+                    //                .Concat(new double[] { accDevAngle, latestAccDataID2.devID }));
+                    //    dmAccSmoothedDataMatrixID2.InsertRow(0, dvInitialData);
+                    //}
+                    //else
+                    //{
+                    //    DenseVector dvRowToAdd = (DenseVector)latestAccDataID2.ToDenseVector().SubVector(0, 3); // x,y,z
+                    //    DenseVector dvCalibratedData = (DenseVector)accCalibrationData.ToDenseVector().SubVector(0, 3); // x,y,z calibration data
+                    //    dvRowToAdd =
+                    //        DenseVector.OfEnumerable(
+                    //            dvRowToAdd.Concat(dvCalibratedData)
+                    //                .Concat(new double[] { accDevAngle, latestAccDataID2.devID }));
+
+                    //    dmAccSmoothedDataMatrixID2 =
+                    //        (DenseMatrix)dmAccSmoothedDataMatrixID2.InsertRow(dmAccSmoothedDataMatrixID2.RowCount, dvRowToAdd);
+                    //}
+                    #endregion //obsolete
+                }
+
+                #endregion adding latest recieved smoothed acc data to backuping timeseries
+
+
+                dataToPassToSensorsDataPresentation.Clear();
+                dataToPassToSensorsDataPresentation.AddRange(new[] { latestAccDataID1, accCalibrationDataID1, latestAccDataID2, accCalibrationDataID2 });
+
+
+                #region swap acc data to hdd
+
+
+                //Task tskUpdateAccDataOnForm = Task.Factory.StartNew(UpdateActualAccDataOnForm);
+
+                Task tskDumpCollectedAccData = null;
+                Task tskDumpCollectedAccSmoothedID1Data = null;
+                Task tskDumpCollectedAccSmoothedID2Data = null;
+
+                if (tsCollectedAccData.Count >= 1000)
+                {
+                    tskDumpCollectedAccData = Task.Factory.StartNew(DumpCollectedAccelerometersData);
+                }
+
+                if (tsCollectedAccSmoothedDataID1.Count >= 500)
+                {
+                    tskDumpCollectedAccSmoothedID1Data =
+                        Task.Factory.StartNew(DumpCollectedAccelerometersSmoothedDataDevID1);
+                }
+
+                if (tsCollectedAccSmoothedDataID2.Count >= 500)
+                {
+                    tskDumpCollectedAccSmoothedID2Data =
+                        Task.Factory.StartNew(DumpCollectedAccelerometersSmoothedDataDevID2);
+                }
+
+
+                
+
+                #region // obsolete
+                //if (accDateTimeValuesList.Count >= 1000)
+                //{
+                //    Dictionary<string, object> dataToSave = new Dictionary<string, object>();
+                //    dataToSave.Add("DateTime", accDateTimeValuesList.ToArray());
+                //    dataToSave.Add("AccelerometerData", dmAccDataMatrix);
+
+                //    NetCDFoperations.AddVariousDataToFile(dataToSave,
+                //        Directory.GetCurrentDirectory() + "\\logs\\AccelerometerDataLog-" +
+                //        DateTime.UtcNow.Date.ToString("yyyy-MM-dd") + ".nc");
+
+
+
+
+                //    dmAccDataMatrix = null;
+                //    accDateTimeValuesList.Clear();
+                //}
+                
+
+
+                //if (accSmoothedDateTimeValuesListID1.Count >= 500)
+                //{
+                //    Dictionary<string, object> dataToSave = new Dictionary<string, object>();
+                //    dataToSave.Add("DateTime", accSmoothedDateTimeValuesListID1.ToArray());
+                //    dataToSave.Add("AccelerometerData", dmAccSmoothedDataMatrixID1);
+
+                //    NetCDFoperations.AddVariousDataToFile(dataToSave,
+                //        Directory.GetCurrentDirectory() + "\\logs\\AccelerometerID1-Smoothed-DataLog-" +
+                //        DateTime.UtcNow.Date.ToString("yyyy-MM-dd") + ".nc");
+
+
+                //    dmAccSmoothedDataMatrixID1 = null;
+                //    accSmoothedDateTimeValuesListID1.Clear();
+                //}
+
+
+                //if (accSmoothedDateTimeValuesListID2.Count >= 500)
+                //{
+                //    Dictionary<string, object> dataToSave = new Dictionary<string, object>();
+                //    dataToSave.Add("DateTime", accSmoothedDateTimeValuesListID2.ToArray());
+                //    dataToSave.Add("AccelerometerData", dmAccSmoothedDataMatrixID2);
+
+                //    NetCDFoperations.AddVariousDataToFile(dataToSave,
+                //        Directory.GetCurrentDirectory() + "\\logs\\AccelerometerID2-Smoothed-DataLog-" +
+                //        DateTime.UtcNow.Date.ToString("yyyy-MM-dd") + ".nc");
+
+
+                //    dmAccSmoothedDataMatrixID2 = null;
+                //    accSmoothedDateTimeValuesListID2.Clear();
+                //}
+
+                #endregion // obsolete
+
+
+                if (tskDumpCollectedAccData != null)
+                {
+                    await tskDumpCollectedAccData;
+                }
+
+                if (tskDumpCollectedAccSmoothedID1Data != null)
+                {
+                    await tskDumpCollectedAccSmoothedID1Data;
+                }
+
+                if (tskDumpCollectedAccSmoothedID2Data != null)
+                {
+                    await tskDumpCollectedAccSmoothedID2Data;
+                }
+
+                //await tskUpdateMeteoDataOnForm;
+
+                #endregion swap acc data to hdd
+
+
+                Interlocked.Increment(ref processedUDPPacketsCounter);
+            }
+        }
+
+
+
+
+        private void DumpCollectedAccelerometersData()
+        {
+            if (tsCollectedAccData.Count == 0)
+            {
+                return;
+            }
+
+            Dictionary<string, object> dataToSave = new Dictionary<string, object>();
+
+            #region unload shared collections data to dataToSave
+
+            while (!Monitor.TryEnter(tsCollectedAccData))
+            {
+                Thread.Sleep(0);
+            }
+
+            try
+            {
+                tsCollectedAccData.SortByTimeStamps();
+                dataToSave.Add("DateTime", tsCollectedAccData.TimeStamps.ConvertAll(dt => dt.Ticks).ToArray());
+                DenseMatrix dmAccData = AccelerometerData.ToDenseMatrix(tsCollectedAccData.DataValues, dctCalibrationAccDataByDevID);
+                dataToSave.Add("AccelerometerData", dmAccData);
+                tsCollectedAccData.Clear();
+            }
+            catch (Exception ex)
+            {
+                #region report
+#if DEBUG
+                ServiceTools.ExecMethodInSeparateThread(this, () =>
+                {
+                    theLogWindow = ServiceTools.LogAText(theLogWindow,
+                        "exception has been thrown: " + ex.Message + Environment.NewLine +
+                        ServiceTools.CurrentCodeLineDescription());
+                });
+#else
+                ServiceTools.ExecMethodInSeparateThread(this, () =>
+                {
+                    ServiceTools.logToTextFile(errorLogFilename,
+                        "exception has been thrown: " + ex.Message + Environment.NewLine +
+                        ServiceTools.CurrentCodeLineDescription(), true, true);
+                });
+#endif
+                #endregion report
+            }
+            finally
+            {
+                Monitor.Exit(tsCollectedAccData);
+            }
+
+            #endregion unload shared collections data to dataToSave
+
+
+            NetCDFoperations.AddVariousDataToFile(dataToSave,
+                Directory.GetCurrentDirectory() + "\\logs\\AccelerometerDataLog-" +
+                DateTime.UtcNow.Date.ToString("yyyy-MM-dd") + ".nc");
+
+        }
+
+
+
+
+
+        private void DumpCollectedAccelerometersSmoothedDataDevID1()
+        {
+            if (tsCollectedAccSmoothedDataID1.Count == 0)
+            {
+                return;
+            }
+
+            Dictionary<string, object> dataToSave = new Dictionary<string, object>();
+
+            #region unload shared collections data to dataToSave
+
+            while (!Monitor.TryEnter(tsCollectedAccSmoothedDataID1))
+            {
+                Thread.Sleep(0);
+            }
+
+            try
+            {
+                tsCollectedAccSmoothedDataID1.SortByTimeStamps();
+                dataToSave.Add("DateTime", tsCollectedAccSmoothedDataID1.TimeStamps.ConvertAll(dt => dt.Ticks).ToArray());
+                DenseMatrix dmAccData = AccelerometerData.ToDenseMatrix(tsCollectedAccSmoothedDataID1.DataValues, dctCalibrationAccDataByDevID);
+                dataToSave.Add("AccelerometerData", dmAccData);
+                tsCollectedAccSmoothedDataID1.Clear();
+            }
+            catch (Exception ex)
+            {
+                #region report
+#if DEBUG
+                ServiceTools.ExecMethodInSeparateThread(this, () =>
+                {
+                    theLogWindow = ServiceTools.LogAText(theLogWindow,
+                        "exception has been thrown: " + ex.Message + Environment.NewLine +
+                        ServiceTools.CurrentCodeLineDescription());
+                });
+#else
+                ServiceTools.ExecMethodInSeparateThread(this, () =>
+                {
+                    ServiceTools.logToTextFile(errorLogFilename,
+                        "exception has been thrown: " + ex.Message + Environment.NewLine +
+                        ServiceTools.CurrentCodeLineDescription(), true, true);
+                });
+#endif
+                #endregion report
+            }
+            finally
+            {
+                Monitor.Exit(tsCollectedAccSmoothedDataID1);
+            }
+
+            #endregion unload shared collections data to dataToSave
+
+
+            NetCDFoperations.AddVariousDataToFile(dataToSave,
+                Directory.GetCurrentDirectory() + "\\logs\\AccelerometerID1-Smoothed-DataLog-" +
+                DateTime.UtcNow.Date.ToString("yyyy-MM-dd") + ".nc");
+        }
+
+
+
+
+
+        private void DumpCollectedAccelerometersSmoothedDataDevID2()
+        {
+            if (tsCollectedAccSmoothedDataID2.Count == 0)
+            {
+                return;
+            }
+
+            Dictionary<string, object> dataToSave = new Dictionary<string, object>();
+
+            #region unload shared collections data to dataToSave
+
+            while (!Monitor.TryEnter(tsCollectedAccSmoothedDataID2))
+            {
+                Thread.Sleep(0);
+            }
+
+            try
+            {
+                tsCollectedAccSmoothedDataID2.SortByTimeStamps();
+                dataToSave.Add("DateTime", tsCollectedAccSmoothedDataID2.TimeStamps.ConvertAll(dt => dt.Ticks).ToArray());
+                DenseMatrix dmAccData = AccelerometerData.ToDenseMatrix(tsCollectedAccSmoothedDataID2.DataValues, dctCalibrationAccDataByDevID);
+                dataToSave.Add("AccelerometerData", dmAccData);
+                tsCollectedAccSmoothedDataID2.Clear();
+            }
+            catch (Exception ex)
+            {
+                #region report
+#if DEBUG
+                ServiceTools.ExecMethodInSeparateThread(this, () =>
+                {
+                    theLogWindow = ServiceTools.LogAText(theLogWindow,
+                        "exception has been thrown: " + ex.Message + Environment.NewLine +
+                        ServiceTools.CurrentCodeLineDescription());
+                });
+#else
+                ServiceTools.ExecMethodInSeparateThread(this, () =>
+                {
+                    ServiceTools.logToTextFile(errorLogFilename,
+                        "exception has been thrown: " + ex.Message + Environment.NewLine +
+                        ServiceTools.CurrentCodeLineDescription(), true, true);
+                });
+#endif
+                #endregion report
+            }
+            finally
+            {
+                Monitor.Exit(tsCollectedAccSmoothedDataID2);
+            }
+
+            #endregion unload shared collections data to dataToSave
+
+
+            NetCDFoperations.AddVariousDataToFile(dataToSave,
+                Directory.GetCurrentDirectory() + "\\logs\\AccelerometerID2-Smoothed-DataLog-" +
+                DateTime.UtcNow.Date.ToString("yyyy-MM-dd") + ".nc");
+        }
+
+
+
+
+        #endregion Accelerometers data processing
+
+
+
+        #endregion обработка поступающих данных сенсоров
+
+
+
+
+
+        
+
+
+
 
 
         private string swapImageToFile(Image image2write, String imageFNameAttrs = "")
@@ -1578,10 +2160,10 @@ namespace DataCollectorAutomator
             String filename1 = Directory.GetCurrentDirectory() + "\\results\\data-" + DateTime.UtcNow.ToString("o").Replace(":", "-") + ".xml";
             Dictionary<string, object> dataToSave = new Dictionary<string, object>();
 
-            accelerometerData accCalibrationData = ((latestAccData.devID == 0) || (latestAccData.devID == 1))
+            AccelerometerData accCalibrationData = ((latestAccData.devID == 0) || (latestAccData.devID == 1))
                 ? (accCalibrationDataID1)
                 : (accCalibrationDataID2);
-            accelerometerData accDataShift = latestAccData - accCalibrationData;
+            AccelerometerData accDataShift = latestAccData - accCalibrationData;
             accDataShift = accDataShift / accCalibrationData.AccMagnitude;
 
             dataToSave.Add("DateTime", DateTime.UtcNow.ToString("o"));
@@ -1623,27 +2205,7 @@ namespace DataCollectorAutomator
 
 
 
-
-        private void btnCollectImmediately_Click(object sender, EventArgs e)
-        {
-            if (dataCollector.IsBusy)
-            {
-                getCamShotImmediately = true;
-            }
-            else
-            {
-                catchCameraImages();
-            }
-
-        }
-
-
-
-        private void btnCollectMostClose_Click(object sender, EventArgs e)
-        {
-            itsTimeToGetCamShot = true;
-        }
-
+        
 
 
         private void catchCameraImages()
@@ -1746,6 +2308,8 @@ namespace DataCollectorAutomator
             bgwGetImgID2.RunWorkerAsync(BGWargsID2);
         }
 
+
+
         #region // заглушка когда нет камеры
         //private void catchCameraImage()
         //{
@@ -1758,53 +2322,32 @@ namespace DataCollectorAutomator
 
 
 
-
-        #region accelerpmeter calibration
-
-        private void btnCalibrateAccelerometer_Click(object sender, EventArgs e)
-        {
-            if (!accelCalibrator.IsBusy)
-            {
-                if (!udpCatchingJob.IsBusy)
-                {
-                    //включим прослушку Arduino
-                    needsToSwitchListeningArduinoOFF = true;
-                    btnStartStopBdcstListening_Click(null, null);
-                }
-                Note("Detecting outdoor board broadcasting state");
-                ThreadSafeOperations.ToggleButtonState(btnCalibrateAccelerometerID1, false, "wait for state checking", true);
-                //StartStopDataCollectingWaitingCircle.Visible = true;
-                //StartStopDataCollectingWaitingCircle.Active = true;
-                dataCollectingState = DataCollectingStates.checkingState;
-                theWorkerRequestedArduinoDataBroadcastState = WorkersRequestingArduinoDataBroadcastState.accelCalibrator;
-                currOperatingDevID = 1;
-                PerformRequestArduinoBoard("1", currOperatingDevID);
-            }
-            else
-            {
-                accelCalibrator.CancelAsync();
-            }
-        }
+        #region accelerometer calibration
 
 
+        /// <summary>
+        /// Handles the DoWork event of the accelCalibrator control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="DoWorkEventArgs"/> instance containing the event data.</param>
+        /// todo: переделать в event-driven вариант по коллекции accDataAndDTObservableConcurrentQueue
         private void accelCalibrator_DoWork(object sender, DoWorkEventArgs e)
         {
-            DateTime datetimeCalibrationBegin = DateTime.Now;
-            DateTime datetimeCalibrationTimerNow = DateTime.Now;
-            TimeSpan calibrationTimer = datetimeCalibrationTimerNow - datetimeCalibrationBegin;
-            TimeSpan calibrationRecalcPeriod = new TimeSpan(0, 0, 1);
-            TimeSpan labelsUpdatingPeriod = new TimeSpan(0, 0, 1);
-            DateTime datetimePreviousLabelsUpdate = DateTime.MinValue;
-            double horizAcc, totalAcc, percHorizAcc;
+            //DateTime datetimeCalibrationBegin = DateTime.Now;
+            //DateTime datetimeCalibrationTimerNow = DateTime.Now;
+            //TimeSpan calibrationTimer = datetimeCalibrationTimerNow - datetimeCalibrationBegin;
+            //TimeSpan calibrationRecalcPeriod = new TimeSpan(0, 0, 1);
+            //TimeSpan labelsUpdatingPeriod = new TimeSpan(0, 0, 1);
+            //DateTime datetimePreviousLabelsUpdate = DateTime.MinValue;
+            //double horizAcc, totalAcc, percHorizAcc;
             //double percAccDeviation;
-            double meanX, meanY, meanZ, stDevX, stDevY, stDevZ;
             double[] dataSetX = new double[1000];
             double[] dataSetY = new double[1000];
             double[] dataSetZ = new double[1000];
             int i = 0;
             bool isTheFirstPass = true;
 
-            System.ComponentModel.BackgroundWorker SelfWorker = sender as System.ComponentModel.BackgroundWorker;
+            BackgroundWorker SelfWorker = sender as BackgroundWorker;
             ThreadSafeOperations.ToggleButtonState(btnCalibrateAccelerometerID1, true, "Stop calibrating", true);
             dataCollectingState = DataCollectingStates.working;
 
@@ -1817,19 +2360,19 @@ namespace DataCollectorAutomator
                 }
 
                 // if (accDataQueue.Count > 0)
-                if (accDataAndDTqueue.Count > 0)
+                if (accDataAndDTObservableConcurrentQueue.Count > 0)
                 {
-                    //accelerometerData accData = accDataQueue.Dequeue();
-                    //if (accData == null)
-                    //{
-                    //    continue;
-                    //}
-                    Tuple<DateTime, accelerometerData> tplAccDT = accDataAndDTqueue.Dequeue();
+                    Tuple<DateTime, AccelerometerData> tplAccDT;
+                    while (!accDataAndDTObservableConcurrentQueue.TryDequeue(out tplAccDT))
+                    {
+                        Thread.Sleep(0);
+                        continue;
+                    }
 
                     if (tplAccDT == null) continue;
 
                     //accelerometerData accData = accDataQueue.Dequeue();
-                    accelerometerData accData = tplAccDT.Item2;
+                    AccelerometerData accData = tplAccDT.Item2;
                     DateTime dtAccDataRecieved = tplAccDT.Item1;
 
                     ThreadSafeOperations.SetText(lblAccelCalibrationCurrentXID1, accData.AccX.ToString(), false);
@@ -1854,15 +2397,19 @@ namespace DataCollectorAutomator
                         isTheFirstPass = false;
                     }
                     DateTime calcBegin = DateTime.Now;
-                    DescriptiveStatistics statisticsX = new DescriptiveStatistics((System.Collections.Generic.IEnumerable<double>)dataSetX);
-                    DescriptiveStatistics statisticsY = new DescriptiveStatistics((System.Collections.Generic.IEnumerable<double>)dataSetY);
-                    DescriptiveStatistics statisticsZ = new DescriptiveStatistics((System.Collections.Generic.IEnumerable<double>)dataSetZ);
-                    meanX = statisticsX.Mean;
-                    stDevX = Math.Round(100 * statisticsX.StandardDeviation / meanX, 2);
-                    meanY = statisticsY.Mean;
-                    stDevY = Math.Round(100 * statisticsY.StandardDeviation / meanY, 2);
-                    meanZ = statisticsZ.Mean;
-                    stDevZ = Math.Round(100 * statisticsZ.StandardDeviation / meanZ, 2);
+                    DescriptiveStatistics statisticsX = new DescriptiveStatistics(dataSetX);
+                    DescriptiveStatistics statisticsY = new DescriptiveStatistics(dataSetY);
+                    DescriptiveStatistics statisticsZ = new DescriptiveStatistics(dataSetZ);
+
+                    double meanX = statisticsX.Mean;
+                    double stDevX = Math.Round(100 * statisticsX.StandardDeviation / meanX, 2);
+
+                    double meanY = statisticsY.Mean;
+                    double stDevY = Math.Round(100 * statisticsY.StandardDeviation / meanY, 2);
+
+                    double meanZ = statisticsZ.Mean;
+                    double stDevZ = Math.Round(100 * statisticsZ.StandardDeviation / meanZ, 2);
+
                     TimeSpan calcSpan = DateTime.Now - calcBegin;
 
                     accCalibrationDataID1.AccDoubleX = meanX;
@@ -1881,8 +2428,8 @@ namespace DataCollectorAutomator
                     //accDatahasBeenChanged = false;
                 }
 
-                datetimeCalibrationTimerNow = DateTime.Now;
-                calibrationTimer = datetimeCalibrationTimerNow - datetimeCalibrationBegin;
+                //datetimeCalibrationTimerNow = DateTime.Now;
+                //calibrationTimer = datetimeCalibrationTimerNow - datetimeCalibrationBegin;
             }
         }
 
@@ -1898,54 +2445,16 @@ namespace DataCollectorAutomator
             ThreadSafeOperations.ToggleButtonState(btnCalibrateAccelerometerID1, true, "Calibrate accelerometer", false);
             dataCollectingState = DataCollectingStates.idle;
         }
+        
 
-        private void btnSaveAccel_Click(object sender, EventArgs e)
-        {
-            Dictionary<string, object> propertiesDictToSave = new Dictionary<string, object>();
-            propertiesDictToSave.Add("accID1CalibratedXzero", accCalibrationDataID1.AccDoubleX);
-            propertiesDictToSave.Add("accID1CalibratedYzero", accCalibrationDataID1.AccDoubleY);
-            propertiesDictToSave.Add("accID1CalibratedZzero", accCalibrationDataID1.AccDoubleZ);
-            ServiceTools.WriteDictionaryToXml(propertiesDictToSave, accCalibrationDataFilename, false);
-        }
-
-        #endregion accelerpmeter calibration
+        #endregion accelerometer calibration
 
 
 
 
 
 
-
-        private void btnSwitchShowingTotalLog_Click(object sender, EventArgs e)
-        {
-            if (showTotalBcstLog)
-            {
-                showTotalBcstLog = !showTotalBcstLog;
-                ThreadSafeOperations.ToggleButtonState(btnSwitchShowingTotalLog, true, "Show total log", true);
-            }
-            else
-            {
-                showTotalBcstLog = !showTotalBcstLog;
-                ThreadSafeOperations.ToggleButtonState(btnSwitchShowingTotalLog, true, "Dont show total log", true);
-            }
-        }
-
-
-
-
-
-        //private void StartUDPmessagesParser()
-        //{
-        //    if (!bgwUDPmessagesParser.IsBusy)
-        //    {
-        //        bgwUDPmessagesParser.RunWorkerAsync();
-        //    }
-        //}
-
-
-
-
-
+        #region process catched UDP messages from cquArduinoUDPCatchedMessages
 
         void cquArduinoUDPCatchedMessages_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
         {
@@ -2072,7 +2581,7 @@ namespace DataCollectorAutomator
                     {
                         Note(curMessageBoundle.udpMessage);
                     }
-                    
+
                     replyMessage = curMessageBoundle.udpMessage;
                     if (needsReplyOnRequest) needsReplyOnRequest = false;
                 }
@@ -2112,9 +2621,7 @@ namespace DataCollectorAutomator
                 }
             }
         }
-
-
-
+        
 
 
 
@@ -2150,13 +2657,13 @@ namespace DataCollectorAutomator
                             //accelerometer data
                             string[] splitters = { ";" };
                             string[] stringAccValues = dataValuesString.Split(splitters, System.StringSplitOptions.RemoveEmptyEntries);
-                            latestAccData = new accelerometerData(stringAccValues);
+                            latestAccData = new AccelerometerData(stringAccValues);
                             latestAccData.devID = devID;
 
                             if (latestAccData.validAccData)
                             {
                                 //accDataQueue.Enqueue(latestAccData);
-                                accDataAndDTqueue.Enqueue(new Tuple<DateTime, accelerometerData>(DateTime.UtcNow,
+                                accDataAndDTObservableConcurrentQueue.Enqueue(new Tuple<DateTime, AccelerometerData>(DateTime.UtcNow,
                                     latestAccData));
                             }
 
@@ -2205,7 +2712,7 @@ namespace DataCollectorAutomator
             }
         }
 
-
+        #endregion process catched UDP messages from cquArduinoUDPCatchedMessages
 
 
 
@@ -2267,16 +2774,7 @@ namespace DataCollectorAutomator
 
 
 
-
-        
-
-
-
-
-
-
-
-
+        #region Form behaviour
 
         private void tbIP2ListenDevID2_TextChanged(object sender, EventArgs e)
         {
@@ -2369,12 +2867,12 @@ namespace DataCollectorAutomator
                                          "\\settings\\AccelerometerCalibrationData2G.xml";
 
             accCalibrationDataDict = ServiceTools.ReadDictionaryFromXML(accCalibrationDataFilename);
-            
 
-            accCalibrationDataID1 = new accelerometerData(Convert.ToDouble(accCalibrationDataDict["accID1CalibratedXzero"]),
+
+            accCalibrationDataID1 = new AccelerometerData(Convert.ToDouble(accCalibrationDataDict["accID1CalibratedXzero"]),
                 Convert.ToDouble(accCalibrationDataDict["accID1CalibratedYzero"]),
                 Convert.ToDouble(accCalibrationDataDict["accID1CalibratedZzero"]));
-            accCalibrationDataID2 = new accelerometerData(Convert.ToDouble(accCalibrationDataDict["accID2CalibratedXzero"]),
+            accCalibrationDataID2 = new AccelerometerData(Convert.ToDouble(accCalibrationDataDict["accID2CalibratedXzero"]),
                 Convert.ToDouble(accCalibrationDataDict["accID2CalibratedYzero"]),
                 Convert.ToDouble(accCalibrationDataDict["accID2CalibratedZzero"]));
 
@@ -2385,7 +2883,7 @@ namespace DataCollectorAutomator
             port2converse = Convert.ToInt32(defaultProperties["ArduinoBoardDefaultUDPport"]);
             portBcstRecvng = Convert.ToInt32(defaultProperties["UDPBroadcastDefaultListeningPort"]);
             string strCamShotPeriod = (defaultProperties["VivotekCameraShootingPeriodSec"]) as string;
-            
+
             CamShotPeriod = new TimeSpan(0, 0, Convert.ToInt32(strCamShotPeriod));
 
 
@@ -2410,7 +2908,7 @@ namespace DataCollectorAutomator
             }
 
 
-            
+
             ThreadSafeOperations.SetTextTB(tbIP2ListenDevID1, ip2ListenID1, false);
             ThreadSafeOperations.SetTextTB(tbIP2ListenDevID2, ip2ListenID2, false);
 
@@ -2418,12 +2916,15 @@ namespace DataCollectorAutomator
 
             if (accCalibrationDataID1.AccMagnitude == 0.0d)
             {
-                accCalibrationDataID1 = new accelerometerData(0.0, 0.0, -256.0);
+                accCalibrationDataID1 = new AccelerometerData(0.0, 0.0, -256.0);
             }
             if (accCalibrationDataID2.AccMagnitude == 0.0d)
             {
-                accCalibrationDataID2 = new accelerometerData(0.0, 0.0, -256.0);
+                accCalibrationDataID2 = new AccelerometerData(0.0, 0.0, -256.0);
             }
+
+            dctCalibrationAccDataByDevID.Add("devID1", accCalibrationDataID1);
+            dctCalibrationAccDataByDevID.Add("devID2", accCalibrationDataID2);
 
             ThreadSafeOperations.SetText(lblAccelCalibrationXID1, Math.Round(accCalibrationDataID1.AccDoubleX, 2).ToString(), false);
             ThreadSafeOperations.SetText(lblAccelCalibrationYID1, Math.Round(accCalibrationDataID1.AccDoubleY, 2).ToString(), false);
@@ -2439,6 +2940,12 @@ namespace DataCollectorAutomator
         private void DataCollectorMainForm_Shown(object sender, EventArgs e)
         {
             readDefaultProperties();
+
+            cquArduinoUDPCatchedMessages.CollectionChanged += cquArduinoUDPCatchedMessages_CollectionChanged;
+
+            accDataAndDTObservableConcurrentQueue.CollectionChanged += accDataAndDTObservableConcurrentQueue_CollectionChanged;
+
+            
         }
 
 
@@ -2453,9 +2960,92 @@ namespace DataCollectorAutomator
 
 
 
+        private void btnSwitchShowingTotalLog_Click(object sender, EventArgs e)
+        {
+            if (showTotalBcstLog)
+            {
+                showTotalBcstLog = !showTotalBcstLog;
+                ThreadSafeOperations.ToggleButtonState(btnSwitchShowingTotalLog, true, "Show total log", true);
+            }
+            else
+            {
+                showTotalBcstLog = !showTotalBcstLog;
+                ThreadSafeOperations.ToggleButtonState(btnSwitchShowingTotalLog, true, "Dont show total log", true);
+            }
+        }
+
+
+
+
+        private void btnCollectMostClose_Click(object sender, EventArgs e)
+        {
+            itsTimeToGetCamShot = true;
+        }
+
+
+
+
+        private void btnSaveAccel_Click(object sender, EventArgs e)
+        {
+            Dictionary<string, object> propertiesDictToSave = new Dictionary<string, object>();
+            propertiesDictToSave.Add("accID1CalibratedXzero", accCalibrationDataID1.AccDoubleX);
+            propertiesDictToSave.Add("accID1CalibratedYzero", accCalibrationDataID1.AccDoubleY);
+            propertiesDictToSave.Add("accID1CalibratedZzero", accCalibrationDataID1.AccDoubleZ);
+            ServiceTools.WriteDictionaryToXml(propertiesDictToSave, accCalibrationDataFilename, false);
+        }
+
+
+
+
+
+
+        private void btnCalibrateAccelerometer_Click(object sender, EventArgs e)
+        {
+            if (!accelCalibrator.IsBusy)
+            {
+                if (!udpCatchingJob.IsBusy)
+                {
+                    //включим прослушку Arduino
+                    needsToSwitchListeningArduinoOFF = true;
+                    btnStartStopBdcstListening_Click(null, null);
+                }
+                Note("Detecting outdoor board broadcasting state");
+                ThreadSafeOperations.ToggleButtonState(btnCalibrateAccelerometerID1, false, "wait for state checking", true);
+                //StartStopDataCollectingWaitingCircle.Visible = true;
+                //StartStopDataCollectingWaitingCircle.Active = true;
+                dataCollectingState = DataCollectingStates.checkingState;
+                theWorkerRequestedArduinoDataBroadcastState = WorkersRequestingArduinoDataBroadcastState.accelCalibrator;
+                currOperatingDevID = 1;
+                PerformRequestArduinoBoard("1", currOperatingDevID);
+            }
+            else
+            {
+                accelCalibrator.CancelAsync();
+            }
+        }
+
+
+
+        private void btnCollectImmediately_Click(object sender, EventArgs e)
+        {
+            if (dataCollector.IsBusy)
+            {
+                getCamShotImmediately = true;
+            }
+            else
+            {
+                catchCameraImages();
+            }
+
+        }
+
+
+        #endregion Form behaviour
+
+
     }
 
-    #endregion the form behaviour
+    #endregion the form class
 
 
 
