@@ -99,24 +99,37 @@ namespace DataCollectorAutomator
         //private static Queue<Tuple<DateTime, accelerometerData>> accDataAndDTqueue = new Queue<Tuple<DateTime, accelerometerData>>();
         private static ObservableConcurrentQueue<Tuple<DateTime, AccelerometerData>> accDataAndDTObservableConcurrentQueue =
             new ObservableConcurrentQueue<Tuple<DateTime, AccelerometerData>>();
-
         private static AccelerometerData latestAccData = new AccelerometerData();
+
         //private static Queue<GyroData> gyroDataQueue = new Queue<GyroData>();
         //private static Queue<Tuple<DateTime, GyroData>> gyroDataAndDTqueue = new Queue<Tuple<DateTime, GyroData>>();
-        private static ObservableConcurrentQueue<Tuple<DateTime, GyroData>> gyroDataAndDTqueue = new ObservableConcurrentQueue<Tuple<DateTime, GyroData>>();
+        private static ObservableConcurrentQueue<Tuple<DateTime, GyroData>> gyroDataAndDTObservableConcurrentQueue =
+            new ObservableConcurrentQueue<Tuple<DateTime, GyroData>>();
         private static GyroData latestGyroData = new GyroData();
+
+
         //private static MagnetometerData magnData = new MagnetometerData();
-        private static GPSdata gpsData = new GPSdata();
-        private static int pressure = 0;
+
+        private static ObservableConcurrentQueue<Tuple<DateTime, GPSdata>> gpsDataAndDTObservableConcurrentQueue =
+            new ObservableConcurrentQueue<Tuple<DateTime, GPSdata>>();
+        private static GPSdata latestGPSdata = new GPSdata();
+
+        //private static GPSdata gpsData = new GPSdata();
+
+        //private static int pressure = 0;
+        private static ObservableConcurrentQueue<Tuple<DateTime, int>> pressureDataAndDTObservableConcurrentQueue =
+            new ObservableConcurrentQueue<Tuple<DateTime, int>>();
+        private static int latestPressureValue = 0;
 
         private static bool needsToSwitchListeningArduinoOFF = false;
         //private static bool accDatahasBeenChanged = false;
-        private static bool gyroDatahasBeenChanged = false;
+        //private static bool gyroDatahasBeenChanged = false;
         //private static bool magnDatahasBeenChanged = false;
-        private static bool gpsDataHasBeenChanged = false;
-        private static bool pressureHasBeenChanged = false;
+        //private static bool gpsDataHasBeenChanged = false;
+        //private static bool pressureHasBeenChanged = false;
 
-        private static bool itsTimeToGetCamShot = false, getCamShotImmediately = false;
+        private static bool operatorCommandsToGetCamShot = false;
+        //private static bool operatorCommandsToGetCamShotImmediately = false;
         private static WorkersRequestingArduinoDataBroadcastState theWorkerRequestedArduinoDataBroadcastState = WorkersRequestingArduinoDataBroadcastState.dataCollector;
         private static AccelerometerData accCalibrationDataID1;
         private static AccelerometerData accCalibrationDataID2;
@@ -168,6 +181,8 @@ namespace DataCollectorAutomator
         private string accCalibrationDataFilename = "";
 
         private string errorLogFilename = Directory.GetCurrentDirectory() + "\\logs\\DataCollectorAutomator2G-error.log";
+
+        public event EventHandler NeedToShootCameraSnapshots;
 
 
 
@@ -814,16 +829,23 @@ namespace DataCollectorAutomator
         //List<long> accSmoothedDateTimeValuesListID2 = new List<long>();
         private TimeSeries<AccelerometerData> tsCollectedAccSmoothedDataID2 = new TimeSeries<AccelerometerData>();
 
+        Stopwatch stwCamshotTimer = new Stopwatch();
+
         //DenseMatrix dmGyroDataMatrix = null;
         //List<long> gyroDateTimeValuesList = new List<long>();
         private TimeSeries<GyroData> tsCollectedGyroData = new TimeSeries<GyroData>();
+
+        private TimeSeries<GPSdata> tsCollectedGPSdata = new TimeSeries<GPSdata>();
+
+        TimeSeries<int> tsCollectedPressureData = new TimeSeries<int>();
 
         private void dataCollector_DoWork(object sender, DoWorkEventArgs e)
         {
             double angleCamDeclinationThresholdRad = Math.PI * angleCamDeclinationThresholdDeg / 180.0d;
             DateTime datetimeCamshotTimerBegin = DateTime.Now;
-            Stopwatch stwCamshotTimer = new Stopwatch();
+
             stwCamshotTimer.Start();
+
             TimeSpan camshotPeriod = CamShotPeriod;
             TimeSpan labelsUpdatingPeriod = new TimeSpan(0, 0, 1);
             Stopwatch stwCamshotTimersUpdating = new Stopwatch();
@@ -834,13 +856,12 @@ namespace DataCollectorAutomator
             ThreadSafeOperations.ToggleButtonState(btnStartStopCollecting, true, "stop collecting data", true);
             dataCollectingState = DataCollectingStates.working;
             bool camshotTimeToGetIt = false;
-            bool camshotInclinedProperly = false;
             bool camshotHasBeenTaken = false;
 
             
 
-            DenseMatrix dmGPSDataMatrix = null;
-            List<long> gpsDateTimeValuesList = new List<long>();
+            // DenseMatrix dmGPSDataMatrix = null;
+            //List<long> gpsDateTimeValuesList = new List<long>();
             List<int> pressureValuesList = new List<int>();
             List<long> pressureDateTimeValuesList = new List<long>();
 
@@ -945,68 +966,88 @@ namespace DataCollectorAutomator
 
                     #endregion dump the rest smoothed accelerometers data to nc-file
                     
-
-
-
                     #region dump the rest gyro data to nc-file
-                    if (dmGyroDataMatrix != null)
+
+                    if (tsCollectedGyroData.Count > 0)
                     {
-                        Dictionary<string, object> dataToSave = new Dictionary<string, object>();
-                        dataToSave.Add("DateTime", gyroDateTimeValuesList.ToArray());
-                        dataToSave.Add("GyroscopeData", dmGyroDataMatrix);
-
-                        NetCDFoperations.AddVariousDataToFile(dataToSave,
-                            Directory.GetCurrentDirectory() + "\\logs\\GyroscopeDataLog-" +
-                            DateTime.UtcNow.Date.ToString("yyyy-MM-dd") + ".nc");
-
-                        dmGyroDataMatrix = null;
-                        gyroDateTimeValuesList.Clear();
+                        DumpCollectedGyroData();
                     }
+
+                    #region // obsolete
+                    //if (dmGyroDataMatrix != null)
+                    //{
+                    //    Dictionary<string, object> dataToSave = new Dictionary<string, object>();
+                    //    dataToSave.Add("DateTime", gyroDateTimeValuesList.ToArray());
+                    //    dataToSave.Add("GyroscopeData", dmGyroDataMatrix);
+
+                    //    NetCDFoperations.AddVariousDataToFile(dataToSave,
+                    //        Directory.GetCurrentDirectory() + "\\logs\\GyroscopeDataLog-" +
+                    //        DateTime.UtcNow.Date.ToString("yyyy-MM-dd") + ".nc");
+
+                    //    dmGyroDataMatrix = null;
+                    //    gyroDateTimeValuesList.Clear();
+                    //}
+                    #endregion // obsolete
+
                     #endregion dump the rest gyro data to nc-file
-
+                    
                     #region dump the rest GPS data to nc-file
-                    if (dmGPSDataMatrix != null)
+
+                    if (tsCollectedGPSdata.Count > 0)
                     {
-                        Dictionary<string, object> dataToSave = new Dictionary<string, object>();
-                        dataToSave.Add("DateTime", gpsDateTimeValuesList.ToArray());
-                        dataToSave.Add("GPSdata", dmGPSDataMatrix);
-
-                        NetCDFoperations.AddVariousDataToFile(dataToSave,
-                            Directory.GetCurrentDirectory() + "\\logs\\GPSDataLog-" +
-                            DateTime.UtcNow.Date.ToString("yyyy-MM-dd") + ".nc");
-
-                        dmGPSDataMatrix = null;
-                        gpsDateTimeValuesList.Clear();
+                        DumpCollectedGPSdata();
                     }
-                    #endregion dump the rest GPS data to nc-file
 
+                    #region // obsolete
+                    //if (dmGPSDataMatrix != null)
+                    //{
+                    //    Dictionary<string, object> dataToSave = new Dictionary<string, object>();
+                    //    dataToSave.Add("DateTime", gpsDateTimeValuesList.ToArray());
+                    //    dataToSave.Add("GPSdata", dmGPSDataMatrix);
+
+                    //    NetCDFoperations.AddVariousDataToFile(dataToSave,
+                    //        Directory.GetCurrentDirectory() + "\\logs\\GPSDataLog-" +
+                    //        DateTime.UtcNow.Date.ToString("yyyy-MM-dd") + ".nc");
+
+                    //    dmGPSDataMatrix = null;
+                    //    gpsDateTimeValuesList.Clear();
+                    //}
+                    #endregion // obsolete
+                    #endregion dump the rest GPS data to nc-file
+                    
                     #region dump the rest pressure data to nc-file
                     if (pressureValuesList.Count > 0)
                     {
-                        ThreadSafeOperations.SetText(lblPressureValue, pressureValuesList[pressureValuesList.Count - 1].ToString(), false);
+                        DumpCollectedPressureData();
 
-                        Dictionary<string, object> dataToSave = new Dictionary<string, object>();
+                        #region // obsolete
 
-                        long[] datetimeDataArray = pressureDateTimeValuesList.ToArray();
-                        dataToSave.Add("DateTime", datetimeDataArray);
+                        //ThreadSafeOperations.SetText(lblPressureValue, pressureValuesList[pressureValuesList.Count - 1].ToString(), false);
 
-                        int[] pressureArray = pressureValuesList.ToArray();
-                        dataToSave.Add("PressureData", pressureArray);
+                        //Dictionary<string, object> dataToSave = new Dictionary<string, object>();
 
-                        NetCDFoperations.AddVariousDataToFile(dataToSave, Directory.GetCurrentDirectory() +
-                            "\\logs\\PressureDataLog-" + DateTime.UtcNow.Date.ToString("yyyy-MM-dd") + ".nc");
+                        //long[] datetimeDataArray = pressureDateTimeValuesList.ToArray();
+                        //dataToSave.Add("DateTime", datetimeDataArray);
 
-                        pressureValuesList.Clear();
-                        pressureDateTimeValuesList.Clear();
+                        //int[] pressureArray = pressureValuesList.ToArray();
+                        //dataToSave.Add("PressureData", pressureArray);
+
+                        //NetCDFoperations.AddVariousDataToFile(dataToSave, Directory.GetCurrentDirectory() +
+                        //    "\\logs\\PressureDataLog-" + DateTime.UtcNow.Date.ToString("yyyy-MM-dd") + ".nc");
+
+                        //pressureValuesList.Clear();
+                        //pressureDateTimeValuesList.Clear();
+
+                        #endregion // obsolete
                     }
                     #endregion dump the rest pressure data to nc-file
 
                     break;
                 }
+                
 
 
-
-                #region обработка очередей разобранных данных
+                #region // обработка очередей разобранных данных - разнесено по событиям CollectionChanged соответствующих коллекций
 
 
                 #region // accelerometers - вынесено в CollectionChanged событие коллекции accDataAndDTObservableConcurrentQueue
@@ -1370,147 +1411,148 @@ namespace DataCollectorAutomator
                 //    processedUDPPacketsCounter++;
                 //}
                 #endregion accelerometers
-
-
-                #region gyroscope
+                
+                #region // gyroscope - вынесено в CollectionChanged событие коллекции gyroDataAndDTObservableConcurrentQueue
                 //if (gyroDataQueue.Count > 0)
-                if (gyroDataAndDTqueue.Count > 0)
-                {
-                    //gyroDatahasBeenChanged = false;
+                //if (gyroDataAndDTObservableConcurrentQueue.Count > 0)
+                //{
+                //    //gyroDatahasBeenChanged = false;
 
-                    Tuple<DateTime, GyroData> tplGyroDT = gyroDataAndDTqueue.Dequeue();
+                //    Tuple<DateTime, GyroData> tplGyroDT = gyroDataAndDTObservableConcurrentQueue.Dequeue();
 
-                    if (tplGyroDT == null) continue;
+                //    if (tplGyroDT == null) continue;
 
-                    //accelerometerData accData = accDataQueue.Dequeue();
-                    GyroData gyroData = tplGyroDT.Item2;
-                    DateTime dtGyroDataRecieved = tplGyroDT.Item1;
+                //    //accelerometerData accData = accDataQueue.Dequeue();
+                //    GyroData gyroData = tplGyroDT.Item2;
+                //    DateTime dtGyroDataRecieved = tplGyroDT.Item1;
 
-                    //GyroData gyroData = gyroDataQueue.Dequeue();
-                    //if (gyroData == null)
-                    //    continue;
+                //    //GyroData gyroData = gyroDataQueue.Dequeue();
+                //    //if (gyroData == null)
+                //    //    continue;
 
-                    gyroDateTimeValuesList.Add(dtGyroDataRecieved.Ticks);
+                //    gyroDateTimeValuesList.Add(dtGyroDataRecieved.Ticks);
 
-                    if (dmGyroDataMatrix == null)
-                    {
-                        dmGyroDataMatrix = gyroData.ToOneRowDenseMatrix();
-                    }
-                    else
-                    {
-                        DenseVector dvGyroDataVectorToAdd = gyroData.ToDenseVector();
+                //    if (dmGyroDataMatrix == null)
+                //    {
+                //        dmGyroDataMatrix = gyroData.ToOneRowDenseMatrix();
+                //    }
+                //    else
+                //    {
+                //        DenseVector dvGyroDataVectorToAdd = gyroData.ToDenseVector();
 
-                        dmGyroDataMatrix =
-                            (DenseMatrix)dmGyroDataMatrix.InsertRow(dmGyroDataMatrix.RowCount, dvGyroDataVectorToAdd);
-                    }
+                //        dmGyroDataMatrix =
+                //            (DenseMatrix)dmGyroDataMatrix.InsertRow(dmGyroDataMatrix.RowCount, dvGyroDataVectorToAdd);
+                //    }
 
-                    if (gyroDateTimeValuesList.Count >= 500)
-                    {
-                        Dictionary<string, object> dataToSave = new Dictionary<string, object>();
-                        dataToSave.Add("DateTime", gyroDateTimeValuesList.ToArray());
-                        dataToSave.Add("GyroscopeData", dmGyroDataMatrix);
+                //    if (gyroDateTimeValuesList.Count >= 500)
+                //    {
+                //        Dictionary<string, object> dataToSave = new Dictionary<string, object>();
+                //        dataToSave.Add("DateTime", gyroDateTimeValuesList.ToArray());
+                //        dataToSave.Add("GyroscopeData", dmGyroDataMatrix);
 
-                        NetCDFoperations.AddVariousDataToFile(dataToSave,
-                            Directory.GetCurrentDirectory() + "\\logs\\GyroscopeDataLog-" +
-                            DateTime.UtcNow.Date.ToString("yyyy-MM-dd") + ".nc");
-
-
-                        dmGyroDataMatrix = null;
-                        gyroDateTimeValuesList.Clear();
-                    }
-
-                    processedUDPPacketsCounter++;
-                }
-                #endregion gyroscope
+                //        NetCDFoperations.AddVariousDataToFile(dataToSave,
+                //            Directory.GetCurrentDirectory() + "\\logs\\GyroscopeDataLog-" +
+                //            DateTime.UtcNow.Date.ToString("yyyy-MM-dd") + ".nc");
 
 
-                #region GPS from Arduino stream
-                if (gpsDataHasBeenChanged)
-                {
-                    #region //obsolete
-                    //SPA spaCalc = new SPA(gpsData.dateTimeUTC.Year, gpsData.dateTimeUTC.Month, gpsData.dateTimeUTC.Day, gpsData.dateTimeUTC.Hour,
-                    //    gpsData.dateTimeUTC.Minute, gpsData.dateTimeUTC.Second, (float)gpsData.LonDec, (float)gpsData.LatDec,
-                    //    (float)SPAConst.DeltaT(gpsData.dateTimeUTC));
-                    //int res = spaCalc.spa_calculate();
-                    #endregion //obsolete
-                    AzimuthZenithAngle sunPositionSPAext = gpsData.SunZenithAzimuth();
-                    double sunElevCalc = sunPositionSPAext.ElevationAngle;
-                    double sunAzimuth = sunPositionSPAext.Azimuth;
+                //        dmGyroDataMatrix = null;
+                //        gyroDateTimeValuesList.Clear();
+                //    }
+
+                //    processedUDPPacketsCounter++;
+                //}
+                #endregion // gyroscope - вынесено в CollectionChanged событие коллекции gyroDataAndDTObservableConcurrentQueue
+                
+                #region // GPS from Arduino stream - перенесено в CollectionChanged событие коллекции gpsDataAndDTObservableConcurrentQueue
+                //if (gpsDataHasBeenChanged)
+                //{
+                //    #region //obsolete
+                //    //SPA spaCalc = new SPA(gpsData.dateTimeUTC.Year, gpsData.dateTimeUTC.Month, gpsData.dateTimeUTC.Day, gpsData.dateTimeUTC.Hour,
+                //    //    gpsData.dateTimeUTC.Minute, gpsData.dateTimeUTC.Second, (float)gpsData.LonDec, (float)gpsData.LatDec,
+                //    //    (float)SPAConst.DeltaT(gpsData.dateTimeUTC));
+                //    //int res = spaCalc.spa_calculate();
+                //    #endregion //obsolete
+                //    AzimuthZenithAngle sunPositionSPAext = gpsData.SunZenithAzimuth();
+                //    double sunElevCalc = sunPositionSPAext.ElevationAngle;
+                //    double sunAzimuth = sunPositionSPAext.Azimuth;
 
 
-                    ThreadSafeOperations.SetText(lblLatValue, gpsData.lat.ToString("F2") + gpsData.latHemisphere, false);
-                    ThreadSafeOperations.SetText(lblLonValue, gpsData.lon.ToString("F2") + gpsData.lonHemisphere, false);
-                    ThreadSafeOperations.SetText(lblUTCTimeValue, gpsData.dateTimeUTC.ToString("u").Replace(" ", Environment.NewLine).Replace("Z", ""), false);
-                    ThreadSafeOperations.SetText(lblSunElev, sunElevCalc.ToString("F2"), false);
-                    ThreadSafeOperations.SetText(lblSunAzimuth, sunAzimuth.ToString("F2"), false);
+                //    ThreadSafeOperations.SetText(lblLatValue, gpsData.lat.ToString("F2") + gpsData.latHemisphere, false);
+                //    ThreadSafeOperations.SetText(lblLonValue, gpsData.lon.ToString("F2") + gpsData.lonHemisphere, false);
+                //    ThreadSafeOperations.SetText(lblUTCTimeValue, gpsData.dateTimeUTC.ToString("u").Replace(" ", Environment.NewLine).Replace("Z", ""), false);
+                //    ThreadSafeOperations.SetText(lblSunElev, sunElevCalc.ToString("F2"), false);
+                //    ThreadSafeOperations.SetText(lblSunAzimuth, sunAzimuth.ToString("F2"), false);
 
-                    gpsDataHasBeenChanged = false;
+                //    gpsDataHasBeenChanged = false;
 
-                    gpsDateTimeValuesList.Add(DateTime.UtcNow.Ticks);
-                    if (dmGPSDataMatrix == null)
-                    {
-                        dmGPSDataMatrix = gpsData.ToOneRowDenseMatrix();
-                    }
-                    else
-                    {
-                        DenseVector dvGPSDataVectorToAdd = gpsData.ToDenseVector();
+                //    gpsDateTimeValuesList.Add(DateTime.UtcNow.Ticks);
+                //    if (dmGPSDataMatrix == null)
+                //    {
+                //        dmGPSDataMatrix = gpsData.ToOneRowDenseMatrix();
+                //    }
+                //    else
+                //    {
+                //        DenseVector dvGPSDataVectorToAdd = gpsData.ToDenseVector();
 
-                        dmGPSDataMatrix =
-                            (DenseMatrix)dmGPSDataMatrix.InsertRow(dmGPSDataMatrix.RowCount, dvGPSDataVectorToAdd);
-                    }
+                //        dmGPSDataMatrix =
+                //            (DenseMatrix)dmGPSDataMatrix.InsertRow(dmGPSDataMatrix.RowCount, dvGPSDataVectorToAdd);
+                //    }
 
-                    if (gpsDateTimeValuesList.Count >= 50)
-                    {
-                        Dictionary<string, object> dataToSave = new Dictionary<string, object>();
-                        dataToSave.Add("DateTime", gpsDateTimeValuesList.ToArray());
-                        dataToSave.Add("GPSdata", dmGPSDataMatrix);
+                //    if (gpsDateTimeValuesList.Count >= 50)
+                //    {
+                //        Dictionary<string, object> dataToSave = new Dictionary<string, object>();
+                //        dataToSave.Add("DateTime", gpsDateTimeValuesList.ToArray());
+                //        dataToSave.Add("GPSdata", dmGPSDataMatrix);
 
-                        NetCDFoperations.AddVariousDataToFile(dataToSave,
-                            Directory.GetCurrentDirectory() + "\\logs\\GPSDataLog-" +
-                            DateTime.UtcNow.Date.ToString("yyyy-MM-dd") + ".nc");
+                //        NetCDFoperations.AddVariousDataToFile(dataToSave,
+                //            Directory.GetCurrentDirectory() + "\\logs\\GPSDataLog-" +
+                //            DateTime.UtcNow.Date.ToString("yyyy-MM-dd") + ".nc");
 
-                        dmGPSDataMatrix = null;
-                        gpsDateTimeValuesList.Clear();
-                    }
+                //        dmGPSDataMatrix = null;
+                //        gpsDateTimeValuesList.Clear();
+                //    }
 
-                    processedUDPPacketsCounter++;
-                }
-                #endregion GPS from Arduino stream
+                //    processedUDPPacketsCounter++;
+                //}
+                #endregion // GPS from Arduino stream - перенесено в CollectionChanged событие коллекции gpsDataAndDTObservableConcurrentQueue
+                
+                #region // pressure data from Arduino stream - перенесено в CollectionChanged событие коллекции pressureDataAndDTObservableConcurrentQueue
+                //if (pressureHasBeenChanged)
+                //{
+                //    pressureDateTimeValuesList.Add(DateTime.UtcNow.Ticks);
+                //    pressureValuesList.Add(pressure);
 
+                //    if (pressureDateTimeValuesList.Count >= 10)
+                //    {
+                //        ThreadSafeOperations.SetText(lblPressureValue, pressure.ToString(), false);
 
-                #region pressure data from Arduino stream
-                if (pressureHasBeenChanged)
-                {
-                    pressureDateTimeValuesList.Add(DateTime.UtcNow.Ticks);
-                    pressureValuesList.Add(pressure);
+                //        Dictionary<string, object> dataToSave = new Dictionary<string, object>();
 
-                    if (pressureDateTimeValuesList.Count >= 10)
-                    {
-                        ThreadSafeOperations.SetText(lblPressureValue, pressure.ToString(), false);
+                //        long[] datetimeDataArray = pressureDateTimeValuesList.ToArray();
+                //        dataToSave.Add("DateTime", datetimeDataArray);
 
-                        Dictionary<string, object> dataToSave = new Dictionary<string, object>();
+                //        int[] pressureArray = pressureValuesList.ToArray();
+                //        dataToSave.Add("PressureData", pressureArray);
 
-                        long[] datetimeDataArray = pressureDateTimeValuesList.ToArray();
-                        dataToSave.Add("DateTime", datetimeDataArray);
+                //        NetCDFoperations.AddVariousDataToFile(dataToSave, Directory.GetCurrentDirectory() +
+                //            "\\logs\\PressureDataLog-" + DateTime.UtcNow.Date.ToString("yyyy-MM-dd") + ".nc");
 
-                        int[] pressureArray = pressureValuesList.ToArray();
-                        dataToSave.Add("PressureData", pressureArray);
+                //        pressureValuesList.Clear();
+                //        pressureDateTimeValuesList.Clear();
+                //    }
+                //    pressureHasBeenChanged = false;
 
-                        NetCDFoperations.AddVariousDataToFile(dataToSave, Directory.GetCurrentDirectory() +
-                            "\\logs\\PressureDataLog-" + DateTime.UtcNow.Date.ToString("yyyy-MM-dd") + ".nc");
+                //    processedUDPPacketsCounter++;
+                //}
+                #endregion  // pressure data from Arduino stream - перенесено в CollectionChanged событие коллекции pressureDataAndDTObservableConcurrentQueue
 
-                        pressureValuesList.Clear();
-                        pressureDateTimeValuesList.Clear();
-                    }
-                    pressureHasBeenChanged = false;
+                #endregion // обработка очередей разобранных данных - разнесено по событиям CollectionChanged соответствующих коллекций
 
-                    processedUDPPacketsCounter++;
-                }
-                #endregion pressure data from Arduino stream
+                
 
-                #endregion обработка очередей разобранных данных
-
-
+                ///
+                ///todo: перенести в обработку данных по акселлерометру
+                ///  
                 #region if it is time to shoot - then shoot
 
                 
@@ -1520,18 +1562,22 @@ namespace DataCollectorAutomator
                     ThreadSafeOperations.ToggleLabelTextColor(lblNextShotIn, SystemColors.Highlight);
                     stwCamshotTimer.Restart();
                 }
-                if (itsTimeToGetCamShot)
+                if (operatorCommandsToGetCamShot)
                 {
                     camshotTimeToGetIt = true;
                     ThreadSafeOperations.ToggleLabelTextColor(lblNextShotIn, SystemColors.Highlight);
                 }
 
 
-                camshotInclinedProperly = !(accDevAngle > angleCamDeclinationThresholdRad);
+                bool camshotInclinedProperly = !(accDevAngle > angleCamDeclinationThresholdRad);
 
-                if ((camshotInclinedProperly && camshotTimeToGetIt) || getCamShotImmediately)
+                //if ((camshotInclinedProperly && camshotTimeToGetIt) || operatorCommandsToGetCamShotImmediately)
+                if (camshotInclinedProperly && camshotTimeToGetIt)
                 {
-                    catchCameraImages();
+                    EventHandler onNeedToShootCameraSnapshots = this.NeedToShootCameraSnapshots;
+                    if (onNeedToShootCameraSnapshots != null) onNeedToShootCameraSnapshots(null, null);
+
+                    //catchCameraImages();
                     camshotHasBeenTaken = true;
                 }
 
@@ -1546,13 +1592,14 @@ namespace DataCollectorAutomator
                     camshotHasBeenTaken = false;
                     camshotTimeToGetIt = false;
                     ThreadSafeOperations.ToggleLabelTextColor(lblNextShotIn, SystemColors.ControlText);
-                    itsTimeToGetCamShot = false;
-                    getCamShotImmediately = false;
+                    operatorCommandsToGetCamShot = false;
+                    //operatorCommandsToGetCamShotImmediately = false;
 
 
                     // ПОМЕНЯТЬ ТУТ
                     logCurrentSensorsData();
                 }
+
 
                 if (stwCamshotTimersUpdating.Elapsed >= labelsUpdatingPeriod)
                 {
@@ -1565,6 +1612,7 @@ namespace DataCollectorAutomator
             tmrUDPpacketsRecievingSpeedEstimation.Dispose();
             tmrUpdateSensorsDataPresentation.Change(Timeout.Infinite, Timeout.Infinite);
             tmrUpdateSensorsDataPresentation.Dispose();
+            stwCamshotTimer.Stop();
         }
 
 
@@ -1579,6 +1627,436 @@ namespace DataCollectorAutomator
 
 
 
+
+        #region Pressure data processing
+
+
+
+        async void pressureDataAndDTObservableConcurrentQueue_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+        {
+            if (e.Action != NotifyCollectionChangedAction.Add)
+            {
+                return;
+                // чтобы не реагировать на собственные TryDequeue()
+            }
+
+            while (pressureDataAndDTObservableConcurrentQueue.Count > 0)
+            {
+                Tuple<DateTime, int> tplPressureDT;
+                while (!pressureDataAndDTObservableConcurrentQueue.TryDequeue(out tplPressureDT))
+                {
+                    Thread.Sleep(0);
+                    continue;
+                }
+
+                if (tplPressureDT == null) continue;
+
+
+                int pressure = tplPressureDT.Item2;
+                DateTime dtPressureDataRecieved = tplPressureDT.Item1;
+
+                ThreadSafeOperations.SetText(lblPressureValue, dtPressureDataRecieved.ToString(), false);
+
+                while (!Monitor.TryEnter(tsCollectedPressureData))
+                {
+                    Thread.Sleep(0);
+                }
+                try
+                {
+                    tsCollectedPressureData.AddDataRecord(pressure, dtPressureDataRecieved);
+                }
+                finally
+                {
+                    Monitor.Exit(tsCollectedPressureData);
+                }
+
+
+                #region swap pressure data to hdd
+
+                Task tskDumpCollectedPressuredata = null;
+
+                if (tsCollectedPressureData.Count >= 10)
+                {
+                    tskDumpCollectedPressuredata = Task.Factory.StartNew(DumpCollectedPressureData);
+                }
+
+
+                if (tskDumpCollectedPressuredata != null)
+                {
+                    await tskDumpCollectedPressuredata;
+                }
+
+                #endregion swap pressure data to hdd
+
+                Interlocked.Increment(ref processedUDPPacketsCounter);
+            }
+        }
+
+
+
+
+        private void DumpCollectedPressureData()
+        {
+            if (tsCollectedPressureData.Count == 0)
+            {
+                return;
+            }
+
+            Dictionary<string, object> dataToSave = new Dictionary<string, object>();
+
+            #region unload shared collections data to dataToSave
+
+            while (!Monitor.TryEnter(tsCollectedPressureData))
+            {
+                Thread.Sleep(0);
+            }
+
+            try
+            {
+                tsCollectedPressureData.SortByTimeStamps();
+                dataToSave.Add("DateTime", tsCollectedPressureData.TimeStamps.ConvertAll(dt => dt.Ticks).ToArray());
+                int[] pressureArray = tsCollectedPressureData.DataValues.ToArray();
+                dataToSave.Add("PressureData", pressureArray);
+                tsCollectedPressureData.Clear();
+            }
+            catch (Exception ex)
+            {
+                #region report
+#if DEBUG
+                ServiceTools.ExecMethodInSeparateThread(this, () =>
+                {
+                    theLogWindow = ServiceTools.LogAText(theLogWindow,
+                        "exception has been thrown: " + ex.Message + Environment.NewLine +
+                        ServiceTools.CurrentCodeLineDescription());
+                });
+#else
+                ServiceTools.ExecMethodInSeparateThread(this, () =>
+                {
+                    ServiceTools.logToTextFile(errorLogFilename,
+                        "exception has been thrown: " + ex.Message + Environment.NewLine +
+                        ServiceTools.CurrentCodeLineDescription(), true, true);
+                });
+#endif
+                #endregion report
+            }
+            finally
+            {
+                Monitor.Exit(tsCollectedPressureData);
+            }
+
+            #endregion unload shared collections data to dataToSave
+
+
+            NetCDFoperations.AddVariousDataToFile(dataToSave,
+                Directory.GetCurrentDirectory() + "\\logs\\PressureDataLog-" +
+                DateTime.UtcNow.Date.ToString("yyyy-MM-dd") + ".nc");
+        }
+
+
+
+        #endregion Pressure data processing
+
+
+
+
+        #region GPS data processing
+        
+
+        async void gpsDataAndDTObservableConcurrentQueue_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+        {
+            if (e.Action != NotifyCollectionChangedAction.Add)
+            {
+                return;
+                // чтобы не реагировать на собственные TryDequeue()
+            }
+
+            while (gpsDataAndDTObservableConcurrentQueue.Count > 0)
+            {
+                Tuple<DateTime, GPSdata> tplGPSdt;
+                while (!gpsDataAndDTObservableConcurrentQueue.TryDequeue(out tplGPSdt))
+                {
+                    Thread.Sleep(0);
+                    continue;
+                }
+
+                if (tplGPSdt == null) continue;
+
+
+                GPSdata gpsData = tplGPSdt.Item2;
+                DateTime dtGPSdataRecieved = tplGPSdt.Item1;
+
+
+                AzimuthZenithAngle sunPositionSPAext = gpsData.SunZenithAzimuth();
+                double sunElevCalc = sunPositionSPAext.ElevationAngle;
+                double sunAzimuth = sunPositionSPAext.Azimuth;
+
+
+                ThreadSafeOperations.SetText(lblLatValue, gpsData.lat.ToString("F2") + gpsData.latHemisphere, false);
+                ThreadSafeOperations.SetText(lblLonValue, gpsData.lon.ToString("F2") + gpsData.lonHemisphere, false);
+                ThreadSafeOperations.SetText(lblUTCTimeValue, gpsData.dateTimeUTC.ToString("u").Replace(" ", Environment.NewLine).Replace("Z", ""), false);
+                ThreadSafeOperations.SetText(lblSunElev, sunElevCalc.ToString("F2"), false);
+                ThreadSafeOperations.SetText(lblSunAzimuth, sunAzimuth.ToString("F2"), false);
+
+
+                while (!Monitor.TryEnter(tsCollectedGPSdata))
+                {
+                    Thread.Sleep(0);
+                }
+                try
+                {
+                    tsCollectedGPSdata.AddDataRecord(gpsData, dtGPSdataRecieved);
+                }
+                finally
+                {
+                    Monitor.Exit(tsCollectedGPSdata);
+                }
+
+                #region // obsolete
+                //gpsDateTimeValuesList.Add(DateTime.UtcNow.Ticks);
+                //if (dmGPSDataMatrix == null)
+                //{
+                //    dmGPSDataMatrix = gpsData.ToOneRowDenseMatrix();
+                //}
+                //else
+                //{
+                //    DenseVector dvGPSDataVectorToAdd = gpsData.ToDenseVector();
+
+                //    dmGPSDataMatrix =
+                //        (DenseMatrix)dmGPSDataMatrix.InsertRow(dmGPSDataMatrix.RowCount, dvGPSDataVectorToAdd);
+                //}
+
+                //if (gpsDateTimeValuesList.Count >= 50)
+                //{
+                //    Dictionary<string, object> dataToSave = new Dictionary<string, object>();
+                //    dataToSave.Add("DateTime", gpsDateTimeValuesList.ToArray());
+                //    dataToSave.Add("GPSdata", dmGPSDataMatrix);
+
+                //    NetCDFoperations.AddVariousDataToFile(dataToSave,
+                //        Directory.GetCurrentDirectory() + "\\logs\\GPSDataLog-" +
+                //        DateTime.UtcNow.Date.ToString("yyyy-MM-dd") + ".nc");
+
+                //    dmGPSDataMatrix = null;
+                //    gpsDateTimeValuesList.Clear();
+                //}
+                #endregion // obsolete
+
+                #region swap GPS data to hdd
+                
+                Task tskDumpCollectedGPSdata = null;
+
+                if (tsCollectedGPSdata.Count >= 50)
+                {
+                    tskDumpCollectedGPSdata = Task.Factory.StartNew(DumpCollectedGPSdata);
+                }
+
+
+                if (tskDumpCollectedGPSdata != null)
+                {
+                    await tskDumpCollectedGPSdata;
+                }
+
+                #endregion swap GPS data to hdd
+
+                Interlocked.Increment(ref processedUDPPacketsCounter);
+            }
+        }
+
+
+
+
+        private void DumpCollectedGPSdata()
+        {
+            if (tsCollectedGPSdata.Count == 0)
+            {
+                return;
+            }
+
+            Dictionary<string, object> dataToSave = new Dictionary<string, object>();
+
+            #region unload shared collections data to dataToSave
+
+            while (!Monitor.TryEnter(tsCollectedGPSdata))
+            {
+                Thread.Sleep(0);
+            }
+
+            try
+            {
+                tsCollectedGPSdata.SortByTimeStamps();
+                dataToSave.Add("DateTime", tsCollectedGPSdata.TimeStamps.ConvertAll(dt => dt.Ticks).ToArray());
+                DenseMatrix dmGPSdata = GPSdata.ToDenseMatrix(tsCollectedGPSdata.DataValues);
+                dataToSave.Add("GPSdata", dmGPSdata);
+                tsCollectedGPSdata.Clear();
+            }
+            catch (Exception ex)
+            {
+                #region report
+#if DEBUG
+                ServiceTools.ExecMethodInSeparateThread(this, () =>
+                {
+                    theLogWindow = ServiceTools.LogAText(theLogWindow,
+                        "exception has been thrown: " + ex.Message + Environment.NewLine +
+                        ServiceTools.CurrentCodeLineDescription());
+                });
+#else
+                ServiceTools.ExecMethodInSeparateThread(this, () =>
+                {
+                    ServiceTools.logToTextFile(errorLogFilename,
+                        "exception has been thrown: " + ex.Message + Environment.NewLine +
+                        ServiceTools.CurrentCodeLineDescription(), true, true);
+                });
+#endif
+                #endregion report
+            }
+            finally
+            {
+                Monitor.Exit(tsCollectedGPSdata);
+            }
+
+            #endregion unload shared collections data to dataToSave
+
+
+            NetCDFoperations.AddVariousDataToFile(dataToSave,
+                Directory.GetCurrentDirectory() + "\\logs\\GPSDataLog-" +
+                DateTime.UtcNow.Date.ToString("yyyy-MM-dd") + ".nc");
+        }
+
+
+
+        #endregion
+
+
+
+
+
+        #region Gyro data processing
+        //tsCollectedGyroData
+        //gyroDataAndDTqueue
+
+        async void gyroDataAndDTObservableConcurrentQueue_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+        {
+            if (e.Action != NotifyCollectionChangedAction.Add)
+            {
+                return;
+                // чтобы не реагировать на собственные TryDequeue()
+            }
+
+            while (gyroDataAndDTObservableConcurrentQueue.Count > 0)
+            {
+                Tuple<DateTime, GyroData> tplGyroDT;
+                while (!gyroDataAndDTObservableConcurrentQueue.TryDequeue(out tplGyroDT))
+                {
+                    Thread.Sleep(0);
+                    continue;
+                }
+
+                if (tplGyroDT == null) continue;
+                
+                
+                GyroData gyroData = tplGyroDT.Item2;
+                DateTime dtGyroDataRecieved = tplGyroDT.Item1;
+
+
+                while (!Monitor.TryEnter(tsCollectedGyroData))
+                {
+                    Thread.Sleep(0);
+                }
+                try
+                {
+                    tsCollectedGyroData.AddDataRecord(gyroData, dtGyroDataRecieved);
+                }
+                finally
+                {
+                    Monitor.Exit(tsCollectedGyroData);
+                }
+
+
+                #region swap gyro data to hdd
+                
+                //Task tskUpdateAccDataOnForm = Task.Factory.StartNew(UpdateActualAccDataOnForm);
+
+                Task tskDumpCollectedGyroData = null;
+                
+                if (tsCollectedGyroData.Count >= 1000)
+                {
+                    tskDumpCollectedGyroData = Task.Factory.StartNew(DumpCollectedGyroData);
+                }
+
+
+                if (tskDumpCollectedGyroData != null)
+                {
+                    await tskDumpCollectedGyroData;
+                }
+
+                #endregion swap gyro data to hdd
+
+
+                Interlocked.Increment(ref processedUDPPacketsCounter);
+            }
+        }
+
+
+
+        private void DumpCollectedGyroData()
+        {
+            if (tsCollectedGyroData.Count == 0)
+            {
+                return;
+            }
+
+            Dictionary<string, object> dataToSave = new Dictionary<string, object>();
+
+            #region unload shared collections data to dataToSave
+
+            while (!Monitor.TryEnter(tsCollectedGyroData))
+            {
+                Thread.Sleep(0);
+            }
+
+            try
+            {
+                tsCollectedGyroData.SortByTimeStamps();
+                dataToSave.Add("DateTime", tsCollectedGyroData.TimeStamps.ConvertAll(dt => dt.Ticks).ToArray());
+                DenseMatrix dmGyroData = GyroData.ToDenseMatrix(tsCollectedGyroData.DataValues);
+                dataToSave.Add("GyroscopeData", dmGyroData);
+                tsCollectedGyroData.Clear();
+            }
+            catch (Exception ex)
+            {
+                #region report
+#if DEBUG
+                ServiceTools.ExecMethodInSeparateThread(this, () =>
+                {
+                    theLogWindow = ServiceTools.LogAText(theLogWindow,
+                        "exception has been thrown: " + ex.Message + Environment.NewLine +
+                        ServiceTools.CurrentCodeLineDescription());
+                });
+#else
+                ServiceTools.ExecMethodInSeparateThread(this, () =>
+                {
+                    ServiceTools.logToTextFile(errorLogFilename,
+                        "exception has been thrown: " + ex.Message + Environment.NewLine +
+                        ServiceTools.CurrentCodeLineDescription(), true, true);
+                });
+#endif
+                #endregion report
+            }
+            finally
+            {
+                Monitor.Exit(tsCollectedGyroData);
+            }
+
+            #endregion unload shared collections data to dataToSave
+
+
+            NetCDFoperations.AddVariousDataToFile(dataToSave,
+                Directory.GetCurrentDirectory() + "\\logs\\GyroscopeDataLog-" +
+                DateTime.UtcNow.Date.ToString("yyyy-MM-dd") + ".nc");
+
+        }
+
+
+        #endregion Gyro data processing
 
 
 
@@ -2180,11 +2658,11 @@ namespace DataCollectorAutomator
             dataToSave.Add("GyroValueY", latestGyroData.GyroDoubleY);
             dataToSave.Add("GyroValueZ", latestGyroData.GyroDoubleZ);
 
-            dataToSave.Add("GPSdata", gpsData.GPSstring);
-            dataToSave.Add("GPSLat", gpsData.Lat);
-            dataToSave.Add("GPSLon", gpsData.Lon);
-            dataToSave.Add("GPSDateTimeUTC", gpsData.dateTimeUTC.ToString("o"));
-            dataToSave.Add("PressurePa", pressure);
+            dataToSave.Add("GPSdata", latestGPSdata.GPSstring);
+            dataToSave.Add("GPSLat", latestGPSdata.Lat);
+            dataToSave.Add("GPSLon", latestGPSdata.Lon);
+            dataToSave.Add("GPSDateTimeUTC", latestGPSdata.dateTimeUTC.ToString("o"));
+            dataToSave.Add("PressurePa", latestPressureValue);
 
             ServiceTools.WriteDictionaryToXml(dataToSave, filename1, false);
         }
@@ -2621,6 +3099,9 @@ namespace DataCollectorAutomator
                 }
             }
         }
+
+
+
         
 
 
@@ -2647,9 +3128,15 @@ namespace DataCollectorAutomator
                 {
                     case "gps":
                         {
-                            gpsData = new GPSdata(dataValuesString, GPSdatasources.CloudCamArduinoGPS);
-                            gpsData.devID = devID;
-                            gpsDataHasBeenChanged = gpsData.validGPSdata;
+                            GPSdata catchedGPSdata = new GPSdata(dataValuesString, GPSdatasources.CloudCamArduinoGPS);
+                            if (catchedGPSdata.validGPSdata)
+                            {
+                                latestGPSdata = catchedGPSdata;
+                                latestGPSdata.devID = devID;
+                                gpsDataAndDTObservableConcurrentQueue.Enqueue(
+                                    new Tuple<DateTime, GPSdata>(DateTime.UtcNow, latestGPSdata));
+                            }
+                            
                             break;
                         }
                     case "dta":
@@ -2677,7 +3164,7 @@ namespace DataCollectorAutomator
                             latestGyroData = new GyroData(stringGyroValues);
                             latestGyroData.devID = devID;
                             //gyroDataQueue.Enqueue(latestGyroData);
-                            gyroDataAndDTqueue.Enqueue(new Tuple<DateTime, GyroData>(DateTime.UtcNow, latestGyroData));
+                            gyroDataAndDTObservableConcurrentQueue.Enqueue(new Tuple<DateTime, GyroData>(DateTime.UtcNow, latestGyroData));
                             //gyroDatahasBeenChanged = true;
                             break;
                         }
@@ -2814,11 +3301,11 @@ namespace DataCollectorAutomator
 
         private void lblSunElev_Click(object sender, EventArgs e)
         {
-            if (gpsData.validGPSdata)
+            if (latestGPSdata.validGPSdata)
             {
-                SPA spaCalc = new SPA(gpsData.dateTimeUTC.Year, gpsData.dateTimeUTC.Month, gpsData.dateTimeUTC.Day, gpsData.dateTimeUTC.Hour,
-                        gpsData.dateTimeUTC.Minute, gpsData.dateTimeUTC.Second, (float)gpsData.LonDec, (float)gpsData.LatDec,
-                        (float)SPAConst.DeltaT(gpsData.dateTimeUTC));
+                SPA spaCalc = new SPA(latestGPSdata.dateTimeUTC.Year, latestGPSdata.dateTimeUTC.Month, latestGPSdata.dateTimeUTC.Day, latestGPSdata.dateTimeUTC.Hour,
+                        latestGPSdata.dateTimeUTC.Minute, latestGPSdata.dateTimeUTC.Second, (float)latestGPSdata.LonDec, (float)latestGPSdata.LatDec,
+                        (float)SPAConst.DeltaT(latestGPSdata.dateTimeUTC));
                 int res = spaCalc.spa_calculate();
                 AzimuthZenithAngle sunPositionSPAext = new AzimuthZenithAngle(spaCalc.spa.azimuth,
                     spaCalc.spa.zenith);
@@ -2829,7 +3316,7 @@ namespace DataCollectorAutomator
 
 
 
-                theLogWindow = ServiceTools.LogAText(theLogWindow, gpsData.dateTimeUTC.ToString() +
+                theLogWindow = ServiceTools.LogAText(theLogWindow, latestGPSdata.dateTimeUTC.ToString() +
                                                                    Environment.NewLine + "sunrise: " +
                                                                    (new TimeOfDay(spaCalc.spa.sunrise)) +
                                                                    Environment.NewLine + "sunset: " +
@@ -2846,7 +3333,7 @@ namespace DataCollectorAutomator
         }
 
 
-        public void PropertiesFormClosed(object sender, FormClosedEventArgs e)
+        private void PropertiesFormClosed(object sender, FormClosedEventArgs e)
         {
             readDefaultProperties();
         }
@@ -2945,8 +3432,27 @@ namespace DataCollectorAutomator
 
             accDataAndDTObservableConcurrentQueue.CollectionChanged += accDataAndDTObservableConcurrentQueue_CollectionChanged;
 
-            
+            gyroDataAndDTObservableConcurrentQueue.CollectionChanged += gyroDataAndDTObservableConcurrentQueue_CollectionChanged;
+
+            gpsDataAndDTObservableConcurrentQueue.CollectionChanged += gpsDataAndDTObservableConcurrentQueue_CollectionChanged;
+
+            pressureDataAndDTObservableConcurrentQueue.CollectionChanged += pressureDataAndDTObservableConcurrentQueue_CollectionChanged;
+
+            this.NeedToShootCameraSnapshots += DataCollectorMainForm_NeedToShootCameraSnapshots;
         }
+
+
+
+        void DataCollectorMainForm_NeedToShootCameraSnapshots(object sender, EventArgs e)
+        {
+            ServiceTools.ExecMethodInSeparateThread(this, catchCameraImages);
+        }
+
+        
+
+        
+
+        
 
 
 
@@ -2979,7 +3485,7 @@ namespace DataCollectorAutomator
 
         private void btnCollectMostClose_Click(object sender, EventArgs e)
         {
-            itsTimeToGetCamShot = true;
+            operatorCommandsToGetCamShot = true;
         }
 
 
@@ -3028,14 +3534,17 @@ namespace DataCollectorAutomator
 
         private void btnCollectImmediately_Click(object sender, EventArgs e)
         {
-            if (dataCollector.IsBusy)
-            {
-                getCamShotImmediately = true;
-            }
-            else
-            {
-                catchCameraImages();
-            }
+            //if (dataCollector.IsBusy)
+            //{
+            //    operatorCommandsToGetCamShotImmediately = true;
+            //}
+            //else
+            //{
+            //    catchCameraImages();
+            //}
+
+            EventHandler onNeedToShootCameraSnapshots = this.NeedToShootCameraSnapshots;
+            if (onNeedToShootCameraSnapshots != null) onNeedToShootCameraSnapshots(null, null);
 
         }
 

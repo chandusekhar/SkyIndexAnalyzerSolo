@@ -782,6 +782,17 @@ namespace SkyImagesAnalyzerLibraries
 
 
 
+
+        public static DenseMatrix ToDenseMatrix(IEnumerable<GyroData> lGyroData)
+        {
+            IEnumerable<DenseVector> lDVdata =
+                new List<GyroData>(lGyroData).ConvertAll(gyroDat => gyroDat.ToDenseVector());
+            DenseMatrix dmRetMatr = DenseMatrix.OfRows(lDVdata.Count(), lDVdata.ElementAt(0).Count, lDVdata);
+            return dmRetMatr;
+        }
+
+
+
         public GyroData Copy()
         {
             GyroData newInstance = new GyroData(gyroDoubleX, gyroDoubleY, gyroDoubleZ);
@@ -1505,6 +1516,30 @@ namespace SkyImagesAnalyzerLibraries
 
             return dvRetVect;
         }
+
+
+
+
+        public DenseVector ToDenseVectorIncludingGPSdatetimeUTC()
+        {
+            DenseVector dvRetVect = null;
+
+            if (dataSource == GPSdatasources.CloudCamArduinoGPS)
+            {
+                double[] arr = new double[] { Lat, Lon };
+                dvRetVect = DenseVector.OfEnumerable(arr);
+            }
+            else if (dataSource == GPSdatasources.IOFFEvesselDataServer)
+            {
+                double[] arr = new double[] { Lat, Lon, IOFFEdataHeadingTrue, IOFFEdataHeadingGyro, IOFFEdataSpeedKnots, IOFFEdataDepth };
+                dvRetVect = DenseVector.OfEnumerable(arr);
+            }
+
+            dvRetVect = DenseVector.OfEnumerable(dvRetVect.Concat(new double[] { devID, dateTimeUTC.Ticks }));
+
+            return dvRetVect;
+        }
+
 
 
 
