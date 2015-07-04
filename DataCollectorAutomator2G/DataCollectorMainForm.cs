@@ -180,6 +180,8 @@ namespace DataCollectorAutomator
         private Dictionary<string, object> accCalibrationDataDict = null;
         private string accCalibrationDataFilename = "";
 
+        private double angleCamDeclinationThresholdRad = Math.PI * 3.0d / 180.0d;
+
         private string errorLogFilename = Directory.GetCurrentDirectory() + "\\logs\\DataCollectorAutomator2G-error.log";
 
         public event EventHandler NeedToShootCameraSnapshots;
@@ -841,7 +843,6 @@ namespace DataCollectorAutomator
 
         private void dataCollector_DoWork(object sender, DoWorkEventArgs e)
         {
-            double angleCamDeclinationThresholdRad = Math.PI * angleCamDeclinationThresholdDeg / 180.0d;
             DateTime datetimeCamshotTimerBegin = DateTime.Now;
 
             stwCamshotTimer.Start();
@@ -862,8 +863,8 @@ namespace DataCollectorAutomator
 
             // DenseMatrix dmGPSDataMatrix = null;
             //List<long> gpsDateTimeValuesList = new List<long>();
-            List<int> pressureValuesList = new List<int>();
-            List<long> pressureDateTimeValuesList = new List<long>();
+            //List<int> pressureValuesList = new List<int>();
+            //List<long> pressureDateTimeValuesList = new List<long>();
 
             Stopwatch stwToEstimateUDPpacketsRecieving = new Stopwatch();
             stwToEstimateUDPpacketsRecieving.Start();
@@ -2633,6 +2634,8 @@ namespace DataCollectorAutomator
 
 
 
+
+
         private void logCurrentSensorsData()
         {
             String filename1 = Directory.GetCurrentDirectory() + "\\results\\data-" + DateTime.UtcNow.ToString("o").Replace(":", "-") + ".xml";
@@ -3176,18 +3179,19 @@ namespace DataCollectorAutomator
 
                             if (stringValues.Count() > 1)
                             {
-                                pressureHasBeenChanged = false;
+                                //pressureHasBeenChanged = false;
                                 break;
                             }
 
                             try
                             {
-                                pressure = Convert.ToInt32(stringValues[0]);
-                                pressureHasBeenChanged = true;
+                                int pressure = Convert.ToInt32(stringValues[0]);
+                                pressureDataAndDTObservableConcurrentQueue.Enqueue(new Tuple<DateTime, int>(DateTime.UtcNow, pressure));
+                                //pressureHasBeenChanged = true;
                             }
                             catch (Exception)
                             {
-                                pressureHasBeenChanged = false;
+                                //pressureHasBeenChanged = false;
                                 break;
                             }
                             break;
@@ -3419,6 +3423,8 @@ namespace DataCollectorAutomator
             ThreadSafeOperations.SetText(lblAccelCalibrationXID2, Math.Round(accCalibrationDataID2.AccDoubleX, 2).ToString(), false);
             ThreadSafeOperations.SetText(lblAccelCalibrationYID2, Math.Round(accCalibrationDataID2.AccDoubleY, 2).ToString(), false);
             ThreadSafeOperations.SetText(lblAccelCalibrationZID2, Math.Round(accCalibrationDataID2.AccDoubleZ, 2).ToString(), false);
+
+            angleCamDeclinationThresholdRad = Math.PI * angleCamDeclinationThresholdDeg / 180.0d;
         }
 
 
