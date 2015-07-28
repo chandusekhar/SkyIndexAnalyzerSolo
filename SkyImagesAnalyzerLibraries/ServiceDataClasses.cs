@@ -2150,54 +2150,6 @@ namespace SkyImagesAnalyzerLibraries
 
     public class ObservableQueue<T> : Queue<T>, INotifyCollectionChanged, INotifyPropertyChanged
     {
-        #region // obsolete
-        //private List<IObserver<T>> observersList = new List<IObserver<T>>();
-
-        //public IDisposable Subscribe(IObserver<T> observer)
-        //{
-        //    if (!observersList.Contains(observer))
-        //    {
-        //        observersList.Add(observer);
-        //    }
-        //    return new Unsubscriber(observersList, observer);
-        //}
-
-
-
-
-        //public void TrackLocation(Nullable<T> loc)
-        //{
-        //    foreach (var observer in observers)
-        //    {
-        //        if (!loc.HasValue)
-        //            observer.OnError(new LocationUnknownException());
-        //        else
-        //            observer.OnNext(loc.Value);
-        //    }
-        //}
-
-
-
-
-        //private class Unsubscriber : IDisposable
-        //{
-        //    private List<IObserver<T>> _observers;
-        //    private IObserver<T> _observer;
-
-        //    public Unsubscriber(List<IObserver<T>> observers, IObserver<T> observer)
-        //    {
-        //        this._observers = observers;
-        //        this._observer = observer;
-        //    }
-
-        //    public void Dispose()
-        //    {
-        //        if (_observer != null && _observers.Contains(_observer))
-        //            _observers.Remove(_observer);
-        //    }
-        //}
-        #endregion // obsolete
-
         public ObservableQueue()
         {
         }
@@ -2279,55 +2231,6 @@ namespace SkyImagesAnalyzerLibraries
 
     public class ObservableConcurrentQueue<T> : ConcurrentQueue<T>, INotifyCollectionChanged, INotifyPropertyChanged
     {
-        #region // obsolete
-        //private List<IObserver<T>> observersList = new List<IObserver<T>>();
-
-        //public IDisposable Subscribe(IObserver<T> observer)
-        //{
-        //    if (!observersList.Contains(observer))
-        //    {
-        //        observersList.Add(observer);
-        //    }
-        //    return new Unsubscriber(observersList, observer);
-        //}
-
-
-
-
-        //public void TrackLocation(Nullable<T> loc)
-        //{
-        //    foreach (var observer in observers)
-        //    {
-        //        if (!loc.HasValue)
-        //            observer.OnError(new LocationUnknownException());
-        //        else
-        //            observer.OnNext(loc.Value);
-        //    }
-        //}
-
-
-
-
-        //private class Unsubscriber : IDisposable
-        //{
-        //    private List<IObserver<T>> _observers;
-        //    private IObserver<T> _observer;
-
-        //    public Unsubscriber(List<IObserver<T>> observers, IObserver<T> observer)
-        //    {
-        //        this._observers = observers;
-        //        this._observer = observer;
-        //    }
-
-        //    public void Dispose()
-        //    {
-        //        if (_observer != null && _observers.Contains(_observer))
-        //            _observers.Remove(_observer);
-        //    }
-        //}
-        #endregion // obsolete
-
-
         public ObservableConcurrentQueue()
         {
         }
