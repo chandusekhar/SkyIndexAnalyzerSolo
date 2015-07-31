@@ -52,7 +52,7 @@ namespace SkyImagesAnalyzer
         {
             return (pt.Y > pt.X) ? (false) : (true);
         });
-        public List<Contour<Point>> foundClassesContours = new List<Contour<Point>>();
+        public List<VectorOfPoint> foundClassesContours = new List<VectorOfPoint>();
 
 
 
@@ -188,7 +188,7 @@ namespace SkyImagesAnalyzer
                 //else return 1.0d;
             });
             Image<Gray, Byte> imgMask = ImageProcessing.grayscaleImageFromDenseMatrixWithFixedValuesBounds(dmMask, 0.0d, 1.0d);
-            imgMask = imgMask.Flip(FLIP.VERTICAL);
+            imgMask = imgMask.Flip(FlipType.Vertical);
 
 
 
@@ -561,7 +561,7 @@ namespace SkyImagesAnalyzer
             RectangleF realDataRect = new RectangleF((float) minXval, (float) minYval, (float) (maxXval - minXval),
                 (float) (maxYval - minYval));
 
-            foreach (Contour<Point> foundClassContour in foundClassesContours)
+            foreach (VectorOfPoint foundClassContour in foundClassesContours)
             {
 
                 ClusteringData currClusteringData = new ClusteringData(foundClassContour, gridRect, realDataRect);
@@ -588,7 +588,7 @@ namespace SkyImagesAnalyzer
         public DenseMatrix dmXvalues = null;
         public DenseMatrix dmYvalues = null;
         public double slicingThresholdingValue = 0.0d;
-        public List<Contour<System.Drawing.Point>> edgeContoursList = new List<Contour<System.Drawing.Point>>();
+        public List<VectorOfPoint> edgeContoursList = new List<VectorOfPoint>();
         //public List<DenseMatrix> objectsMasksList = new List<DenseMatrix>();
         public Image<Bgr, byte> previewImage = null;
 
@@ -611,23 +611,24 @@ namespace SkyImagesAnalyzer
             dmDataBinary.MapInplace(dVal => (dVal >= slicingThresholdingValue) ? (1.0d) : (0.0d));
             Image<Gray, Byte> imgDataBinary = ImageProcessing.grayscaleImageFromDenseMatrixWithFixedValuesBounds(dmDataBinary, 0.0d, 1.0d);
             previewImage = imgDataBinary.CopyBlank().Convert<Bgr, Byte>();
-            Contour<System.Drawing.Point> contoursDetected =
-                imgDataBinary.FindContours(Emgu.CV.CvEnum.CHAIN_APPROX_METHOD.CV_CHAIN_APPROX_SIMPLE,
-                    Emgu.CV.CvEnum.RETR_TYPE.CV_RETR_LIST);
-            edgeContoursList = new List<Contour<System.Drawing.Point>>();
-
+            VectorOfVectorOfPoint contoursDetected = new VectorOfVectorOfPoint();
+            CvInvoke.FindContours(imgDataBinary, contoursDetected, null, RetrType.List,
+                ChainApproxMethod.ChainApproxSimple);
+                //imgDataBinary.FindContours(Emgu.CV.CvEnum.CHAIN_APPROX_METHOD.CV_CHAIN_APPROX_SIMPLE,
+                //    Emgu.CV.CvEnum.RETR_TYPE.CV_RETR_LIST);
+            edgeContoursList = new List<VectorOfPoint>();
+            int count = contoursDetected.Size;
             var colorGen = new RandomPastelColorGenerator();
-            while (true)
+
+            for (int i = 0; i < count; i++)
             {
                 Color currentColor = colorGen.GetNext();
                 var currentColorBgr = new Bgr(currentColor);
-                Contour<System.Drawing.Point> currContour = contoursDetected;
-                edgeContoursList.Add(currContour);
-                previewImage.Draw(currContour, currentColorBgr, -1);
-
-                contoursDetected = contoursDetected.HNext;
-                if (contoursDetected == null)
-                    break;
+                using (VectorOfPoint currContour = contoursDetected[i])
+                {
+                    edgeContoursList.Add(currContour);
+                    previewImage.Draw(currContour, 0, currentColorBgr, -1);
+                }
             }
         }
 
@@ -635,7 +636,7 @@ namespace SkyImagesAnalyzer
 
 
 
-        public Contour<Point> FindContourContainingSample(Contour<Point> sampleContour)
+        public VectorOfPoint FindContourContainingSample(VectorOfPoint sampleContour)
         {
             return edgeContoursList.FirstOrDefault(contour => contour.ContainsContourInside(sampleContour));
         }
@@ -675,14 +676,14 @@ namespace SkyImagesAnalyzer
 
 
 
-        public ClusteringData(Contour<Point> foundClusterContour, Rectangle gridSpaceRect, RectangleF realSpaceRect)
+        public ClusteringData(VectorOfPoint foundClusterContour, Rectangle gridSpaceRect, RectangleF realSpaceRect)
         {
             rctRealOperationalArea = realSpaceRect;
             rctOperationalAreaOnGrid = gridSpaceRect;
             ptdClusterMassCenter = foundClusterContour.MassCenter();
 
             Image<Gray, byte> tmpImg = new Image<Gray, byte>(gridSpaceRect.Width, gridSpaceRect.Height);
-            tmpImg.Draw(foundClusterContour, white, -1);
+            tmpImg.Draw(foundClusterContour, 0, white, -1);
 
             lOverallPoints = new List<Point>();
 

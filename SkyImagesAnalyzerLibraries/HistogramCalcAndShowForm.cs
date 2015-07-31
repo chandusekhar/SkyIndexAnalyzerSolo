@@ -43,7 +43,7 @@ namespace SkyImagesAnalyzerLibraries
         Bgr colorMagenta = new Bgr(Color.Magenta);
         Image<Bgr, Byte> theImage = null;
 
-        private MCvFont theFont = new MCvFont(FONT.CV_FONT_HERSHEY_PLAIN, 1.0d, 1.0d);
+        //private MCvFont theFont = new MCvFont(FONT.CV_FONT_HERSHEY_PLAIN, 1.0d, 1.0d);
 
         public Dictionary<string, object> defaultProperties = null;
 
@@ -161,7 +161,8 @@ namespace SkyImagesAnalyzerLibraries
                 Bgr markerColor = colorBlack;
                 theImage.Draw(theLine, markerColor, 2);
                 String message = Math.Round(currentMarkerValue, 2).ToString();
-                theImage.Draw(message, ref theFont, new Point(2, yPosition), markerColor);
+                //theImage.Draw(message, ref theFont, new Point(2, yPosition), markerColor);
+                theImage.Draw(message, new Point(2, yPosition), FontFace.HersheyPlain, 1.0d, markerColor);
                 currentMarkerValue += rulerValueGap;
                 nextYPositionDouble = (1.0d - ((currentMarkerValue) / overallProbMax)) * (double)(pictureHeight - 2 * serviceSpaceGap) + serviceSpaceGap;
             }

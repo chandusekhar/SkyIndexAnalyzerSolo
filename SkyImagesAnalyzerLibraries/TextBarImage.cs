@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Drawing;
+using System.Runtime.InteropServices;
 using Emgu.CV;
 using Emgu.CV.CvEnum;
 using Emgu.CV.Structure;
@@ -13,10 +14,10 @@ namespace SkyImagesAnalyzerLibraries
     {
         private static Bgr colorGreen = new Bgr(0, 255, 0);
         public string strText = "";
-        public MCvFont fnTextFont = new MCvFont(FONT.CV_FONT_HERSHEY_PLAIN, 2.0d, 2.0d)
-        {
-            thickness = 2,
-        };
+        //public MCvFont fnTextFont = new MCvFont(FONT.CV_FONT_HERSHEY_PLAIN, 2.0d, 2.0d)
+        //{
+        //    thickness = 2,
+        //};
         public Point ptTextBaselineStart;
         private Point ptSurroundingBarStart;
         public Rectangle rectSurroundingBar;
@@ -26,6 +27,43 @@ namespace SkyImagesAnalyzerLibraries
         private Image<Bgr, byte> originalImage;
 
 
+        public enum FontFace
+        {
+            /// <summary>
+            /// Hershey simplex
+            /// </summary>
+            HersheySimplex = 0,
+            /// <summary>
+            /// Hershey plain
+            /// </summary>
+            HersheyPlain = 1,
+            /// <summary>
+            /// Hershey duplex 
+            /// </summary>
+            HersheyDuplex = 2,
+            /// <summary>
+            /// Hershey complex
+            /// </summary>
+            HersheyComplex = 3,
+            /// <summary>
+            /// Hershey triplex
+            /// </summary>
+            HersheyTriplex = 4,
+            /// <summary>
+            /// Hershey complex small
+            /// </summary>
+            HersheyComplexSmall = 5,
+            /// <summary>
+            /// Hershey script simplex
+            /// </summary>
+            HersheyScriptSimplex = 6,
+            /// <summary>
+            /// Hershey script complex
+            /// </summary>
+            HersheyScriptComplex = 7
+        }
+
+        
 
 
         public TextBarImage(string text, Image<Bgr, byte> origImage)

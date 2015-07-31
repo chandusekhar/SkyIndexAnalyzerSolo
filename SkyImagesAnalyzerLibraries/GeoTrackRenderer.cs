@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using Emgu.CV;
 using Emgu.CV.Structure;
+using Emgu.CV.Util;
 using MathNet.Numerics.LinearAlgebra.Double;
 
 namespace SkyImagesAnalyzerLibraries
@@ -63,8 +64,8 @@ namespace SkyImagesAnalyzerLibraries
 
         private List<Tuple<int, string>> shorelineFileNames = new List<Tuple<int, string>>();
         private int currentShorelineDetailsLevel = 0;
-        private List<Contour<PointD>> lShorelinesGPS = new List<Contour<PointD>>();
-        private List<Contour<Point>> lShorelinesAtImage = new List<Contour<Point>>();
+        //private List<Contour<PointD>> lShorelinesGPS = new List<Contour<PointD>>();
+        private List<VectorOfPoint> lShorelinesAtImage = new List<VectorOfPoint>();
         private Image<Bgr, byte> imgShorelinesBackground = null;
 
 
@@ -203,7 +204,8 @@ namespace SkyImagesAnalyzerLibraries
 
             lShorelinesAtImage = lContoursStringContents.ConvertAll(lContourDataStr =>
             {
-                Contour<Point> currContour = new Contour<Point>(new MemStorage());
+                VectorOfPoint currContour = new VectorOfPoint();
+                //Contour<Point> currContour = new Contour<Point>(new MemStorage());
                 List<Point> pointsToPush = lContourDataStr.ConvertAll<Point>(strPointCoords =>
                 {
                     List<string> lStrCoordsValues =
@@ -229,26 +231,26 @@ namespace SkyImagesAnalyzerLibraries
 
                 List<Point> pointsToPushShifted = pointsToPush.ConvertAll(pt => new Point(pt.X - imageLimitsInt.Left, pt.Y - imageLimitsInt.Top));
 
-                currContour.PushMulti(pointsToPushShifted.ToArray(), Emgu.CV.CvEnum.BACK_OR_FRONT.BACK);
+                currContour.Push(pointsToPushShifted.ToArray());
                 
                 return currContour;
             });
 
-            lShorelinesAtImage.RemoveAll(cont => cont.Area < 1.0d);
+            lShorelinesAtImage.RemoveAll(cont => CvInvoke.ContourArea(cont, false) < 1.0d);
 
 
             Size imgToPlotSize = imageLimitsInt.Size; //new Size(Convert.ToInt32(360*scaleFactor * 2), Convert.ToInt32(180*scaleFactor*2));
 
             imgShorelinesBackground = new Image<Bgr, byte>(imgToPlotSize.Width, imgToPlotSize.Height, colorOcean);
 
-            foreach (Contour<Point> contour in lShorelinesAtImage)
+            foreach (VectorOfPoint contour in lShorelinesAtImage)
             {
-                if (!contour.Any())
+                if (contour.Size == 0)
                 {
                     continue;
                 }
-                imgShorelinesBackground.Draw(contour, colorBlack, (currentShorelineDetailsLevel+1)*2);
-                imgShorelinesBackground.Draw(contour, new Bgr(200, 200, 200), -1);
+                imgShorelinesBackground.Draw(contour, 0, colorBlack, (currentShorelineDetailsLevel+1)*2);
+                imgShorelinesBackground.Draw(contour, 0, new Bgr(200, 200, 200), -1);
             }
 
             

@@ -37,7 +37,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Emgu.CV">
-      <HintPath>..\..\components\EmguCV-2.4.10-compiled\bin\debug\x64\Emgu.CV.dll</HintPath>
+      <HintPath>..\..\components\EmguCV-3.0.0.2157\bin\Emgu.CV.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="System" />

@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using Emgu.CV;
 using Emgu.CV.Structure;
+using Emgu.CV.Util;
 using MathNet.Numerics.LinearAlgebra.Double;
 
 
@@ -371,38 +372,58 @@ namespace SkyImagesAnalyzerLibraries
 
 
 
+        public static bool InContour(this VectorOfPoint c1, PointF pt)
+        {
+            Rectangle c1Rect = CvInvoke.BoundingRectangle(c1);
+
+            int width = Math.Max(c1Rect.Right, Convert.ToInt32(pt.X)+1);
+            int height = Math.Max(c1Rect.Bottom, Convert.ToInt32(pt.Y)+1);
+
+            Image<Gray, byte> img = new Image<Gray, byte>(width, height);
+            Gray white = new Gray(255);
+            img.Draw(c1, 0, white, -1);
+            return img[0, 0].Intensity > 0;
+        }
 
 
-        public static bool ContainsContourInside(this Contour<Point> testingContour, Contour<Point> sampleContour)
+
+        //public static bool ContainsContourInside(this Contour<Point> testingContour, Contour<Point> sampleContour)
+        //{
+        //    List<Point> lpointsOfSampleContour = new List<Point>(sampleContour.ToArray());
+        //    return lpointsOfSampleContour.TrueForAll(pt => (testingContour.InContour(new PointF(pt.X, pt.Y)) >= 0.0d));
+        //}
+
+        public static bool ContainsContourInside(this VectorOfPoint testingContour, VectorOfPoint sampleContour)
         {
             List<Point> lpointsOfSampleContour = new List<Point>(sampleContour.ToArray());
-            return lpointsOfSampleContour.TrueForAll(pt => (testingContour.InContour(new PointF(pt.X, pt.Y)) >= 0.0d));
-
-            //Contour<Point> intersectionContour = testingContour.Intersection(sampleContour);
-            //if (intersectionContour == null) return false;
-            //if (intersectionContour.Area < sampleContour.Area) return false;
-            //return true;
+            return lpointsOfSampleContour.TrueForAll(pt => (testingContour.InContour(new PointF(pt.X, pt.Y))));
         }
 
 
 
 
-        public static Contour<Point> Intersection(this Contour<Point> c1, Contour<Point> c2)
+        public static VectorOfPoint Intersection(this VectorOfPoint c1, VectorOfPoint c2)
         {
-            Rectangle c1Rect = c1.BoundingRectangle;
-            Rectangle c2Rect = c2.BoundingRectangle;
+            Rectangle c1Rect = CvInvoke.BoundingRectangle(c1);
+            Rectangle c2Rect = CvInvoke.BoundingRectangle(c2);
             int right = Math.Max(c1Rect.Right, c2Rect.Right);
             int bttm = Math.Max(c1Rect.Bottom, c2Rect.Bottom);
             Image<Gray, byte> img1 = new Image<Gray, byte>(new Size(right, bttm));
-            img1.Draw(c1, white, -1);
+            img1.Draw(c1, 0, white, -1);
             Image<Gray, byte> img2 = new Image<Gray, byte>(new Size(right, bttm));
-            img2.Draw(c2, white, -1);
+            img2.Draw(c2, 0, white, -1);
             img1 = img1.And(img2);
             //img1 = img1.ThresholdBinary(new Gray(150), white);
 
-
-            Contour<Point> contoursDetected = img1.FindContours(Emgu.CV.CvEnum.CHAIN_APPROX_METHOD.CV_CHAIN_APPROX_SIMPLE, Emgu.CV.CvEnum.RETR_TYPE.CV_RETR_LIST);
-            return contoursDetected;
+            VectorOfVectorOfPoint contoursDetected = new VectorOfVectorOfPoint();
+            CvInvoke.FindContours(img1, contoursDetected, null, Emgu.CV.CvEnum.RetrType.List,
+                Emgu.CV.CvEnum.ChainApproxMethod.ChainApproxSimple);
+            //Contour<Point> contoursDetected = img1.FindContours(Emgu.CV.CvEnum.CHAIN_APPROX_METHOD.CV_CHAIN_APPROX_SIMPLE, Emgu.CV.CvEnum.RETR_TYPE.CV_RETR_LIST);
+            if (contoursDetected.Size > 0)
+            {
+                return contoursDetected[0];
+            }
+            else return null;
         }
 
 
@@ -431,14 +452,15 @@ namespace SkyImagesAnalyzerLibraries
 
 
 
-        public static PointD MassCenter(this Contour<Point> theContour)
+        public static PointD MassCenter(this VectorOfPoint theContour)
         {
-            Image<Gray, byte> tmpImg = new Image<Gray, byte>(theContour.BoundingRectangle.Right,
-                theContour.BoundingRectangle.Bottom);
-            tmpImg.Draw(theContour, white, 0);
+            Rectangle rectContourBounding = CvInvoke.BoundingRectangle(theContour);
+            Image<Gray, byte> tmpImg = new Image<Gray, byte>(rectContourBounding.Right,
+                rectContourBounding.Bottom);
+            tmpImg.Draw(theContour, 0, white, -1);
             MCvMoments moments = tmpImg.GetMoments(true);
-            double cx = moments.m10 / moments.m00;
-            double cy = moments.m01 / moments.m00;
+            double cx = moments.M10 / moments.M00;
+            double cy = moments.M01 / moments.M00;
             return new PointD(cx, cy);
         }
 

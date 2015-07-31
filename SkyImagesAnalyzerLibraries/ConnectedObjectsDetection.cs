@@ -6,7 +6,7 @@ using System.Windows.Forms;
 using MathNet.Numerics.LinearAlgebra.Double;
 using Emgu.CV;
 using Emgu.CV.Structure;
-
+using Emgu.CV.Util;
 
 
 namespace SkyImagesAnalyzerLibraries
@@ -18,7 +18,7 @@ namespace SkyImagesAnalyzerLibraries
         private int dimX = 0, dimY = 0;
         private TextBox tbLog;
         //private double skyindexSeparationValue = 0.0d;
-        public List<Contour<Point>> contoursArray;
+        public List<VectorOfPoint> contoursArray;
         private Dictionary<string, object> defaultProperties = null;
 
 
@@ -49,24 +49,25 @@ namespace SkyImagesAnalyzerLibraries
             imgSkyIndexDataBinary = imgSkyIndexDataBinary.Mul(classificator.maskImage);
             Image<Bgr, Byte> previewImage = imgSkyIndexDataBinary.CopyBlank().Convert<Bgr, Byte>();
 
-            
-            Contour<Point> contoursDetected = imgSkyIndexDataBinary.FindContours(Emgu.CV.CvEnum.CHAIN_APPROX_METHOD.CV_CHAIN_APPROX_SIMPLE, Emgu.CV.CvEnum.RETR_TYPE.CV_RETR_LIST);
-            contoursArray = new List<Contour<Point>>();
 
+            // Contour<Point> contoursDetected = imgSkyIndexDataBinary.FindContours(Emgu.CV.CvEnum.CHAIN_APPROX_METHOD.CV_CHAIN_APPROX_SIMPLE, Emgu.CV.CvEnum.RETR_TYPE.CV_RETR_LIST);
+            VectorOfVectorOfPoint contoursDetected = new VectorOfVectorOfPoint();
+            CvInvoke.FindContours(imgSkyIndexDataBinary, contoursDetected, null, Emgu.CV.CvEnum.RetrType.List,
+                Emgu.CV.CvEnum.ChainApproxMethod.ChainApproxSimple);
+            contoursArray = new List<VectorOfPoint>();
+            int count = contoursDetected.Size;
             var colorGen = new RandomPastelColorGenerator();
-            while (true)
+            for (int i = 0; i < count; i++)
             {
                 Color currentColor = colorGen.GetNext();
                 var currentColorBgr = new Bgr(currentColor.B, currentColor.G, currentColor.R);
-                Contour<Point> currContour = contoursDetected;
-                contoursArray.Add(currContour);
-                previewImage.Draw(currContour, currentColorBgr, -1);
-
-                contoursDetected = contoursDetected.HNext;
-                if (contoursDetected == null)
-                    break;
+                using (VectorOfPoint currContour = contoursDetected[i])
+                {
+                    contoursArray.Add(currContour);
+                    previewImage.Draw(currContour, 0, currentColorBgr, -1); //.Draw(currContour, currentColorBgr, -1);
+                }
             }
-
+            
             ThreadSafeOperations.SetTextTB(tbLog, "Количество выделенных объектов: " + contoursArray.Count + Environment.NewLine, true);
 
 
