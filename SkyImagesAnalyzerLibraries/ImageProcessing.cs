@@ -210,28 +210,58 @@ namespace SkyImagesAnalyzerLibraries
             Image<Gray, Byte> emguImage = img2process.Copy().Convert<Gray, Byte>();
             Image<Bgr, Byte> contourImage = emguImage.CopyBlank().Convert<Bgr, Byte>();
             Image<Gray, Byte> BinaryEmguImage = emguImage.ThresholdBinary(new Gray(30), new Gray(255));
-            Contour<Point> imageContours = BinaryEmguImage.FindContours(CHAIN_APPROX_METHOD.CV_CHAIN_APPROX_SIMPLE, RETR_TYPE.CV_RETR_EXTERNAL);
+
+            VectorOfVectorOfPoint contoursDetected = new VectorOfVectorOfPoint();
+            CvInvoke.FindContours(BinaryEmguImage, contoursDetected, null, Emgu.CV.CvEnum.RetrType.External,
+                Emgu.CV.CvEnum.ChainApproxMethod.ChainApproxSimple);
+
+            // Contour<Point> imageContours = BinaryEmguImage.FindContours(CHAIN_APPROX_METHOD.CV_CHAIN_APPROX_SIMPLE, RETR_TYPE.CV_RETR_EXTERNAL);
+            List<VectorOfPoint> contoursArray = new List<VectorOfPoint>();
+            int count = contoursDetected.Size;
+            for (int i = 0; i < count; i++)
+            {
+                using (VectorOfPoint currContour = contoursDetected[i])
+                {
+                    contoursArray.Add(currContour);
+                }
+            }
+            double currArea = 0.0;
+            VectorOfPoint neededContour = new VectorOfPoint();
+            foreach (VectorOfPoint contour in contoursArray)
+            {
+                double currContourArea = CvInvoke.ContourArea(contour);
+                if (currContourArea > currArea)
+                {
+                    neededContour = contour;
+                    currArea = currContourArea;
+                }
+            }
 
             int lineWidth = (int)Math.Round(emguImage.Width / 150.0);
             if (lineWidth < 2) lineWidth = 2;
 
             contourImage = contourImage.AddWeighted(emguImage.Convert<Bgr, Byte>(), 0.0, 1.0, 0.0);
 
-            double currArea = 0.0;
-            Contour<Point> neededContour = imageContours;
-            while (true)
-            {
-                if (imageContours.Area > currArea)
-                {
-                    currArea = imageContours.Area;
-                    neededContour = imageContours;
-                }
-                imageContours = imageContours.HNext;
-                if (imageContours == null)
-                    break;
-            }
+            #region //obsolete
+            //Contour<Point> neededContour = imageContours;
 
-            contourImage.Draw(neededContour, new Bgr(Color.Green), 5);
+
+            //while (true)
+            //{
+            //    if (imageContours.Area > currArea)
+            //    {
+            //        currArea = imageContours.Area;
+            //        neededContour = imageContours;
+            //    }
+            //    imageContours = imageContours.HNext;
+            //    if (imageContours == null)
+            //        break;
+            //}
+
+            //contourImage.Draw(neededContour, new Bgr(Color.Green), 5);
+            #endregion //obsolete
+
+            contourImage.Draw(neededContour, 0, new Bgr(Color.Green), 5);
 
             emguImage.Dispose();
             BinaryEmguImage.Dispose();
@@ -304,32 +334,47 @@ namespace SkyImagesAnalyzerLibraries
             }
 
             Image<Gray, Byte> tmpMaskImage = significantMaskImage.Copy();
-            Contour<Point> contoursDetected = tmpMaskImage.FindContours(Emgu.CV.CvEnum.CHAIN_APPROX_METHOD.CV_CHAIN_APPROX_NONE, Emgu.CV.CvEnum.RETR_TYPE.CV_RETR_LIST);
-            Contour<Point> contourFound = contoursDetected;
-            double areaDetected = contourFound.Area;
 
-            while (true)
+            List<VectorOfPoint> contoursArray = tmpMaskImage.FindContours();
+            VectorOfPoint contourFound = new VectorOfPoint();
+            double areaDetected = 0.0d;
+            foreach (VectorOfPoint currContour in contoursArray)
             {
-                Contour<Point> currContour = contoursDetected;
-                double currContourArea = currContour.Area;
+                double currContourArea = currContour.Area();
                 if (currContourArea > areaDetected)
                 {
                     contourFound = currContour;
                     areaDetected = currContourArea;
                 }
+            }
 
-                contoursDetected = contoursDetected.HNext;
-                if (contoursDetected == null)
-                    break;
-            }
+            #region // obsolete
+            // Contour<Point> contoursDetected = tmpMaskImage.FindContours(Emgu.CV.CvEnum.CHAIN_APPROX_METHOD.CV_CHAIN_APPROX_NONE, Emgu.CV.CvEnum.RETR_TYPE.CV_RETR_LIST);
+            // Contour<Point> contourFound = contoursDetected;
+            // double areaDetected = contourFound.Area;
+
+            //while (true)
+            //{
+            //    Contour<Point> currContour = contoursDetected;
+            //    double currContourArea = currContour.Area;
+            //    if (currContourArea > areaDetected)
+            //    {
+            //        contourFound = currContour;
+            //        areaDetected = currContourArea;
+            //    }
+
+            //    contoursDetected = contoursDetected.HNext;
+            //    if (contoursDetected == null)
+            //        break;
+            //}
+            #endregion // obsolete
+
             //нашли контур с максимальной площадью
-            List<PointD> pointsList = new List<PointD>();
-            foreach (Point contourPoint in contourFound)
-            {
-                if ((contourPoint.X < 10) || (contourPoint.X > tmpMaskImage.Width - 10) ||
-                    (contourPoint.Y > tmpMaskImage.Height - 10) || (contourPoint.Y < 10)) continue;
-                pointsList.Add(new PointD(contourPoint));
-            }
+            List<PointD> pointsList = (from contourPoint in contourFound.ToArray()
+                where
+                    (contourPoint.X >= 10) && (contourPoint.X <= tmpMaskImage.Width - 10) &&
+                    (contourPoint.Y <= tmpMaskImage.Height - 10) && (contourPoint.Y >= 10)
+                select new PointD(contourPoint)).ToList();
 
 
 //#if DEBUG

@@ -412,8 +412,10 @@ namespace SkyImagesAnalyzer
 
 
 
-        private int AttachPointToOneOfConcurrentContours(List<Contour<Point>> contours, List<PointD> lPtdMassCenters,
-            Contour<Point> themassCentersPolygon, Point thePoint, List<DenseMatrix> dmGradField)
+        //private int AttachPointToOneOfConcurrentContours(List<Contour<Point>> contours, List<PointD> lPtdMassCenters,
+        //    Contour<Point> themassCentersPolygon, Point thePoint, List<DenseMatrix> dmGradField)
+        private int AttachPointToOneOfConcurrentContours(List<VectorOfPoint> contours, List<PointD> lPtdMassCenters,
+            VectorOfPoint themassCentersPolygon, Point thePoint, List<DenseMatrix> dmGradField)
         {
             // density field should be defined
             if (dmDensityMesh == null) return -1;
@@ -427,7 +429,7 @@ namespace SkyImagesAnalyzer
             {
                 return AttachPointToOneOf_TWO_ConcurrentContours(contours, lPtdMassCenters, thePoint, dmGradField);
             }
-            else if (themassCentersPolygon.InContour(thePointD.PointF()) >= 0.0d)
+            else if (themassCentersPolygon.InContour(thePointD.PointF()))
             {
                 List<DenseVector> lDvDirectionVectorsToMassCenters = lPtdMassCenters.ConvertAll(ptdMassCenter =>
                 {
@@ -453,10 +455,8 @@ namespace SkyImagesAnalyzer
             else
             {
                 // посчитаем расстояние до границ каждого из контуров. Для минимального - к нему и отнесем.
-                List<double> lDistances = contours.ConvertAll(cntr =>
-                {
-                    return -cntr.Distance(thePointD.PointF());
-                });
+                List<double> lDistances =
+                    contours.ConvertAll(cntr => -CvInvoke.PointPolygonTest(cntr, thePointD.PointF(), true));
                 int minIdx = lDistances.IndexOf(lDistances.Min());
                 return minIdx;
             }
@@ -467,7 +467,7 @@ namespace SkyImagesAnalyzer
 
 
 
-        private int AttachPointToOneOf_TWO_ConcurrentContours(List<Contour<Point>> contours, List<PointD> lPtdMassCenters, Point thePoint, List<DenseMatrix> dmGradField)
+        private int AttachPointToOneOf_TWO_ConcurrentContours(List<VectorOfPoint> contours, List<PointD> lPtdMassCenters, Point thePoint, List<DenseMatrix> dmGradField)
         {
             // density field should be defined
             if (dmDensityMesh == null) return -1;
@@ -526,10 +526,8 @@ namespace SkyImagesAnalyzer
             else
             {
                 // точка снаружи пары - берем ближайшую
-                List<double> lDistances = contours.ConvertAll(cntr =>
-                {
-                    return -cntr.Distance(thePointD.PointF());
-                });
+                List<double> lDistances =
+                    contours.ConvertAll(cntr => -CvInvoke.PointPolygonTest(cntr, thePointD.PointF(), true));
                 int minIdx = lDistances.IndexOf(lDistances.Min());
                 return minIdx;
             }

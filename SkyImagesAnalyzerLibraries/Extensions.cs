@@ -523,6 +523,96 @@ namespace SkyImagesAnalyzerLibraries
         {
             return TimeSpan.FromSeconds(Math.Round(timeSpan.TotalSeconds));
         }
+
+
+
+
+
+        public static double Area(this VectorOfPoint contour)
+        {
+            return CvInvoke.ContourArea(contour);
+        }
+
+
+
+
+        public static List<VectorOfPoint> FindContours(this Image<Bgr, byte> img,
+            Emgu.CV.CvEnum.RetrType mode = Emgu.CV.CvEnum.RetrType.List,
+            Emgu.CV.CvEnum.ChainApproxMethod method = Emgu.CV.CvEnum.ChainApproxMethod.ChainApproxSimple)
+        {
+            VectorOfVectorOfPoint contoursDetected = new VectorOfVectorOfPoint();
+            CvInvoke.FindContours(img, contoursDetected, null, mode, method);
+            List<VectorOfPoint> contoursArray = new List<VectorOfPoint>();
+            int count = contoursDetected.Size;
+            for (int i = 0; i < count; i++)
+            {
+                using (VectorOfPoint currContour = contoursDetected[i])
+                {
+                    contoursArray.Add(currContour);
+                }
+            }
+            return contoursArray;
+        }
+
+
+
+        public static List<VectorOfPoint> FindContours(this Image<Gray, byte> img,
+            Emgu.CV.CvEnum.RetrType mode = Emgu.CV.CvEnum.RetrType.List,
+            Emgu.CV.CvEnum.ChainApproxMethod method = Emgu.CV.CvEnum.ChainApproxMethod.ChainApproxSimple)
+        {
+            VectorOfVectorOfPoint contoursDetected = new VectorOfVectorOfPoint();
+            CvInvoke.FindContours(img, contoursDetected, null, mode, method);
+            List<VectorOfPoint> contoursArray = new List<VectorOfPoint>();
+            int count = contoursDetected.Size;
+            for (int i = 0; i < count; i++)
+            {
+                using (VectorOfPoint currContour = contoursDetected[i])
+                {
+                    contoursArray.Add(currContour);
+                }
+            }
+            return contoursArray;
+        }
+
+
+        public static List<VectorOfPoint> FindContours(this Image<Bgr, double> img,
+            Emgu.CV.CvEnum.RetrType mode = Emgu.CV.CvEnum.RetrType.List,
+            Emgu.CV.CvEnum.ChainApproxMethod method = Emgu.CV.CvEnum.ChainApproxMethod.ChainApproxSimple)
+        {
+            VectorOfVectorOfPoint contoursDetected = new VectorOfVectorOfPoint();
+            CvInvoke.FindContours(img, contoursDetected, null, mode, method);
+            List<VectorOfPoint> contoursArray = new List<VectorOfPoint>();
+            int count = contoursDetected.Size;
+            for (int i = 0; i < count; i++)
+            {
+                using (VectorOfPoint currContour = contoursDetected[i])
+                {
+                    contoursArray.Add(currContour);
+                }
+            }
+            return contoursArray;
+        }
+
+
+
+        public static List<VectorOfPoint> FindContours(this Image<Gray, double> img,
+            Emgu.CV.CvEnum.RetrType mode = Emgu.CV.CvEnum.RetrType.List,
+            Emgu.CV.CvEnum.ChainApproxMethod method = Emgu.CV.CvEnum.ChainApproxMethod.ChainApproxSimple)
+        {
+            VectorOfVectorOfPoint contoursDetected = new VectorOfVectorOfPoint();
+            CvInvoke.FindContours(img, contoursDetected, null, mode, method);
+            List<VectorOfPoint> contoursArray = new List<VectorOfPoint>();
+            int count = contoursDetected.Size;
+            for (int i = 0; i < count; i++)
+            {
+                using (VectorOfPoint currContour = contoursDetected[i])
+                {
+                    contoursArray.Add(currContour);
+                }
+            }
+            return contoursArray;
+        }
+
     }
 
 

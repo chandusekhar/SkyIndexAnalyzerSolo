@@ -446,8 +446,9 @@ namespace SkyImagesAnalyzerLibraries
 
 
             #region Прописываем текстовые маркеры
-            MCvFont theFont = new MCvFont(Emgu.CV.CvEnum.FONT.CV_FONT_HERSHEY_PLAIN, 1.0d, 1.0d);
-            theFont.thickness = 2;
+
+            //MCvFont theFont = new MCvFont(Emgu.CV.CvEnum.FONT.CV_FONT_HERSHEY_PLAIN, 1.0d, 1.0d);
+            //theFont.thickness = 2;
             double dMarkersCount = (double)currentDimY / 30.0d;
             dMarkersCount = (dMarkersCount > 10.0d) ? (10.0d) : (dMarkersCount);
             //int markersCount = Convert.ToInt32(Math.Truncate(dMarkersCount));
@@ -470,7 +471,8 @@ namespace SkyImagesAnalyzerLibraries
 
 
 
-                scaleImage.Draw(message, ref theFont, new Point(5, yPosition), markerColor);
+                // scaleImage.Draw(message, ref theFont, new Point(5, yPosition), markerColor);
+                scaleImage.Draw(message, new Point(5, yPosition), Emgu.CV.CvEnum.FontFace.HersheyPlain, 1.0d, markerColor);
 
                 currentMarkerValue += rulerValueGap;
             }
