@@ -1,11 +1,11 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.Runtime.InteropServices;
 using Emgu.CV;
 using Emgu.CV.CvEnum;
 using Emgu.CV.Structure;
-
-
+using Emgu.CV.Util;
 
 
 namespace SkyImagesAnalyzerLibraries
@@ -27,43 +27,45 @@ namespace SkyImagesAnalyzerLibraries
         private Image<Bgr, byte> originalImage;
 
 
-        public enum FontFace
-        {
-            /// <summary>
-            /// Hershey simplex
-            /// </summary>
-            HersheySimplex = 0,
-            /// <summary>
-            /// Hershey plain
-            /// </summary>
-            HersheyPlain = 1,
-            /// <summary>
-            /// Hershey duplex 
-            /// </summary>
-            HersheyDuplex = 2,
-            /// <summary>
-            /// Hershey complex
-            /// </summary>
-            HersheyComplex = 3,
-            /// <summary>
-            /// Hershey triplex
-            /// </summary>
-            HersheyTriplex = 4,
-            /// <summary>
-            /// Hershey complex small
-            /// </summary>
-            HersheyComplexSmall = 5,
-            /// <summary>
-            /// Hershey script simplex
-            /// </summary>
-            HersheyScriptSimplex = 6,
-            /// <summary>
-            /// Hershey script complex
-            /// </summary>
-            HersheyScriptComplex = 7
-        }
+        #region // obsolete
+        //public enum FontFace
+        //{
+        //    /// <summary>
+        //    /// Hershey simplex
+        //    /// </summary>
+        //    HersheySimplex = 0,
+        //    /// <summary>
+        //    /// Hershey plain
+        //    /// </summary>
+        //    HersheyPlain = 1,
+        //    /// <summary>
+        //    /// Hershey duplex 
+        //    /// </summary>
+        //    HersheyDuplex = 2,
+        //    /// <summary>
+        //    /// Hershey complex
+        //    /// </summary>
+        //    HersheyComplex = 3,
+        //    /// <summary>
+        //    /// Hershey triplex
+        //    /// </summary>
+        //    HersheyTriplex = 4,
+        //    /// <summary>
+        //    /// Hershey complex small
+        //    /// </summary>
+        //    HersheyComplexSmall = 5,
+        //    /// <summary>
+        //    /// Hershey script simplex
+        //    /// </summary>
+        //    HersheyScriptSimplex = 6,
+        //    /// <summary>
+        //    /// Hershey script complex
+        //    /// </summary>
+        //    HersheyScriptComplex = 7
+        //}
+        #endregion // obsolete
 
-        
+
 
 
         public TextBarImage(string text, Image<Bgr, byte> origImage)
@@ -102,17 +104,15 @@ namespace SkyImagesAnalyzerLibraries
 
         }
 
+        
 
 
 
-
-        public TextBarImage(string text, Image<Bgr, byte> origImage, ref MCvFont usedFont)
+        public TextBarImage(string text, Image<Bgr, byte> origImage, FontFace usedFontFace = FontFace.HersheyPlain, double usedFontScale = 1.0d, int usedFontThickness = 1)
         {
             originalImage = origImage.Copy();
             strText = text;
-
-            fnTextFont = usedFont;
-
+            
             if (!strText.Contains(Environment.NewLine))
             {
                 Size retTextSize = new Size(0, 0);
@@ -167,7 +167,7 @@ namespace SkyImagesAnalyzerLibraries
                 
                 foreach (string substr in substrArr)
                 {
-                    retImg.Draw(substr, ref fnTextFont, ptLocalTextBaselineStart, textColor);
+                    retImg.Draw(substr, ptLocalTextBaselineStart, , textColor);
                     ptLocalTextBaselineStart += new Size(0, Convert.ToInt32(textHeight * 1.5));
                 }
 
@@ -200,6 +200,32 @@ namespace SkyImagesAnalyzerLibraries
                 originalImage.ROI = Rectangle.Empty;
                 return subImg;
             }
+        }
+
+
+
+
+        public static Size GetTextSize(string strMessage, FontFace usedFontFace = FontFace.HersheyPlain,
+            double usedFontScale = 1.0d, int usedFontThickness = 1)
+        {
+            Image<Gray, byte> theImg = new Image<Gray, byte>(1024, 1024, new Gray(0));
+            theImg.Draw(strMessage, new Point(0, 1024), usedFontFace, usedFontScale, new Gray(255), usedFontThickness);
+
+            List<VectorOfPoint> lSymbolsContours = theImg.FindContours(RetrType.External);
+            
+            CvInvoke.MinAreaRect()
+
+            return new Size(0, 0);
+        }
+
+
+        public static Rectangle UniteRectangles(Rectangle rct1, Rectangle rct2)
+        {
+            Rectangle resRect = new Rectangle();
+            resRect.Location = new Point(Math.Min(rct1.Left, rct2.Left), Math.Min(rct1.Top, rct2.Top));
+            resRect.Width = Math.Max(rct1.Right, rct2.Right) - resRect.Location.X;
+            resRect.Height = Math.Max(rct1.Bottom, rct2.Bottom) - resRect.Location.Y;
+            return resRect;
         }
     }
 }

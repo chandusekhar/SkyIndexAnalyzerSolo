@@ -184,7 +184,8 @@ namespace SkyImagesAnalyzerLibraries
                 Bgr markerColor = colorBlack;
                 theImage.Draw(theLine, markerColor, 2);
                 String message = Math.Round(currentMarkerValueX, 2).ToString();
-                theImage.Draw(message, ref theFont, new Point(xPosition, pictureHeight - 10), markerColor);
+                //theImage.Draw(message, ref theFont, new Point(xPosition, pictureHeight - 10), markerColor);
+                theImage.Draw(message, new Point(xPosition, pictureHeight - 10), FontFace.HersheyPlain, 1.0d, markerColor);
                 currentMarkerValueX += rulerValueGapX;
                 nextXPositionDouble = serviceSpaceGap + ((currentMarkerValueX - xSpaceMin) / (xSpaceMax - xSpaceMin)) * (double)(pictureWidth - 2 * serviceSpaceGap);
             }
@@ -320,10 +321,12 @@ namespace SkyImagesAnalyzerLibraries
                     Size barSize = new Size(barWidth, pictureHeight - serviceSpaceGap - yCoordinateTop);
                     Image<Bgr, byte> tmpImage = theImage.Copy();
                     tmpImage.Draw(new Rectangle(ptUperLeft, barSize), colorMagenta, -1);
-                    theFont.thickness = 2;
-                    tmpImage.Draw(binCenter.ToString("e"), ref theFont, new Point(mouseClickX - 40, pictureHeight + 30 - serviceSpaceGap), colorBlack);
-                    tmpImage.Draw((probDens).ToString("e"), ref theFont, new Point(serviceSpaceGap + 4, yCoordinateTop), colorBlack);
-                    theFont.thickness = 1;
+                    //theFont.thickness = 2;
+                    //tmpImage.Draw(binCenter.ToString("e"), ref theFont, new Point(mouseClickX - 40, pictureHeight + 30 - serviceSpaceGap), colorBlack);
+                    //tmpImage.Draw((probDens).ToString("e"), ref theFont, new Point(serviceSpaceGap + 4, yCoordinateTop), colorBlack);
+                    //theFont.thickness = 1;
+                    tmpImage.Draw(binCenter.ToString("e"), new Point(mouseClickX - 40, pictureHeight + 30 - serviceSpaceGap), FontFace.HersheyPlain, 1.0d, colorBlack, 2);
+                    tmpImage.Draw((probDens).ToString("e"), new Point(serviceSpaceGap + 4, yCoordinateTop), FontFace.HersheyPlain, 1.0d, colorBlack, 2);
                     ThreadSafeOperations.UpdatePictureBox(pbHistRepresentation, tmpImage.Bitmap, false);
                     break;
                 }

@@ -217,42 +217,44 @@ namespace SkyImagesAnalyzer
             foreach (ConnectedObjectsAtASlice currSlice in lSlicesData)
             {
                 if (lSlicesData.IndexOf(currSlice) == 0) continue; // самый верхний пропускаем
-                
-                List<Tuple<Contour<Point>, Contour<Point>>> currSliceCoveringContours =
-                    new List<Tuple<Contour<Point>, Contour<Point>>>();
+
+                //List<Tuple<Contour<Point>, Contour<Point>>> currSliceCoveringContours =
+                //    new List<Tuple<Contour<Point>, Contour<Point>>>();
+                List<Tuple<VectorOfPoint, VectorOfPoint>> currSliceCoveringContours =
+                    new List<Tuple<VectorOfPoint, VectorOfPoint>>();
                 //item1 - внутренний, из предыдущего слайса
                 //item2 - внешний, из текущего слайса
 
-                foreach (Contour<Point> caughtCont in foundClassesContours)
+                foreach (VectorOfPoint caughtCont in foundClassesContours)
                 {
-                    Contour<Point> coveringCaughtCont = currSlice.FindContourContainingSample(caughtCont);
-                    currSliceCoveringContours.Add(new Tuple<Contour<Point>, Contour<Point>>(caughtCont,
+                    VectorOfPoint coveringCaughtCont = currSlice.FindContourContainingSample(caughtCont);
+                    currSliceCoveringContours.Add(new Tuple<VectorOfPoint, VectorOfPoint>(caughtCont,
                         coveringCaughtCont));
                 }
 
                 // добавим контуры, которые только что появились и раньше не были видны на срезах
                 // но только если количество допустимых клатеров еще позволяет
                 // Иначе - будем ждать, когда они вольются в в какой-нибудь из вновь расширившихся контуров
-                foreach (Contour<Point> newContour in currSlice.edgeContoursList)
+                foreach (VectorOfPoint newContour in currSlice.edgeContoursList)
                 {
                     if ((currSliceCoveringContours.Find(tpl => (tpl.Item2 == newContour)) == null) && (currSliceCoveringContours.Count() < maxClustersCount))
                     {
-                        currSliceCoveringContours.Add(new Tuple<Contour<Point>, Contour<Point>>(newContour, newContour));
+                        currSliceCoveringContours.Add(new Tuple<VectorOfPoint, VectorOfPoint>(newContour, newContour));
                     }
                 }
 
                 // что делать, если какой-нибудь новый контур покрывает больше одного предыдущего
-                List<IGrouping<Contour<Point>, Tuple<Contour<Point>, Contour<Point>>>> groups =
-                    new List<IGrouping<Contour<Point>, Tuple<Contour<Point>, Contour<Point>>>>
+                List<IGrouping<VectorOfPoint, Tuple<VectorOfPoint, VectorOfPoint>>> groups =
+                    new List<IGrouping<VectorOfPoint, Tuple<VectorOfPoint, VectorOfPoint>>>
                         (currSliceCoveringContours.GroupBy(tpl => tpl.Item2));
                 if (groups.Count(grp => (grp.Count() > 1)) > 0)
                 {
                     // есть контуры текущего среза, которые содержат более одного контура предыдущего среза
-                    foreach (IGrouping<Contour<Point>, Tuple<Contour<Point>, Contour<Point>>> currGroup in groups)
+                    foreach (IGrouping<VectorOfPoint, Tuple<VectorOfPoint, VectorOfPoint>> currGroup in groups)
                     {
                         if (currGroup.Count() == 1)
                         {
-                            Tuple<Contour<Point>, Contour<Point>> contourTuple = currGroup.First();
+                            Tuple<VectorOfPoint, VectorOfPoint> contourTuple = currGroup.First();
                             foundClassesContours.Remove(contourTuple.Item1);
                             foundClassesContours.Add(contourTuple.Item2);
                         }
@@ -263,17 +265,20 @@ namespace SkyImagesAnalyzer
                             //              item2 - внешний, из текущего слайса
                             // надо точки, которые лежат вне контуров предыдущего слайса отнести к "своим" контурам
                             // попробуем по направлению градиента - относить точку к тому контуру, на который укажет вектор градиента
-                            Contour<Point> currCoveringContour = currGroup.Key; // item2 - внешний, из текущего слайса - см.строку группировки
+                            VectorOfPoint currCoveringContour = currGroup.Key; // item2 - внешний, из текущего слайса - см.строку группировки
+
+                            Rectangle currCoveringContourBoundingRectangle =
+                                CvInvoke.BoundingRectangle(currCoveringContour);
 
                             Image<Gray, byte> tmpImg1 =
-                                new Image<Gray, byte>(new Size(currCoveringContour.BoundingRectangle.Right,
-                                    currCoveringContour.BoundingRectangle.Bottom));
-                            tmpImg1.Draw(currCoveringContour, white, -1);
-                            foreach (Tuple<Contour<Point>, Contour<Point>> tpl in currGroup)
+                                new Image<Gray, byte>(new Size(currCoveringContourBoundingRectangle.Right,
+                                    currCoveringContourBoundingRectangle.Bottom));
+                            tmpImg1.Draw(currCoveringContour, 0, white, -1);
+                            foreach (Tuple<VectorOfPoint, VectorOfPoint> tpl in currGroup)
                             {
-                                Contour<Point> excludingCntr = tpl.Item1;
+                                VectorOfPoint excludingCntr = tpl.Item1;
                                 Image<Gray, byte> tmpExcl = tmpImg1.CopyBlank();
-                                tmpExcl.Draw(excludingCntr, white, -1);
+                                tmpExcl.Draw(excludingCntr, 0, white, -1);
                                 tmpImg1 = tmpImg1 - tmpExcl;
                             }
                             // в картинке tmpImg1 закрашенными остались только точки, которые надо классифицировать
@@ -292,22 +297,22 @@ namespace SkyImagesAnalyzer
                             }
 
                             List<List<Point>> llArraysOfPointsAdding = new List<List<Point>>();
-                            foreach (Tuple<Contour<Point>, Contour<Point>> tpl in currGroup)
+                            foreach (Tuple<VectorOfPoint, VectorOfPoint> tpl in currGroup)
                             {
                                 llArraysOfPointsAdding.Add(new List<Point>());
                             }
 
-                            List<Contour<Point>> lContoursOfTheCurrGroup =
-                                (new List<Tuple<Contour<Point>, Contour<Point>>>(currGroup.ToArray())).ConvertAll(
+                            List<VectorOfPoint> lContoursOfTheCurrGroup =
+                                (new List<Tuple<VectorOfPoint, VectorOfPoint>>(currGroup.ToArray())).ConvertAll(
                                     tpl => tpl.Item1);
                             List<PointD> lPtdMassCenters = lContoursOfTheCurrGroup.ConvertAll(cntr => cntr.MassCenter());
-                            Contour<Point> themassCentersPolygon = new Contour<Point>(new MemStorage());
-                            themassCentersPolygon.PushMulti(lPtdMassCenters.ConvertAll<Point>(ptd => ptd.Point()).ToArray(),
-                                BACK_OR_FRONT.BACK);
+                            VectorOfPoint themassCentersPolygon = new VectorOfPoint();
+                            //themassCentersPolygon.PushMulti(lPtdMassCenters.ConvertAll<Point>(ptd => ptd.Point()).ToArray(),
+                            //    BACK_OR_FRONT.BACK);
+                            themassCentersPolygon.Push(lPtdMassCenters.ConvertAll<Point>(ptd => ptd.Point()).ToArray());
                             Image<Gray, byte> tmpImg = imgMask.CopyBlank();
-                            tmpImg.Draw(themassCentersPolygon, white, -1);
-                            themassCentersPolygon = tmpImg.FindContours(CHAIN_APPROX_METHOD.CV_CHAIN_APPROX_SIMPLE,
-                                RETR_TYPE.CV_RETR_LIST);
+                            tmpImg.Draw(themassCentersPolygon, 0, white, -1);
+                            themassCentersPolygon = tmpImg.FindContours(RetrType.List, ChainApproxMethod.ChainApproxSimple)[0];
 
 
 
@@ -327,10 +332,10 @@ namespace SkyImagesAnalyzer
                             }
                             // распределили. теперь надо сформировать новые контуры - с учетом добавленных точек.
                             List<Image<Gray, byte>> lImagesToDetectNewContours = new List<Image<Gray, byte>>();
-                            foreach (Tuple<Contour<Point>, Contour<Point>> tpl in currGroup)
+                            foreach (Tuple<VectorOfPoint, VectorOfPoint> tpl in currGroup)
                             {
                                 Image<Gray, byte> tmpImgCurrCont = tmpImg1.CopyBlank();
-                                tmpImgCurrCont.Draw(tpl.Item1, white, -1);
+                                tmpImgCurrCont.Draw(tpl.Item1, 0, white, -1);
                                 lImagesToDetectNewContours.Add(tmpImgCurrCont);
                             }
                             for (int cntIdx = 0; cntIdx < currGroup.Count(); cntIdx++)
@@ -339,23 +344,28 @@ namespace SkyImagesAnalyzer
                                 {
                                     lImagesToDetectNewContours[cntIdx][pt.Y, pt.X] = white;
                                 }
-                                Contour<Point> cnt1 =
-                                    lImagesToDetectNewContours[cntIdx].FindContours(
-                                        Emgu.CV.CvEnum.CHAIN_APPROX_METHOD.CV_CHAIN_APPROX_SIMPLE,
-                                        Emgu.CV.CvEnum.RETR_TYPE.CV_RETR_LIST);
-                                //найдем наибольший из получившихся контуров
-                                List<Contour<Point>> lTmpCtrs = new List<Contour<Point>>();
-                                while (true)
-                                {
-                                    lTmpCtrs.Add(cnt1);
-                                    cnt1 = cnt1.HNext;
-                                    if (cnt1 == null)
-                                        break;
-                                }
+
+                                #region // obsolete
+                                //Contour<Point> cnt1 =
+                                //    lImagesToDetectNewContours[cntIdx].FindContours(
+                                //        Emgu.CV.CvEnum.CHAIN_APPROX_METHOD.CV_CHAIN_APPROX_SIMPLE,
+                                //        Emgu.CV.CvEnum.RETR_TYPE.CV_RETR_LIST);
+                                //List<Contour<Point>> lTmpCtrs = new List<Contour<Point>>();
+                                //while (true)
+                                //{
+                                //    lTmpCtrs.Add(cnt1);
+                                //    cnt1 = cnt1.HNext;
+                                //    if (cnt1 == null)
+                                //        break;
+                                //}
+                                #endregion // obsolete
+
+                                ////найдем наибольший из получившихся контуров
+                                List<VectorOfPoint> lTmpCtrs = lImagesToDetectNewContours[cntIdx].FindContours();
 
                                 foundClassesContours.Remove(currGroup.ElementAt(cntIdx).Item1);
-                                double maxArea = lTmpCtrs.Max(cntr => cntr.Area);
-                                int idxOfMaxAreaContour = lTmpCtrs.FindIndex(cntr => cntr.Area == maxArea);
+                                double maxArea = lTmpCtrs.Max(cntr => cntr.Area());
+                                int idxOfMaxAreaContour = lTmpCtrs.FindIndex(cntr => cntr.Area() >= maxArea);
                                 foundClassesContours.Add(lTmpCtrs[idxOfMaxAreaContour]);
                             }
                         }
@@ -363,7 +373,7 @@ namespace SkyImagesAnalyzer
                 }
                 else
                 {
-                    foreach (Tuple<Contour<Point>, Contour<Point>> contourTuple in currSliceCoveringContours)
+                    foreach (Tuple<VectorOfPoint, VectorOfPoint> contourTuple in currSliceCoveringContours)
                     {
                         foundClassesContours.Remove(contourTuple.Item1);
                         foundClassesContours.Add(contourTuple.Item2);
@@ -383,11 +393,11 @@ namespace SkyImagesAnalyzer
             Image<Gray, Byte> imgDataBinary = ImageProcessing.grayscaleImageFromDenseMatrixWithFixedValuesBounds(dmDensityMesh, 0.0d, 1.0d);
             Image<Bgr, byte> previewImage = imgDataBinary.CopyBlank().Convert<Bgr, Byte>();
             var colorGen = new RandomPastelColorGenerator();
-            foreach (Contour<Point> currCntr in foundClassesContours)
+            foreach (VectorOfPoint currCntr in foundClassesContours)
             {
                 Color currentColor = colorGen.GetNext();
                 var currentColorBgr = new Bgr(currentColor);
-                previewImage.Draw(currCntr, currentColorBgr, -1);
+                previewImage.Draw(currCntr, 0, currentColorBgr, -1);
             }
             previewImage = previewImage.And(imgMask.Convert<Bgr, byte>());
             ServiceTools.ShowPicture(previewImage, "");

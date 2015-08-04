@@ -255,8 +255,8 @@ namespace SkyImagesAnalyzerLibraries
 
             #region Y
 
-            MCvFont theFont = new MCvFont(FONT.CV_FONT_HERSHEY_PLAIN, 1.0d, 1.0d);
-            theFont.thickness = 1;
+            //MCvFont theFont = new MCvFont(FONT.CV_FONT_HERSHEY_PLAIN, 1.0d, 1.0d);
+            //theFont.thickness = 1;
 
             // замерим высоту подписей по X по значению в минимуме
             string strMinXvalueMarker = xAxisValuesConversionToRepresentTicksValues(xSpaceMin);

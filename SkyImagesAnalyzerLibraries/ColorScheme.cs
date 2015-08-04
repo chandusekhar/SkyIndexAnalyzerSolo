@@ -482,6 +482,7 @@ namespace SkyImagesAnalyzerLibraries
 
             return scaleBM;
 
+            #region // obsolete
             //}
             //else
             //{
@@ -518,6 +519,7 @@ namespace SkyImagesAnalyzerLibraries
             //
             //    return scaleBM;
             //}
+            #endregion // obsolete
 
         }
 

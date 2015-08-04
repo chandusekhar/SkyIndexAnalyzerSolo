@@ -1305,7 +1305,7 @@ namespace SkyImagesAnalyzerLibraries
             {
                 double koeff = ((double)maxSideLength / (double)sourceMaxSide);
                 Image<Bgr, byte> retImg = imgToResize.Copy();
-                retImg = retImg.Resize(koeff, INTER.CV_INTER_AREA);
+                retImg = retImg.Resize(koeff, Inter.Area);
                 return retImg;
             }
             else
