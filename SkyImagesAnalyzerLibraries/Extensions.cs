@@ -381,7 +381,7 @@ namespace SkyImagesAnalyzerLibraries
 
             Image<Gray, byte> img = new Image<Gray, byte>(width, height);
             Gray white = new Gray(255);
-            img.Draw(c1, 0, white, -1);
+            img.Draw(c1.ToArray(), white, -1);
             return img[0, 0].Intensity > 0;
         }
 
@@ -409,9 +409,9 @@ namespace SkyImagesAnalyzerLibraries
             int right = Math.Max(c1Rect.Right, c2Rect.Right);
             int bttm = Math.Max(c1Rect.Bottom, c2Rect.Bottom);
             Image<Gray, byte> img1 = new Image<Gray, byte>(new Size(right, bttm));
-            img1.Draw(c1, 0, white, -1);
+            img1.Draw(c1.ToArray(), white, -1);
             Image<Gray, byte> img2 = new Image<Gray, byte>(new Size(right, bttm));
-            img2.Draw(c2, 0, white, -1);
+            img2.Draw(c2.ToArray(), white, -1);
             img1 = img1.And(img2);
             //img1 = img1.ThresholdBinary(new Gray(150), white);
 
@@ -457,7 +457,7 @@ namespace SkyImagesAnalyzerLibraries
             Rectangle rectContourBounding = CvInvoke.BoundingRectangle(theContour);
             Image<Gray, byte> tmpImg = new Image<Gray, byte>(rectContourBounding.Right,
                 rectContourBounding.Bottom);
-            tmpImg.Draw(theContour, 0, white, -1);
+            tmpImg.Draw(theContour.ToArray(), white, -1);
             MCvMoments moments = tmpImg.GetMoments(true);
             double cx = moments.M10 / moments.M00;
             double cy = moments.M01 / moments.M00;

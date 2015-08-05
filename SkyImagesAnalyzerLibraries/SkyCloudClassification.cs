@@ -424,7 +424,17 @@ namespace SkyImagesAnalyzerLibraries
             //ColorScheme skyCloudColorSchemeWithoutSunSuppression = ColorScheme.InversedBinaryCloudSkyColorScheme(theStdDevMarginValueDefiningSkyCloudSeparation, 0.0d, 1.0d);
             ColorScheme skyCloudColorSchemeWithoutSunSuppression = ColorScheme.InversedBinaryCloudSkyColorScheme(theStdDevMarginValueDefiningSkyCloudSeparation, 0.0d, 1.0d);
             Image<Bgr, Byte> previewImageWithoutSunSuppression = ImageProcessing.evalResultColoredWithFixedDataBounds(dmProcessingData, maskImage, skyCloudColorSchemeWithoutSunSuppression, 0.0d, 1.0d);
-            int cloudCounterWithoutSunSuppression = previewImageWithoutSunSuppression.CountNonzero()[1];
+
+            int cloudCounterWithoutSunSuppression = 0;
+            try
+            {
+                cloudCounterWithoutSunSuppression = previewImageWithoutSunSuppression.CountNonzero()[1];
+            }
+            catch (Exception ex)
+            {
+                theLogWindow = ServiceTools.LogAText(theLogWindow, ex.Message);
+            }
+            
             int skyCounterWithoutSunSuppression = maskImage.CountNonzero()[0] - cloudCounterWithoutSunSuppression;
             double CloudCoverWithoutSunSuppression = (double)cloudCounterWithoutSunSuppression / (double)(skyCounterWithoutSunSuppression + cloudCounterWithoutSunSuppression);
             //сохраним результат без подавления засветки

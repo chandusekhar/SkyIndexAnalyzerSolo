@@ -18,6 +18,9 @@ namespace SkyImagesAnalyzerLibraries
         //{
         //    thickness = 2,
         //};
+        public FontFace fnTextFontFace = FontFace.HersheyPlain;
+        public double fnTextFontScale = 1.0d;
+        public int fnTextFontThickness = 2;
         public Point ptTextBaselineStart;
         private Point ptSurroundingBarStart;
         public Rectangle rectSurroundingBar;
@@ -74,10 +77,11 @@ namespace SkyImagesAnalyzerLibraries
             strText = text;
             if (!strText.Contains(Environment.NewLine))
             {
-                Size retTextSize = new Size(0, 0);
-                int baseline = 0;
-                CvInvoke.cvGetTextSize(strText, ref fnTextFont, ref retTextSize, ref baseline);
-                textHeight = retTextSize.Height + baseline;
+                Size retTextSize = GetTextSize(strText, fnTextFontFace, fnTextFontScale, fnTextFontThickness);
+                //int baseline = 0;
+                //CvInvoke.cvGetTextSize(strText, ref fnTextFont, ref retTextSize, ref baseline);
+                //textHeight = retTextSize.Height + baseline;
+                textHeight = retTextSize.Height;
                 textHalfHeight = Convert.ToInt32(textHeight / 2.0d);
                 textBarSize = new Size(retTextSize.Width + textHeight, textHeight * 2);
             }
@@ -92,12 +96,15 @@ namespace SkyImagesAnalyzerLibraries
 
                 foreach (string substr in substrArr)
                 {
-                    Size retCurrTextSize = new Size(0, 0);
-                    int currBaseline = 0;
-                    CvInvoke.cvGetTextSize(substr, ref fnTextFont, ref retCurrTextSize, ref currBaseline);
-                    textHeight = retCurrTextSize.Height + currBaseline;
+                    //Size retCurrTextSize = new Size(0, 0);
+                    //int currBaseline = 0;
+                    //CvInvoke.cvGetTextSize(substr, ref fnTextFont, ref retCurrTextSize, ref currBaseline);
+                    //textHeight = retCurrTextSize.Height + currBaseline;
+
+                    Size currTextSize = GetTextSize(strText, fnTextFontFace, fnTextFontScale, fnTextFontThickness);
+                    textHeight = currTextSize.Height;
                     textHalfHeight = Convert.ToInt32(textHeight / 2.0d);
-                    textBarSize.Width = Math.Max(retCurrTextSize.Width + textHeight, textBarSize.Width);
+                    textBarSize.Width = Math.Max(currTextSize.Width + textHeight, textBarSize.Width);
                     textBarSize.Height += Convert.ToInt32(textHeight * 1.5d);
                 }
             }
@@ -112,15 +119,22 @@ namespace SkyImagesAnalyzerLibraries
         {
             originalImage = origImage.Copy();
             strText = text;
-            
+
+            fnTextFontFace = usedFontFace;
+            fnTextFontScale = usedFontScale;
+            fnTextFontThickness = usedFontThickness;
+
             if (!strText.Contains(Environment.NewLine))
             {
-                Size retTextSize = new Size(0, 0);
-                int baseline = 0;
-                CvInvoke.cvGetTextSize(strText, ref fnTextFont, ref retTextSize, ref baseline);
-                textHeight = retTextSize.Height + baseline;
+                //Size retTextSize = new Size(0, 0);
+                //int baseline = 0;
+                //CvInvoke.cvGetTextSize(strText, ref fnTextFont, ref retTextSize, ref baseline);
+                //textHeight = retTextSize.Height + baseline;
+
+                Size currTextSize = GetTextSize(strText, fnTextFontFace, fnTextFontScale, fnTextFontThickness);
+                textHeight = currTextSize.Height;
                 textHalfHeight = Convert.ToInt32(textHeight / 2.0d);
-                textBarSize = new Size(retTextSize.Width + textHeight, textHeight * 2);
+                textBarSize = new Size(currTextSize.Width + textHeight, textHeight * 2);
             }
             else
             {
@@ -133,12 +147,15 @@ namespace SkyImagesAnalyzerLibraries
 
                 foreach (string substr in substrArr)
                 {
-                    Size retCurrTextSize = new Size(0, 0);
-                    int currBaseline = 0;
-                    CvInvoke.cvGetTextSize(substr, ref fnTextFont, ref retCurrTextSize, ref currBaseline);
-                    textHeight = retCurrTextSize.Height + currBaseline;
+                    //Size retCurrTextSize = new Size(0, 0);
+                    //int currBaseline = 0;
+                    //CvInvoke.cvGetTextSize(substr, ref fnTextFont, ref retCurrTextSize, ref currBaseline);
+                    //textHeight = retCurrTextSize.Height + currBaseline;
+
+                    Size currTextSize = GetTextSize(substr, fnTextFontFace, fnTextFontScale, fnTextFontThickness);
+                    textHeight = currTextSize.Height;
                     textHalfHeight = Convert.ToInt32(textHeight / 2.0d);
-                    textBarSize.Width = Math.Max(retCurrTextSize.Width + textHeight, textBarSize.Width);
+                    textBarSize.Width = Math.Max(currTextSize.Width + textHeight, textBarSize.Width);
                     textBarSize.Height += textHeight * 2;
                 }
             }
@@ -155,7 +172,7 @@ namespace SkyImagesAnalyzerLibraries
 
             if (!strText.Contains(Environment.NewLine))
             {
-                retImg.Draw(strText, ref fnTextFont, ptTextBaselineStart, textColor);
+                retImg.Draw(strText, ptTextBaselineStart, fnTextFontFace, fnTextFontScale, textColor, fnTextFontThickness);
                 return retImg;
             }
             else
@@ -167,7 +184,7 @@ namespace SkyImagesAnalyzerLibraries
                 
                 foreach (string substr in substrArr)
                 {
-                    retImg.Draw(substr, ptLocalTextBaselineStart, , textColor);
+                    retImg.Draw(substr, ptLocalTextBaselineStart, fnTextFontFace, fnTextFontScale, textColor, fnTextFontThickness);
                     ptLocalTextBaselineStart += new Size(0, Convert.ToInt32(textHeight * 1.5));
                 }
 
@@ -212,10 +229,14 @@ namespace SkyImagesAnalyzerLibraries
             theImg.Draw(strMessage, new Point(0, 1024), usedFontFace, usedFontScale, new Gray(255), usedFontThickness);
 
             List<VectorOfPoint> lSymbolsContours = theImg.FindContours(RetrType.External);
+            List<Rectangle> lSymbolsRects = lSymbolsContours.ConvertAll(cont => CvInvoke.MinAreaRect(cont).MinAreaRect());
+            Rectangle resRect = lSymbolsRects[0];
+            foreach (Rectangle currRect in lSymbolsRects)
+            {
+                resRect = UniteRectangles(resRect, currRect);
+            }
             
-            CvInvoke.MinAreaRect()
-
-            return new Size(0, 0);
+            return resRect.Size;
         }
 
 

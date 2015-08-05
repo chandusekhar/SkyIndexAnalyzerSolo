@@ -273,12 +273,12 @@ namespace SkyImagesAnalyzer
                             Image<Gray, byte> tmpImg1 =
                                 new Image<Gray, byte>(new Size(currCoveringContourBoundingRectangle.Right,
                                     currCoveringContourBoundingRectangle.Bottom));
-                            tmpImg1.Draw(currCoveringContour, 0, white, -1);
+                            tmpImg1.Draw(currCoveringContour.ToArray(), white, -1);
                             foreach (Tuple<VectorOfPoint, VectorOfPoint> tpl in currGroup)
                             {
                                 VectorOfPoint excludingCntr = tpl.Item1;
                                 Image<Gray, byte> tmpExcl = tmpImg1.CopyBlank();
-                                tmpExcl.Draw(excludingCntr, 0, white, -1);
+                                tmpExcl.Draw(excludingCntr.ToArray(), white, -1);
                                 tmpImg1 = tmpImg1 - tmpExcl;
                             }
                             // в картинке tmpImg1 закрашенными остались только точки, которые надо классифицировать
@@ -311,7 +311,7 @@ namespace SkyImagesAnalyzer
                             //    BACK_OR_FRONT.BACK);
                             themassCentersPolygon.Push(lPtdMassCenters.ConvertAll<Point>(ptd => ptd.Point()).ToArray());
                             Image<Gray, byte> tmpImg = imgMask.CopyBlank();
-                            tmpImg.Draw(themassCentersPolygon, 0, white, -1);
+                            tmpImg.Draw(themassCentersPolygon.ToArray(), white, -1);
                             themassCentersPolygon = tmpImg.FindContours(RetrType.List, ChainApproxMethod.ChainApproxSimple)[0];
 
 
@@ -335,9 +335,11 @@ namespace SkyImagesAnalyzer
                             foreach (Tuple<VectorOfPoint, VectorOfPoint> tpl in currGroup)
                             {
                                 Image<Gray, byte> tmpImgCurrCont = tmpImg1.CopyBlank();
-                                tmpImgCurrCont.Draw(tpl.Item1, 0, white, -1);
+                                tmpImgCurrCont.Draw(tpl.Item1.ToArray(), white, -1);
                                 lImagesToDetectNewContours.Add(tmpImgCurrCont);
                             }
+
+
                             for (int cntIdx = 0; cntIdx < currGroup.Count(); cntIdx++)
                             {
                                 foreach (Point pt in llArraysOfPointsAdding[cntIdx])
@@ -397,7 +399,7 @@ namespace SkyImagesAnalyzer
             {
                 Color currentColor = colorGen.GetNext();
                 var currentColorBgr = new Bgr(currentColor);
-                previewImage.Draw(currCntr, 0, currentColorBgr, -1);
+                previewImage.Draw(currCntr.ToArray(), currentColorBgr, -1);
             }
             previewImage = previewImage.And(imgMask.Convert<Bgr, byte>());
             ServiceTools.ShowPicture(previewImage, "");
@@ -635,7 +637,7 @@ namespace SkyImagesAnalyzer
                 using (VectorOfPoint currContour = contoursDetected[i])
                 {
                     edgeContoursList.Add(currContour);
-                    previewImage.Draw(currContour, 0, currentColorBgr, -1);
+                    previewImage.Draw(currContour.ToArray(), currentColorBgr, -1);
                 }
             }
         }
@@ -691,7 +693,7 @@ namespace SkyImagesAnalyzer
             ptdClusterMassCenter = foundClusterContour.MassCenter();
 
             Image<Gray, byte> tmpImg = new Image<Gray, byte>(gridSpaceRect.Width, gridSpaceRect.Height);
-            tmpImg.Draw(foundClusterContour, 0, white, -1);
+            tmpImg.Draw(foundClusterContour.ToArray(), white, -1);
 
             lOverallPoints = new List<Point>();
 

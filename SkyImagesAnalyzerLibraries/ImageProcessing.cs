@@ -167,7 +167,7 @@ namespace SkyImagesAnalyzerLibraries
             maskSignificantArea = currArea;
 
             Image<Gray, Byte> maskImage = BinaryEmguImage.CopyBlank();
-            maskImage.Draw(neededContour, 0, new Gray(255), -1);
+            maskImage.Draw(neededContour.ToArray(), new Gray(255), -1);
             //emguImage.Dispose();
             //BinaryEmguImage.Dispose();
             //imageContours = null;
@@ -261,7 +261,7 @@ namespace SkyImagesAnalyzerLibraries
             //contourImage.Draw(neededContour, new Bgr(Color.Green), 5);
             #endregion //obsolete
 
-            contourImage.Draw(neededContour, 0, new Bgr(Color.Green), 5);
+            contourImage.Draw(neededContour.ToArray(), new Bgr(Color.Green), 5);
 
             emguImage.Dispose();
             BinaryEmguImage.Dispose();

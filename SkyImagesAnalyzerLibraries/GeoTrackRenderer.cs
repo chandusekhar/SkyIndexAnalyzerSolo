@@ -249,8 +249,8 @@ namespace SkyImagesAnalyzerLibraries
                 {
                     continue;
                 }
-                imgShorelinesBackground.Draw(contour, 0, colorBlack, (currentShorelineDetailsLevel+1)*2);
-                imgShorelinesBackground.Draw(contour, 0, new Bgr(200, 200, 200), -1);
+                imgShorelinesBackground.Draw(contour.ToArray(), colorBlack, (currentShorelineDetailsLevel+1)*2);
+                imgShorelinesBackground.Draw(contour.ToArray(), new Bgr(200, 200, 200), -1);
             }
 
             

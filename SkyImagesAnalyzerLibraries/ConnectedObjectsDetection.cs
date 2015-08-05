@@ -64,7 +64,7 @@ namespace SkyImagesAnalyzerLibraries
                 using (VectorOfPoint currContour = contoursDetected[i])
                 {
                     contoursArray.Add(currContour);
-                    previewImage.Draw(currContour, 0, currentColorBgr, -1); //.Draw(currContour, currentColorBgr, -1);
+                    previewImage.Draw(currContour.ToArray(), currentColorBgr, -1); //.Draw(currContour, currentColorBgr, -1);
                 }
             }
             
