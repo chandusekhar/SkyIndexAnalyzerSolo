@@ -1762,7 +1762,15 @@ namespace SkyImagesAnalyzer
             bgwClassifyWorker.DoWork += new DoWorkEventHandler((obj, args) =>
             {
                 SkyCloudClassification bgwClassificator = (SkyCloudClassification)((object[])args.Argument)[0];
-                bgwClassificator.Classify();
+                try
+                {
+                    bgwClassificator.Classify();
+                }
+                catch (Exception ex)
+                {
+                    theLogWindow = ServiceTools.LogAText(theLogWindow, ex.Message, true);
+                }
+                
                 args.Result = new object[] { bgwClassificator };
             });
 
