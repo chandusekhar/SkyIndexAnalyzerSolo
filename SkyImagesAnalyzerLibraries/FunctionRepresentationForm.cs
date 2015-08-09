@@ -210,6 +210,7 @@ namespace SkyImagesAnalyzerLibraries
                 Bgr markerColor = colorBlack;
                 theImage.Draw(theLine, markerColor, 2);
                 String message = currentMarkerValue.ToString();
+                //theImage.Draw(message, new Point(2, yPosition), Emgu.CV.CvEnum.FontFace.HersheyPlain, 1.0d, markerColor);
                 theImage.Draw(message, ref theFont, new Point(2, yPosition), markerColor);
                 currentMarkerValue += rulerValueGap;
                 nextYPositionDouble = (1.0d - ((currentMarkerValue - overallFuncMin) / (overallFuncMax - overallFuncMin))) * (double)(pictureHeight - 2 * serviceSpaceGap) + serviceSpaceGap;
@@ -233,6 +234,7 @@ namespace SkyImagesAnalyzerLibraries
                 theImage.Draw(theLine, markerColor, 2);
                 String message = currentMarkerValueX.ToString();
                 theImage.Draw(message, ref theFont, new Point(xPosition, pictureHeight - 10), markerColor);
+                // theImage.Draw(message, new Point(xPosition, pictureHeight - 10), Emgu.CV.CvEnum.FontFace.HersheyPlain, 1.0d, markerColor);
                 currentMarkerValueX += rulerValueGapX;
                 nextXPositionDouble = serviceSpaceGap + ((currentMarkerValueX - xSpaceMin) / (xSpaceMax - xSpaceMin)) * (double)(pictureWidth - 2 * serviceSpaceGap);
             }

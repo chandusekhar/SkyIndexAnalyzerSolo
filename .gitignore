@@ -4,9 +4,9 @@
 # specific components and projects folders
 packages/
 emgucvcode/
-_bin/
-_DBGbin/
-_DBGbin/libs/
+_bin/*
+_DBGbin/*
+_DBGbin/libs/*
 
 # User-specific files
 *.suo

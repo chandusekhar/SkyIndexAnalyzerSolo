@@ -7,6 +7,7 @@ using Emgu.CV.Structure;
 using System;
 using System.Drawing;
 using System.Linq;
+using Emgu.CV.Util;
 using MathNet.Numerics.LinearAlgebra.Double;
 using MKLwrapper;
 
@@ -140,20 +141,43 @@ namespace SkyImagesAnalyzerLibraries
         {
             Image<Gray, Byte> emguImage = img2process.Copy().Convert<Gray, Byte>();
             Image<Gray, Byte> BinaryEmguImage = emguImage.ThresholdBinary(new Gray(30), new Gray(255));
-            Contour<Point> imageContours = BinaryEmguImage.FindContours(CHAIN_APPROX_METHOD.CV_CHAIN_APPROX_SIMPLE, RETR_TYPE.CV_RETR_EXTERNAL);
+
+            //VectorOfVectorOfPoint imageContours = new VectorOfVectorOfPoint();
+            //CvInvoke.FindContours(BinaryEmguImage, imageContours, null, Emgu.CV.CvEnum.RetrType.External,
+            //    Emgu.CV.CvEnum.ChainApproxMethod.ChainApproxSimple);
+            //List<VectorOfPoint> contoursArray = new List<VectorOfPoint>();
+            //double currArea = 0.0;
+            //VectorOfPoint neededContour = imageContours[0];
+            //int count = imageContours.Size;
+            //for (int i = 0; i < count; i++)
+            //{
+            //    contoursArray.Add(imageContours[i]);
+            //}
+
+            //foreach (VectorOfPoint cnt in contoursArray)
+            //{
+            //    //double currCntrArea = CvInvoke.ContourArea(cnt);
+            //    double currCntrArea = CvInvoke.ContourArea(cnt);
+            //    if (currCntrArea > currArea)
+            //    {
+            //        currArea = currCntrArea;
+            //        neededContour = cnt;
+            //    }
+            //}
+
+            List <Contour<Point>> contoursArray = BinaryEmguImage.DetectContours(RETR_TYPE.CV_RETR_EXTERNAL);
+            Contour<Point> neededContour = contoursArray[0];
             double currArea = 0.0;
-            Contour<Point> neededContour = imageContours;
-            while (true)
+            foreach (Contour<Point> cnt in contoursArray)
             {
-                if (imageContours.Area > currArea)
+                double currCntrArea = cnt.Area;
+                if (currCntrArea > currArea)
                 {
-                    currArea = imageContours.Area;
-                    neededContour = imageContours;
+                    currArea = currCntrArea;
+                    neededContour = cnt;
                 }
-                imageContours = imageContours.HNext;
-                if (imageContours == null)
-                    break;
             }
+            
             maskSignificantArea = currArea;
 
             Image<Gray, Byte> maskImage = BinaryEmguImage.CopyBlank();
@@ -200,26 +224,70 @@ namespace SkyImagesAnalyzerLibraries
             Image<Gray, Byte> emguImage = img2process.Copy().Convert<Gray, Byte>();
             Image<Bgr, Byte> contourImage = emguImage.CopyBlank().Convert<Bgr, Byte>();
             Image<Gray, Byte> BinaryEmguImage = emguImage.ThresholdBinary(new Gray(30), new Gray(255));
-            Contour<Point> imageContours = BinaryEmguImage.FindContours(CHAIN_APPROX_METHOD.CV_CHAIN_APPROX_SIMPLE, RETR_TYPE.CV_RETR_EXTERNAL);
+
+            //VectorOfVectorOfPoint contoursDetected = new VectorOfVectorOfPoint();
+            //CvInvoke.FindContours(BinaryEmguImage, contoursDetected, null, Emgu.CV.CvEnum.RetrType.External,
+            //    Emgu.CV.CvEnum.ChainApproxMethod.ChainApproxSimple);
+
+            //// Contour<Point> imageContours = BinaryEmguImage.FindContours(CHAIN_APPROX_METHOD.CV_CHAIN_APPROX_SIMPLE, RETR_TYPE.CV_RETR_EXTERNAL);
+            //List<VectorOfPoint> contoursArray = new List<VectorOfPoint>();
+            //int count = contoursDetected.Size;
+            //for (int i = 0; i < count; i++)
+            //{
+            //    using (VectorOfPoint currContour = contoursDetected[i])
+            //    {
+            //        contoursArray.Add(currContour);
+            //    }
+            //}
+            //double currArea = 0.0;
+            //VectorOfPoint neededContour = new VectorOfPoint();
+            //foreach (VectorOfPoint contour in contoursArray)
+            //{
+            //    double currContourArea = CvInvoke.ContourArea(contour);
+            //    if (currContourArea > currArea)
+            //    {
+            //        neededContour = contour;
+            //        currArea = currContourArea;
+            //    }
+            //}
+
+            List<Contour<Point>> contoursArray = BinaryEmguImage.DetectContours(RETR_TYPE.CV_RETR_EXTERNAL);
+            double currArea = 0.0;
+            Contour<Point> neededContour = contoursArray[0];
+            foreach (Contour<Point> contour in contoursArray)
+            {
+                double currContourArea = contour.Area;
+                if (currContourArea > currArea)
+                {
+                    neededContour = contour;
+                    currArea = currContourArea;
+                }
+            }
+
 
             int lineWidth = (int)Math.Round(emguImage.Width / 150.0);
             if (lineWidth < 2) lineWidth = 2;
 
             contourImage = contourImage.AddWeighted(emguImage.Convert<Bgr, Byte>(), 0.0, 1.0, 0.0);
 
-            double currArea = 0.0;
-            Contour<Point> neededContour = imageContours;
-            while (true)
-            {
-                if (imageContours.Area > currArea)
-                {
-                    currArea = imageContours.Area;
-                    neededContour = imageContours;
-                }
-                imageContours = imageContours.HNext;
-                if (imageContours == null)
-                    break;
-            }
+            #region //obsolete
+            //Contour<Point> neededContour = imageContours;
+
+
+            //while (true)
+            //{
+            //    if (imageContours.Area > currArea)
+            //    {
+            //        currArea = imageContours.Area;
+            //        neededContour = imageContours;
+            //    }
+            //    imageContours = imageContours.HNext;
+            //    if (imageContours == null)
+            //        break;
+            //}
+
+            //contourImage.Draw(neededContour, new Bgr(Color.Green), 5);
+            #endregion //obsolete
 
             contourImage.Draw(neededContour, new Bgr(Color.Green), 5);
 
@@ -294,32 +362,63 @@ namespace SkyImagesAnalyzerLibraries
             }
 
             Image<Gray, Byte> tmpMaskImage = significantMaskImage.Copy();
-            Contour<Point> contoursDetected = tmpMaskImage.FindContours(Emgu.CV.CvEnum.CHAIN_APPROX_METHOD.CV_CHAIN_APPROX_NONE, Emgu.CV.CvEnum.RETR_TYPE.CV_RETR_LIST);
-            Contour<Point> contourFound = contoursDetected;
-            double areaDetected = contourFound.Area;
 
-            while (true)
+            //List<VectorOfPoint> contoursArray = tmpMaskImage.FindContours();
+            //VectorOfPoint contourFound = new VectorOfPoint();
+            //double areaDetected = 0.0d;
+            //foreach (VectorOfPoint currContour in contoursArray)
+            //{
+            //    double currContourArea = currContour.Area();
+            //    if (currContourArea > areaDetected)
+            //    {
+            //        contourFound = currContour;
+            //        areaDetected = currContourArea;
+            //    }
+            //}
+
+
+            List<Contour<Point>> contoursArray = tmpMaskImage.DetectContours();
+            Contour<Point> contourFound = contoursArray[0];
+            double areaDetected = 0.0d;
+            foreach (Contour<Point> currContour in contoursArray)
             {
-                Contour<Point> currContour = contoursDetected;
                 double currContourArea = currContour.Area;
                 if (currContourArea > areaDetected)
                 {
                     contourFound = currContour;
                     areaDetected = currContourArea;
                 }
+            }
 
-                contoursDetected = contoursDetected.HNext;
-                if (contoursDetected == null)
-                    break;
-            }
+
+
+            #region // obsolete
+            // Contour<Point> contoursDetected = tmpMaskImage.FindContours(Emgu.CV.CvEnum.CHAIN_APPROX_METHOD.CV_CHAIN_APPROX_NONE, Emgu.CV.CvEnum.RETR_TYPE.CV_RETR_LIST);
+            // Contour<Point> contourFound = contoursDetected;
+            // double areaDetected = contourFound.Area;
+
+            //while (true)
+            //{
+            //    Contour<Point> currContour = contoursDetected;
+            //    double currContourArea = currContour.Area;
+            //    if (currContourArea > areaDetected)
+            //    {
+            //        contourFound = currContour;
+            //        areaDetected = currContourArea;
+            //    }
+
+            //    contoursDetected = contoursDetected.HNext;
+            //    if (contoursDetected == null)
+            //        break;
+            //}
+            #endregion // obsolete
+
             //нашли контур с максимальной площадью
-            List<PointD> pointsList = new List<PointD>();
-            foreach (Point contourPoint in contourFound)
-            {
-                if ((contourPoint.X < 10) || (contourPoint.X > tmpMaskImage.Width - 10) ||
-                    (contourPoint.Y > tmpMaskImage.Height - 10) || (contourPoint.Y < 10)) continue;
-                pointsList.Add(new PointD(contourPoint));
-            }
+            List<PointD> pointsList = (from contourPoint in contourFound.ToArray()
+                where
+                    (contourPoint.X >= 10) && (contourPoint.X <= tmpMaskImage.Width - 10) &&
+                    (contourPoint.Y <= tmpMaskImage.Height - 10) && (contourPoint.Y >= 10)
+                select new PointD(contourPoint)).ToList();
 
 
 //#if DEBUG
@@ -964,177 +1063,182 @@ namespace SkyImagesAnalyzerLibraries
 
 
 
+        #region // obsolete - GetConvexContoursListFromNonConvexContour
 
         /// <summary>
         /// Gets the convex contours list from non convex contour.
         /// </summary>
         /// <param name="sourceContour">The source contour.</param>
         /// <returns>List{Contour{Point}}.</returns>
-        public static List<Contour<Point>> GetConvexContoursListFromNonConvexContour(Contour<Point> sourceContour)
-        {
-            List<Contour<Point>> theResultContoursList = new List<Contour<Point>>();
-            if (sourceContour.Convex)
-            {
-                theResultContoursList.Add(sourceContour);
-                return theResultContoursList;
-            }
+        //public static List<Contour<Point>> GetConvexContoursListFromNonConvexContour(Contour<Point> sourceContour)
+        //{
+        //    List<Contour<Point>> theResultContoursList = new List<Contour<Point>>();
+        //    if (sourceContour.Convex)
+        //    {
+        //        theResultContoursList.Add(sourceContour);
+        //        return theResultContoursList;
+        //    }
 
-            Seq<Point> theHull = sourceContour.GetConvexHull(ORIENTATION.CV_CLOCKWISE, new MemStorage());
-            Seq<MCvConvexityDefect> convexityDefects = sourceContour.GetConvexityDefacts(new MemStorage(),
-                ORIENTATION.CV_CLOCKWISE);
-            if (convexityDefects.Count() == 1)
-            {
-                //разрежем по направлению медианы невыпуклости
-                MCvConvexityDefect theDefect = convexityDefects[0];
-                Point startPoint = theDefect.StartPoint;
-                int startPointIndex = GetSeqElementIndex(sourceContour, startPoint);
-                Point endPoint = theDefect.EndPoint;
-                int endPointIndex = GetSeqElementIndex(sourceContour, endPoint);
-                double dist = theDefect.Depth;
-                Point depthPoint = theDefect.DepthPoint;
-                int depthPointIndex = GetSeqElementIndex(sourceContour, depthPoint);
+        //    Seq<Point> theHull = sourceContour.GetConvexHull(ORIENTATION.CV_CLOCKWISE, new MemStorage());
+        //    Seq<MCvConvexityDefect> convexityDefects = sourceContour.GetConvexityDefacts(new MemStorage(),
+        //        ORIENTATION.CV_CLOCKWISE);
+        //    if (convexityDefects.Count() == 1)
+        //    {
+        //        //разрежем по направлению медианы невыпуклости
+        //        MCvConvexityDefect theDefect = convexityDefects[0];
+        //        Point startPoint = theDefect.StartPoint;
+        //        int startPointIndex = GetSeqElementIndex(sourceContour, startPoint);
+        //        Point endPoint = theDefect.EndPoint;
+        //        int endPointIndex = GetSeqElementIndex(sourceContour, endPoint);
+        //        double dist = theDefect.Depth;
+        //        Point depthPoint = theDefect.DepthPoint;
+        //        int depthPointIndex = GetSeqElementIndex(sourceContour, depthPoint);
 
-                double aNorm = (double)(startPoint.X - endPoint.X);
-                double bNorm = (double)(startPoint.Y - endPoint.Y);
-                double cNorm = -aNorm * (double)depthPoint.X - bNorm * (double)depthPoint.Y;
-                double minD = Math.Min(PointToABCLineDistance(aNorm, bNorm, cNorm, startPoint), PointToABCLineDistance(aNorm, bNorm, cNorm, endPoint));
-                int theNeededIndex = depthPointIndex;
+        //        double aNorm = (double)(startPoint.X - endPoint.X);
+        //        double bNorm = (double)(startPoint.Y - endPoint.Y);
+        //        double cNorm = -aNorm * (double)depthPoint.X - bNorm * (double)depthPoint.Y;
+        //        double minD = Math.Min(PointToABCLineDistance(aNorm, bNorm, cNorm, startPoint), PointToABCLineDistance(aNorm, bNorm, cNorm, endPoint));
+        //        int theNeededIndex = depthPointIndex;
 
-                for (int i = 0; i < sourceContour.Count(); i++)
-                {
-                    Point currSeqPoint = sourceContour[i];
-                    if (IsIndexBetweenOtherTwo(startPointIndex, endPointIndex, i)) continue;
-                    double theDistance = PointToABCLineDistance(aNorm, bNorm, cNorm, currSeqPoint);
-                    if (theDistance < minD)
-                    {
-                        minD = theDistance;
-                        theNeededIndex = i;
-                    }
-                }
+        //        for (int i = 0; i < sourceContour.Count(); i++)
+        //        {
+        //            Point currSeqPoint = sourceContour[i];
+        //            if (IsIndexBetweenOtherTwo(startPointIndex, endPointIndex, i)) continue;
+        //            double theDistance = PointToABCLineDistance(aNorm, bNorm, cNorm, currSeqPoint);
+        //            if (theDistance < minD)
+        //            {
+        //                minD = theDistance;
+        //                theNeededIndex = i;
+        //            }
+        //        }
 
-                MCvSlice slice1 = new MCvSlice(depthPointIndex, theNeededIndex);
-                MCvSlice slice2 = new MCvSlice(theNeededIndex, depthPointIndex);
-                Contour<Point> slicedContour1 = (Contour<Point>)sourceContour.Slice(slice1, new MemStorage(), true);
-                Contour<Point> slicedContour2 = (Contour<Point>)sourceContour.Slice(slice2, new MemStorage(), true);
-                theResultContoursList.Add(slicedContour1);
-                theResultContoursList.Add(slicedContour2);
-            }
-            else
-            {
-                //разрежем от первой точки невыпуклости до точки невыпуклости самой ближней к ее медиане
-                MCvConvexityDefect theDefect = convexityDefects[0];
-                Point startPoint = theDefect.StartPoint;
-                int startPointIndex = GetSeqElementIndex(sourceContour, startPoint);
-                Point endPoint = theDefect.EndPoint;
-                int endPointIndex = GetSeqElementIndex(sourceContour, endPoint);
-                double dist = theDefect.Depth;
-                Point depthPoint = theDefect.DepthPoint;
-                int depthPointIndex = GetSeqElementIndex(sourceContour, depthPoint);
+        //        MCvSlice slice1 = new MCvSlice(depthPointIndex, theNeededIndex);
+        //        MCvSlice slice2 = new MCvSlice(theNeededIndex, depthPointIndex);
+        //        Contour<Point> slicedContour1 = (Contour<Point>)sourceContour.Slice(slice1, new MemStorage(), true);
+        //        Contour<Point> slicedContour2 = (Contour<Point>)sourceContour.Slice(slice2, new MemStorage(), true);
+        //        theResultContoursList.Add(slicedContour1);
+        //        theResultContoursList.Add(slicedContour2);
+        //    }
+        //    else
+        //    {
+        //        //разрежем от первой точки невыпуклости до точки невыпуклости самой ближней к ее медиане
+        //        MCvConvexityDefect theDefect = convexityDefects[0];
+        //        Point startPoint = theDefect.StartPoint;
+        //        int startPointIndex = GetSeqElementIndex(sourceContour, startPoint);
+        //        Point endPoint = theDefect.EndPoint;
+        //        int endPointIndex = GetSeqElementIndex(sourceContour, endPoint);
+        //        double dist = theDefect.Depth;
+        //        Point depthPoint = theDefect.DepthPoint;
+        //        int depthPointIndex = GetSeqElementIndex(sourceContour, depthPoint);
 
-                double aNorm = (double)(startPoint.X - endPoint.X);
-                double bNorm = (double)(startPoint.Y - endPoint.Y);
-                double cNorm = -aNorm * (double)depthPoint.X - bNorm * (double)depthPoint.Y;
-                //double minD = Math.Min(PointToABCLineDistance(aNorm, bNorm, cNorm, startPoint), PointToABCLineDistance(aNorm, bNorm, cNorm, endPoint));
-                double minD = 0.0d;
-                int theNeededIndex = depthPointIndex;
+        //        double aNorm = (double)(startPoint.X - endPoint.X);
+        //        double bNorm = (double)(startPoint.Y - endPoint.Y);
+        //        double cNorm = -aNorm * (double)depthPoint.X - bNorm * (double)depthPoint.Y;
+        //        //double minD = Math.Min(PointToABCLineDistance(aNorm, bNorm, cNorm, startPoint), PointToABCLineDistance(aNorm, bNorm, cNorm, endPoint));
+        //        double minD = 0.0d;
+        //        int theNeededIndex = depthPointIndex;
 
-                for (int i = 1; i < convexityDefects.Count(); i++)
-                {
-                    Point currSeqPoint = convexityDefects[i].DepthPoint;
-                    if (IsIndexBetweenOtherTwo(startPointIndex, endPointIndex, i)) continue;
-                    double theDistance = PointToABCLineDistance(aNorm, bNorm, cNorm, currSeqPoint);
-                    if ((theDistance < minD) || (minD == 0.0d))
-                    {
-                        minD = theDistance;
-                        theNeededIndex = GetSeqElementIndex(sourceContour, currSeqPoint);
-                    }
-                }
-
-
-                MCvSlice slice1 = new MCvSlice(depthPointIndex, theNeededIndex);
-                MCvSlice slice2 = new MCvSlice(theNeededIndex, depthPointIndex);
-                MemStorage memStorage1 = new MemStorage();
-                Seq<Point> slicedSeq1 = sourceContour.Slice(slice1, memStorage1, true);
-                Contour<Point> slicedContour1 = new Contour<Point>(slicedSeq1.Ptr, memStorage1);
-                if ((!slicedContour1.Convex) && (slicedContour1.Area >= 9))
-                {
-                    List<Contour<Point>> slicedContour1Subcontours =
-                        GetConvexContoursListFromNonConvexContour(slicedContour1);
-                    foreach (Contour<Point> slicedContour1Subcontour in slicedContour1Subcontours)
-                    {
-                        theResultContoursList.Add(slicedContour1Subcontour);
-                    }
-                }
-                else
-                {
-                    theResultContoursList.Add(slicedContour1);
-                }
-                MemStorage memStorage2 = new MemStorage();
-                Seq<Point> slicedSeq2 = sourceContour.Slice(slice2, memStorage2, true);
-                Contour<Point> slicedContour2 = new Contour<Point>(slicedSeq2.Ptr, memStorage2);
-                if ((!slicedContour2.Convex) && (slicedContour2.Area >= 9))
-                {
-                    List<Contour<Point>> slicedContour2Subcontours =
-                        GetConvexContoursListFromNonConvexContour(slicedContour2);
-                    foreach (Contour<Point> slicedContour1Subcontour in slicedContour2Subcontours)
-                    {
-                        theResultContoursList.Add(slicedContour1Subcontour);
-                    }
-                }
-                else
-                {
-                    theResultContoursList.Add(slicedContour2);
-                }
-
-            }
-            return theResultContoursList;
-        }
+        //        for (int i = 1; i < convexityDefects.Count(); i++)
+        //        {
+        //            Point currSeqPoint = convexityDefects[i].DepthPoint;
+        //            if (IsIndexBetweenOtherTwo(startPointIndex, endPointIndex, i)) continue;
+        //            double theDistance = PointToABCLineDistance(aNorm, bNorm, cNorm, currSeqPoint);
+        //            if ((theDistance < minD) || (minD == 0.0d))
+        //            {
+        //                minD = theDistance;
+        //                theNeededIndex = GetSeqElementIndex(sourceContour, currSeqPoint);
+        //            }
+        //        }
 
 
+        //        MCvSlice slice1 = new MCvSlice(depthPointIndex, theNeededIndex);
+        //        MCvSlice slice2 = new MCvSlice(theNeededIndex, depthPointIndex);
+        //        MemStorage memStorage1 = new MemStorage();
+        //        Seq<Point> slicedSeq1 = sourceContour.Slice(slice1, memStorage1, true);
+        //        Contour<Point> slicedContour1 = new Contour<Point>(slicedSeq1.Ptr, memStorage1);
+        //        if ((!slicedContour1.Convex) && (slicedContour1.Area >= 9))
+        //        {
+        //            List<Contour<Point>> slicedContour1Subcontours =
+        //                GetConvexContoursListFromNonConvexContour(slicedContour1);
+        //            foreach (Contour<Point> slicedContour1Subcontour in slicedContour1Subcontours)
+        //            {
+        //                theResultContoursList.Add(slicedContour1Subcontour);
+        //            }
+        //        }
+        //        else
+        //        {
+        //            theResultContoursList.Add(slicedContour1);
+        //        }
+        //        MemStorage memStorage2 = new MemStorage();
+        //        Seq<Point> slicedSeq2 = sourceContour.Slice(slice2, memStorage2, true);
+        //        Contour<Point> slicedContour2 = new Contour<Point>(slicedSeq2.Ptr, memStorage2);
+        //        if ((!slicedContour2.Convex) && (slicedContour2.Area >= 9))
+        //        {
+        //            List<Contour<Point>> slicedContour2Subcontours =
+        //                GetConvexContoursListFromNonConvexContour(slicedContour2);
+        //            foreach (Contour<Point> slicedContour1Subcontour in slicedContour2Subcontours)
+        //            {
+        //                theResultContoursList.Add(slicedContour1Subcontour);
+        //            }
+        //        }
+        //        else
+        //        {
+        //            theResultContoursList.Add(slicedContour2);
+        //        }
+
+        //    }
+        //    return theResultContoursList;
+        //}
 
 
-        private static int GetSeqElementIndex(Seq<Point> theSequence, Point thePointItem)
-        {
-            for (int i = 0; i < theSequence.Count(); i++)
-            {
-                Point thePoint = theSequence[i];
-                if (thePoint == thePointItem)
-                {
-                    return i;
-                }
-            }
-            return 0;
-        }
 
 
-        private static bool IsIndexBetweenOtherTwo(int startIndex, int endIndex, int testIndex)
-        {
-            if (startIndex < endIndex)
-            {
-                if ((testIndex > startIndex) && (testIndex < endIndex))
-                {
-                    return true;
-                }
-                else
-                {
-                    return false;
-                }
-            }
-            else if (startIndex > endIndex)
-            {
-                return IsIndexBetweenOtherTwo(0, endIndex, testIndex) || (testIndex > startIndex);
-            }
-            return false;
-        }
+
+        //private static int GetSeqElementIndex(Seq<Point> theSequence, Point thePointItem)
+        //{
+        //    for (int i = 0; i < theSequence.Count(); i++)
+        //    {
+        //        Point thePoint = theSequence[i];
+        //        if (thePoint == thePointItem)
+        //        {
+        //            return i;
+        //        }
+        //    }
+        //    return 0;
+        //}
 
 
-        private static double PointToABCLineDistance(double lineParamA, double lineParamB, double lineParamC, Point testPoint)
-        {
-            double dist = lineParamA * testPoint.X + lineParamB * testPoint.Y + lineParamC;
-            double dValRadical = Math.Sqrt(lineParamA * lineParamA + lineParamB * lineParamB);
-            dist = dist / dValRadical;
-            return Math.Abs(dist);
-        }
+
+        //private static bool IsIndexBetweenOtherTwo(int startIndex, int endIndex, int testIndex)
+        //{
+        //    if (startIndex < endIndex)
+        //    {
+        //        if ((testIndex > startIndex) && (testIndex < endIndex))
+        //        {
+        //            return true;
+        //        }
+        //        else
+        //        {
+        //            return false;
+        //        }
+        //    }
+        //    else if (startIndex > endIndex)
+        //    {
+        //        return IsIndexBetweenOtherTwo(0, endIndex, testIndex) || (testIndex > startIndex);
+        //    }
+        //    return false;
+        //}
+
+
+        //private static double PointToABCLineDistance(double lineParamA, double lineParamB, double lineParamC, Point testPoint)
+        //{
+        //    double dist = lineParamA * testPoint.X + lineParamB * testPoint.Y + lineParamC;
+        //    double dValRadical = Math.Sqrt(lineParamA * lineParamA + lineParamB * lineParamB);
+        //    dist = dist / dValRadical;
+        //    return Math.Abs(dist);
+        //}
+
+        #endregion // obsolete - GetConvexContoursListFromNonConvexContour
 
 
 
@@ -1245,7 +1349,7 @@ namespace SkyImagesAnalyzerLibraries
             {
                 double koeff = ((double)maxSideLength / (double)sourceMaxSide);
                 Image<Bgr, byte> retImg = imgToResize.Copy();
-                retImg = retImg.Resize(koeff, INTER.CV_INTER_AREA);
+                retImg = retImg.Resize(koeff, INTER.CV_INTER_AREA); // 3.0 : Inter.Area
                 return retImg;
             }
             else

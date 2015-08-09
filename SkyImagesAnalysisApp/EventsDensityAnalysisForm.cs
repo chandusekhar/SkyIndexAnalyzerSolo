@@ -8,6 +8,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Documents;
 using System.Windows.Forms;
 using System.Xml.Serialization;
 using Emgu.CV;
@@ -188,6 +189,7 @@ namespace SkyImagesAnalyzer
                 //else return 1.0d;
             });
             Image<Gray, Byte> imgMask = ImageProcessing.grayscaleImageFromDenseMatrixWithFixedValuesBounds(dmMask, 0.0d, 1.0d);
+            // imgMask = imgMask.Flip(FlipType.Vertical);
             imgMask = imgMask.Flip(FLIP.VERTICAL);
 
 
@@ -217,8 +219,10 @@ namespace SkyImagesAnalyzer
             foreach (ConnectedObjectsAtASlice currSlice in lSlicesData)
             {
                 if (lSlicesData.IndexOf(currSlice) == 0) continue; // самый верхний пропускаем
-                
-                List<Tuple<Contour<Point>, Contour<Point>>> currSliceCoveringContours =
+
+                //List<Tuple<Contour<Point>, Contour<Point>>> currSliceCoveringContours =
+                //    new List<Tuple<Contour<Point>, Contour<Point>>>();
+                List<Tuple< Contour < Point >, Contour<Point>>> currSliceCoveringContours =
                     new List<Tuple<Contour<Point>, Contour<Point>>>();
                 //item1 - внутренний, из предыдущего слайса
                 //item2 - внешний, из текущего слайса
@@ -265,9 +269,13 @@ namespace SkyImagesAnalyzer
                             // попробуем по направлению градиента - относить точку к тому контуру, на который укажет вектор градиента
                             Contour<Point> currCoveringContour = currGroup.Key; // item2 - внешний, из текущего слайса - см.строку группировки
 
+
+
+                            Rectangle currCoveringContourBoundingRectangle = currCoveringContour.BoundingRectangle;
+
                             Image<Gray, byte> tmpImg1 =
-                                new Image<Gray, byte>(new Size(currCoveringContour.BoundingRectangle.Right,
-                                    currCoveringContour.BoundingRectangle.Bottom));
+                                new Image<Gray, byte>(new Size(currCoveringContourBoundingRectangle.Right,
+                                    currCoveringContourBoundingRectangle.Bottom));
                             tmpImg1.Draw(currCoveringContour, white, -1);
                             foreach (Tuple<Contour<Point>, Contour<Point>> tpl in currGroup)
                             {
@@ -304,10 +312,10 @@ namespace SkyImagesAnalyzer
                             Contour<Point> themassCentersPolygon = new Contour<Point>(new MemStorage());
                             themassCentersPolygon.PushMulti(lPtdMassCenters.ConvertAll<Point>(ptd => ptd.Point()).ToArray(),
                                 BACK_OR_FRONT.BACK);
+                            //themassCentersPolygon.Push(lPtdMassCenters.ConvertAll<Point>(ptd => ptd.Point()).ToArray());
                             Image<Gray, byte> tmpImg = imgMask.CopyBlank();
                             tmpImg.Draw(themassCentersPolygon, white, -1);
-                            themassCentersPolygon = tmpImg.FindContours(CHAIN_APPROX_METHOD.CV_CHAIN_APPROX_SIMPLE,
-                                RETR_TYPE.CV_RETR_LIST);
+                            themassCentersPolygon = tmpImg.DetectContours()[0];
 
 
 
@@ -333,29 +341,36 @@ namespace SkyImagesAnalyzer
                                 tmpImgCurrCont.Draw(tpl.Item1, white, -1);
                                 lImagesToDetectNewContours.Add(tmpImgCurrCont);
                             }
+
+
                             for (int cntIdx = 0; cntIdx < currGroup.Count(); cntIdx++)
                             {
                                 foreach (Point pt in llArraysOfPointsAdding[cntIdx])
                                 {
                                     lImagesToDetectNewContours[cntIdx][pt.Y, pt.X] = white;
                                 }
-                                Contour<Point> cnt1 =
-                                    lImagesToDetectNewContours[cntIdx].FindContours(
-                                        Emgu.CV.CvEnum.CHAIN_APPROX_METHOD.CV_CHAIN_APPROX_SIMPLE,
-                                        Emgu.CV.CvEnum.RETR_TYPE.CV_RETR_LIST);
-                                //найдем наибольший из получившихся контуров
-                                List<Contour<Point>> lTmpCtrs = new List<Contour<Point>>();
-                                while (true)
-                                {
-                                    lTmpCtrs.Add(cnt1);
-                                    cnt1 = cnt1.HNext;
-                                    if (cnt1 == null)
-                                        break;
-                                }
+
+                                #region // obsolete
+                                //Contour<Point> cnt1 =
+                                //    lImagesToDetectNewContours[cntIdx].FindContours(
+                                //        Emgu.CV.CvEnum.CHAIN_APPROX_METHOD.CV_CHAIN_APPROX_SIMPLE,
+                                //        Emgu.CV.CvEnum.RETR_TYPE.CV_RETR_LIST);
+                                //List<Contour<Point>> lTmpCtrs = new List<Contour<Point>>();
+                                //while (true)
+                                //{
+                                //    lTmpCtrs.Add(cnt1);
+                                //    cnt1 = cnt1.HNext;
+                                //    if (cnt1 == null)
+                                //        break;
+                                //}
+                                #endregion // obsolete
+
+                                ////найдем наибольший из получившихся контуров
+                                List<Contour<Point>> lTmpCtrs = lImagesToDetectNewContours[cntIdx].DetectContours();
 
                                 foundClassesContours.Remove(currGroup.ElementAt(cntIdx).Item1);
                                 double maxArea = lTmpCtrs.Max(cntr => cntr.Area);
-                                int idxOfMaxAreaContour = lTmpCtrs.FindIndex(cntr => cntr.Area == maxArea);
+                                int idxOfMaxAreaContour = lTmpCtrs.FindIndex(cntr => cntr.Area >= maxArea);
                                 foundClassesContours.Add(lTmpCtrs[idxOfMaxAreaContour]);
                             }
                         }
@@ -412,6 +427,8 @@ namespace SkyImagesAnalyzer
 
 
 
+        //private int AttachPointToOneOfConcurrentContours(List<Contour<Point>> contours, List<PointD> lPtdMassCenters,
+        //    Contour<Point> themassCentersPolygon, Point thePoint, List<DenseMatrix> dmGradField)
         private int AttachPointToOneOfConcurrentContours(List<Contour<Point>> contours, List<PointD> lPtdMassCenters,
             Contour<Point> themassCentersPolygon, Point thePoint, List<DenseMatrix> dmGradField)
         {
@@ -427,6 +444,7 @@ namespace SkyImagesAnalyzer
             {
                 return AttachPointToOneOf_TWO_ConcurrentContours(contours, lPtdMassCenters, thePoint, dmGradField);
             }
+            // 3.0 : else if (themassCentersPolygon.InContour(thePointD.PointF()))
             else if (themassCentersPolygon.InContour(thePointD.PointF()) >= 0.0d)
             {
                 List<DenseVector> lDvDirectionVectorsToMassCenters = lPtdMassCenters.ConvertAll(ptdMassCenter =>
@@ -453,10 +471,8 @@ namespace SkyImagesAnalyzer
             else
             {
                 // посчитаем расстояние до границ каждого из контуров. Для минимального - к нему и отнесем.
-                List<double> lDistances = contours.ConvertAll(cntr =>
-                {
-                    return -cntr.Distance(thePointD.PointF());
-                });
+                List<double> lDistances =
+                    contours.ConvertAll(cntr => -cntr.Distance(thePointD.PointF())); // 3.0 : -CvInvoke.PointPolygonTest(cntr, thePointD.PointF(), true)
                 int minIdx = lDistances.IndexOf(lDistances.Min());
                 return minIdx;
             }
@@ -526,10 +542,8 @@ namespace SkyImagesAnalyzer
             else
             {
                 // точка снаружи пары - берем ближайшую
-                List<double> lDistances = contours.ConvertAll(cntr =>
-                {
-                    return -cntr.Distance(thePointD.PointF());
-                });
+                List<double> lDistances =
+                    contours.ConvertAll(cntr => -cntr.Distance(thePointD.PointF())); // 3.0 : CvInvoke.PointPolygonTest(cntr, thePointD.PointF(), true)
                 int minIdx = lDistances.IndexOf(lDistances.Min());
                 return minIdx;
             }
@@ -588,7 +602,7 @@ namespace SkyImagesAnalyzer
         public DenseMatrix dmXvalues = null;
         public DenseMatrix dmYvalues = null;
         public double slicingThresholdingValue = 0.0d;
-        public List<Contour<System.Drawing.Point>> edgeContoursList = new List<Contour<System.Drawing.Point>>();
+        public List<Contour<Point>> edgeContoursList = new List<Contour<Point>>();
         //public List<DenseMatrix> objectsMasksList = new List<DenseMatrix>();
         public Image<Bgr, byte> previewImage = null;
 
@@ -611,23 +625,36 @@ namespace SkyImagesAnalyzer
             dmDataBinary.MapInplace(dVal => (dVal >= slicingThresholdingValue) ? (1.0d) : (0.0d));
             Image<Gray, Byte> imgDataBinary = ImageProcessing.grayscaleImageFromDenseMatrixWithFixedValuesBounds(dmDataBinary, 0.0d, 1.0d);
             previewImage = imgDataBinary.CopyBlank().Convert<Bgr, Byte>();
-            Contour<System.Drawing.Point> contoursDetected =
-                imgDataBinary.FindContours(Emgu.CV.CvEnum.CHAIN_APPROX_METHOD.CV_CHAIN_APPROX_SIMPLE,
-                    Emgu.CV.CvEnum.RETR_TYPE.CV_RETR_LIST);
-            edgeContoursList = new List<Contour<System.Drawing.Point>>();
+            // VectorOfVectorOfPoint contoursDetected = new VectorOfVectorOfPoint();
+            List<Contour<Point>> edgeContoursList = imgDataBinary.DetectContours();
 
-            var colorGen = new RandomPastelColorGenerator();
-            while (true)
+            #region // EmguCV 3.0
+            //CvInvoke.FindContours(imgDataBinary, contoursDetected, null, RetrType.List,
+            //    ChainApproxMethod.ChainApproxSimple);
+            //imgDataBinary.FindContours(Emgu.CV.CvEnum.CHAIN_APPROX_METHOD.CV_CHAIN_APPROX_SIMPLE,
+            //    Emgu.CV.CvEnum.RETR_TYPE.CV_RETR_LIST);
+            //edgeContoursList = new List<VectorOfPoint>();
+            //int count = contoursDetected.Size;
+            //for (int i = 0; i < count; i++)
+            //{
+            //    Color currentColor = colorGen.GetNext();
+            //    var currentColorBgr = new Bgr(currentColor);
+            //    using (VectorOfPoint currContour = contoursDetected[i])
+            //    {
+            //        edgeContoursList.Add(currContour);
+            //        previewImage.Draw(currContour.ToArray(), currentColorBgr, -1);
+            //    }
+            //}
+            #endregion // EmguCV 3.0
+
+
+            RandomPastelColorGenerator colorGen = new RandomPastelColorGenerator();
+
+            foreach (Contour<Point> currContour in edgeContoursList)
             {
                 Color currentColor = colorGen.GetNext();
-                var currentColorBgr = new Bgr(currentColor);
-                Contour<System.Drawing.Point> currContour = contoursDetected;
-                edgeContoursList.Add(currContour);
+                Bgr currentColorBgr = new Bgr(currentColor);
                 previewImage.Draw(currContour, currentColorBgr, -1);
-
-                contoursDetected = contoursDetected.HNext;
-                if (contoursDetected == null)
-                    break;
             }
         }
 

@@ -2123,6 +2123,7 @@ namespace IofffeVesselInfoStream
             {
                 thickness = 2,
             };
+            // retImg.Draw(strSign, textBarsCases[0].ptTextBaselineStart, Emgu.CV.CvEnum.FontFace.HersheyPlain, 2.0d, new Bgr(Color.Green), 2);
             retImg.Draw(strSign, ref theFont, textBarsCases[0].ptTextBaselineStart, new Bgr(Color.Green));
             retImg.Draw(textBarsCases[0].rectSurroundingBar, new Bgr(Color.Green), 2);
 

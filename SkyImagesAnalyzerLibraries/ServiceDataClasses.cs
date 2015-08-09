@@ -1565,6 +1565,37 @@ namespace SkyImagesAnalyzerLibraries
 
 
 
+        public GPSdata(double doubleLat, double doubleLon)
+        {
+            try
+            {
+                latHemisphere = (doubleLat < 0) ? ("S") : ("N");
+                double doubleLatInternal = Math.Abs(doubleLat);
+                lonHemisphere = (doubleLon < 0) ? ("W") : ("E");
+                double doubleLonInternal = Math.Abs(doubleLon);
+
+                int intLat = (int)doubleLatInternal;  // Truncate the decimals
+                double t1 = (doubleLatInternal - intLat) * 60;
+                int minLat = (int)t1;
+                double secLat = (t1 - minLat) * 60;
+                lat = intLat*100.0d + minLat + secLat/100.0d;
+
+                int intLon = (int)doubleLonInternal;  // Truncate the decimals
+                double t2 = (doubleLonInternal - intLon) * 60;
+                int minLon = (int)t2;
+                double secLon = (t2 - minLon) * 60;
+                lon = intLon*100.0d + minLon + secLon/100.0d; // Convert.ToDouble("" + intLon.ToString() + minLon.ToString("d02") + "," + secLon.ToString("F02").Replace(",", ""));
+            }
+            catch (Exception)
+            {
+                validGPSdata = false;
+                return;
+            }
+        }
+
+
+
+
         public GPSdata(IEnumerable<double> source)
         {
             if (source.Count() == 2)

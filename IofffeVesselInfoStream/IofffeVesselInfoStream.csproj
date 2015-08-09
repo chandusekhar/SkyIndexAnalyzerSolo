@@ -61,17 +61,16 @@
       <HintPath>..\..\components\EmguCV-2.4.10-compiled\bin\debug\x64\Emgu.CV.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="Emgu.CV.UI">
+      <HintPath>..\..\components\EmguCV-2.4.10-compiled\bin\debug\x64\Emgu.CV.UI.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
     <Reference Include="Emgu.Util">
       <HintPath>..\..\components\EmguCV-2.4.10-compiled\bin\debug\x64\Emgu.Util.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="MathNet.Numerics">
       <HintPath>..\packages\MathNet.Numerics.3.5.0\lib\net40\MathNet.Numerics.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="MRG.Controls.UI, Version=1.0.5304.31396, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\_DBGbin\libs\MRG.Controls.UI.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="System" />
@@ -138,6 +137,11 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\MRG.Controls.UI\MRG.Controls.UI.csproj">
+      <Project>{48e18b56-4c37-4d69-aba7-429c42b45aac}</Project>
+      <Name>MRG.Controls.UI</Name>
+      <Private>False</Private>
+    </ProjectReference>
     <ProjectReference Include="..\SkyImagesAnalyzerLibraries\SkyImagesAnalyzerLibraries.csproj">
       <Project>{7beac8e4-e53f-466a-b824-1fe69e60d114}</Project>
       <Name>SkyImagesAnalyzerLibraries</Name>

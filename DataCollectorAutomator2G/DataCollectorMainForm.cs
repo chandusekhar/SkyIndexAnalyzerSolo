@@ -1015,6 +1015,7 @@ namespace DataCollectorAutomator
                     //}
                     #endregion // obsolete
                     #endregion dump the rest GPS data to nc-file
+
                     
                     #region dump the rest pressure data to nc-file
                     if (tsCollectedPressureData.Count > 0)

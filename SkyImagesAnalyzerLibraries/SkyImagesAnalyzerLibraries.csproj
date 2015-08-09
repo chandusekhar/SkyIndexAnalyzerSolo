@@ -66,15 +66,15 @@
       <HintPath>..\..\components\ColorMine\bin\x64\Release\ColorMine.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="Emgu.CV, Version=2.9.0.0, Culture=neutral, PublicKeyToken=7281126722ab4438, processorArchitecture=AMD64">
+    <Reference Include="Emgu.CV, Version=3.0.0.2157, Culture=neutral, PublicKeyToken=7281126722ab4438, processorArchitecture=AMD64">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\components\EmguCV-2.4.10-compiled\bin\debug\x64\Emgu.CV.dll</HintPath>
     </Reference>
-    <Reference Include="Emgu.CV.UI, Version=2.9.0.0, Culture=neutral, PublicKeyToken=7281126722ab4438, processorArchitecture=AMD64">
+    <Reference Include="Emgu.CV.UI, Version=3.0.0.2157, Culture=neutral, PublicKeyToken=7281126722ab4438, processorArchitecture=AMD64">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\components\EmguCV-2.4.10-compiled\bin\debug\x64\Emgu.CV.UI.dll</HintPath>
     </Reference>
-    <Reference Include="Emgu.Util, Version=2.9.0.0, Culture=neutral, PublicKeyToken=7281126722ab4438, processorArchitecture=AMD64">
+    <Reference Include="Emgu.Util, Version=3.0.0.2157, Culture=neutral, PublicKeyToken=7281126722ab4438, processorArchitecture=AMD64">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\components\EmguCV-2.4.10-compiled\bin\debug\x64\Emgu.Util.dll</HintPath>
     </Reference>
@@ -340,8 +340,7 @@
     </PostBuildEvent>
   </PropertyGroup>
   <PropertyGroup>
-    <PreBuildEvent>
-    </PreBuildEvent>
+    <PreBuildEvent>copy D:\_gulevlab\components\EmguCV-2.4.10-compiled\bin\release\x64\x64\*.* $(TargetDir)</PreBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

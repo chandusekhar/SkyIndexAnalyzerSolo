@@ -255,13 +255,13 @@ namespace SkyImagesAnalyzerLibraries
 
             #region Y
 
-            MCvFont theFont = new MCvFont(FONT.CV_FONT_HERSHEY_PLAIN, 1.0d, 1.0d);
-            theFont.thickness = 1;
+            //MCvFont theFont = new MCvFont(FONT.CV_FONT_HERSHEY_PLAIN, 1.0d, 1.0d);
+            //theFont.thickness = 1;
 
             // замерим высоту подписей по X по значению в минимуме
             string strMinXvalueMarker = xAxisValuesConversionToRepresentTicksValues(xSpaceMin);
             TextBarImage minXvalueMarkerTextBar = new TextBarImage(strMinXvalueMarker,
-                new Image<Bgr, byte>(new Size(pictureWidth, pictureHeight)), ref theFont);
+                new Image<Bgr, byte>(new Size(pictureWidth, pictureHeight)));
             int barHeight = minXvalueMarkerTextBar.textBarSize.Height;
             if (btmServiceSpaceGapY < 1.5 * barHeight)
             {
@@ -297,7 +297,7 @@ namespace SkyImagesAnalyzerLibraries
                 }
 
                 TextBarImage currTextBar = new TextBarImage(currMarkerPresentation,
-                    new Image<Bgr, byte>(new Size(pictureWidth, pictureHeight)), ref theFont);
+                    new Image<Bgr, byte>(new Size(pictureWidth, pictureHeight)));
                 lTextBars.Add(currTextBar);
             }
             int maxYlabelWidth = lTextBars.Max(textBar => textBar.textBarSize.Width);
@@ -327,7 +327,7 @@ namespace SkyImagesAnalyzerLibraries
 
                 //theImage.Draw(currMarkerPresentation, ref theFont, new Point(2, yPosition), markerColor);
 
-                TextBarImage currSignImage = new TextBarImage(currMarkerPresentation, theImage, ref theFont);
+                TextBarImage currSignImage = new TextBarImage(currMarkerPresentation, theImage);
                 currSignImage.PtSurroundingBarStart = new Point(0, yPosition - currSignImage.textHeight);
                 theImage = theImage.Add(currSignImage.TextSignImageAtOriginalBlank(markerColor));
 
@@ -377,7 +377,7 @@ namespace SkyImagesAnalyzerLibraries
                     }
 
                     TextBarImage currTextBar = new TextBarImage(currMarkerPresentation,
-                        new Image<Bgr, byte>(new Size(pictureWidth, pictureHeight)), ref theFont);
+                        new Image<Bgr, byte>(new Size(pictureWidth, pictureHeight)));
                     lTextBarsXaxis.Add(currTextBar);
                 }
 
@@ -410,7 +410,7 @@ namespace SkyImagesAnalyzerLibraries
                     currMarkerPresentation = xAxisValuesConversionToRepresentTicksValues(currentMarkerValueX);
                 }
 
-                TextBarImage currSignImage = new TextBarImage(currMarkerPresentation, theImage, ref theFont);
+                TextBarImage currSignImage = new TextBarImage(currMarkerPresentation, theImage);
                 currSignImage.PtSurroundingBarStart = new Point(Convert.ToInt32(xPosition - currSignImage.textBarSize.Width / 2), pictureHeight - btmServiceSpaceGapY + 10);
                 theImage = theImage.Add(currSignImage.TextSignImageAtOriginalBlank(markerColor));
 

@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using Emgu.CV;
 using Emgu.CV.Structure;
+using Emgu.CV.Util;
 using MathNet.Numerics.LinearAlgebra.Double;
 
 
@@ -370,27 +371,42 @@ namespace SkyImagesAnalyzerLibraries
         }
 
 
+        #region // EmguCV 3.0
+        //public static bool InContour(this Contour<Point> c1, PointF pt)
+        //{
+        //    //Rectangle c1Rect = CvInvoke.BoundingRectangle(c1);
+        //    Rectangle c1Rect = c1.BoundingRectangle; // CvInvoke.BoundingRectangle(c1);
 
+        //    int width = Math.Max(c1Rect.Right, Convert.ToInt32(pt.X)+1);
+        //    int height = Math.Max(c1Rect.Bottom, Convert.ToInt32(pt.Y)+1);
+
+        //    Image<Gray, byte> img = new Image<Gray, byte>(width, height);
+        //    Gray white = new Gray(255);
+        //    img.Draw(c1, white, -1);
+        //    return img[0, 0].Intensity > 0;
+        //}
+        #endregion // EmguCV 3.0
 
 
         public static bool ContainsContourInside(this Contour<Point> testingContour, Contour<Point> sampleContour)
         {
             List<Point> lpointsOfSampleContour = new List<Point>(sampleContour.ToArray());
             return lpointsOfSampleContour.TrueForAll(pt => (testingContour.InContour(new PointF(pt.X, pt.Y)) >= 0.0d));
-
-            //Contour<Point> intersectionContour = testingContour.Intersection(sampleContour);
-            //if (intersectionContour == null) return false;
-            //if (intersectionContour.Area < sampleContour.Area) return false;
-            //return true;
         }
-
+        #region // EmguCV 3.0
+        //public static bool ContainsContourInside(this VectorOfPoint testingContour, VectorOfPoint sampleContour)
+        //{
+        //    List<Point> lpointsOfSampleContour = new List<Point>(sampleContour.ToArray());
+        //    return lpointsOfSampleContour.TrueForAll(pt => (testingContour.InContour(new PointF(pt.X, pt.Y))));
+        //}
+        #endregion // EmguCV 3.0
 
 
 
         public static Contour<Point> Intersection(this Contour<Point> c1, Contour<Point> c2)
         {
-            Rectangle c1Rect = c1.BoundingRectangle;
-            Rectangle c2Rect = c2.BoundingRectangle;
+            Rectangle c1Rect = c1.BoundingRectangle; //CvInvoke.BoundingRectangle(c1);
+            Rectangle c2Rect = c2.BoundingRectangle; //CvInvoke.BoundingRectangle(c2);
             int right = Math.Max(c1Rect.Right, c2Rect.Right);
             int bttm = Math.Max(c1Rect.Bottom, c2Rect.Bottom);
             Image<Gray, byte> img1 = new Image<Gray, byte>(new Size(right, bttm));
@@ -400,9 +416,15 @@ namespace SkyImagesAnalyzerLibraries
             img1 = img1.And(img2);
             //img1 = img1.ThresholdBinary(new Gray(150), white);
 
-
-            Contour<Point> contoursDetected = img1.FindContours(Emgu.CV.CvEnum.CHAIN_APPROX_METHOD.CV_CHAIN_APPROX_SIMPLE, Emgu.CV.CvEnum.RETR_TYPE.CV_RETR_LIST);
-            return contoursDetected;
+            //VectorOfVectorOfPoint contoursDetected = new VectorOfVectorOfPoint();
+            //CvInvoke.FindContours(img1, contoursDetected, null, Emgu.CV.CvEnum.RetrType.List,
+            //    Emgu.CV.CvEnum.ChainApproxMethod.ChainApproxSimple);
+            List<Contour<Point>> contoursDetected = img1.DetectContours();
+            if (contoursDetected.Any())
+            {
+                return contoursDetected[0];
+            }
+            else return null;
         }
 
 
@@ -433,9 +455,12 @@ namespace SkyImagesAnalyzerLibraries
 
         public static PointD MassCenter(this Contour<Point> theContour)
         {
-            Image<Gray, byte> tmpImg = new Image<Gray, byte>(theContour.BoundingRectangle.Right,
-                theContour.BoundingRectangle.Bottom);
-            tmpImg.Draw(theContour, white, 0);
+            //Rectangle rectContourBounding = CvInvoke.BoundingRectangle(theContour);
+            Rectangle rectContourBounding = theContour.BoundingRectangle; // CvInvoke.BoundingRectangle(theContour);
+            Image<Gray, byte> tmpImg = new Image<Gray, byte>(rectContourBounding.Right,
+                rectContourBounding.Bottom);
+            //tmpImg.Draw(theContour.ToArray(), white, -1);
+            tmpImg.Draw(theContour, white, -1);
             MCvMoments moments = tmpImg.GetMoments(true);
             double cx = moments.m10 / moments.m00;
             double cy = moments.m01 / moments.m00;
@@ -501,6 +526,189 @@ namespace SkyImagesAnalyzerLibraries
         {
             return TimeSpan.FromSeconds(Math.Round(timeSpan.TotalSeconds));
         }
+
+
+
+
+
+        //public static double Area(this VectorOfPoint contour)
+        //{
+        //    return CvInvoke.ContourArea(contour);
+        //}
+
+
+
+
+        public static List<Contour<Point>> DetectContours(this Image<Bgr, byte> img,
+            Emgu.CV.CvEnum.RETR_TYPE mode = Emgu.CV.CvEnum.RETR_TYPE.CV_RETR_LIST,
+            Emgu.CV.CvEnum.CHAIN_APPROX_METHOD method = Emgu.CV.CvEnum.CHAIN_APPROX_METHOD.CV_CHAIN_APPROX_SIMPLE)
+        {
+            List<Contour<Point>> contoursDetected = new List<Contour<Point>>();
+
+            Contour<Point> firstContourDetected = img.FindContours(method, mode);
+
+            while (true)
+            {
+                Contour<Point> currContour = firstContourDetected;
+                contoursDetected.Add(currContour);
+                currContour = firstContourDetected.HNext;
+                if (currContour == null)
+                    break;
+            }
+
+            return contoursDetected;
+
+
+            //CvInvoke.FindContours(img, contoursDetected, null, mode, method);
+            //List<VectorOfPoint> contoursArray = new List<VectorOfPoint>();
+            //int count = contoursDetected.Size;
+            //for (int i = 0; i < count; i++)
+            //{
+            //    using (VectorOfPoint currContour = contoursDetected[i])
+            //    {
+            //        contoursArray.Add(currContour);
+            //    }
+            //}
+            //return contoursArray;
+        }
+
+
+
+
+        public static List<Contour<Point>> DetectContours(this Image<Gray, byte> img,
+            Emgu.CV.CvEnum.RETR_TYPE mode = Emgu.CV.CvEnum.RETR_TYPE.CV_RETR_LIST,
+            Emgu.CV.CvEnum.CHAIN_APPROX_METHOD method = Emgu.CV.CvEnum.CHAIN_APPROX_METHOD.CV_CHAIN_APPROX_SIMPLE)
+        {
+            List<Contour<Point>> contoursDetected = new List<Contour<Point>>();
+
+            Contour<Point> firstContourDetected = img.FindContours(method, mode);
+
+            while (true)
+            {
+                Contour<Point> currContour = firstContourDetected;
+                contoursDetected.Add(currContour);
+                currContour = firstContourDetected.HNext;
+                if (currContour == null)
+                    break;
+            }
+
+            return contoursDetected;
+
+
+            //CvInvoke.FindContours(img, contoursDetected, null, mode, method);
+            //List<VectorOfPoint> contoursArray = new List<VectorOfPoint>();
+            //int count = contoursDetected.Size;
+            //for (int i = 0; i < count; i++)
+            //{
+            //    using (VectorOfPoint currContour = contoursDetected[i])
+            //    {
+            //        contoursArray.Add(currContour);
+            //    }
+            //}
+            //return contoursArray;
+        }
+
+
+
+        public static List<Contour<Point>> DetectContours(this Image<Bgr, double> img,
+            Emgu.CV.CvEnum.RETR_TYPE mode = Emgu.CV.CvEnum.RETR_TYPE.CV_RETR_LIST,
+            Emgu.CV.CvEnum.CHAIN_APPROX_METHOD method = Emgu.CV.CvEnum.CHAIN_APPROX_METHOD.CV_CHAIN_APPROX_SIMPLE)
+        {
+            List<Contour<Point>> contoursDetected = new List<Contour<Point>>();
+
+            Contour<Point> firstContourDetected = img.FindContours(method, mode);
+
+            while (true)
+            {
+                Contour<Point> currContour = firstContourDetected;
+                contoursDetected.Add(currContour);
+                currContour = firstContourDetected.HNext;
+                if (currContour == null)
+                    break;
+            }
+
+            return contoursDetected;
+
+
+            //CvInvoke.FindContours(img, contoursDetected, null, mode, method);
+            //List<VectorOfPoint> contoursArray = new List<VectorOfPoint>();
+            //int count = contoursDetected.Size;
+            //for (int i = 0; i < count; i++)
+            //{
+            //    using (VectorOfPoint currContour = contoursDetected[i])
+            //    {
+            //        contoursArray.Add(currContour);
+            //    }
+            //}
+            //return contoursArray;
+        }
+
+
+
+
+        public static List<Contour<Point>> DetectContours(this Image<Gray, double> img,
+            Emgu.CV.CvEnum.RETR_TYPE mode = Emgu.CV.CvEnum.RETR_TYPE.CV_RETR_LIST,
+            Emgu.CV.CvEnum.CHAIN_APPROX_METHOD method = Emgu.CV.CvEnum.CHAIN_APPROX_METHOD.CV_CHAIN_APPROX_SIMPLE)
+        {
+            List<Contour<Point>> contoursDetected = new List<Contour<Point>>();
+
+            Contour<Point> firstContourDetected = img.FindContours(method, mode);
+
+            while (true)
+            {
+                Contour<Point> currContour = firstContourDetected;
+                contoursDetected.Add(currContour);
+                currContour = firstContourDetected.HNext;
+                if (currContour == null)
+                    break;
+            }
+
+            return contoursDetected;
+
+
+            //CvInvoke.FindContours(img, contoursDetected, null, mode, method);
+            //List<VectorOfPoint> contoursArray = new List<VectorOfPoint>();
+            //int count = contoursDetected.Size;
+            //for (int i = 0; i < count; i++)
+            //{
+            //    using (VectorOfPoint currContour = contoursDetected[i])
+            //    {
+            //        contoursArray.Add(currContour);
+            //    }
+            //}
+            //return contoursArray;
+        }
+
+
+
+
+        public static Rectangle GetBoundingRectangle(this MCvBox2D cvRotatedBox2D)
+        {
+            List<PointF> verticesList = new List<PointF>(cvRotatedBox2D.GetVertices());
+            int verticesMinX = (int)verticesList.Min(ptf => ptf.X);
+            int verticesMinY = (int)verticesList.Min(ptf => ptf.Y);
+            int verticesMaxX = (int)verticesList.Max(ptf => ptf.X);
+            int verticesMaxY = (int)verticesList.Max(ptf => ptf.Y);
+            Rectangle resRect = new Rectangle(verticesMinX, verticesMinY, verticesMaxX - verticesMinX,
+                verticesMaxY - verticesMinY);
+            return resRect;
+        }
+
+
+
+        public static RectangleF GetBoundingRectangleF(this MCvBox2D cvRotatedBox2D)
+        {
+            List<PointF> verticesList = new List<PointF>(cvRotatedBox2D.GetVertices());
+            float verticesMinX = verticesList.Min(ptf => ptf.X);
+            float verticesMinY = verticesList.Min(ptf => ptf.Y);
+            float verticesMaxX = verticesList.Max(ptf => ptf.X);
+            float verticesMaxY = verticesList.Max(ptf => ptf.Y);
+            RectangleF resRect = new RectangleF(verticesMinX, verticesMinY, verticesMaxX - verticesMinX,
+                verticesMaxY - verticesMinY);
+            return resRect;
+        }
+
+
     }
 
 

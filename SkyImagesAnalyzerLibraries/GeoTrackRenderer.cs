@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using Emgu.CV;
 using Emgu.CV.Structure;
+using Emgu.CV.Util;
 using MathNet.Numerics.LinearAlgebra.Double;
 
 namespace SkyImagesAnalyzerLibraries
@@ -63,7 +64,7 @@ namespace SkyImagesAnalyzerLibraries
 
         private List<Tuple<int, string>> shorelineFileNames = new List<Tuple<int, string>>();
         private int currentShorelineDetailsLevel = 0;
-        private List<Contour<PointD>> lShorelinesGPS = new List<Contour<PointD>>();
+        //private List<Contour<PointD>> lShorelinesGPS = new List<Contour<PointD>>();
         private List<Contour<Point>> lShorelinesAtImage = new List<Contour<Point>>();
         private Image<Bgr, byte> imgShorelinesBackground = null;
 
@@ -203,6 +204,7 @@ namespace SkyImagesAnalyzerLibraries
 
             lShorelinesAtImage = lContoursStringContents.ConvertAll(lContourDataStr =>
             {
+                //VectorOfPoint currContour = new VectorOfPoint();
                 Contour<Point> currContour = new Contour<Point>(new MemStorage());
                 List<Point> pointsToPush = lContourDataStr.ConvertAll<Point>(strPointCoords =>
                 {
@@ -229,11 +231,13 @@ namespace SkyImagesAnalyzerLibraries
 
                 List<Point> pointsToPushShifted = pointsToPush.ConvertAll(pt => new Point(pt.X - imageLimitsInt.Left, pt.Y - imageLimitsInt.Top));
 
+                //currContour.Push(pointsToPushShifted.ToArray());
                 currContour.PushMulti(pointsToPushShifted.ToArray(), Emgu.CV.CvEnum.BACK_OR_FRONT.BACK);
-                
+
                 return currContour;
             });
 
+            //lShorelinesAtImage.RemoveAll(cont => CvInvoke.ContourArea(cont, false) < 1.0d);
             lShorelinesAtImage.RemoveAll(cont => cont.Area < 1.0d);
 
 
