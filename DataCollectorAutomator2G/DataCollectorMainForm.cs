@@ -189,13 +189,13 @@ namespace DataCollectorAutomator
 
 
 
+        #region Form general features and behaviour
+
         public DataCollectorMainForm()
         {
             InitializeComponent();
         }
-
-
-
+        
 
 
         private void NoteLog(string text)
@@ -216,236 +216,13 @@ namespace DataCollectorAutomator
         {
             ThreadSafeOperations.SetTextTB(tbMainLog, text + Environment.NewLine, true);
         }
-
-
-
+        
 
         private void textBox2_TextChanged(object sender, EventArgs e)
         {
             ip2ListenID1 = tbIP2ListenDevID1.Text;
         }
-
-        private void btnFindArduino_Click(object sender, EventArgs e)
-        {
-            if (arduinoBoardSearchingWorker.IsBusy)
-            {
-                arduinoBoardSearchingWorker.CancelAsync();
-            }
-            else
-            {
-                if (sender == btnFindArduino1)
-                {
-                    needsToDiscoverArduinoBoardID1 = true;
-                    ThreadSafeOperations.SetLoadingCircleState(SearchingArduinoID1ProcessCircle, true, true, SearchingArduinoID1ProcessCircle.Color);
-                }
-                else if (sender == btnFindArduino2)
-                {
-                    needsToDiscoverArduinoBoardID2 = true;
-                    ThreadSafeOperations.SetLoadingCircleState(SearchingArduinoID2ProcessCircle, true, true, SearchingArduinoID2ProcessCircle.Color);
-                }
-                ThreadSafeOperations.ToggleButtonState(btnFindArduino1, true, "CANCEL", true);
-                ThreadSafeOperations.ToggleButtonState(btnFindArduino2, true, "CANCEL", true);
-                arduinoBoardSearchingWorker.RunWorkerAsync();
-            }
-        }
-
-
-
-
-
-        private void arduinoBoardSearchingWorker_DoWork(object sender, DoWorkEventArgs e)
-        {
-            BackgroundWorker SelfWorker = sender as System.ComponentModel.BackgroundWorker;
-            //needsToDiscoverArduinoBoard = true;
-            bool needsToSwitchCatchingOff = false;
-            if (!udpCatchingJob.IsBusy)
-            {
-                //start catching and the switch it off
-                btnStartStopBdcstListening_Click(null, null);
-                needsToSwitchCatchingOff = true;
-            }
-
-
-            while (needsToDiscoverArduinoBoardID1 || needsToDiscoverArduinoBoardID2)
-            {
-                if (SelfWorker.CancellationPending)
-                {
-                    e.Cancel = true;
-                    break;
-                }
-
-                // не нужно?..
-                Application.DoEvents();
-                Thread.Sleep(0);
-                // не нужно?..
-            }
-
-
-            if (needsToSwitchCatchingOff)
-            {
-                btnStartStopBdcstListening_Click(null, null);
-                needsToSwitchCatchingOff = false;
-            }
-        }
-
-
-
-
-
-
-        private void btnStartStopBdcstListening_Click(object sender, EventArgs e)
-        {
-            if (udpCatchingJob.IsBusy)
-            {
-                udpCatchingJob.CancelAsync();
-            }
-            else
-            {
-                udpCatchingJob.RunWorkerAsync();
-                //StartUDPmessagesParser();
-                ThreadSafeOperations.ToggleButtonState(btnStartStopBdcstListening, true, "Stop listening", true);
-            }
-        }
-
-
-
-
-        private void udpCatchingJob_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
-        {
-            ThreadSafeOperations.ToggleButtonState(btnStartStopBdcstListening, true, "Start listening", false);
-            ChangeIndicatingButtonBackgroundColor(btnStartStopBdcstListening,
-                ButtonBackgroundStateWatchingProcess.notWatching);
-
-            //bgwUDPmessagesParser.CancelAsync();
-        }
-
-
-
-
-
-        private static bool recievingUDPmessage = false;
-
-        private void BcstReceiveCallback(IAsyncResult ar)
-        {
-            string bcstMessage = "";
-            UdpState udpSt = (UdpState)(ar.AsyncState);
-            UdpClient udpClt = (UdpClient)(udpSt.UDPclient);
-            IPEndPoint ipEP = (IPEndPoint)(udpSt.ipEndPoint);
-
-            remoteSktAddr = PropertyHelper.GetPrivatePropertyValue<SocketAddress>((object)ar, "SocketAddress");
-
-
-            if (udpClt.Client != null)
-            {
-                try
-                {
-                    Byte[] receiveBytes = udpClt.EndReceive(ar, ref ipEP);
-                    recievingUDPmessage = false;
-
-                    bcstMessage = Encoding.ASCII.GetString(receiveBytes);
-
-                    if (bcstMessage != "")
-                    {
-                        cquArduinoUDPCatchedMessages.Enqueue(new IncomingUDPmessageBoundle(remoteSktAddr, bcstMessage));
-
-                        Interlocked.Increment(ref recievedUDPPacketsCounter);
-                    }
-
-                }
-                catch (Exception ex)
-                {
-                    #region report
-#if DEBUG
-                    ServiceTools.ExecMethodInSeparateThread(this, () =>
-                    {
-                        theLogWindow = ServiceTools.LogAText(theLogWindow,
-                            "exception has been thrown: " + ex.Message + Environment.NewLine +
-                            ServiceTools.CurrentCodeLineDescription());
-                    });
-#else
-                    ServiceTools.ExecMethodInSeparateThread(this, () =>
-                {
-                    ServiceTools.logToTextFile(errorLogFilename,
-                        "exception has been thrown: " + ex.Message + Environment.NewLine +
-                        ServiceTools.CurrentCodeLineDescription(), true, true);
-                });
-#endif
-                    #endregion report
-                }
-                recievingUDPmessage = false;
-            }
-            else
-            {
-                recievingUDPmessage = false;
-            }
-        }
-
-
-
-
-
-        private void PerformSendCommand(string currCommand, int devID)
-        {
-            string retStr = currCommand;
-            byte[] ret = System.Text.Encoding.ASCII.GetBytes(retStr);
-            Socket Skt = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
-            Skt.EnableBroadcast = false;
-            IPEndPoint ipEP = new IPEndPoint(IPAddress.Parse(ip2ListenID1), port2converse);
-            if (devID == 1)
-            {
-                ipEP = new IPEndPoint(IPAddress.Parse(ip2ListenID1), port2converse);
-            }
-            else if (devID == 2)
-            {
-                ipEP = new IPEndPoint(IPAddress.Parse(ip2ListenID2), port2converse);
-            }
-
-            int sent = Skt.SendTo(ret, ipEP);
-            Skt.Close();
-        }
-
-
-
-
-
-
-        private void udpCatchingJob_DoWork(object sender, DoWorkEventArgs e)
-        {
-            UdpClient bcstUDPreader = new UdpClient(portBcstRecvng, AddressFamily.InterNetwork);
-            bcstUDPreader.EnableBroadcast = true;
-            BackgroundWorker SelfWorker = sender as BackgroundWorker;
-            IPEndPoint RemoteIpEndPoint = new IPEndPoint(IPAddress.Any, 0);
-            UdpState s = new UdpState();
-            s.ipEndPoint = RemoteIpEndPoint;
-            s.UDPclient = bcstUDPreader;
-
-
-            while (true)
-            {
-                if (SelfWorker.CancellationPending)
-                {
-                    e.Cancel = true;
-                    break;
-                }
-
-                if (recievingUDPmessage)
-                {
-                    continue;
-                }
-
-
-                if (bcstUDPreader.Available > 0)
-                {
-                    recievingUDPmessage = true;
-                    bcstUDPreader.BeginReceive(BcstReceiveCallback, s);
-                }
-            }
-
-            bcstUDPreader.Close();
-        }
-
-
-
+        
 
         private void btnSwapBcstLog_Click(object sender, EventArgs e)
         {
@@ -470,14 +247,20 @@ namespace DataCollectorAutomator
 
 
 
-
-        private void arduinoBoardSearchingWorker_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
+        private void btnStartStopBdcstListening_Click(object sender, EventArgs e)
         {
-            ThreadSafeOperations.ToggleButtonState(btnFindArduino1, true, "search for board ID1", true);
-            ThreadSafeOperations.ToggleButtonState(btnFindArduino2, true, "search for board ID2", true);
-            ThreadSafeOperations.SetLoadingCircleState(SearchingArduinoID1ProcessCircle, false, false, SearchingArduinoID1ProcessCircle.Color);
-            ThreadSafeOperations.SetLoadingCircleState(SearchingArduinoID2ProcessCircle, false, false, SearchingArduinoID2ProcessCircle.Color);
+            if (udpCatchingJob.IsBusy)
+            {
+                udpCatchingJob.CancelAsync();
+            }
+            else
+            {
+                udpCatchingJob.RunWorkerAsync();
+                //StartUDPmessagesParser();
+                ThreadSafeOperations.ToggleButtonState(btnStartStopBdcstListening, true, "Stop listening", true);
+            }
         }
+
 
 
 
@@ -491,94 +274,6 @@ namespace DataCollectorAutomator
             SimpleShowImageForm imageForm = new SimpleShowImageForm(bm2show);
             imageForm.Show(this);
         }
-
-
-
-        private void PerformRequestArduinoBoard(string requestText, int devID)
-        {
-            ArduinoRequestString = requestText;
-            needsReplyOnRequest = true;
-            PerformSendCommand(requestText, devID);
-            ArduinoRequestExpectant.RunWorkerAsync();
-        }
-
-
-
-        private void btnStartStopCollecting_Click(object sender, EventArgs e)
-        {
-            if (!dataCollector.IsBusy)
-            {
-                if (!udpCatchingJob.IsBusy)
-                {
-                    //включим прослушку Arduino
-                    needsToSwitchListeningArduinoOFF = true;
-                    btnStartStopBdcstListening_Click(null, null);
-                }
-
-                dataCollector.RunWorkerAsync();
-            }
-            else
-            {
-                dataCollector.CancelAsync();
-            }
-        }
-
-
-
-
-        private void ArduinoRequestExpectant_DoWork(object sender, DoWorkEventArgs e)
-        {
-            while (needsReplyOnRequest)
-            {
-                System.Threading.Thread.Sleep(50);
-            }
-        }
-
-
-
-
-        private void ArduinoRequestExpectant_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
-        {
-            if (ArduinoRequestString == "1")
-            {
-                //найдем строку, в которой сказано про data broadcasting
-                if ((replyMessage == "data broadcasting is OFF") && (dataCollectingState == DataCollectingStates.checkingState))
-                {
-                    Note("Outdoor facility data broadcasting is OFF. Turning it ON.");
-                    PerformRequestArduinoBoard("2", currOperatingDevID);
-                }
-                else if ((replyMessage == "data broadcasting is ON") && (dataCollectingState == DataCollectingStates.checkingState))
-                {
-                    if (theWorkerRequestedArduinoDataBroadcastState == WorkersRequestingArduinoDataBroadcastState.dataCollector)
-                    {
-                        dataCollector.RunWorkerAsync();
-                    }
-                    else if (theWorkerRequestedArduinoDataBroadcastState == WorkersRequestingArduinoDataBroadcastState.accelCalibrator)
-                    {
-                        accelCalibrator.RunWorkerAsync();
-                    }
-                }
-
-            }
-            else if (ArduinoRequestString == "2")
-            {
-                Note(replyMessage);
-                if ((replyMessage == "data broadcasting is ON") && (dataCollectingState == DataCollectingStates.checkingState))
-                {
-                    if (theWorkerRequestedArduinoDataBroadcastState == WorkersRequestingArduinoDataBroadcastState.dataCollector)
-                    {
-                        dataCollector.RunWorkerAsync();
-                    }
-                    else if (theWorkerRequestedArduinoDataBroadcastState == WorkersRequestingArduinoDataBroadcastState.accelCalibrator)
-                    {
-                        accelCalibrator.RunWorkerAsync();
-                    }
-                }
-            }
-        }
-
-
-
 
 
 
@@ -656,97 +351,326 @@ namespace DataCollectorAutomator
 
 
 
-
-        private void EstimateAndReportUDPpacketsRecievingSpeed(object state)
+        private void tbIP2ListenDevID2_TextChanged(object sender, EventArgs e)
         {
-            Stopwatch stwToEstimateUDPpacketsRecieving;
+            ip2ListenID2 = tbIP2ListenDevID2.Text;
+        }
+
+
+
+
+
+        private void DataCollectorMainForm_Paint(object sender, PaintEventArgs e)
+        {
+            if (currCaughtImageID1 != null)
+            {
+                ThreadSafeOperations.UpdatePictureBox(pbThumbPreviewCam1, currCaughtImageID1.Bitmap, true);
+            }
+
+            if (currCaughtImageID2 != null)
+            {
+                ThreadSafeOperations.UpdatePictureBox(pbThumbPreviewCam2, currCaughtImageID2.Bitmap, true);
+            }
+        }
+
+
+
+
+        private void DataCollectorMainForm_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            if (e.KeyChar == 27)//escape key
+            {
+                this.Close();
+            }
+        }
+
+
+
+
+        private void lblSunElev_Click(object sender, EventArgs e)
+        {
+            if (latestGPSdata.validGPSdata)
+            {
+                SPA spaCalc = new SPA(latestGPSdata.dateTimeUTC.Year, latestGPSdata.dateTimeUTC.Month, latestGPSdata.dateTimeUTC.Day, latestGPSdata.dateTimeUTC.Hour,
+                        latestGPSdata.dateTimeUTC.Minute, latestGPSdata.dateTimeUTC.Second, (float)latestGPSdata.LonDec, (float)latestGPSdata.LatDec,
+                        (float)SPAConst.DeltaT(latestGPSdata.dateTimeUTC));
+                int res = spaCalc.spa_calculate();
+                AzimuthZenithAngle sunPositionSPAext = new AzimuthZenithAngle(spaCalc.spa.azimuth,
+                    spaCalc.spa.zenith);
+                spaCalc.spa.function = SPAFunctionType.SPA_ZA_RTS;
+                spaCalc.spa_calculate();
+
+
+
+
+
+                theLogWindow = ServiceTools.LogAText(theLogWindow, latestGPSdata.dateTimeUTC.ToString() +
+                                                                   Environment.NewLine + "sunrise: " +
+                                                                   (new TimeOfDay(spaCalc.spa.sunrise)) +
+                                                                   Environment.NewLine + "sunset: " +
+                                                                   (new TimeOfDay(spaCalc.spa.sunset)));
+            }
+        }
+
+
+        private void btnPrefs_Click(object sender, EventArgs e)
+        {
+            PropertiesEditor propForm = new PropertiesEditor(defaultProperties, defaultPropertiesXMLfileName);
+            propForm.FormClosed += new FormClosedEventHandler(PropertiesFormClosed);
+            propForm.ShowDialog();
+        }
+
+
+        private void PropertiesFormClosed(object sender, FormClosedEventArgs e)
+        {
+            readDefaultProperties();
+        }
+
+
+
+        private void readDefaultProperties()
+        {
+            defaultProperties = new Dictionary<string, object>();
+            defaultPropertiesXMLfileName = Directory.GetCurrentDirectory() +
+                                         "\\settings\\DataCollectorAppGeneralSettings2G.xml";
+            if (!File.Exists(defaultPropertiesXMLfileName)) return;
+            defaultProperties = ServiceTools.ReadDictionaryFromXML(defaultPropertiesXMLfileName);
+
+
+
+            accCalibrationDataFilename = Directory.GetCurrentDirectory() +
+                                         "\\settings\\AccelerometerCalibrationData2G.xml";
+
+            accCalibrationDataDict = ServiceTools.ReadDictionaryFromXML(accCalibrationDataFilename);
+
+
+            accCalibrationDataID1 = new AccelerometerData(Convert.ToDouble(accCalibrationDataDict["accID1CalibratedXzero"]),
+                Convert.ToDouble(accCalibrationDataDict["accID1CalibratedYzero"]),
+                Convert.ToDouble(accCalibrationDataDict["accID1CalibratedZzero"]));
+            accCalibrationDataID2 = new AccelerometerData(Convert.ToDouble(accCalibrationDataDict["accID2CalibratedXzero"]),
+                Convert.ToDouble(accCalibrationDataDict["accID2CalibratedYzero"]),
+                Convert.ToDouble(accCalibrationDataDict["accID2CalibratedZzero"]));
+
+
+            ip2ListenID1 = defaultProperties["ArduinoBoardID1DefaultIP"] as string;
+            ip2ListenID2 = defaultProperties["ArduinoBoardID2DefaultIP"] as string;
+
+            port2converse = Convert.ToInt32(defaultProperties["ArduinoBoardDefaultUDPport"]);
+            portBcstRecvng = Convert.ToInt32(defaultProperties["UDPBroadcastDefaultListeningPort"]);
+            string strCamShotPeriod = (defaultProperties["VivotekCameraShootingPeriodSec"]) as string;
+
+            CamShotPeriod = new TimeSpan(0, 0, Convert.ToInt32(strCamShotPeriod));
+
+
+            IPAddress.TryParse(defaultProperties["VivotekCameraID1IPaddr"] as string, out VivotekCameraID1IPaddress);
+            IPAddress.TryParse(defaultProperties["VivotekCameraID2IPaddr"] as string, out VivotekCameraID2IPaddress);
+            VivotekCameraUserName1 = defaultProperties["VivotekCameraID1UserName"] as string;
+            VivotekCameraPassword1 = defaultProperties["VivotekCameraID1Password"] as string;
+            VivotekCameraUserName2 = defaultProperties["VivotekCameraID2UserName"] as string;
+            VivotekCameraPassword2 = defaultProperties["VivotekCameraID2Password"] as string;
+            BroadcastLogHistorySizeLines = Convert.ToInt32(defaultProperties["BroadcastLogHistorySizeLines"]);
+
             try
             {
-                stwToEstimateUDPpacketsRecieving = (state as object[])[0] as Stopwatch;
+                angleCamDeclinationThresholdDeg = Convert.ToDouble(defaultProperties["CamDeclinationThresholdDegToShoot"]);
             }
             catch (Exception ex)
             {
-                return;
+                theLogWindow = ServiceTools.LogAText(theLogWindow,
+                    "couldn`t read critical camera declination angle. Using default value = " +
+                    angleCamDeclinationThresholdDeg.ToString("F2") + Environment.NewLine +
+                    "exception was thrown: \"" + ex.Message + "\"");
             }
 
 
-            double elapsedms = (double)(stwToEstimateUDPpacketsRecieving.ElapsedMilliseconds);
 
-            if (elapsedms == 0)
+            ThreadSafeOperations.SetTextTB(tbIP2ListenDevID1, ip2ListenID1, false);
+            ThreadSafeOperations.SetTextTB(tbIP2ListenDevID2, ip2ListenID2, false);
+
+
+
+            if (accCalibrationDataID1.AccMagnitude == 0.0d)
             {
-                stwToEstimateUDPpacketsRecieving.Restart();
-                return;
+                accCalibrationDataID1 = new AccelerometerData(0.0, 0.0, -256.0);
+            }
+            if (accCalibrationDataID2.AccMagnitude == 0.0d)
+            {
+                accCalibrationDataID2 = new AccelerometerData(0.0, 0.0, -256.0);
             }
 
-            //оценим скорость поступления пакетов
-            double speedUDPrecieving = (double)recievedUDPPacketsCounter * 1000.0d /
-                              (double)elapsedms;
-            recievedUDPPacketsCounter = 0;
+            dctCalibrationAccDataByDevID.Add("devID1", accCalibrationDataID1);
+            dctCalibrationAccDataByDevID.Add("devID2", accCalibrationDataID2);
 
-            double speedUDPprocessing = (double)processedUDPPacketsCounter * 1000.0d /
-                                        (double)elapsedms;
-            processedUDPPacketsCounter = 0;
+            ThreadSafeOperations.SetText(lblAccelCalibrationXID1, Math.Round(accCalibrationDataID1.AccDoubleX, 2).ToString(), false);
+            ThreadSafeOperations.SetText(lblAccelCalibrationYID1, Math.Round(accCalibrationDataID1.AccDoubleY, 2).ToString(), false);
+            ThreadSafeOperations.SetText(lblAccelCalibrationZID1, Math.Round(accCalibrationDataID1.AccDoubleZ, 2).ToString(), false);
+            ThreadSafeOperations.SetText(lblAccelCalibrationXID2, Math.Round(accCalibrationDataID2.AccDoubleX, 2).ToString(), false);
+            ThreadSafeOperations.SetText(lblAccelCalibrationYID2, Math.Round(accCalibrationDataID2.AccDoubleY, 2).ToString(), false);
+            ThreadSafeOperations.SetText(lblAccelCalibrationZID2, Math.Round(accCalibrationDataID2.AccDoubleZ, 2).ToString(), false);
 
-            //theLogWindow = ServiceTools.LogAText(theLogWindow, Environment.NewLine +
-            //    "UDP recieving speed = " + speedUDPrecieving.ToString("F2") + Environment.NewLine +
-            //    "UDP processing speed = " + speedUDPprocessing.ToString("F2"));
-#if DEBUG
-            ThreadSafeOperations.SetText(lblUDPpacketsRecievingSpeedValue, speedUDPrecieving.ToString("F2"), false);
-            ThreadSafeOperations.SetText(lblUDPpacketsProcessingSpeedValue, speedUDPprocessing.ToString("F2"), false);
-#endif
+            angleCamDeclinationThresholdRad = Math.PI * angleCamDeclinationThresholdDeg / 180.0d;
+        }
 
 
-            stwToEstimateUDPpacketsRecieving.Restart();
 
-            if (speedUDPrecieving <= 0.0d)
+
+        private void DataCollectorMainForm_Shown(object sender, EventArgs e)
+        {
+            readDefaultProperties();
+
+            cquArduinoUDPCatchedMessages.CollectionChanged += cquArduinoUDPCatchedMessages_CollectionChanged;
+
+            accDataAndDTObservableConcurrentQueue.CollectionChanged += accDataAndDTObservableConcurrentQueue_CollectionChanged;
+
+            gyroDataAndDTObservableConcurrentQueue.CollectionChanged += gyroDataAndDTObservableConcurrentQueue_CollectionChanged;
+
+            gpsDataAndDTObservableConcurrentQueue.CollectionChanged += gpsDataAndDTObservableConcurrentQueue_CollectionChanged;
+
+            pressureDataAndDTObservableConcurrentQueue.CollectionChanged += pressureDataAndDTObservableConcurrentQueue_CollectionChanged;
+
+            this.NeedToShootCameraSnapshots += DataCollectorMainForm_NeedToShootCameraSnapshots;
+        }
+
+
+
+        void DataCollectorMainForm_NeedToShootCameraSnapshots(object sender, EventArgs e)
+        {
+            ServiceTools.ExecMethodInSeparateThread(this, catchCameraImages);
+        }
+
+
+
+
+
+
+
+
+
+        private void btnAccCalibrationData_Click(object sender, EventArgs e)
+        {
+            PropertiesEditor propForm = new PropertiesEditor(accCalibrationDataDict, accCalibrationDataFilename);
+            propForm.FormClosed += new FormClosedEventHandler(PropertiesFormClosed);
+            propForm.ShowDialog();
+        }
+
+
+
+
+        private void btnSwitchShowingTotalLog_Click(object sender, EventArgs e)
+        {
+            if (showTotalBcstLog)
             {
-                ChangeIndicatingButtonBackgroundColor(btnStartStopBdcstListening,
-                    ButtonBackgroundStateWatchingProcess.alarm);
+                showTotalBcstLog = !showTotalBcstLog;
+                ThreadSafeOperations.ToggleButtonState(btnSwitchShowingTotalLog, true, "Show total log", true);
             }
             else
             {
-                ChangeIndicatingButtonBackgroundColor(btnStartStopBdcstListening,
-                    ButtonBackgroundStateWatchingProcess.allGood);
+                showTotalBcstLog = !showTotalBcstLog;
+                ThreadSafeOperations.ToggleButtonState(btnSwitchShowingTotalLog, true, "Dont show total log", true);
             }
+        }
 
 
-            if (speedUDPprocessing <= 0.0d)
+
+
+        private void btnCollectMostClose_Click(object sender, EventArgs e)
+        {
+            operatorCommandsToGetCamShot = true;
+        }
+
+
+
+
+        private void btnSaveAccel_Click(object sender, EventArgs e)
+        {
+            Dictionary<string, object> propertiesDictToSave = new Dictionary<string, object>();
+            propertiesDictToSave.Add("accID1CalibratedXzero", accCalibrationDataID1.AccDoubleX);
+            propertiesDictToSave.Add("accID1CalibratedYzero", accCalibrationDataID1.AccDoubleY);
+            propertiesDictToSave.Add("accID1CalibratedZzero", accCalibrationDataID1.AccDoubleZ);
+            ServiceTools.WriteDictionaryToXml(propertiesDictToSave, accCalibrationDataFilename, false);
+        }
+
+
+
+
+
+
+        private void btnCalibrateAccelerometer_Click(object sender, EventArgs e)
+        {
+            if (!accelCalibrator.IsBusy)
             {
-                ChangeIndicatingButtonBackgroundColor(lblAccMagnValueID1,
-                    ButtonBackgroundStateWatchingProcess.alarm);
-                ChangeIndicatingButtonBackgroundColor(lblAccDevAngleValueID1,
-                    ButtonBackgroundStateWatchingProcess.alarm);
-                ChangeIndicatingButtonBackgroundColor(lblAccMagnValueID2,
-                    ButtonBackgroundStateWatchingProcess.alarm);
-                ChangeIndicatingButtonBackgroundColor(lblAccDevAngleValueID2,
-                    ButtonBackgroundStateWatchingProcess.alarm);
-                ChangeIndicatingButtonBackgroundColor(lblAccMagnTitleID1,
-                    ButtonBackgroundStateWatchingProcess.alarm);
-                ChangeIndicatingButtonBackgroundColor(lblAccDevAngleTitleID1,
-                    ButtonBackgroundStateWatchingProcess.alarm);
-                ChangeIndicatingButtonBackgroundColor(lblAccMagnTitleID2,
-                    ButtonBackgroundStateWatchingProcess.alarm);
-                ChangeIndicatingButtonBackgroundColor(lblAccDevAngleTitleID2,
-                    ButtonBackgroundStateWatchingProcess.alarm);
+                if (!udpCatchingJob.IsBusy)
+                {
+                    //включим прослушку Arduino
+                    needsToSwitchListeningArduinoOFF = true;
+                    btnStartStopBdcstListening_Click(null, null);
+                }
+                Note("Detecting outdoor board broadcasting state");
+                ThreadSafeOperations.ToggleButtonState(btnCalibrateAccelerometerID1, false, "wait for state checking", true);
+                //StartStopDataCollectingWaitingCircle.Visible = true;
+                //StartStopDataCollectingWaitingCircle.Active = true;
+                dataCollectingState = DataCollectingStates.checkingState;
+                theWorkerRequestedArduinoDataBroadcastState = WorkersRequestingArduinoDataBroadcastState.accelCalibrator;
+                currOperatingDevID = 1;
+                PerformRequestArduinoBoard("1", currOperatingDevID);
             }
             else
             {
-                ChangeIndicatingButtonBackgroundColor(lblAccMagnValueID1,
-                    ButtonBackgroundStateWatchingProcess.allGood);
-                ChangeIndicatingButtonBackgroundColor(lblAccDevAngleValueID1,
-                    ButtonBackgroundStateWatchingProcess.allGood);
-                ChangeIndicatingButtonBackgroundColor(lblAccMagnValueID2,
-                    ButtonBackgroundStateWatchingProcess.allGood);
-                ChangeIndicatingButtonBackgroundColor(lblAccDevAngleValueID2,
-                    ButtonBackgroundStateWatchingProcess.allGood);
-                ChangeIndicatingButtonBackgroundColor(lblAccMagnTitleID1,
-                    ButtonBackgroundStateWatchingProcess.allGood);
-                ChangeIndicatingButtonBackgroundColor(lblAccDevAngleTitleID1,
-                    ButtonBackgroundStateWatchingProcess.allGood);
-                ChangeIndicatingButtonBackgroundColor(lblAccMagnTitleID2,
-                    ButtonBackgroundStateWatchingProcess.allGood);
-                ChangeIndicatingButtonBackgroundColor(lblAccDevAngleTitleID2,
-                    ButtonBackgroundStateWatchingProcess.allGood);
+                accelCalibrator.CancelAsync();
+            }
+        }
+
+
+
+        private void btnCollectImmediately_Click(object sender, EventArgs e)
+        {
+            //if (dataCollector.IsBusy)
+            //{
+            //    operatorCommandsToGetCamShotImmediately = true;
+            //}
+            //else
+            //{
+            //    catchCameraImages();
+            //}
+
+            EventHandler onNeedToShootCameraSnapshots = this.NeedToShootCameraSnapshots;
+            if (onNeedToShootCameraSnapshots != null) onNeedToShootCameraSnapshots(null, null);
+
+        }
+
+
+
+
+        #endregion Form general features and behaviour
+
+
+
+
+
+
+        #region search Arduino boards
+
+        private void btnFindArduino_Click(object sender, EventArgs e)
+        {
+            if (arduinoBoardSearchingWorker.IsBusy)
+            {
+                arduinoBoardSearchingWorker.CancelAsync();
+            }
+            else
+            {
+                if (sender == btnFindArduino1)
+                {
+                    needsToDiscoverArduinoBoardID1 = true;
+                    ThreadSafeOperations.SetLoadingCircleState(SearchingArduinoID1ProcessCircle, true, true, SearchingArduinoID1ProcessCircle.Color);
+                }
+                else if (sender == btnFindArduino2)
+                {
+                    needsToDiscoverArduinoBoardID2 = true;
+                    ThreadSafeOperations.SetLoadingCircleState(SearchingArduinoID2ProcessCircle, true, true, SearchingArduinoID2ProcessCircle.Color);
+                }
+                ThreadSafeOperations.ToggleButtonState(btnFindArduino1, true, "CANCEL", true);
+                ThreadSafeOperations.ToggleButtonState(btnFindArduino2, true, "CANCEL", true);
+                arduinoBoardSearchingWorker.RunWorkerAsync();
             }
         }
 
@@ -754,56 +678,301 @@ namespace DataCollectorAutomator
 
 
 
-        private void UpdateSensorsDataPresentation(object state)
+        private void arduinoBoardSearchingWorker_DoWork(object sender, DoWorkEventArgs e)
         {
-            // =======================
-            //вывести мгновенные значения, но раздельно по устройствам
-            // =======================
-            // dataToPassToSensorsDataPresentation = new object[] { latestAccDataID1, accCalibrationDataID1, latestAccDataID2, accCalibrationDataID2 };
-            if (state == null)
+            BackgroundWorker SelfWorker = sender as System.ComponentModel.BackgroundWorker;
+            //needsToDiscoverArduinoBoard = true;
+            bool needsToSwitchCatchingOff = false;
+            if (!udpCatchingJob.IsBusy)
             {
-                return;
+                //start catching and the switch it off
+                btnStartStopBdcstListening_Click(null, null);
+                needsToSwitchCatchingOff = true;
             }
-            if (state.GetType() == typeof(List<AccelerometerData>))
+
+
+            while (needsToDiscoverArduinoBoardID1 || needsToDiscoverArduinoBoardID2)
             {
-                List<AccelerometerData> dataToPassToSensorsDataPresentation = state as List<AccelerometerData>;
-                if (dataToPassToSensorsDataPresentation.Count != 4)
+                if (SelfWorker.CancellationPending)
                 {
-                    return;
+                    e.Cancel = true;
+                    break;
+                }
+
+                // не нужно?..
+                Application.DoEvents();
+                Thread.Sleep(0);
+                // не нужно?..
+            }
+
+
+            if (needsToSwitchCatchingOff)
+            {
+                btnStartStopBdcstListening_Click(null, null);
+                needsToSwitchCatchingOff = false;
+            }
+        }
+
+
+
+
+        private void arduinoBoardSearchingWorker_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
+        {
+            ThreadSafeOperations.ToggleButtonState(btnFindArduino1, true, "search for board ID1", true);
+            ThreadSafeOperations.ToggleButtonState(btnFindArduino2, true, "search for board ID2", true);
+            ThreadSafeOperations.SetLoadingCircleState(SearchingArduinoID1ProcessCircle, false, false, SearchingArduinoID1ProcessCircle.Color);
+            ThreadSafeOperations.SetLoadingCircleState(SearchingArduinoID2ProcessCircle, false, false, SearchingArduinoID2ProcessCircle.Color);
+        }
+
+
+        #endregion search Arduino boards
+
+
+
+
+
+
+        #region UDP catching job
+
+        private static bool recievingUDPmessage = false;
+
+
+
+        private void udpCatchingJob_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
+        {
+            ThreadSafeOperations.ToggleButtonState(btnStartStopBdcstListening, true, "Start listening", false);
+            ChangeIndicatingButtonBackgroundColor(btnStartStopBdcstListening,
+                ButtonBackgroundStateWatchingProcess.notWatching);
+
+            //bgwUDPmessagesParser.CancelAsync();
+        }
+
+
+
+        private void udpCatchingJob_DoWork(object sender, DoWorkEventArgs e)
+        {
+            UdpClient bcstUDPreader = new UdpClient(portBcstRecvng, AddressFamily.InterNetwork);
+            bcstUDPreader.EnableBroadcast = true;
+            BackgroundWorker SelfWorker = sender as BackgroundWorker;
+            IPEndPoint RemoteIpEndPoint = new IPEndPoint(IPAddress.Any, 0);
+            UdpState s = new UdpState();
+            s.ipEndPoint = RemoteIpEndPoint;
+            s.UDPclient = bcstUDPreader;
+
+
+            while (true)
+            {
+                if (SelfWorker.CancellationPending)
+                {
+                    e.Cancel = true;
+                    break;
+                }
+
+                if (recievingUDPmessage)
+                {
+                    continue;
+                }
+
+
+                if (bcstUDPreader.Available > 0)
+                {
+                    recievingUDPmessage = true;
+                    bcstUDPreader.BeginReceive(BcstReceiveCallback, s);
                 }
             }
 
-            AccelerometerData latestAccDataID1;
-            AccelerometerData accCalibrationDataID1;
-            AccelerometerData latestAccDataID2;
-            AccelerometerData accCalibrationDataID2;
+            bcstUDPreader.Close();
+        }
 
-            try
+
+        
+        private void BcstReceiveCallback(IAsyncResult ar)
+        {
+            string bcstMessage = "";
+            UdpState udpSt = (UdpState)(ar.AsyncState);
+            UdpClient udpClt = (UdpClient)(udpSt.UDPclient);
+            IPEndPoint ipEP = (IPEndPoint)(udpSt.ipEndPoint);
+
+            remoteSktAddr = PropertyHelper.GetPrivatePropertyValue<SocketAddress>((object)ar, "SocketAddress");
+
+
+            if (udpClt.Client != null)
             {
-                List<AccelerometerData> dataToPassToSensorsDataPresentation = new List<AccelerometerData>((List<AccelerometerData>)state);
-                latestAccDataID1 = dataToPassToSensorsDataPresentation[0] as AccelerometerData;
-                accCalibrationDataID1 = dataToPassToSensorsDataPresentation[1] as AccelerometerData;
-                latestAccDataID2 = dataToPassToSensorsDataPresentation[2] as AccelerometerData;
-                accCalibrationDataID2 = dataToPassToSensorsDataPresentation[3] as AccelerometerData;
+                try
+                {
+                    Byte[] receiveBytes = udpClt.EndReceive(ar, ref ipEP);
+                    recievingUDPmessage = false;
+
+                    bcstMessage = Encoding.ASCII.GetString(receiveBytes);
+
+                    if (bcstMessage != "")
+                    {
+                        cquArduinoUDPCatchedMessages.Enqueue(new IncomingUDPmessageBoundle(remoteSktAddr, bcstMessage));
+
+                        Interlocked.Increment(ref recievedUDPPacketsCounter);
+                    }
+
+                }
+                catch (Exception ex)
+                {
+                    #region report
+#if DEBUG
+                    ServiceTools.ExecMethodInSeparateThread(this, () =>
+                    {
+                        theLogWindow = ServiceTools.LogAText(theLogWindow,
+                            "exception has been thrown: " + ex.Message + Environment.NewLine +
+                            ServiceTools.CurrentCodeLineDescription());
+                    });
+#else
+                    ServiceTools.ExecMethodInSeparateThread(this, () =>
+                {
+                    ServiceTools.logToTextFile(errorLogFilename,
+                        "exception has been thrown: " + ex.Message + Environment.NewLine +
+                        ServiceTools.CurrentCodeLineDescription(), true, true);
+                });
+#endif
+                    #endregion report
+                }
+                recievingUDPmessage = false;
             }
-            catch (Exception ex)
+            else
             {
-                return;
-            }
-
-
-            if ((latestAccDataID1 != null) && (accCalibrationDataID1 != null) && (latestAccDataID2 != null) && (accCalibrationDataID2 != null))
-            {
-                double accDevAngleID1 = (latestAccDataID1 * accCalibrationDataID1) / (latestAccDataID1.AccMagnitude * accCalibrationDataID1.AccMagnitude);
-                accDevAngleID1 = Math.Acos(accDevAngleID1) * 180.0d / Math.PI;
-                double accDevAngleID2 = (latestAccDataID2 * accCalibrationDataID2) / (latestAccDataID2.AccMagnitude * accCalibrationDataID2.AccMagnitude);
-                accDevAngleID2 = Math.Acos(accDevAngleID2) * 180.0d / Math.PI;
-                ThreadSafeOperations.SetText(lblAccMagnValueID1, (latestAccDataID1.AccMagnitude / accCalibrationDataID1.AccMagnitude).ToString("F2"), false);
-                ThreadSafeOperations.SetText(lblAccDevAngleValueID1, accDevAngleID1.ToString("F3"), false);
-                ThreadSafeOperations.SetText(lblAccMagnValueID2, (latestAccDataID2.AccMagnitude / accCalibrationDataID2.AccMagnitude).ToString("F2"), false);
-                ThreadSafeOperations.SetText(lblAccDevAngleValueID2, accDevAngleID2.ToString("F3"), false);
+                recievingUDPmessage = false;
             }
         }
+
+        #endregion UDP catching job
+
+
+
+
+
+        #region send commands to Arduinos and recieve replys
+
+        /// <summary>
+        /// Performs the send command.
+        /// </summary>
+        /// <param name="currCommand">The curr command.</param>
+        /// <param name="devID">The dev identifier.</param>
+        /// 
+        /// TODO: this doesnt work. Fix it!
+        /// 
+        private void PerformSendCommand(string currCommand, int devID)
+        {
+            string retStr = currCommand;
+            byte[] ret = System.Text.Encoding.ASCII.GetBytes(retStr);
+            Socket Skt = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
+            Skt.EnableBroadcast = false;
+            IPEndPoint ipEP = new IPEndPoint(IPAddress.Parse(ip2ListenID1), port2converse);
+            if (devID == 1)
+            {
+                ipEP = new IPEndPoint(IPAddress.Parse(ip2ListenID1), port2converse);
+            }
+            else if (devID == 2)
+            {
+                ipEP = new IPEndPoint(IPAddress.Parse(ip2ListenID2), port2converse);
+            }
+
+            int sent = Skt.SendTo(ret, ipEP);
+            Skt.Close();
+        }
+
+        
+
+
+
+        private void PerformRequestArduinoBoard(string requestText, int devID)
+        {
+            ArduinoRequestString = requestText;
+            needsReplyOnRequest = true;
+            PerformSendCommand(requestText, devID);
+            ArduinoRequestExpectant.RunWorkerAsync();
+        }
+
+
+
+
+        private void ArduinoRequestExpectant_DoWork(object sender, DoWorkEventArgs e)
+        {
+            while (needsReplyOnRequest)
+            {
+                System.Threading.Thread.Sleep(50);
+            }
+        }
+
+
+
+
+        private void ArduinoRequestExpectant_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
+        {
+            if (ArduinoRequestString == "1")
+            {
+                //найдем строку, в которой сказано про data broadcasting
+                if ((replyMessage == "data broadcasting is OFF") && (dataCollectingState == DataCollectingStates.checkingState))
+                {
+                    Note("Outdoor facility data broadcasting is OFF. Turning it ON.");
+                    PerformRequestArduinoBoard("2", currOperatingDevID);
+                }
+                else if ((replyMessage == "data broadcasting is ON") && (dataCollectingState == DataCollectingStates.checkingState))
+                {
+                    if (theWorkerRequestedArduinoDataBroadcastState == WorkersRequestingArduinoDataBroadcastState.dataCollector)
+                    {
+                        dataCollector.RunWorkerAsync();
+                    }
+                    else if (theWorkerRequestedArduinoDataBroadcastState == WorkersRequestingArduinoDataBroadcastState.accelCalibrator)
+                    {
+                        accelCalibrator.RunWorkerAsync();
+                    }
+                }
+
+            }
+            else if (ArduinoRequestString == "2")
+            {
+                Note(replyMessage);
+                if ((replyMessage == "data broadcasting is ON") && (dataCollectingState == DataCollectingStates.checkingState))
+                {
+                    if (theWorkerRequestedArduinoDataBroadcastState == WorkersRequestingArduinoDataBroadcastState.dataCollector)
+                    {
+                        dataCollector.RunWorkerAsync();
+                    }
+                    else if (theWorkerRequestedArduinoDataBroadcastState == WorkersRequestingArduinoDataBroadcastState.accelCalibrator)
+                    {
+                        accelCalibrator.RunWorkerAsync();
+                    }
+                }
+            }
+        }
+
+
+
+
+        #endregion send commands to Arduinos and recieve replys
+
+
+
+        private void btnStartStopCollecting_Click(object sender, EventArgs e)
+        {
+            if (!dataCollector.IsBusy)
+            {
+                if (!udpCatchingJob.IsBusy)
+                {
+                    //включим прослушку Arduino
+                    needsToSwitchListeningArduinoOFF = true;
+                    btnStartStopBdcstListening_Click(null, null);
+                }
+
+                dataCollector.RunWorkerAsync();
+            }
+            else
+            {
+                dataCollector.CancelAsync();
+            }
+        }
+
+        
+
+
+
 
 
 
@@ -898,6 +1067,8 @@ namespace DataCollectorAutomator
 
             while (true)
             {
+                #region CancellationPending
+
                 if (SelfWorker.CancellationPending)
                 {
                     #region dump the rest accelerometers data to nc-file
@@ -1046,7 +1217,9 @@ namespace DataCollectorAutomator
 
                     break;
                 }
-                
+
+                #endregion CancellationPending
+
 
 
                 #region // обработка очередей разобранных данных - разнесено по событиям CollectionChanged соответствующих коллекций
@@ -1413,7 +1586,7 @@ namespace DataCollectorAutomator
                 //    processedUDPPacketsCounter++;
                 //}
                 #endregion accelerometers
-                
+
                 #region // gyroscope - вынесено в CollectionChanged событие коллекции gyroDataAndDTObservableConcurrentQueue
                 //if (gyroDataQueue.Count > 0)
                 //if (gyroDataAndDTObservableConcurrentQueue.Count > 0)
@@ -1464,7 +1637,7 @@ namespace DataCollectorAutomator
                 //    processedUDPPacketsCounter++;
                 //}
                 #endregion // gyroscope - вынесено в CollectionChanged событие коллекции gyroDataAndDTObservableConcurrentQueue
-                
+
                 #region // GPS from Arduino stream - перенесено в CollectionChanged событие коллекции gpsDataAndDTObservableConcurrentQueue
                 //if (gpsDataHasBeenChanged)
                 //{
@@ -1517,7 +1690,7 @@ namespace DataCollectorAutomator
                 //    processedUDPPacketsCounter++;
                 //}
                 #endregion // GPS from Arduino stream - перенесено в CollectionChanged событие коллекции gpsDataAndDTObservableConcurrentQueue
-                
+
                 #region // pressure data from Arduino stream - перенесено в CollectionChanged событие коллекции pressureDataAndDTObservableConcurrentQueue
                 //if (pressureHasBeenChanged)
                 //{
@@ -1550,14 +1723,14 @@ namespace DataCollectorAutomator
 
                 #endregion // обработка очередей разобранных данных - разнесено по событиям CollectionChanged соответствующих коллекций
 
-                
+
 
                 ///
                 ///todo: перенести в обработку данных по акселлерометру
                 ///  
                 #region if it is time to shoot - then shoot
 
-                
+
                 if (stwCamshotTimer.Elapsed >= camshotPeriod)
                 {
                     camshotTimeToGetIt = true;
@@ -2601,13 +2774,170 @@ namespace DataCollectorAutomator
 
 
 
+
+
+
+
+        private void EstimateAndReportUDPpacketsRecievingSpeed(object state)
+        {
+            Stopwatch stwToEstimateUDPpacketsRecieving;
+            try
+            {
+                stwToEstimateUDPpacketsRecieving = (state as object[])[0] as Stopwatch;
+            }
+            catch (Exception ex)
+            {
+                return;
+            }
+
+
+            double elapsedms = (double)(stwToEstimateUDPpacketsRecieving.ElapsedMilliseconds);
+
+            if (elapsedms == 0)
+            {
+                stwToEstimateUDPpacketsRecieving.Restart();
+                return;
+            }
+
+            //оценим скорость поступления пакетов
+            double speedUDPrecieving = (double)recievedUDPPacketsCounter * 1000.0d /
+                              (double)elapsedms;
+            recievedUDPPacketsCounter = 0;
+
+            double speedUDPprocessing = (double)processedUDPPacketsCounter * 1000.0d /
+                                        (double)elapsedms;
+            processedUDPPacketsCounter = 0;
+
+            //theLogWindow = ServiceTools.LogAText(theLogWindow, Environment.NewLine +
+            //    "UDP recieving speed = " + speedUDPrecieving.ToString("F2") + Environment.NewLine +
+            //    "UDP processing speed = " + speedUDPprocessing.ToString("F2"));
+#if DEBUG
+            ThreadSafeOperations.SetText(lblUDPpacketsRecievingSpeedValue, speedUDPrecieving.ToString("F2"), false);
+            ThreadSafeOperations.SetText(lblUDPpacketsProcessingSpeedValue, speedUDPprocessing.ToString("F2"), false);
+#endif
+
+
+            stwToEstimateUDPpacketsRecieving.Restart();
+
+            if (speedUDPrecieving <= 0.0d)
+            {
+                ChangeIndicatingButtonBackgroundColor(btnStartStopBdcstListening,
+                    ButtonBackgroundStateWatchingProcess.alarm);
+            }
+            else
+            {
+                ChangeIndicatingButtonBackgroundColor(btnStartStopBdcstListening,
+                    ButtonBackgroundStateWatchingProcess.allGood);
+            }
+
+
+            if (speedUDPprocessing <= 0.0d)
+            {
+                ChangeIndicatingButtonBackgroundColor(lblAccMagnValueID1,
+                    ButtonBackgroundStateWatchingProcess.alarm);
+                ChangeIndicatingButtonBackgroundColor(lblAccDevAngleValueID1,
+                    ButtonBackgroundStateWatchingProcess.alarm);
+                ChangeIndicatingButtonBackgroundColor(lblAccMagnValueID2,
+                    ButtonBackgroundStateWatchingProcess.alarm);
+                ChangeIndicatingButtonBackgroundColor(lblAccDevAngleValueID2,
+                    ButtonBackgroundStateWatchingProcess.alarm);
+                ChangeIndicatingButtonBackgroundColor(lblAccMagnTitleID1,
+                    ButtonBackgroundStateWatchingProcess.alarm);
+                ChangeIndicatingButtonBackgroundColor(lblAccDevAngleTitleID1,
+                    ButtonBackgroundStateWatchingProcess.alarm);
+                ChangeIndicatingButtonBackgroundColor(lblAccMagnTitleID2,
+                    ButtonBackgroundStateWatchingProcess.alarm);
+                ChangeIndicatingButtonBackgroundColor(lblAccDevAngleTitleID2,
+                    ButtonBackgroundStateWatchingProcess.alarm);
+            }
+            else
+            {
+                ChangeIndicatingButtonBackgroundColor(lblAccMagnValueID1,
+                    ButtonBackgroundStateWatchingProcess.allGood);
+                ChangeIndicatingButtonBackgroundColor(lblAccDevAngleValueID1,
+                    ButtonBackgroundStateWatchingProcess.allGood);
+                ChangeIndicatingButtonBackgroundColor(lblAccMagnValueID2,
+                    ButtonBackgroundStateWatchingProcess.allGood);
+                ChangeIndicatingButtonBackgroundColor(lblAccDevAngleValueID2,
+                    ButtonBackgroundStateWatchingProcess.allGood);
+                ChangeIndicatingButtonBackgroundColor(lblAccMagnTitleID1,
+                    ButtonBackgroundStateWatchingProcess.allGood);
+                ChangeIndicatingButtonBackgroundColor(lblAccDevAngleTitleID1,
+                    ButtonBackgroundStateWatchingProcess.allGood);
+                ChangeIndicatingButtonBackgroundColor(lblAccMagnTitleID2,
+                    ButtonBackgroundStateWatchingProcess.allGood);
+                ChangeIndicatingButtonBackgroundColor(lblAccDevAngleTitleID2,
+                    ButtonBackgroundStateWatchingProcess.allGood);
+            }
+        }
+
+
+
+
+
+        private void UpdateSensorsDataPresentation(object state)
+        {
+            // =======================
+            //вывести мгновенные значения, но раздельно по устройствам
+            // =======================
+            // dataToPassToSensorsDataPresentation = new object[] { latestAccDataID1, accCalibrationDataID1, latestAccDataID2, accCalibrationDataID2 };
+            if (state == null)
+            {
+                return;
+            }
+            if (state.GetType() == typeof(List<AccelerometerData>))
+            {
+                List<AccelerometerData> dataToPassToSensorsDataPresentation = state as List<AccelerometerData>;
+                if (dataToPassToSensorsDataPresentation.Count != 4)
+                {
+                    return;
+                }
+            }
+
+            AccelerometerData latestAccDataID1;
+            AccelerometerData accCalibrationDataID1;
+            AccelerometerData latestAccDataID2;
+            AccelerometerData accCalibrationDataID2;
+
+            try
+            {
+                List<AccelerometerData> dataToPassToSensorsDataPresentation = new List<AccelerometerData>((List<AccelerometerData>)state);
+                latestAccDataID1 = dataToPassToSensorsDataPresentation[0] as AccelerometerData;
+                accCalibrationDataID1 = dataToPassToSensorsDataPresentation[1] as AccelerometerData;
+                latestAccDataID2 = dataToPassToSensorsDataPresentation[2] as AccelerometerData;
+                accCalibrationDataID2 = dataToPassToSensorsDataPresentation[3] as AccelerometerData;
+            }
+            catch (Exception ex)
+            {
+                return;
+            }
+
+
+            if ((latestAccDataID1 != null) && (accCalibrationDataID1 != null) && (latestAccDataID2 != null) && (accCalibrationDataID2 != null))
+            {
+                double accDevAngleID1 = (latestAccDataID1 * accCalibrationDataID1) / (latestAccDataID1.AccMagnitude * accCalibrationDataID1.AccMagnitude);
+                accDevAngleID1 = Math.Acos(accDevAngleID1) * 180.0d / Math.PI;
+                double accDevAngleID2 = (latestAccDataID2 * accCalibrationDataID2) / (latestAccDataID2.AccMagnitude * accCalibrationDataID2.AccMagnitude);
+                accDevAngleID2 = Math.Acos(accDevAngleID2) * 180.0d / Math.PI;
+                ThreadSafeOperations.SetText(lblAccMagnValueID1, (latestAccDataID1.AccMagnitude / accCalibrationDataID1.AccMagnitude).ToString("F2"), false);
+                ThreadSafeOperations.SetText(lblAccDevAngleValueID1, accDevAngleID1.ToString("F3"), false);
+                ThreadSafeOperations.SetText(lblAccMagnValueID2, (latestAccDataID2.AccMagnitude / accCalibrationDataID2.AccMagnitude).ToString("F2"), false);
+                ThreadSafeOperations.SetText(lblAccDevAngleValueID2, accDevAngleID2.ToString("F3"), false);
+            }
+        }
+
+
+
+
+
+
         #endregion обработка поступающих данных сенсоров
 
 
 
 
 
-        
+
 
 
 
@@ -2813,6 +3143,7 @@ namespace DataCollectorAutomator
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="DoWorkEventArgs"/> instance containing the event data.</param>
         /// todo: переделать в event-driven вариант по коллекции accDataAndDTObservableConcurrentQueue
+        /// 
         private void accelCalibrator_DoWork(object sender, DoWorkEventArgs e)
         {
             //DateTime datetimeCalibrationBegin = DateTime.Now;
@@ -3103,9 +3434,6 @@ namespace DataCollectorAutomator
                 }
             }
         }
-
-
-
         
 
 
@@ -3260,305 +3588,7 @@ namespace DataCollectorAutomator
 
         #endregion // bgwUDPmessagesParser is obsolete
 
-
-
-
-
-
-
-        #region Form behaviour
-
-        private void tbIP2ListenDevID2_TextChanged(object sender, EventArgs e)
-        {
-            ip2ListenID2 = tbIP2ListenDevID2.Text;
-        }
-
-
-
-
-
-        private void DataCollectorMainForm_Paint(object sender, PaintEventArgs e)
-        {
-            if (currCaughtImageID1 != null)
-            {
-                ThreadSafeOperations.UpdatePictureBox(pbThumbPreviewCam1, currCaughtImageID1.Bitmap, true);
-            }
-
-            if (currCaughtImageID2 != null)
-            {
-                ThreadSafeOperations.UpdatePictureBox(pbThumbPreviewCam2, currCaughtImageID2.Bitmap, true);
-            }
-        }
-
-
-
-
-        private void DataCollectorMainForm_KeyPress(object sender, KeyPressEventArgs e)
-        {
-            if (e.KeyChar == 27)//escape key
-            {
-                this.Close();
-            }
-        }
-
-
-
-
-        private void lblSunElev_Click(object sender, EventArgs e)
-        {
-            if (latestGPSdata.validGPSdata)
-            {
-                SPA spaCalc = new SPA(latestGPSdata.dateTimeUTC.Year, latestGPSdata.dateTimeUTC.Month, latestGPSdata.dateTimeUTC.Day, latestGPSdata.dateTimeUTC.Hour,
-                        latestGPSdata.dateTimeUTC.Minute, latestGPSdata.dateTimeUTC.Second, (float)latestGPSdata.LonDec, (float)latestGPSdata.LatDec,
-                        (float)SPAConst.DeltaT(latestGPSdata.dateTimeUTC));
-                int res = spaCalc.spa_calculate();
-                AzimuthZenithAngle sunPositionSPAext = new AzimuthZenithAngle(spaCalc.spa.azimuth,
-                    spaCalc.spa.zenith);
-                spaCalc.spa.function = SPAFunctionType.SPA_ZA_RTS;
-                spaCalc.spa_calculate();
-
-
-
-
-
-                theLogWindow = ServiceTools.LogAText(theLogWindow, latestGPSdata.dateTimeUTC.ToString() +
-                                                                   Environment.NewLine + "sunrise: " +
-                                                                   (new TimeOfDay(spaCalc.spa.sunrise)) +
-                                                                   Environment.NewLine + "sunset: " +
-                                                                   (new TimeOfDay(spaCalc.spa.sunset)));
-            }
-        }
-
-
-        private void btnPrefs_Click(object sender, EventArgs e)
-        {
-            PropertiesEditor propForm = new PropertiesEditor(defaultProperties, defaultPropertiesXMLfileName);
-            propForm.FormClosed += new FormClosedEventHandler(PropertiesFormClosed);
-            propForm.ShowDialog();
-        }
-
-
-        private void PropertiesFormClosed(object sender, FormClosedEventArgs e)
-        {
-            readDefaultProperties();
-        }
-
-
-
-        private void readDefaultProperties()
-        {
-            defaultProperties = new Dictionary<string, object>();
-            defaultPropertiesXMLfileName = Directory.GetCurrentDirectory() +
-                                         "\\settings\\DataCollectorAppGeneralSettings2G.xml";
-            if (!File.Exists(defaultPropertiesXMLfileName)) return;
-            defaultProperties = ServiceTools.ReadDictionaryFromXML(defaultPropertiesXMLfileName);
-
-
-
-            accCalibrationDataFilename = Directory.GetCurrentDirectory() +
-                                         "\\settings\\AccelerometerCalibrationData2G.xml";
-
-            accCalibrationDataDict = ServiceTools.ReadDictionaryFromXML(accCalibrationDataFilename);
-
-
-            accCalibrationDataID1 = new AccelerometerData(Convert.ToDouble(accCalibrationDataDict["accID1CalibratedXzero"]),
-                Convert.ToDouble(accCalibrationDataDict["accID1CalibratedYzero"]),
-                Convert.ToDouble(accCalibrationDataDict["accID1CalibratedZzero"]));
-            accCalibrationDataID2 = new AccelerometerData(Convert.ToDouble(accCalibrationDataDict["accID2CalibratedXzero"]),
-                Convert.ToDouble(accCalibrationDataDict["accID2CalibratedYzero"]),
-                Convert.ToDouble(accCalibrationDataDict["accID2CalibratedZzero"]));
-
-
-            ip2ListenID1 = defaultProperties["ArduinoBoardID1DefaultIP"] as string;
-            ip2ListenID2 = defaultProperties["ArduinoBoardID2DefaultIP"] as string;
-
-            port2converse = Convert.ToInt32(defaultProperties["ArduinoBoardDefaultUDPport"]);
-            portBcstRecvng = Convert.ToInt32(defaultProperties["UDPBroadcastDefaultListeningPort"]);
-            string strCamShotPeriod = (defaultProperties["VivotekCameraShootingPeriodSec"]) as string;
-
-            CamShotPeriod = new TimeSpan(0, 0, Convert.ToInt32(strCamShotPeriod));
-
-
-            IPAddress.TryParse(defaultProperties["VivotekCameraID1IPaddr"] as string, out VivotekCameraID1IPaddress);
-            IPAddress.TryParse(defaultProperties["VivotekCameraID2IPaddr"] as string, out VivotekCameraID2IPaddress);
-            VivotekCameraUserName1 = defaultProperties["VivotekCameraID1UserName"] as string;
-            VivotekCameraPassword1 = defaultProperties["VivotekCameraID1Password"] as string;
-            VivotekCameraUserName2 = defaultProperties["VivotekCameraID2UserName"] as string;
-            VivotekCameraPassword2 = defaultProperties["VivotekCameraID2Password"] as string;
-            BroadcastLogHistorySizeLines = Convert.ToInt32(defaultProperties["BroadcastLogHistorySizeLines"]);
-
-            try
-            {
-                angleCamDeclinationThresholdDeg = Convert.ToDouble(defaultProperties["CamDeclinationThresholdDegToShoot"]);
-            }
-            catch (Exception ex)
-            {
-                theLogWindow = ServiceTools.LogAText(theLogWindow,
-                    "couldn`t read critical camera declination angle. Using default value = " +
-                    angleCamDeclinationThresholdDeg.ToString("F2") + Environment.NewLine +
-                    "exception was thrown: \"" + ex.Message + "\"");
-            }
-
-
-
-            ThreadSafeOperations.SetTextTB(tbIP2ListenDevID1, ip2ListenID1, false);
-            ThreadSafeOperations.SetTextTB(tbIP2ListenDevID2, ip2ListenID2, false);
-
-
-
-            if (accCalibrationDataID1.AccMagnitude == 0.0d)
-            {
-                accCalibrationDataID1 = new AccelerometerData(0.0, 0.0, -256.0);
-            }
-            if (accCalibrationDataID2.AccMagnitude == 0.0d)
-            {
-                accCalibrationDataID2 = new AccelerometerData(0.0, 0.0, -256.0);
-            }
-
-            dctCalibrationAccDataByDevID.Add("devID1", accCalibrationDataID1);
-            dctCalibrationAccDataByDevID.Add("devID2", accCalibrationDataID2);
-
-            ThreadSafeOperations.SetText(lblAccelCalibrationXID1, Math.Round(accCalibrationDataID1.AccDoubleX, 2).ToString(), false);
-            ThreadSafeOperations.SetText(lblAccelCalibrationYID1, Math.Round(accCalibrationDataID1.AccDoubleY, 2).ToString(), false);
-            ThreadSafeOperations.SetText(lblAccelCalibrationZID1, Math.Round(accCalibrationDataID1.AccDoubleZ, 2).ToString(), false);
-            ThreadSafeOperations.SetText(lblAccelCalibrationXID2, Math.Round(accCalibrationDataID2.AccDoubleX, 2).ToString(), false);
-            ThreadSafeOperations.SetText(lblAccelCalibrationYID2, Math.Round(accCalibrationDataID2.AccDoubleY, 2).ToString(), false);
-            ThreadSafeOperations.SetText(lblAccelCalibrationZID2, Math.Round(accCalibrationDataID2.AccDoubleZ, 2).ToString(), false);
-
-            angleCamDeclinationThresholdRad = Math.PI * angleCamDeclinationThresholdDeg / 180.0d;
-        }
-
-
-
-
-        private void DataCollectorMainForm_Shown(object sender, EventArgs e)
-        {
-            readDefaultProperties();
-
-            cquArduinoUDPCatchedMessages.CollectionChanged += cquArduinoUDPCatchedMessages_CollectionChanged;
-
-            accDataAndDTObservableConcurrentQueue.CollectionChanged += accDataAndDTObservableConcurrentQueue_CollectionChanged;
-
-            gyroDataAndDTObservableConcurrentQueue.CollectionChanged += gyroDataAndDTObservableConcurrentQueue_CollectionChanged;
-
-            gpsDataAndDTObservableConcurrentQueue.CollectionChanged += gpsDataAndDTObservableConcurrentQueue_CollectionChanged;
-
-            pressureDataAndDTObservableConcurrentQueue.CollectionChanged += pressureDataAndDTObservableConcurrentQueue_CollectionChanged;
-
-            this.NeedToShootCameraSnapshots += DataCollectorMainForm_NeedToShootCameraSnapshots;
-        }
-
-
-
-        void DataCollectorMainForm_NeedToShootCameraSnapshots(object sender, EventArgs e)
-        {
-            ServiceTools.ExecMethodInSeparateThread(this, catchCameraImages);
-        }
-
         
-
-        
-
-        
-
-
-
-        private void btnAccCalibrationData_Click(object sender, EventArgs e)
-        {
-            PropertiesEditor propForm = new PropertiesEditor(accCalibrationDataDict, accCalibrationDataFilename);
-            propForm.FormClosed += new FormClosedEventHandler(PropertiesFormClosed);
-            propForm.ShowDialog();
-        }
-
-
-
-
-        private void btnSwitchShowingTotalLog_Click(object sender, EventArgs e)
-        {
-            if (showTotalBcstLog)
-            {
-                showTotalBcstLog = !showTotalBcstLog;
-                ThreadSafeOperations.ToggleButtonState(btnSwitchShowingTotalLog, true, "Show total log", true);
-            }
-            else
-            {
-                showTotalBcstLog = !showTotalBcstLog;
-                ThreadSafeOperations.ToggleButtonState(btnSwitchShowingTotalLog, true, "Dont show total log", true);
-            }
-        }
-
-
-
-
-        private void btnCollectMostClose_Click(object sender, EventArgs e)
-        {
-            operatorCommandsToGetCamShot = true;
-        }
-
-
-
-
-        private void btnSaveAccel_Click(object sender, EventArgs e)
-        {
-            Dictionary<string, object> propertiesDictToSave = new Dictionary<string, object>();
-            propertiesDictToSave.Add("accID1CalibratedXzero", accCalibrationDataID1.AccDoubleX);
-            propertiesDictToSave.Add("accID1CalibratedYzero", accCalibrationDataID1.AccDoubleY);
-            propertiesDictToSave.Add("accID1CalibratedZzero", accCalibrationDataID1.AccDoubleZ);
-            ServiceTools.WriteDictionaryToXml(propertiesDictToSave, accCalibrationDataFilename, false);
-        }
-
-
-
-
-
-
-        private void btnCalibrateAccelerometer_Click(object sender, EventArgs e)
-        {
-            if (!accelCalibrator.IsBusy)
-            {
-                if (!udpCatchingJob.IsBusy)
-                {
-                    //включим прослушку Arduino
-                    needsToSwitchListeningArduinoOFF = true;
-                    btnStartStopBdcstListening_Click(null, null);
-                }
-                Note("Detecting outdoor board broadcasting state");
-                ThreadSafeOperations.ToggleButtonState(btnCalibrateAccelerometerID1, false, "wait for state checking", true);
-                //StartStopDataCollectingWaitingCircle.Visible = true;
-                //StartStopDataCollectingWaitingCircle.Active = true;
-                dataCollectingState = DataCollectingStates.checkingState;
-                theWorkerRequestedArduinoDataBroadcastState = WorkersRequestingArduinoDataBroadcastState.accelCalibrator;
-                currOperatingDevID = 1;
-                PerformRequestArduinoBoard("1", currOperatingDevID);
-            }
-            else
-            {
-                accelCalibrator.CancelAsync();
-            }
-        }
-
-
-
-        private void btnCollectImmediately_Click(object sender, EventArgs e)
-        {
-            //if (dataCollector.IsBusy)
-            //{
-            //    operatorCommandsToGetCamShotImmediately = true;
-            //}
-            //else
-            //{
-            //    catchCameraImages();
-            //}
-
-            EventHandler onNeedToShootCameraSnapshots = this.NeedToShootCameraSnapshots;
-            if (onNeedToShootCameraSnapshots != null) onNeedToShootCameraSnapshots(null, null);
-
-        }
-
-
-        #endregion Form behaviour
-
-
     }
 
     #endregion the form class
@@ -3568,19 +3598,19 @@ namespace DataCollectorAutomator
 
 
 
-    #region event-model usage
+    #region // event-model usage
 
-    public class NotAllBgwWorkingAlertEventArgs
-    {
-        public String Message { get; private set; }
+    //public class NotAllBgwWorkingAlertEventArgs
+    //{
+    //    public String Message { get; private set; }
 
-        public NotAllBgwWorkingAlertEventArgs(string message)
-        {
-            Message = message;
-        }
-    }
+    //    public NotAllBgwWorkingAlertEventArgs(string message)
+    //    {
+    //        Message = message;
+    //    }
+    //}
 
-    #endregion event-model usage
+    #endregion // event-model usage
 
 
 

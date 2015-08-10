@@ -90,12 +90,6 @@
     <Reference Include="System.Xml.Linq" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AccelerometerDataRepresentingForm.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="AccelerometerDataRepresentingForm.Designer.cs">
-      <DependentUpon>AccelerometerDataRepresentingForm.cs</DependentUpon>
-    </Compile>
     <Compile Include="DataCollectorMainForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -119,9 +113,6 @@
     <Compile Include="UdpState.cs" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="AccelerometerDataRepresentingForm.resx">
-      <DependentUpon>AccelerometerDataRepresentingForm.cs</DependentUpon>
-    </EmbeddedResource>
     <EmbeddedResource Include="DataCollectorMainForm.resx">
       <DependentUpon>DataCollectorMainForm.cs</DependentUpon>
     </EmbeddedResource>
