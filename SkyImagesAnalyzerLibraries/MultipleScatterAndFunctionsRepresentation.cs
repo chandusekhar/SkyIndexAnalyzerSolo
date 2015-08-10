@@ -259,7 +259,8 @@ namespace SkyImagesAnalyzerLibraries
             //theFont.thickness = 1;
 
             // замерим высоту подписей по X по значению в минимуме
-            string strMinXvalueMarker = xAxisValuesConversionToRepresentTicksValues(xSpaceMin);
+
+            string strMinXvalueMarker = (xAxisValuesConversionToRepresentTicksValues == null)?(xSpaceMin.ToString()) :(xAxisValuesConversionToRepresentTicksValues(xSpaceMin));
             TextBarImage minXvalueMarkerTextBar = new TextBarImage(strMinXvalueMarker,
                 new Image<Bgr, byte>(new Size(pictureWidth, pictureHeight)));
             int barHeight = minXvalueMarkerTextBar.textBarSize.Height;

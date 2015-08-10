@@ -546,12 +546,12 @@ namespace SkyImagesAnalyzerLibraries
             List<Contour<Point>> contoursDetected = new List<Contour<Point>>();
 
             Contour<Point> firstContourDetected = img.FindContours(method, mode);
+            Contour<Point> currContour = firstContourDetected;
 
             while (true)
             {
-                Contour<Point> currContour = firstContourDetected;
                 contoursDetected.Add(currContour);
-                currContour = firstContourDetected.HNext;
+                currContour = currContour.HNext;
                 if (currContour == null)
                     break;
             }
@@ -582,12 +582,12 @@ namespace SkyImagesAnalyzerLibraries
             List<Contour<Point>> contoursDetected = new List<Contour<Point>>();
 
             Contour<Point> firstContourDetected = img.FindContours(method, mode);
+            Contour<Point> currContour = firstContourDetected;
 
             while (true)
             {
-                Contour<Point> currContour = firstContourDetected;
                 contoursDetected.Add(currContour);
-                currContour = firstContourDetected.HNext;
+                currContour = currContour.HNext;
                 if (currContour == null)
                     break;
             }
@@ -617,12 +617,12 @@ namespace SkyImagesAnalyzerLibraries
             List<Contour<Point>> contoursDetected = new List<Contour<Point>>();
 
             Contour<Point> firstContourDetected = img.FindContours(method, mode);
+            Contour<Point> currContour = firstContourDetected;
 
             while (true)
             {
-                Contour<Point> currContour = firstContourDetected;
                 contoursDetected.Add(currContour);
-                currContour = firstContourDetected.HNext;
+                currContour = currContour.HNext;
                 if (currContour == null)
                     break;
             }
@@ -653,12 +653,12 @@ namespace SkyImagesAnalyzerLibraries
             List<Contour<Point>> contoursDetected = new List<Contour<Point>>();
 
             Contour<Point> firstContourDetected = img.FindContours(method, mode);
+            Contour<Point> currContour = firstContourDetected;
 
             while (true)
             {
-                Contour<Point> currContour = firstContourDetected;
                 contoursDetected.Add(currContour);
-                currContour = firstContourDetected.HNext;
+                currContour = currContour.HNext;
                 if (currContour == null)
                     break;
             }
