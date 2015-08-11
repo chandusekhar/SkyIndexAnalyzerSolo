@@ -533,6 +533,7 @@ namespace DataCollectorAutomator
 
 
 
+
         void DataCollectorMainForm_NeedToShootCameraSnapshots(object sender, EventArgs e)
         {
             ServiceTools.ExecMethodInSeparateThread(this, catchCameraImages);
@@ -1016,7 +1017,7 @@ namespace DataCollectorAutomator
 
             stwCamshotTimer.Start();
 
-            TimeSpan camshotPeriod = CamShotPeriod;
+            
             TimeSpan labelsUpdatingPeriod = new TimeSpan(0, 0, 1);
             Stopwatch stwCamshotTimersUpdating = new Stopwatch();
             stwCamshotTimersUpdating.Start();
@@ -1025,8 +1026,7 @@ namespace DataCollectorAutomator
             BackgroundWorker SelfWorker = sender as BackgroundWorker;
             ThreadSafeOperations.ToggleButtonState(btnStartStopCollecting, true, "stop collecting data", true);
             dataCollectingState = DataCollectingStates.working;
-            bool camshotTimeToGetIt = false;
-            bool camshotHasBeenTaken = false;
+            
 
             
 
@@ -1725,62 +1725,66 @@ namespace DataCollectorAutomator
 
 
 
-                ///
-                ///todo: перенести в обработку данных по акселлерометру
-                ///  
-                #region if it is time to shoot - then shoot
+                #region // if it is time to shoot - then shoot - перенесено в обработку данных по акселерометрам
+
+                //bool camshotTimeToGetIt = false;
+                //bool camshotHasBeenTaken = false;
+
+                //if (stwCamshotTimer.Elapsed >= CamShotPeriod)
+                //{
+                //    camshotTimeToGetIt = true;
+                //    ThreadSafeOperations.ToggleLabelTextColor(lblNextShotIn, SystemColors.Highlight);
+                //    stwCamshotTimer.Restart();
+                //}
+                //if (operatorCommandsToGetCamShot)
+                //{
+                //    camshotTimeToGetIt = true;
+                //    ThreadSafeOperations.ToggleLabelTextColor(lblNextShotIn, SystemColors.Highlight);
+                //}
 
 
-                if (stwCamshotTimer.Elapsed >= camshotPeriod)
-                {
-                    camshotTimeToGetIt = true;
-                    ThreadSafeOperations.ToggleLabelTextColor(lblNextShotIn, SystemColors.Highlight);
-                    stwCamshotTimer.Restart();
-                }
-                if (operatorCommandsToGetCamShot)
-                {
-                    camshotTimeToGetIt = true;
-                    ThreadSafeOperations.ToggleLabelTextColor(lblNextShotIn, SystemColors.Highlight);
-                }
+                //bool camshotInclinedProperly = !(accDevAngle > angleCamDeclinationThresholdRad);
 
+                ////if ((camshotInclinedProperly && camshotTimeToGetIt) || operatorCommandsToGetCamShotImmediately)
+                //if (camshotInclinedProperly && camshotTimeToGetIt)
+                //{
+                //    EventHandler onNeedToShootCameraSnapshots = this.NeedToShootCameraSnapshots;
+                //    if (onNeedToShootCameraSnapshots != null) onNeedToShootCameraSnapshots(null, null);
 
-                bool camshotInclinedProperly = !(accDevAngle > angleCamDeclinationThresholdRad);
-
-                //if ((camshotInclinedProperly && camshotTimeToGetIt) || operatorCommandsToGetCamShotImmediately)
-                if (camshotInclinedProperly && camshotTimeToGetIt)
-                {
-                    EventHandler onNeedToShootCameraSnapshots = this.NeedToShootCameraSnapshots;
-                    if (onNeedToShootCameraSnapshots != null) onNeedToShootCameraSnapshots(null, null);
-
-                    //catchCameraImages();
-                    camshotHasBeenTaken = true;
-                }
-
-                #endregion if it is time to shoot - then shoot
+                //    //catchCameraImages();
+                //    camshotHasBeenTaken = true;
+                //}
 
 
 
-                if (camshotHasBeenTaken)
-                {
-                    Note("Got a shot " + DateTime.Now);
-                    camshotInclinedProperly = false;
-                    camshotHasBeenTaken = false;
-                    camshotTimeToGetIt = false;
-                    ThreadSafeOperations.ToggleLabelTextColor(lblNextShotIn, SystemColors.ControlText);
-                    operatorCommandsToGetCamShot = false;
-                    //operatorCommandsToGetCamShotImmediately = false;
+                //if (camshotHasBeenTaken)
+                //{
+                //    Note("Got a shot " + DateTime.Now);
+                //    //camshotInclinedProperly = false;
+                //    //camshotHasBeenTaken = false;
+                //    //camshotTimeToGetIt = false;
+                //    ThreadSafeOperations.ToggleLabelTextColor(lblNextShotIn, SystemColors.ControlText);
+                //    operatorCommandsToGetCamShot = false;
+                //    //operatorCommandsToGetCamShotImmediately = false;
 
 
-                    // ПОМЕНЯТЬ ТУТ
-                    logCurrentSensorsData();
-                }
+                //    // ПОМЕНЯТЬ ТУТ
+                //    logCurrentSensorsData();
+                //}
+
+
+                #endregion // if it is time to shoot - then shoot - перенесено в обработку данных по акселерометрам
+
 
 
                 if (stwCamshotTimersUpdating.Elapsed >= labelsUpdatingPeriod)
                 {
-                    updateTimersLabels(stwCamshotTimer, datetimeCamshotTimerBegin, camshotPeriod);
+                    updateTimersLabels(stwCamshotTimer, datetimeCamshotTimerBegin, CamShotPeriod);
                     stwCamshotTimersUpdating.Restart();
                 }
+
+
+                Thread.Sleep(200);
             }
 
             tmrUDPpacketsRecievingSpeedEstimation.Change(Timeout.Infinite, Timeout.Infinite);
@@ -2280,6 +2284,8 @@ namespace DataCollectorAutomator
 
                 // пересчитать хвост
                 if (accData.devID <= 1)
+                    // 0 - если без разделения по DevID. например, когда установка только одна.
+                    // или 1 - если идет разделение.
                 {
                     List<AccelerometerData> accDataTail = new List<AccelerometerData>(accID1tail.DataValues);
                     DenseVector dvAccXvaluesTail =
@@ -2332,6 +2338,60 @@ namespace DataCollectorAutomator
                     //accDevAngle = (latestAccDataID2 * accCalibrationData) / (latestAccDataID2.AccMagnitude * accCalibrationData.AccMagnitude);
                     //accDevAngle = Math.Acos(accDevAngle);
                 }
+
+
+
+
+                #region if it is time to shoot - then shoot
+
+                bool camshotTimeToGetIt = false;
+                bool camshotHasBeenTaken = false;
+
+                if (stwCamshotTimer.Elapsed >= CamShotPeriod)
+                {
+                    camshotTimeToGetIt = true;
+                    ThreadSafeOperations.ToggleLabelTextColor(lblNextShotIn, SystemColors.Highlight);
+                    stwCamshotTimer.Restart();
+                }
+                if (operatorCommandsToGetCamShot)
+                {
+                    camshotTimeToGetIt = true;
+                    ThreadSafeOperations.ToggleLabelTextColor(lblNextShotIn, SystemColors.Highlight);
+                }
+
+
+                bool camshotInclinedProperly = !(accDevAngle > angleCamDeclinationThresholdRad);
+
+                //if ((camshotInclinedProperly && camshotTimeToGetIt) || operatorCommandsToGetCamShotImmediately)
+                if (camshotInclinedProperly && camshotTimeToGetIt)
+                {
+                    EventHandler onNeedToShootCameraSnapshots = this.NeedToShootCameraSnapshots;
+                    if (onNeedToShootCameraSnapshots != null) onNeedToShootCameraSnapshots(null, null);
+
+                    //catchCameraImages();
+                    camshotHasBeenTaken = true;
+                }
+
+
+
+                if (camshotHasBeenTaken)
+                {
+                    Note("Got a shot " + DateTime.Now);
+                    //camshotInclinedProperly = false;
+                    //camshotHasBeenTaken = false;
+                    //camshotTimeToGetIt = false;
+                    ThreadSafeOperations.ToggleLabelTextColor(lblNextShotIn, SystemColors.ControlText);
+                    operatorCommandsToGetCamShot = false;
+                    //operatorCommandsToGetCamShotImmediately = false;
+
+
+                    // ПОМЕНЯТЬ ТУТ
+                    logCurrentSensorsData();
+                }
+
+
+                #endregion if it is time to shoot - then shoot
+
 
 
 
