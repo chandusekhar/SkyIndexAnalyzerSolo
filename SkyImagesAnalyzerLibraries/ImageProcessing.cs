@@ -6,9 +6,11 @@ using Emgu.CV.CvEnum;
 using Emgu.CV.Structure;
 using System;
 using System.Drawing;
+using System.IO;
 using System.Linq;
 using Emgu.CV.Util;
 using MathNet.Numerics.LinearAlgebra.Double;
+using MathNet.Numerics.Statistics;
 using MKLwrapper;
 
 
@@ -142,6 +144,7 @@ namespace SkyImagesAnalyzerLibraries
             Image<Gray, Byte> emguImage = img2process.Copy().Convert<Gray, Byte>();
             Image<Gray, Byte> BinaryEmguImage = emguImage.ThresholdBinary(new Gray(30), new Gray(255));
 
+            #region // EmguCV 3.0
             //VectorOfVectorOfPoint imageContours = new VectorOfVectorOfPoint();
             //CvInvoke.FindContours(BinaryEmguImage, imageContours, null, Emgu.CV.CvEnum.RetrType.External,
             //    Emgu.CV.CvEnum.ChainApproxMethod.ChainApproxSimple);
@@ -164,8 +167,9 @@ namespace SkyImagesAnalyzerLibraries
             //        neededContour = cnt;
             //    }
             //}
+            #endregion // EmguCV 3.0
 
-            List <Contour<Point>> contoursArray = BinaryEmguImage.DetectContours(RETR_TYPE.CV_RETR_EXTERNAL);
+            List<Contour<Point>> contoursArray = BinaryEmguImage.DetectContours(RETR_TYPE.CV_RETR_EXTERNAL);
             Contour<Point> neededContour = contoursArray[0];
             double currArea = 0.0;
             foreach (Contour<Point> cnt in contoursArray)
@@ -225,6 +229,7 @@ namespace SkyImagesAnalyzerLibraries
             Image<Bgr, Byte> contourImage = emguImage.CopyBlank().Convert<Bgr, Byte>();
             Image<Gray, Byte> BinaryEmguImage = emguImage.ThresholdBinary(new Gray(30), new Gray(255));
 
+            #region // EmguCV 3.0
             //VectorOfVectorOfPoint contoursDetected = new VectorOfVectorOfPoint();
             //CvInvoke.FindContours(BinaryEmguImage, contoursDetected, null, Emgu.CV.CvEnum.RetrType.External,
             //    Emgu.CV.CvEnum.ChainApproxMethod.ChainApproxSimple);
@@ -250,6 +255,7 @@ namespace SkyImagesAnalyzerLibraries
             //        currArea = currContourArea;
             //    }
             //}
+            #endregion // EmguCV 3.0
 
             List<Contour<Point>> contoursArray = BinaryEmguImage.DetectContours(RETR_TYPE.CV_RETR_EXTERNAL);
             double currArea = 0.0;
@@ -363,6 +369,7 @@ namespace SkyImagesAnalyzerLibraries
 
             Image<Gray, Byte> tmpMaskImage = significantMaskImage.Copy();
 
+            #region // EmguCV 3.0
             //List<VectorOfPoint> contoursArray = tmpMaskImage.FindContours();
             //VectorOfPoint contourFound = new VectorOfPoint();
             //double areaDetected = 0.0d;
@@ -375,6 +382,7 @@ namespace SkyImagesAnalyzerLibraries
             //        areaDetected = currContourArea;
             //    }
             //}
+            #endregion // EmguCV 3.0
 
 
             List<Contour<Point>> contoursArray = tmpMaskImage.DetectContours();
@@ -726,6 +734,39 @@ namespace SkyImagesAnalyzerLibraries
                 tmpImage = evalResultColored(aoi.dmRes, significantMaskImageBinary, evaluatingColorScheme);
             ServiceTools.FlushMemory(null, "");
             return aoi.dmRes;
+        }
+
+
+
+
+
+
+        public static Tuple<double, double> CalculateMedianPerc5Values(string strFullFilePath, int MaxImageSize = 0)
+        {
+            Tuple<double, double> retTpl;
+
+            if (!File.Exists(strFullFilePath))
+            {
+                return null;
+            }
+
+            Image<Bgr, byte> currImg = new Image<Bgr, byte>(strFullFilePath);
+            if (MaxImageSize != 0)
+            {
+                currImg = ImageProcessing.ImageResizer(currImg, MaxImageSize);
+            }
+            ImageProcessing imgP = new ImageProcessing(currImg, true);
+            DenseMatrix dmGrixData = imgP.eval("grix", null);
+            Image<Gray, Byte> maskImageCircled = imgP.imageSignificantMaskCircled();
+            DenseMatrix dmMaskCircled100 = ImageProcessing.DenseMatrixFromImage(maskImageCircled);
+            dmGrixData = (DenseMatrix)dmGrixData.PointwiseMultiply(dmMaskCircled100);
+            DenseVector dvGrixData = DataAnalysis.DataVectorizedWithCondition(dmGrixData, dval => ((dval > 0.0d) && (dval < 1.0d)));
+            DescriptiveStatistics stats = new DescriptiveStatistics(dvGrixData, true);
+            double median = dvGrixData.Median();
+            double perc5 = dvGrixData.Percentile(5);
+            retTpl = new Tuple<double, double>(median, perc5);
+            
+            return retTpl;
         }
 
 

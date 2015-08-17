@@ -12,7 +12,6 @@ using System.Reflection;
 using System.Xml.Serialization;
 using Emgu.CV;
 using Emgu.CV.Structure;
-//using IoffeVesselDataReader;
 using MathNet.Numerics.Statistics;
 using SkyImagesAnalyzerLibraries;
 using SolarPositioning;
@@ -2444,49 +2443,54 @@ namespace SkyImagesAnalyzer
                 Dictionary<string, object> defaultProps = (Dictionary<string, object>)currBGWarguments[1];
                 int currentBgwID = (int)currBGWarguments[2];
 
-                FileInfo fInfo = new FileInfo(currentFullFileName);
+                #region // obsolete
+                //FileInfo fInfo = new FileInfo(currentFullFileName);
+
+                //int maxImageSize = Convert.ToInt32(defaultProps["DefaultMaxImageSize"]); ;
+
+                //BackgroundWorker SelfWorker = currBGWsender as System.ComponentModel.BackgroundWorker;
+
+                //string outputStatsDirectory = (string)defaultProps["DefaultDataFilesLocation"];
+
+                ////ServiceTools.logToTextFile(outputStatsDirectory + "statsWithFNames.dat", "Full filename | 5prc | median" + Environment.NewLine, true);
+
+                ////Image img = Image.FromFile(fInfo.FullName);
+                ////img = ImageProcessing.ImageResizer(img, maxImageSize);
+
+                ////Bitmap bitmap2process = ServiceTools.ReadBitmapFromFile(fInfo.FullName);
+                ////bitmap2process = ImageProcessing.BitmapResizer(bitmap2process, maxImageSize);
+                //Image<Bgr, byte> img2process = new Image<Bgr, byte>(fInfo.FullName);
+                //img2process = ImageProcessing.ImageResizer(img2process, maxImageSize);
+
+                //while (img2process.CountNonzero().Sum() == 0)
+                //{
+                //    img2process = new Image<Bgr, byte>(fInfo.FullName);
+                //    img2process = ImageProcessing.ImageResizer(img2process, maxImageSize);
+                //}
+
+                //ImageProcessing imgP = new ImageProcessing(img2process, true);
+
+                //Image<Gray, Byte> maskImageCircled = imgP.imageSignificantMaskCircled(100.0d);
+                //Image<Gray, Byte> maskImageCircled85 = imgP.imageSignificantMaskCircled(85.0d);
+
+                //DenseMatrix dmMaskCircled100 = ImageProcessing.DenseMatrixFromImage(maskImageCircled);
+                //ServiceTools.FlushMemory();
+
+                //DenseMatrix dmGrixData = imgP.eval("grix", null);
+                //dmGrixData = (DenseMatrix)dmGrixData.PointwiseMultiply(dmMaskCircled100);
+                //DenseVector dvGrixData = DataAnalysis.DataVectorizedWithCondition(dmGrixData, dval => ((dval > 0.0d) && (dval < 1.0d)));
+                //DescriptiveStatistics stats = new DescriptiveStatistics(dvGrixData, true);
+                //double median = dvGrixData.Median();
+                ////double median = stats.Median;
+                //double perc5 = dvGrixData.Percentile(5);
+                //SkyImageMedianPerc5Data mp5dt = new SkyImageMedianPerc5Data(currentFullFileName, median, perc5);
+                #endregion // obsolete
 
                 int maxImageSize = Convert.ToInt32(defaultProps["DefaultMaxImageSize"]); ;
+                Tuple<double, double> tplMedianPerc5Data = ImageProcessing.CalculateMedianPerc5Values(currentFullFileName, maxImageSize);
+                SkyImageMedianPerc5Data mp5dt = new SkyImageMedianPerc5Data(currentFullFileName, tplMedianPerc5Data.Item1, tplMedianPerc5Data.Item2);
 
-                BackgroundWorker SelfWorker = currBGWsender as System.ComponentModel.BackgroundWorker;
-
-                string outputStatsDirectory = (string)defaultProps["DefaultDataFilesLocation"];
-
-                //ServiceTools.logToTextFile(outputStatsDirectory + "statsWithFNames.dat", "Full filename | 5prc | median" + Environment.NewLine, true);
-
-                //Image img = Image.FromFile(fInfo.FullName);
-                //img = ImageProcessing.ImageResizer(img, maxImageSize);
-
-                //Bitmap bitmap2process = ServiceTools.ReadBitmapFromFile(fInfo.FullName);
-                //bitmap2process = ImageProcessing.BitmapResizer(bitmap2process, maxImageSize);
-                Image<Bgr, byte> img2process = new Image<Bgr, byte>(fInfo.FullName);
-                img2process = ImageProcessing.ImageResizer(img2process, maxImageSize);
-
-                while (img2process.CountNonzero().Sum() == 0)
-                {
-                    img2process = new Image<Bgr, byte>(fInfo.FullName);
-                    img2process = ImageProcessing.ImageResizer(img2process, maxImageSize);
-                }
-
-                ImageProcessing imgP = new ImageProcessing(img2process, true);
-
-                Image<Gray, Byte> maskImageCircled = imgP.imageSignificantMaskCircled(100.0d);
-                Image<Gray, Byte> maskImageCircled85 = imgP.imageSignificantMaskCircled(85.0d);
-
-                DenseMatrix dmMaskCircled100 = ImageProcessing.DenseMatrixFromImage(maskImageCircled);
-                ServiceTools.FlushMemory();
-
-                DenseMatrix dmGrixData = imgP.eval("grix", null);
-                dmGrixData = (DenseMatrix)dmGrixData.PointwiseMultiply(dmMaskCircled100);
-                DenseVector dvGrixData = DataAnalysis.DataVectorizedWithCondition(dmGrixData, dval => ((dval > 0.0d) && (dval < 1.0d)));
-                DescriptiveStatistics stats = new DescriptiveStatistics(dvGrixData, true);
-                double median = dvGrixData.Median();
-                //double median = stats.Median;
-                double perc5 = dvGrixData.Percentile(5);
-                SkyImageMedianPerc5Data mp5dt = new SkyImageMedianPerc5Data(currentFullFileName, median, perc5);
-
-
-
+                #region // obsolete
                 //bool success = false;
                 //while (!success)
                 //{
@@ -2515,6 +2519,7 @@ namespace SkyImagesAnalyzer
                 //Thread.Sleep(500);
                 //SimpleShowImageForm1.Close();
                 //SimpleShowImageForm1.Dispose();
+                #endregion // obsolete
 
                 args.Result = new object[]
                 {
@@ -2689,9 +2694,10 @@ namespace SkyImagesAnalyzer
         {
             if (imagetoadd == null) return;
 
-            FileInfo fInfo1 = new FileInfo(ImageFileName);
-            string sunDiskInfoFileName = fInfo1.DirectoryName + "\\" + Path.GetFileNameWithoutExtension(ImageFileName) +
-                                         "-SunDiskInfo.xml";
+            //FileInfo fInfo1 = new FileInfo(ImageFileName);
+            //string sunDiskInfoFileName = fInfo1.DirectoryName + "\\" + Path.GetFileNameWithoutExtension(ImageFileName) +
+            //                             "-SunDiskInfo.xml";
+            string sunDiskInfoFileName = ConventionalTransitions.SunDiskInfoFileName(ImageFileName);
 
             RoundData existingRoundData = RoundData.nullRoundData();
             Size imgSizeUnderExistingRoundData = imagetoadd.Bitmap.Size;
@@ -3529,25 +3535,6 @@ namespace SkyImagesAnalyzer
                                                                "Это означает, что для обработки изображения будет использовано предварительно определенное положение солнечного диска." + Environment.NewLine +
                                                                "Если файл с этими данными не будет найден, - значит, солнечный диск на изображении считается не представленным." + Environment.NewLine +
                                                                "Это, например, будет означать, что форсированно не будет использоваться схема подавления солнечной засветки.");
-        }
-    }
-
-
-
-
-
-    [Serializable]
-    public struct SkyImageMedianPerc5Data
-    {
-        public string FileName;
-        public double GrIxStatsMedian;
-        public double GrIxStatsPerc5;
-
-        public SkyImageMedianPerc5Data(string inFName, double median, double perc5)
-        {
-            FileName = inFName;
-            GrIxStatsMedian = median;
-            GrIxStatsPerc5 = perc5;
         }
     }
 }

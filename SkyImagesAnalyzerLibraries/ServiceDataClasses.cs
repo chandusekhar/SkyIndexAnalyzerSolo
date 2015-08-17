@@ -2415,4 +2415,45 @@ namespace SkyImagesAnalyzerLibraries
 
 
 
+    [Serializable]
+    public enum SunDiskCondition
+    {
+        NoSun,
+        Sun0,
+        Sun1,
+        Sun2
+    }
+
+
+
+    [Serializable]
+    public struct SunDiskConditionData
+    {
+        public string filename;
+        public SunDiskCondition sunDiskCondition;
+
+        public SunDiskConditionData(string fName, SunDiskCondition sDiskCondition)
+        {
+            filename = fName;
+            sunDiskCondition = sDiskCondition;
+        }
+    }
+
+
+
+
+    [Serializable]
+    public struct SkyImageMedianPerc5Data
+    {
+        public string FileName;
+        public double GrIxStatsMedian;
+        public double GrIxStatsPerc5;
+
+        public SkyImageMedianPerc5Data(string inFName, double median, double perc5)
+        {
+            FileName = inFName;
+            GrIxStatsMedian = median;
+            GrIxStatsPerc5 = perc5;
+        }
+    }
 }

@@ -116,6 +116,7 @@
     <Compile Include="CommonTools.cs" />
     <Compile Include="Constants.cs" />
     <Compile Include="ContourAnalysisBasics.cs" />
+    <Compile Include="ConventionalTransitions.cs" />
     <Compile Include="Extensions.cs" />
     <Compile Include="Field3Drepresentation.cs">
       <SubType>Form</SubType>
