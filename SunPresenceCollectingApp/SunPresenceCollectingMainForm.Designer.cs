@@ -29,8 +29,12 @@
         private void InitializeComponent()
         {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(SunPresenceCollectingMainForm));
-            this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle1 = new System.Windows.Forms.DataGridViewCellStyle();
+            this.tabControl1 = new System.Windows.Forms.TabControl();
+            this.tabSunDiskCondition = new System.Windows.Forms.TabPage();
+            this.tabGrIxStatsCalculationProgress = new System.Windows.Forms.TabPage();
             this.currImagePictureBox = new System.Windows.Forms.PictureBox();
+            this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
             this.btnProperties = new System.Windows.Forms.Button();
             this.lblImageTitle = new System.Windows.Forms.Label();
             this.tableLayoutPanel2 = new System.Windows.Forms.TableLayoutPanel();
@@ -44,11 +48,62 @@
             this.lblGrIxMedianValue = new System.Windows.Forms.Label();
             this.lblGrIxPerc5Value = new System.Windows.Forms.Label();
             this.circBgwProcessingImage = new MRG.Controls.UI.LoadingCircle();
-            this.tableLayoutPanel1.SuspendLayout();
+            this.dataGridView1 = new System.Windows.Forms.DataGridView();
+            this.cbCalculateGrIxStatsOnline = new System.Windows.Forms.CheckBox();
+            this.tabControl1.SuspendLayout();
+            this.tabSunDiskCondition.SuspendLayout();
+            this.tabGrIxStatsCalculationProgress.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.currImagePictureBox)).BeginInit();
+            this.tableLayoutPanel1.SuspendLayout();
             this.tableLayoutPanel2.SuspendLayout();
             this.MedianPerc5DataTable.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).BeginInit();
             this.SuspendLayout();
+            // 
+            // tabControl1
+            // 
+            this.tabControl1.Controls.Add(this.tabSunDiskCondition);
+            this.tabControl1.Controls.Add(this.tabGrIxStatsCalculationProgress);
+            this.tabControl1.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.tabControl1.Location = new System.Drawing.Point(0, 0);
+            this.tabControl1.Name = "tabControl1";
+            this.tabControl1.SelectedIndex = 0;
+            this.tabControl1.Size = new System.Drawing.Size(1060, 727);
+            this.tabControl1.TabIndex = 0;
+            // 
+            // tabSunDiskCondition
+            // 
+            this.tabSunDiskCondition.Controls.Add(this.tableLayoutPanel1);
+            this.tabSunDiskCondition.Location = new System.Drawing.Point(4, 25);
+            this.tabSunDiskCondition.Name = "tabSunDiskCondition";
+            this.tabSunDiskCondition.Padding = new System.Windows.Forms.Padding(3);
+            this.tabSunDiskCondition.Size = new System.Drawing.Size(1052, 698);
+            this.tabSunDiskCondition.TabIndex = 0;
+            this.tabSunDiskCondition.Text = "Sun disk condition";
+            this.tabSunDiskCondition.UseVisualStyleBackColor = true;
+            // 
+            // tabGrIxStatsCalculationProgress
+            // 
+            this.tabGrIxStatsCalculationProgress.Controls.Add(this.dataGridView1);
+            this.tabGrIxStatsCalculationProgress.Location = new System.Drawing.Point(4, 25);
+            this.tabGrIxStatsCalculationProgress.Name = "tabGrIxStatsCalculationProgress";
+            this.tabGrIxStatsCalculationProgress.Padding = new System.Windows.Forms.Padding(3);
+            this.tabGrIxStatsCalculationProgress.Size = new System.Drawing.Size(1052, 698);
+            this.tabGrIxStatsCalculationProgress.TabIndex = 1;
+            this.tabGrIxStatsCalculationProgress.Text = "Stats collecting progress";
+            this.tabGrIxStatsCalculationProgress.UseVisualStyleBackColor = true;
+            // 
+            // currImagePictureBox
+            // 
+            this.currImagePictureBox.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.tableLayoutPanel1.SetColumnSpan(this.currImagePictureBox, 4);
+            this.currImagePictureBox.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.currImagePictureBox.Location = new System.Drawing.Point(3, 203);
+            this.currImagePictureBox.Name = "currImagePictureBox";
+            this.tableLayoutPanel1.SetRowSpan(this.currImagePictureBox, 4);
+            this.currImagePictureBox.Size = new System.Drawing.Size(1040, 486);
+            this.currImagePictureBox.TabIndex = 0;
+            this.currImagePictureBox.TabStop = false;
             // 
             // tableLayoutPanel1
             // 
@@ -57,36 +112,26 @@
             this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50F));
             this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 60F));
             this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 60F));
-            this.tableLayoutPanel1.Controls.Add(this.currImagePictureBox, 0, 2);
+            this.tableLayoutPanel1.Controls.Add(this.currImagePictureBox, 0, 3);
             this.tableLayoutPanel1.Controls.Add(this.btnProperties, 3, 0);
             this.tableLayoutPanel1.Controls.Add(this.lblImageTitle, 0, 0);
-            this.tableLayoutPanel1.Controls.Add(this.tableLayoutPanel2, 0, 1);
-            this.tableLayoutPanel1.Controls.Add(this.MedianPerc5DataTable, 1, 1);
+            this.tableLayoutPanel1.Controls.Add(this.tableLayoutPanel2, 0, 2);
+            this.tableLayoutPanel1.Controls.Add(this.MedianPerc5DataTable, 1, 2);
             this.tableLayoutPanel1.Controls.Add(this.circBgwProcessingImage, 2, 0);
+            this.tableLayoutPanel1.Controls.Add(this.cbCalculateGrIxStatsOnline, 0, 1);
             this.tableLayoutPanel1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.tableLayoutPanel1.Location = new System.Drawing.Point(0, 0);
+            this.tableLayoutPanel1.Location = new System.Drawing.Point(3, 3);
             this.tableLayoutPanel1.Name = "tableLayoutPanel1";
-            this.tableLayoutPanel1.RowCount = 6;
+            this.tableLayoutPanel1.RowCount = 7;
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 60F));
+            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 40F));
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 100F));
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 25F));
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 25F));
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 25F));
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 25F));
-            this.tableLayoutPanel1.Size = new System.Drawing.Size(1060, 727);
-            this.tableLayoutPanel1.TabIndex = 0;
-            // 
-            // currImagePictureBox
-            // 
-            this.currImagePictureBox.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.tableLayoutPanel1.SetColumnSpan(this.currImagePictureBox, 4);
-            this.currImagePictureBox.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.currImagePictureBox.Location = new System.Drawing.Point(3, 163);
-            this.currImagePictureBox.Name = "currImagePictureBox";
-            this.tableLayoutPanel1.SetRowSpan(this.currImagePictureBox, 4);
-            this.currImagePictureBox.Size = new System.Drawing.Size(1054, 561);
-            this.currImagePictureBox.TabIndex = 0;
-            this.currImagePictureBox.TabStop = false;
+            this.tableLayoutPanel1.Size = new System.Drawing.Size(1046, 692);
+            this.tableLayoutPanel1.TabIndex = 1;
             // 
             // btnProperties
             // 
@@ -94,7 +139,7 @@
             this.btnProperties.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Zoom;
             this.btnProperties.Dock = System.Windows.Forms.DockStyle.Fill;
             this.btnProperties.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnProperties.Location = new System.Drawing.Point(1003, 3);
+            this.btnProperties.Location = new System.Drawing.Point(989, 3);
             this.btnProperties.Name = "btnProperties";
             this.btnProperties.Size = new System.Drawing.Size(54, 54);
             this.btnProperties.TabIndex = 1;
@@ -109,7 +154,7 @@
             this.lblImageTitle.Font = new System.Drawing.Font("Microsoft Sans Serif", 10.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lblImageTitle.Location = new System.Drawing.Point(3, 0);
             this.lblImageTitle.Name = "lblImageTitle";
-            this.lblImageTitle.Size = new System.Drawing.Size(934, 60);
+            this.lblImageTitle.Size = new System.Drawing.Size(920, 60);
             this.lblImageTitle.TabIndex = 2;
             this.lblImageTitle.Text = "---";
             // 
@@ -125,12 +170,12 @@
             this.tableLayoutPanel2.Controls.Add(this.btnMarkSun1, 2, 0);
             this.tableLayoutPanel2.Controls.Add(this.btnMarkSun2, 3, 0);
             this.tableLayoutPanel2.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.tableLayoutPanel2.Location = new System.Drawing.Point(3, 63);
+            this.tableLayoutPanel2.Location = new System.Drawing.Point(3, 103);
             this.tableLayoutPanel2.Name = "tableLayoutPanel2";
             this.tableLayoutPanel2.RowCount = 1;
             this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
             this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 94F));
-            this.tableLayoutPanel2.Size = new System.Drawing.Size(464, 94);
+            this.tableLayoutPanel2.Size = new System.Drawing.Size(457, 94);
             this.tableLayoutPanel2.TabIndex = 3;
             // 
             // btnMarkNoSun
@@ -141,7 +186,7 @@
             this.btnMarkNoSun.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnMarkNoSun.Location = new System.Drawing.Point(3, 3);
             this.btnMarkNoSun.Name = "btnMarkNoSun";
-            this.btnMarkNoSun.Size = new System.Drawing.Size(110, 88);
+            this.btnMarkNoSun.Size = new System.Drawing.Size(108, 88);
             this.btnMarkNoSun.TabIndex = 0;
             this.btnMarkNoSun.UseVisualStyleBackColor = true;
             this.btnMarkNoSun.Click += new System.EventHandler(this.MarkSunCondition_Click);
@@ -152,11 +197,12 @@
             this.btnMarkSun0.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Zoom;
             this.btnMarkSun0.Dock = System.Windows.Forms.DockStyle.Fill;
             this.btnMarkSun0.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnMarkSun0.Location = new System.Drawing.Point(119, 3);
+            this.btnMarkSun0.Location = new System.Drawing.Point(117, 3);
             this.btnMarkSun0.Name = "btnMarkSun0";
-            this.btnMarkSun0.Size = new System.Drawing.Size(110, 88);
+            this.btnMarkSun0.Size = new System.Drawing.Size(108, 88);
             this.btnMarkSun0.TabIndex = 1;
             this.btnMarkSun0.UseVisualStyleBackColor = true;
+            this.btnMarkSun0.Click += new System.EventHandler(this.MarkSunCondition_Click);
             // 
             // btnMarkSun1
             // 
@@ -164,11 +210,12 @@
             this.btnMarkSun1.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Zoom;
             this.btnMarkSun1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.btnMarkSun1.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnMarkSun1.Location = new System.Drawing.Point(235, 3);
+            this.btnMarkSun1.Location = new System.Drawing.Point(231, 3);
             this.btnMarkSun1.Name = "btnMarkSun1";
-            this.btnMarkSun1.Size = new System.Drawing.Size(110, 88);
+            this.btnMarkSun1.Size = new System.Drawing.Size(108, 88);
             this.btnMarkSun1.TabIndex = 2;
             this.btnMarkSun1.UseVisualStyleBackColor = true;
+            this.btnMarkSun1.Click += new System.EventHandler(this.MarkSunCondition_Click);
             // 
             // btnMarkSun2
             // 
@@ -176,11 +223,12 @@
             this.btnMarkSun2.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Zoom;
             this.btnMarkSun2.Dock = System.Windows.Forms.DockStyle.Fill;
             this.btnMarkSun2.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnMarkSun2.Location = new System.Drawing.Point(351, 3);
+            this.btnMarkSun2.Location = new System.Drawing.Point(345, 3);
             this.btnMarkSun2.Name = "btnMarkSun2";
-            this.btnMarkSun2.Size = new System.Drawing.Size(110, 88);
+            this.btnMarkSun2.Size = new System.Drawing.Size(109, 88);
             this.btnMarkSun2.TabIndex = 3;
             this.btnMarkSun2.UseVisualStyleBackColor = true;
+            this.btnMarkSun2.Click += new System.EventHandler(this.MarkSunCondition_Click);
             // 
             // MedianPerc5DataTable
             // 
@@ -193,12 +241,12 @@
             this.MedianPerc5DataTable.Controls.Add(this.lblGrIxMedianValue, 1, 0);
             this.MedianPerc5DataTable.Controls.Add(this.lblGrIxPerc5Value, 1, 1);
             this.MedianPerc5DataTable.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.MedianPerc5DataTable.Location = new System.Drawing.Point(473, 63);
+            this.MedianPerc5DataTable.Location = new System.Drawing.Point(466, 103);
             this.MedianPerc5DataTable.Name = "MedianPerc5DataTable";
             this.MedianPerc5DataTable.RowCount = 2;
             this.MedianPerc5DataTable.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 50F));
             this.MedianPerc5DataTable.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 50F));
-            this.MedianPerc5DataTable.Size = new System.Drawing.Size(584, 94);
+            this.MedianPerc5DataTable.Size = new System.Drawing.Size(577, 94);
             this.MedianPerc5DataTable.TabIndex = 4;
             // 
             // lblGrIxMedianTitle
@@ -209,7 +257,7 @@
             this.lblGrIxMedianTitle.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lblGrIxMedianTitle.Location = new System.Drawing.Point(3, 0);
             this.lblGrIxMedianTitle.Name = "lblGrIxMedianTitle";
-            this.lblGrIxMedianTitle.Size = new System.Drawing.Size(200, 47);
+            this.lblGrIxMedianTitle.Size = new System.Drawing.Size(198, 47);
             this.lblGrIxMedianTitle.TabIndex = 0;
             this.lblGrIxMedianTitle.Text = "GrIx median value";
             this.lblGrIxMedianTitle.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
@@ -222,7 +270,7 @@
             this.lblGrIxPerc5Title.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lblGrIxPerc5Title.Location = new System.Drawing.Point(3, 47);
             this.lblGrIxPerc5Title.Name = "lblGrIxPerc5Title";
-            this.lblGrIxPerc5Title.Size = new System.Drawing.Size(200, 47);
+            this.lblGrIxPerc5Title.Size = new System.Drawing.Size(198, 47);
             this.lblGrIxPerc5Title.TabIndex = 1;
             this.lblGrIxPerc5Title.Text = "GrIx perc(5) value";
             this.lblGrIxPerc5Title.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
@@ -233,9 +281,9 @@
             this.lblGrIxMedianValue.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.lblGrIxMedianValue.Dock = System.Windows.Forms.DockStyle.Fill;
             this.lblGrIxMedianValue.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lblGrIxMedianValue.Location = new System.Drawing.Point(209, 0);
+            this.lblGrIxMedianValue.Location = new System.Drawing.Point(207, 0);
             this.lblGrIxMedianValue.Name = "lblGrIxMedianValue";
-            this.lblGrIxMedianValue.Size = new System.Drawing.Size(372, 47);
+            this.lblGrIxMedianValue.Size = new System.Drawing.Size(367, 47);
             this.lblGrIxMedianValue.TabIndex = 2;
             this.lblGrIxMedianValue.Text = "---";
             this.lblGrIxMedianValue.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
@@ -246,9 +294,9 @@
             this.lblGrIxPerc5Value.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.lblGrIxPerc5Value.Dock = System.Windows.Forms.DockStyle.Fill;
             this.lblGrIxPerc5Value.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lblGrIxPerc5Value.Location = new System.Drawing.Point(209, 47);
+            this.lblGrIxPerc5Value.Location = new System.Drawing.Point(207, 47);
             this.lblGrIxPerc5Value.Name = "lblGrIxPerc5Value";
-            this.lblGrIxPerc5Value.Size = new System.Drawing.Size(372, 47);
+            this.lblGrIxPerc5Value.Size = new System.Drawing.Size(367, 47);
             this.lblGrIxPerc5Value.TabIndex = 3;
             this.lblGrIxPerc5Value.Text = "---";
             this.lblGrIxPerc5Value.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
@@ -258,11 +306,11 @@
             this.circBgwProcessingImage.Active = false;
             this.circBgwProcessingImage.Color = System.Drawing.Color.SteelBlue;
             this.circBgwProcessingImage.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.circBgwProcessingImage.InnerCircleRadius = 10;
-            this.circBgwProcessingImage.Location = new System.Drawing.Point(943, 3);
+            this.circBgwProcessingImage.InnerCircleRadius = 8;
+            this.circBgwProcessingImage.Location = new System.Drawing.Point(929, 3);
             this.circBgwProcessingImage.Name = "circBgwProcessingImage";
             this.circBgwProcessingImage.NumberSpoke = 24;
-            this.circBgwProcessingImage.OuterCircleRadius = 12;
+            this.circBgwProcessingImage.OuterCircleRadius = 9;
             this.circBgwProcessingImage.RotationSpeed = 100;
             this.circBgwProcessingImage.Size = new System.Drawing.Size(54, 54);
             this.circBgwProcessingImage.SpokeThickness = 4;
@@ -270,31 +318,70 @@
             this.circBgwProcessingImage.TabIndex = 5;
             this.circBgwProcessingImage.Visible = false;
             // 
+            // dataGridView1
+            // 
+            this.dataGridView1.AllowUserToOrderColumns = true;
+            this.dataGridView1.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            dataGridViewCellStyle1.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle1.BackColor = System.Drawing.SystemColors.Window;
+            dataGridViewCellStyle1.Font = new System.Drawing.Font("Microsoft Sans Serif", 10.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            dataGridViewCellStyle1.ForeColor = System.Drawing.SystemColors.ControlText;
+            dataGridViewCellStyle1.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+            dataGridViewCellStyle1.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle1.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
+            this.dataGridView1.DefaultCellStyle = dataGridViewCellStyle1;
+            this.dataGridView1.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.dataGridView1.Location = new System.Drawing.Point(3, 3);
+            this.dataGridView1.Name = "dataGridView1";
+            this.dataGridView1.RowTemplate.Height = 24;
+            this.dataGridView1.Size = new System.Drawing.Size(1046, 692);
+            this.dataGridView1.TabIndex = 0;
+            // 
+            // cbCalculateGrIxStatsOnline
+            // 
+            this.cbCalculateGrIxStatsOnline.AutoSize = true;
+            this.cbCalculateGrIxStatsOnline.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.cbCalculateGrIxStatsOnline.Font = new System.Drawing.Font("Microsoft Sans Serif", 10.2F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.cbCalculateGrIxStatsOnline.Location = new System.Drawing.Point(3, 63);
+            this.cbCalculateGrIxStatsOnline.Name = "cbCalculateGrIxStatsOnline";
+            this.cbCalculateGrIxStatsOnline.Size = new System.Drawing.Size(457, 34);
+            this.cbCalculateGrIxStatsOnline.TabIndex = 6;
+            this.cbCalculateGrIxStatsOnline.Text = "Попутно обсчитывать статистику поля GrIx";
+            this.cbCalculateGrIxStatsOnline.UseVisualStyleBackColor = true;
+            this.cbCalculateGrIxStatsOnline.CheckedChanged += new System.EventHandler(this.cbCalculateGrIxStatsOnline_CheckedChanged);
+            // 
             // SunPresenceCollectingMainForm
             // 
             this.AllowDrop = true;
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1060, 727);
-            this.Controls.Add(this.tableLayoutPanel1);
+            this.Controls.Add(this.tabControl1);
             this.KeyPreview = true;
             this.Name = "SunPresenceCollectingMainForm";
             this.Text = "Collect sun presence features";
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.SunPresenceCollectingMainForm_FormClosing);
             this.DragDrop += new System.Windows.Forms.DragEventHandler(this.SunPresenceCollectingMainForm_DragDrop);
             this.DragEnter += new System.Windows.Forms.DragEventHandler(this.SunPresenceCollectingMainForm_DragEnter);
             this.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.SunPresenceCollectingMainForm_KeyPress);
+            this.tabControl1.ResumeLayout(false);
+            this.tabSunDiskCondition.ResumeLayout(false);
+            this.tabGrIxStatsCalculationProgress.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.currImagePictureBox)).EndInit();
             this.tableLayoutPanel1.ResumeLayout(false);
             this.tableLayoutPanel1.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.currImagePictureBox)).EndInit();
             this.tableLayoutPanel2.ResumeLayout(false);
             this.MedianPerc5DataTable.ResumeLayout(false);
             this.MedianPerc5DataTable.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).EndInit();
             this.ResumeLayout(false);
 
         }
 
         #endregion
 
+        private System.Windows.Forms.TabControl tabControl1;
+        private System.Windows.Forms.TabPage tabSunDiskCondition;
         private System.Windows.Forms.TableLayoutPanel tableLayoutPanel1;
         private System.Windows.Forms.PictureBox currImagePictureBox;
         private System.Windows.Forms.Button btnProperties;
@@ -310,6 +397,9 @@
         private System.Windows.Forms.Label lblGrIxMedianValue;
         private System.Windows.Forms.Label lblGrIxPerc5Value;
         private MRG.Controls.UI.LoadingCircle circBgwProcessingImage;
+        private System.Windows.Forms.TabPage tabGrIxStatsCalculationProgress;
+        private System.Windows.Forms.DataGridView dataGridView1;
+        private System.Windows.Forms.CheckBox cbCalculateGrIxStatsOnline;
     }
 }
 

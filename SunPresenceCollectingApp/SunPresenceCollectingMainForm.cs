@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -10,6 +11,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using Emgu.CV;
 using Emgu.CV.Structure;
+using SkyImagesAnalyzer;
 using SkyImagesAnalyzerLibraries;
 
 namespace SunPresenceCollectingApp
@@ -21,9 +23,12 @@ namespace SunPresenceCollectingApp
         private DelegateOpenFile m_DelegateOpenFile;
         private string currImageFileName = "";
         private FileInfo currImageFInfo = null;
+        private string currPath2Process = "";
         private Image<Bgr, byte> currImage = null;
         private BackgroundWorker bgwCurrImageProcessing = null;
         private SunDiskConditionData currImageSunDiskConditionData;
+        private Dictionary<string, object> defaultProperties = new Dictionary<string, object>();
+        private string defaultPropertiesXMLfileName = "";
 
 
 
@@ -32,8 +37,14 @@ namespace SunPresenceCollectingApp
             InitializeComponent();
 
             m_DelegateOpenFile = this.OpenFile;
-        }
+            readDefaultProperties();
+            oqGrIxStatsCalculationQueue.CollectionChanged += OqGrIxStatsCalculationQueue_CollectionChanged;
 
+            Application.EnableVisualStyles();
+            dataGridView1.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.AllCells;
+            listBinding = new BindingList<ImageGrIxStatsCollectingData>(lGrIxStatsCalculation);
+            dataGridView1.DataSource = listBinding;
+        }
 
 
 
@@ -51,11 +62,19 @@ namespace SunPresenceCollectingApp
 
             BackgroundWorker currBGW = sender as BackgroundWorker;
             currBGW.Dispose();
+            bgwCurrImageProcessing = null;
 
-            ThreadSafeOperations.SetLoadingCircleState(circBgwProcessingImage, false, false,
-                circBgwProcessingImage.Color);
+            ImageGrIxStatsCollectingData foundDataObj = lGrIxStatsCalculation.Find(obj => obj.filename == currentFullFileName);
+            foundDataObj.State = ImageGrIxStatsCollectingState.Finished;
+            foundDataObj.GrIxMedianValue = res.GrIxStatsMedian;
+            foundDataObj.GrIxPerc5Value = res.GrIxStatsPerc5;
 
-            UpdateMedianPerc5DataLabels(res);
+            dataGridView1.Refresh();
+
+            //ThreadSafeOperations.SetLoadingCircleState(circBgwProcessingImage, false, false,
+            //    circBgwProcessingImage.Color);
+
+            //UpdateMedianPerc5DataLabels(res);
         }
 
 
@@ -83,6 +102,7 @@ namespace SunPresenceCollectingApp
             currImageFInfo = new FileInfo(currImageFileName);
             currImage = new Image<Bgr, byte>(currImageFileName);
 
+            ThreadSafeOperations.SetText(lblImageTitle, currImageFileName, false);
             ThreadSafeOperations.UpdatePictureBox(currImagePictureBox, currImage.Bitmap, true);
 
 
@@ -91,13 +111,74 @@ namespace SunPresenceCollectingApp
 
             if (!LoadExistingMedianPerc5Data())
             {
-                bgwCurrImageProcessing = new BackgroundWorker();
-                bgwCurrImageProcessing.DoWork += BgwCurrImageProcessing_DoWork;
-                bgwCurrImageProcessing.RunWorkerCompleted += BgwCurrImageProcessing_RunWorkerCompleted;
-                object[] BGWorker2Args = new object[] { filename };
-                bgwCurrImageProcessing.RunWorkerAsync(BGWorker2Args);
+                if (cbCalculateGrIxStatsOnline.Checked)
+                {
+                    AddImageToGrIxStatsCalculationQueue(filename);
+                }
             }
         }
+
+
+
+
+        private List<ImageGrIxStatsCollectingData> lGrIxStatsCalculation = new List<ImageGrIxStatsCollectingData>();
+        private BindingList<ImageGrIxStatsCollectingData> listBinding;
+        private ObservableQueue<string> oqGrIxStatsCalculationQueue = new ObservableQueue<string>();
+        private void AddImageToGrIxStatsCalculationQueue(string imgFilename)
+        {
+            lGrIxStatsCalculation.Add(new ImageGrIxStatsCollectingData()
+            {
+                filename = imgFilename,
+                GrIxMedianValue = 0.0d,
+                GrIxPerc5Value = 0.0d,
+                State = ImageGrIxStatsCollectingState.Queued
+            });
+            dataGridView1.DataSource = null;
+            dataGridView1.DataSource = listBinding;
+
+            oqGrIxStatsCalculationQueue.Enqueue(imgFilename);
+            
+        }
+
+
+
+
+
+
+        private void OqGrIxStatsCalculationQueue_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+        {
+            if (e.Action == System.Collections.Specialized.NotifyCollectionChangedAction.Remove)
+            {
+                return;
+            }
+
+            if (bgwCurrImageProcessing == null)
+            {
+                string filename = oqGrIxStatsCalculationQueue.Dequeue();
+                StartBgwCalculatingGrIxStats(filename);
+            }
+            else
+            {
+                return;
+            }
+        }
+
+
+
+
+
+        private void StartBgwCalculatingGrIxStats(string imgFilename)
+        {
+            ImageGrIxStatsCollectingData foundDataObj = lGrIxStatsCalculation.Find(obj => obj.filename == imgFilename);
+            foundDataObj.State = ImageGrIxStatsCollectingState.Calculating;
+
+            bgwCurrImageProcessing = new BackgroundWorker();
+            bgwCurrImageProcessing.DoWork += BgwCurrImageProcessing_DoWork;
+            bgwCurrImageProcessing.RunWorkerCompleted += BgwCurrImageProcessing_RunWorkerCompleted;
+            object[] BGWorker2Args = new object[] { imgFilename };
+            bgwCurrImageProcessing.RunWorkerAsync(BGWorker2Args);
+        }
+
 
 
 
@@ -209,17 +290,17 @@ namespace SunPresenceCollectingApp
                 // возьмем первый
                 OpenFile(filesList[0]);
             }
-            else if (currFileIdx == filesList.Count-1)
+            else if (currFileIdx == filesList.Count - 1)
             {
                 return;
             }
             else
             {
-                OpenFile(filesList[currFileIdx+1]);
+                OpenFile(filesList[currFileIdx + 1]);
             }
 
 
-            
+
         }
 
 
@@ -328,32 +409,32 @@ namespace SunPresenceCollectingApp
             if (File.Exists(strSunDiskConditionFileName))
             {
                 object currImageSunDiskConditionObj =
-                    ServiceTools.ReadObjectFromXML(strSunDiskConditionFileName, typeof (SunDiskConditionData));
+                    ServiceTools.ReadObjectFromXML(strSunDiskConditionFileName, typeof(SunDiskConditionData));
                 if (currImageSunDiskConditionObj != null)
                 {
-                    SunDiskConditionData currImageSunDiskCondition = (SunDiskConditionData) currImageSunDiskConditionObj;
+                    SunDiskConditionData currImageSunDiskCondition = (SunDiskConditionData)currImageSunDiskConditionObj;
                     switch (currImageSunDiskCondition.sunDiskCondition)
                     {
                         case SunDiskCondition.NoSun:
-                        {
-                            ThreadSafeOperations.SetButtonBackgroundColor(btnMarkNoSun, Color.LightCoral);
-                            break;
-                        }
+                            {
+                                ThreadSafeOperations.SetButtonBackgroundColor(btnMarkNoSun, Color.LightCoral);
+                                break;
+                            }
                         case SunDiskCondition.Sun0:
-                        {
-                            ThreadSafeOperations.SetButtonBackgroundColor(btnMarkSun0, Color.LightCoral);
-                            break;
-                        }
+                            {
+                                ThreadSafeOperations.SetButtonBackgroundColor(btnMarkSun0, Color.LightCoral);
+                                break;
+                            }
                         case SunDiskCondition.Sun1:
-                        {
-                            ThreadSafeOperations.SetButtonBackgroundColor(btnMarkSun1, Color.LightCoral);
-                            break;
-                        }
+                            {
+                                ThreadSafeOperations.SetButtonBackgroundColor(btnMarkSun1, Color.LightCoral);
+                                break;
+                            }
                         case SunDiskCondition.Sun2:
-                        {
-                            ThreadSafeOperations.SetButtonBackgroundColor(btnMarkSun2, Color.LightCoral);
-                            break;
-                        }
+                            {
+                                ThreadSafeOperations.SetButtonBackgroundColor(btnMarkSun2, Color.LightCoral);
+                                break;
+                            }
                         default:
                             break;
                     }
@@ -377,19 +458,15 @@ namespace SunPresenceCollectingApp
 
             ServiceTools.WriteObjectToXML(currImageSunDiskConditionData, strSunDiskConditionFileName);
         }
-
-
-
-
-
-
-
+        
 
 
 
         private void btnProperties_Click(object sender, EventArgs e)
         {
-
+            PropertiesEditor propForm = new PropertiesEditor(defaultProperties, defaultPropertiesXMLfileName);
+            propForm.FormClosed += new FormClosedEventHandler(PropertiesFormClosed);
+            propForm.ShowDialog();
         }
 
 
@@ -443,25 +520,25 @@ namespace SunPresenceCollectingApp
             switch (currCondition)
             {
                 case SunDiskCondition.NoSun:
-                {
-                    ThreadSafeOperations.SetButtonBackgroundColor(btnMarkNoSun, Color.LightCoral);
-                    break;
-                }
+                    {
+                        ThreadSafeOperations.SetButtonBackgroundColor(btnMarkNoSun, Color.LightCoral);
+                        break;
+                    }
                 case SunDiskCondition.Sun0:
-                {
-                    ThreadSafeOperations.SetButtonBackgroundColor(btnMarkSun0, Color.LightCoral);
-                    break;
-                }
+                    {
+                        ThreadSafeOperations.SetButtonBackgroundColor(btnMarkSun0, Color.LightCoral);
+                        break;
+                    }
                 case SunDiskCondition.Sun1:
-                {
-                    ThreadSafeOperations.SetButtonBackgroundColor(btnMarkSun1, Color.LightCoral);
-                    break;
-                }
+                    {
+                        ThreadSafeOperations.SetButtonBackgroundColor(btnMarkSun1, Color.LightCoral);
+                        break;
+                    }
                 case SunDiskCondition.Sun2:
-                {
-                    ThreadSafeOperations.SetButtonBackgroundColor(btnMarkSun2, Color.LightCoral);
-                    break;
-                }
+                    {
+                        ThreadSafeOperations.SetButtonBackgroundColor(btnMarkSun2, Color.LightCoral);
+                        break;
+                    }
                 default:
                     break;
             }
@@ -485,21 +562,32 @@ namespace SunPresenceCollectingApp
             }
         }
 
+
+
         private void SunPresenceCollectingMainForm_DragDrop(object sender, DragEventArgs e)
         {
             try
             {
-                Array FilesArray = (Array)e.Data.GetData(DataFormats.FileDrop);
+                string[] FilesArray = (string[])e.Data.GetData(DataFormats.FileDrop);
 
                 if (FilesArray != null)
                 {
-                    foreach (string FileName1 in FilesArray)
-                    {
-                        this.BeginInvoke(m_DelegateOpenFile, new Object[] { FileName1 });
-                        this.Activate();
-                        break;
-                    }
+                    string FileName1 = FilesArray[0];
 
+                    string currDir = Path.GetDirectoryName(FileName1);
+                    if (!defaultProperties.ContainsKey("ImagesBasePath"))
+                    {
+                        defaultProperties.Add("ImagesBasePath", currDir);
+                    }
+                    else
+                    {
+                        defaultProperties["ImagesBasePath"] = currDir;
+                    }
+                    saveDefaultProperties();
+
+
+                    this.BeginInvoke(m_DelegateOpenFile, new Object[] { FileName1 });
+                    this.Activate();
                 }
             }
             catch (Exception exc1)
@@ -511,10 +599,133 @@ namespace SunPresenceCollectingApp
 
 
 
+        public void PropertiesFormClosed(object sender, FormClosedEventArgs e)
+        {
+            readDefaultProperties();
+        }
 
 
 
-        
+
+        private void saveDefaultProperties()
+        {
+            ServiceTools.WriteDictionaryToXml(defaultProperties, defaultPropertiesXMLfileName, false);
+        }
+
+
+
+
+        private void readDefaultProperties()
+        {
+            defaultProperties = new Dictionary<string, object>();
+            defaultPropertiesXMLfileName = Directory.GetCurrentDirectory() +
+                                         "\\settings\\SunPresenceCollectingApp-Settings.xml";
+            if (!File.Exists(defaultPropertiesXMLfileName)) return;
+            defaultProperties = ServiceTools.ReadDictionaryFromXML(defaultPropertiesXMLfileName);
+
+            string CurDir = Directory.GetCurrentDirectory();
+            currPath2Process = "";
+            if (defaultProperties.ContainsKey("ImagesBasePath"))
+            {
+                currPath2Process = (string)defaultProperties["ImagesBasePath"];
+            }
+            else
+            {
+                currPath2Process = CurDir;
+            }
+
+
+
+            if (defaultProperties.ContainsKey("CalculateGrIxStatsOnline"))
+            {
+                cbCalculateGrIxStatsOnline.Checked = ((string)defaultProperties["CalculateGrIxStatsOnline"] == "True");
+            }
+            else
+            {
+                cbCalculateGrIxStatsOnline.Checked = false;
+            }
+        }
+
+
+
+
+
+        private void cbCalculateGrIxStatsOnline_CheckedChanged(object sender, EventArgs e)
+        {
+            if (defaultProperties.ContainsKey("CalculateGrIxStatsOnline"))
+            {
+                defaultProperties["CalculateGrIxStatsOnline"] = cbCalculateGrIxStatsOnline.Checked;
+            }
+            else
+            {
+                defaultProperties.Add("CalculateGrIxStatsOnline", cbCalculateGrIxStatsOnline.Checked);
+            }
+            saveDefaultProperties();
+        }
+
+
+
+
+        private void SunPresenceCollectingMainForm_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            if (!defaultProperties.ContainsKey("ImagesBasePath"))
+            {
+                defaultProperties.Add("ImagesBasePath", currPath2Process);
+            }
+            else
+            {
+                defaultProperties["ImagesBasePath"] = currPath2Process;
+            }
+
+
+
+            if (defaultProperties.ContainsKey("CalculateGrIxStatsOnline"))
+            {
+                defaultProperties["CalculateGrIxStatsOnline"] = cbCalculateGrIxStatsOnline.Checked;
+            }
+            else
+            {
+                defaultProperties.Add("CalculateGrIxStatsOnline", cbCalculateGrIxStatsOnline.Checked);
+            }
+
+            saveDefaultProperties();
+        }
+
+
+
+
+
+
+
+
+        private class ImageGrIxStatsCollectingData
+        {
+            public string filename
+            {
+                get; set;
+            }
+            public ImageGrIxStatsCollectingState State
+            {
+                get; set;
+            }
+            public double GrIxMedianValue
+            {
+                get; set;
+            }
+            public double GrIxPerc5Value
+            {
+                get; set;
+            }
+        }
+
+
+        private enum ImageGrIxStatsCollectingState
+        {
+            Queued,
+            Calculating,
+            Finished,
+            Error
+        }
     }
-    
+
 }
