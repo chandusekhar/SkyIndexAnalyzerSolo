@@ -20,6 +20,15 @@ namespace SkyImagesAnalyzerLibraries
 
 
 
+        public static string SunDiskInfoFileNamesPattern()
+        {
+            return "*-SunDiskInfo.xml";
+        }
+
+
+
+
+
         public static string SunDiskConditionFileName(string imageFullPath)
         {
             FileInfo currImageFInfo = new FileInfo(imageFullPath);
@@ -27,6 +36,15 @@ namespace SkyImagesAnalyzerLibraries
                                          "-SunDiskCondition.xml";
             return strSunDiskConditionFileName;
         }
+
+
+
+
+        public static string SunDiskConditionFileNamesPattern()
+        {
+            return "*-SunDiskCondition.xml";
+        }
+
 
 
 
@@ -47,6 +65,38 @@ namespace SkyImagesAnalyzerLibraries
                                          "-GrIxMedianP5.xml";
             return strImageGrIxMedianP5DataFileName;
         }
+
+
+
+
+        public static string ImageGrIxMedianP5DataFileNamesPattern()
+        {
+            return "*-GrIxMedianP5.xml";
+        }
+
+
+
+
+
+        public static string ImageGrIxYRGBstatsDataFileName(string imageFullPath)
+        {
+            FileInfo currImageFInfo = new FileInfo(imageFullPath);
+            string strImageGrIxYRGBstatsDataFileName = currImageFInfo.DirectoryName + "\\" + Path.GetFileNameWithoutExtension(currImageFInfo.FullName) +
+                                         "-GrIxYRGBstats.xml";
+            return strImageGrIxYRGBstatsDataFileName;
+        }
+
+
+
+
+        public static string ImageGrIxYRGBstatsFileNamesPattern()
+        {
+            return "*-GrIxYRGBstats.xml";
+        }
+
+
+
+
 
 
         public static string ImageGrIxMedianP5DataFileName(FileInfo imageFileInfo)

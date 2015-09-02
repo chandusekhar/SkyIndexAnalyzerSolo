@@ -4,6 +4,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
+using System.IO;
 using System.Linq;
 using MathNet.Numerics.LinearAlgebra;
 using MathNet.Numerics.LinearAlgebra.Double;
@@ -395,15 +396,15 @@ namespace SkyImagesAnalyzerLibraries
                     case 2:
                         return accDoubleZ;
                     case 3:
-                        return dctCalibrationAccDataByDevID["devID"+devID].accDoubleX;
+                        return dctCalibrationAccDataByDevID["devID" + devID].accDoubleX;
                     case 4:
                         return dctCalibrationAccDataByDevID["devID" + devID].accDoubleY;
                     case 5:
                         return dctCalibrationAccDataByDevID["devID" + devID].accDoubleZ;
                     case 6:
                         return
-                            Math.Acos((this*dctCalibrationAccDataByDevID["devID" + devID])/
-                                      (AccMagnitude*dctCalibrationAccDataByDevID["devID" + devID].AccMagnitude));
+                            Math.Acos((this * dctCalibrationAccDataByDevID["devID" + devID]) /
+                                      (AccMagnitude * dctCalibrationAccDataByDevID["devID" + devID].AccMagnitude));
                     default:
                         return 0.0d;
                 }
@@ -766,7 +767,7 @@ namespace SkyImagesAnalyzerLibraries
                 }
             });
             //dvRetVect.Add(devID);
-            dvRetVect = DenseVector.OfEnumerable(dvRetVect.Concat(new double[] {devID}));
+            dvRetVect = DenseVector.OfEnumerable(dvRetVect.Concat(new double[] { devID }));
             return dvRetVect;
         }
 
@@ -1578,13 +1579,13 @@ namespace SkyImagesAnalyzerLibraries
                 double t1 = (doubleLatInternal - intLat) * 60;
                 int minLat = (int)t1;
                 double secLat = (t1 - minLat) * 60;
-                lat = intLat*100.0d + minLat + secLat/100.0d;
+                lat = intLat * 100.0d + minLat + secLat / 100.0d;
 
                 int intLon = (int)doubleLonInternal;  // Truncate the decimals
                 double t2 = (doubleLonInternal - intLon) * 60;
                 int minLon = (int)t2;
                 double secLon = (t2 - minLon) * 60;
-                lon = intLon*100.0d + minLon + secLon/100.0d; // Convert.ToDouble("" + intLon.ToString() + minLon.ToString("d02") + "," + secLon.ToString("F02").Replace(",", ""));
+                lon = intLon * 100.0d + minLon + secLon / 100.0d; // Convert.ToDouble("" + intLon.ToString() + minLon.ToString("d02") + "," + secLon.ToString("F02").Replace(",", ""));
             }
             catch (Exception)
             {
@@ -1936,7 +1937,7 @@ namespace SkyImagesAnalyzerLibraries
             //    validMeteoData = false;
             //    return;
             //}
-            
+
 
 
             //Wind Dir. : 297.96
@@ -1969,7 +1970,7 @@ namespace SkyImagesAnalyzerLibraries
             //    validMeteoData = false;
             //    return;
             //}
-            
+
 
 
             //try
@@ -2279,7 +2280,7 @@ namespace SkyImagesAnalyzerLibraries
         }
 
 
-        
+
         public new virtual bool TryDequeue(out T item)
         {
             bool res = base.TryDequeue(out item);
@@ -2421,21 +2422,81 @@ namespace SkyImagesAnalyzerLibraries
         NoSun,
         Sun0,
         Sun1,
-        Sun2
+        Sun2,
+        Defect
     }
 
 
 
     [Serializable]
-    public struct SunDiskConditionData
+    public class SunDiskConditionData
     {
-        public string filename;
-        public SunDiskCondition sunDiskCondition;
+        public string filename { get; set; }
+        public SunDiskCondition sunDiskCondition { get; set; }
+
+        public SunDiskConditionData()
+        {
+            filename = "";
+            sunDiskCondition = SunDiskCondition.NoSun;
+        }
+
 
         public SunDiskConditionData(string fName, SunDiskCondition sDiskCondition)
         {
             filename = fName;
             sunDiskCondition = sDiskCondition;
+        }
+
+
+        public void ShrinkFileName()
+        {
+            filename = Path.GetFileName(filename);
+        }
+
+
+
+
+        public string ToCSV()
+        {
+            List<string> lStrPropertiesNames = ServiceTools.GetPropertiesNamesOfClass(this);
+            List<string> lStrValues = new List<string>();
+            string retStr = "";
+
+            foreach (string propertyName in lStrPropertiesNames)
+            {
+
+                object propValue = GetType().GetProperty(propertyName).GetValue(this, null);
+                if ((propValue.GetType() == typeof(double)) || (propValue.GetType() == typeof(float)))
+                {
+                    lStrValues.Add(propValue.ToString().Replace(",", "."));
+                }
+                else
+                {
+                    lStrValues.Add(propValue.ToString());
+                }
+
+            }
+
+            retStr = String.Join(",", lStrValues.ToArray<string>());
+            return retStr;
+        }
+
+
+
+
+        public string CSVHeader()
+        {
+            List<string> lStrPropertiesNames = ServiceTools.GetPropertiesNamesOfClass(this);
+            List<string> lStrHeaders = new List<string>();
+            string retStr = "";
+
+            foreach (string propertyName in lStrPropertiesNames)
+            {
+                lStrHeaders.Add(propertyName);
+            }
+
+            retStr = String.Join(",", lStrHeaders.ToArray<string>());
+            return retStr;
         }
     }
 
@@ -2443,11 +2504,20 @@ namespace SkyImagesAnalyzerLibraries
 
 
     [Serializable]
-    public struct SkyImageMedianPerc5Data
+    public class SkyImageMedianPerc5Data
     {
-        public string FileName;
-        public double GrIxStatsMedian;
-        public double GrIxStatsPerc5;
+        public string FileName { get; set; }
+        public double GrIxStatsMedian { get; set; }
+        public double GrIxStatsPerc5 { get; set; }
+
+
+        public SkyImageMedianPerc5Data()
+        {
+            FileName = "";
+            GrIxStatsMedian = 0.0d;
+            GrIxStatsPerc5 = 0.0d;
+        }
+
 
         public SkyImageMedianPerc5Data(string inFName, double median, double perc5)
         {
@@ -2455,5 +2525,371 @@ namespace SkyImagesAnalyzerLibraries
             GrIxStatsMedian = median;
             GrIxStatsPerc5 = perc5;
         }
+
+
+        public void ShrinkFileName()
+        {
+            FileName = Path.GetFileName(FileName);
+        }
+
+
+
+
+        public string ToCSV()
+        {
+            List<string> lStrPropertiesNames = ServiceTools.GetPropertiesNamesOfClass(this);
+            List<string> lStrValues = new List<string>();
+            string retStr = "";
+
+            foreach (string propertyName in lStrPropertiesNames)
+            {
+
+                object propValue = GetType().GetProperty(propertyName).GetValue(this, null);
+                if ((propValue.GetType() == typeof(double)) || (propValue.GetType() == typeof(float)))
+                {
+                    lStrValues.Add(propValue.ToString().Replace(",", "."));
+                }
+                else
+                {
+                    lStrValues.Add(propValue.ToString());
+                }
+
+            }
+
+            retStr = String.Join(",", lStrValues.ToArray<string>());
+            return retStr;
+        }
+
+
+
+
+        public string CSVHeader()
+        {
+            List<string> lStrPropertiesNames = ServiceTools.GetPropertiesNamesOfClass(this);
+            List<string> lStrHeaders = new List<string>();
+            string retStr = "";
+
+            foreach (string propertyName in lStrPropertiesNames)
+            {
+                lStrHeaders.Add(propertyName);
+            }
+
+            retStr = String.Join(",", lStrHeaders.ToArray<string>());
+            return retStr;
+        }
     }
+
+
+
+
+
+
+
+
+
+    [Serializable]
+    public class SkyImageVariableStatsData
+    {
+        public string varname { get; set; }
+        public string FileName { get; set; }
+        public List<FieldPercentileValue> lTplFieldPercentiles { get; set; }
+        public double min { get; set; }
+        public double max { get; set; }
+        public double mean { get; set; }
+        public double variance { get; set; }
+        public double stdev { get; set; }
+        public double skewness { get; set; }
+        public double kurtosis { get; set; }
+        public double rms { get; set; }
+
+
+        public SkyImageVariableStatsData()
+        {
+        }
+
+
+        public string ToCSV()
+        {
+            List<string> lStrPropertiesNames = ServiceTools.GetPropertiesNamesOfClass(this);
+            List<string> lStrValues = new List<string>();
+            string retStr = "";
+
+            foreach (string propertyName in lStrPropertiesNames)
+            {
+                if (propertyName == "varname")
+                {
+                    continue;
+                }
+                if (propertyName == "lTplFieldPercentiles")
+                {
+                    foreach (FieldPercentileValue tplFieldPercentile in lTplFieldPercentiles)
+                    {
+                        lStrValues.Add(tplFieldPercentile.percValue.ToString().Replace(",", "."));
+                    }
+                }
+                else
+                {
+                    object propValue = GetType().GetProperty(propertyName).GetValue(this, null);
+                    if ((propValue.GetType() == typeof(double)) || (propValue.GetType() == typeof(float)))
+                    {
+                        lStrValues.Add(propValue.ToString().Replace(",", "."));
+                    }
+                    else
+                    {
+                        lStrValues.Add(propValue.ToString());
+                    }
+
+                }
+            }
+
+            retStr = String.Join(",", lStrValues.ToArray<string>());
+            return retStr;
+        }
+
+
+
+
+        public IEnumerable<double> ToRawDoubleValuesEnumerable()
+        {
+            List<string> lStrPropertiesNames = ServiceTools.GetPropertiesNamesOfClass(this);
+            List<double> lValues = new List<double>();
+            string retStr = "";
+
+            foreach (string propertyName in lStrPropertiesNames)
+            {
+                if (propertyName == "varname")
+                {
+                    continue;
+                }
+                if (propertyName == "lTplFieldPercentiles")
+                {
+                    foreach (FieldPercentileValue tplFieldPercentile in lTplFieldPercentiles)
+                    {
+                        lValues.Add(tplFieldPercentile.percValue);
+                    }
+                }
+                else
+                {
+                    object propValue = GetType().GetProperty(propertyName).GetValue(this, null);
+                    if ((propValue.GetType() == typeof(double)) || (propValue.GetType() == typeof(float)))
+                    {
+                        lValues.Add(Convert.ToDouble(propValue));
+                    }
+                }
+            }
+
+            
+            return lValues;
+        }
+
+
+
+
+        public string CSVHeader()
+        {
+            List<string> lStrPropertiesNames = ServiceTools.GetPropertiesNamesOfClass(this);
+            List<string> lStrHeaders = new List<string>();
+            string retStr = "";
+
+            foreach (string propertyName in lStrPropertiesNames)
+            {
+                if (propertyName == "varname")
+                {
+                    continue;
+                }
+                if (propertyName == "lTplFieldPercentiles")
+                {
+                    foreach (FieldPercentileValue tplFieldPercentile in lTplFieldPercentiles)
+                    {
+                        lStrHeaders.Add(varname + "_perc_" + tplFieldPercentile.percIndex);
+                    }
+                }
+                else
+                {
+                    lStrHeaders.Add(varname + "_" + propertyName);
+                }
+            }
+
+            retStr = String.Join(",", lStrHeaders.ToArray<string>());
+            return retStr;
+        }
+
+
+
+        public IEnumerable<string> DoubleVariablesNames()
+        {
+            List<string> lStrPropertiesNames = ServiceTools.GetPropertiesNamesOfClass(this);
+            List<string> lStrHeaders = new List<string>();
+
+            foreach (string propertyName in lStrPropertiesNames)
+            {
+                if (propertyName == "varname")
+                {
+                    continue;
+                }
+                if (propertyName == "lTplFieldPercentiles")
+                {
+                    foreach (FieldPercentileValue tplFieldPercentile in lTplFieldPercentiles)
+                    {
+                        lStrHeaders.Add(varname + "_perc_" + tplFieldPercentile.percIndex);
+                    }
+                }
+                else
+                {
+                    object propValue = GetType().GetProperty(propertyName).GetValue(this, null);
+                    if ((propValue.GetType() == typeof(double)) || (propValue.GetType() == typeof(float)))
+                    {
+                        lStrHeaders.Add(varname + "_" + propertyName);
+                    }
+                }
+            }
+
+            return lStrHeaders;
+        }
+    }
+
+
+
+    public class FieldPercentileValue
+    {
+        public int percIndex { get; set; }
+        public double percValue { get; set; }
+
+        public FieldPercentileValue()
+        {
+        }
+
+        public FieldPercentileValue(int idx, double val)
+        {
+            percIndex = idx;
+            percValue = val;
+        }
+    }
+
+
+
+    [Serializable]
+    public class SkyImageIndexesStatsData
+    {
+        public string FileName { get; set; }
+        public SkyImageVariableStatsData grixStatsData { get; set; }
+        public SkyImageVariableStatsData brightnessStatsData { get; set; }
+        public SkyImageVariableStatsData rStatsData { get; set; }
+        public SkyImageVariableStatsData gStatsData { get; set; }
+        public SkyImageVariableStatsData bStatsData { get; set; }
+
+        public SkyImageIndexesStatsData()
+        {
+        }
+
+
+
+
+        public void ShrinkFileName()
+        {
+            FileName = Path.GetFileName(FileName);
+            grixStatsData.FileName = Path.GetFileName(grixStatsData.FileName);
+            brightnessStatsData.FileName = Path.GetFileName(brightnessStatsData.FileName);
+            rStatsData.FileName = Path.GetFileName(rStatsData.FileName);
+            gStatsData.FileName = Path.GetFileName(gStatsData.FileName);
+            bStatsData.FileName = Path.GetFileName(bStatsData.FileName);
+        }
+
+
+        public string ToCSV()
+        {
+            string retStr = "";
+            List<string> lStrPropertiesNames = ServiceTools.GetPropertiesNamesOfClass(this);
+            List<string> lStrValues = new List<string>();
+
+            foreach (string propertyName in lStrPropertiesNames)
+            {
+                object propValue = GetType().GetProperty(propertyName).GetValue(this, null);
+                if (propValue.GetType() == typeof(SkyImageVariableStatsData))
+                {
+
+                    lStrValues.Add(((SkyImageVariableStatsData)propValue).ToCSV());
+                }
+                else
+                {
+                    lStrValues.Add(propValue.ToString());
+                }
+            }
+
+            retStr = String.Join(",", lStrValues.ToArray<string>());
+            return retStr;
+        }
+
+
+
+
+        public IEnumerable<double> ToRawDoubleValuesEnumerable()
+        {
+            string retStr = "";
+            List<string> lStrPropertiesNames = ServiceTools.GetPropertiesNamesOfClass(this);
+            List<double> lStrValues = new List<double>();
+
+            foreach (string propertyName in lStrPropertiesNames)
+            {
+                object propValue = GetType().GetProperty(propertyName).GetValue(this, null);
+                if (propValue.GetType() == typeof(SkyImageVariableStatsData))
+                {
+
+                    lStrValues.AddRange(((SkyImageVariableStatsData)propValue).ToRawDoubleValuesEnumerable());
+                }
+            }
+
+            return lStrValues;
+        }
+
+
+
+
+        public string CSVHeader()
+        {
+            List<string> lStrPropertiesNames = ServiceTools.GetPropertiesNamesOfClass(this);
+            List<string> lStrHeaders = new List<string>();
+            string retStr = "";
+
+            foreach (string propertyName in lStrPropertiesNames)
+            {
+                object propValue = GetType().GetProperty(propertyName).GetValue(this, null);
+                if (propValue.GetType() == typeof(SkyImageVariableStatsData))
+                {
+                    lStrHeaders.Add(((SkyImageVariableStatsData)propValue).CSVHeader());
+                }
+                else
+                {
+                    lStrHeaders.Add(propertyName);
+                }
+            }
+
+            retStr = String.Join(",", lStrHeaders.ToArray<string>());
+            return retStr;
+        }
+
+
+
+
+
+        public IEnumerable<string> DoubleVariablesNames()
+        {
+            List<string> lStrPropertiesNames = ServiceTools.GetPropertiesNamesOfClass(this);
+            List<string> lStrHeaders = new List<string>();
+            string retStr = "";
+
+            foreach (string propertyName in lStrPropertiesNames)
+            {
+                object propValue = GetType().GetProperty(propertyName).GetValue(this, null);
+                if (propValue.GetType() == typeof(SkyImageVariableStatsData))
+                {
+                    lStrHeaders.AddRange(((SkyImageVariableStatsData)propValue).DoubleVariablesNames());
+                }
+            }
+
+            
+            return lStrHeaders;
+        }
+    }
+
 }

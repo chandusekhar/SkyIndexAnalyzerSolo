@@ -1,0 +1,11 @@
+<?xml version="1.0" standalone="yes"?>
+<DataSet xmlns="NetFrameWork">
+  <table>
+    <key>CalculateGrIxStatsOnline</key>
+    <value>False</value>
+  </table>
+  <table>
+    <key>ImagesBasePath</key>
+    <value>D:\_gulevlab\SkyImagesAnalysis_appData\Sun-Condition-data-collection</value>
+  </table>
+</DataSet>

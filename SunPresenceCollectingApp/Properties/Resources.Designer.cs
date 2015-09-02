@@ -83,6 +83,16 @@ namespace SunPresenceCollectingApp.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap sadSmile {
+            get {
+                object obj = ResourceManager.GetObject("sadSmile", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap sun0 {
             get {
                 object obj = ResourceManager.GetObject("sun0", resourceCulture);

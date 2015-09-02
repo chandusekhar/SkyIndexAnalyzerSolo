@@ -774,6 +774,92 @@ namespace SkyImagesAnalyzerLibraries
 
 
 
+        public static SkyImageIndexesStatsData CalculateIndexesStats(string strFullFilePath, int MaxImageSize = 0)
+        {
+            SkyImageIndexesStatsData retStatsData = new SkyImageIndexesStatsData();
+            if (!File.Exists(strFullFilePath))
+            {
+                return null;
+            }
+
+            Image<Bgr, byte> currImg = new Image<Bgr, byte>(strFullFilePath);
+            if (MaxImageSize != 0)
+            {
+                currImg = ImageProcessing.ImageResizer(currImg, MaxImageSize);
+            }
+
+            ImageProcessing imgP = new ImageProcessing(currImg, true);
+            DenseMatrix dmGrixData = imgP.eval("grix", null);
+            DenseMatrix dmYdata = imgP.eval("Y", null);
+            DenseMatrix dmRdata = imgP.eval("R", null);
+            DenseMatrix dmGdata = imgP.eval("G", null);
+            DenseMatrix dmBdata = imgP.eval("B", null);
+
+            Image<Gray, Byte> maskImageCircled = imgP.imageSignificantMaskCircled();
+            DenseMatrix dmMaskCircled100 = ImageProcessing.DenseMatrixFromImage(maskImageCircled);
+            dmGrixData = (DenseMatrix)dmGrixData.PointwiseMultiply(dmMaskCircled100);
+            dmYdata = (DenseMatrix) dmYdata.PointwiseMultiply(dmMaskCircled100);
+            dmRdata = (DenseMatrix)dmRdata.PointwiseMultiply(dmMaskCircled100);
+            dmGdata = (DenseMatrix)dmGdata.PointwiseMultiply(dmMaskCircled100);
+            dmBdata = (DenseMatrix)dmBdata.PointwiseMultiply(dmMaskCircled100);
+
+            DenseVector dvGrixData = DataAnalysis.DataVectorizedWithCondition(dmGrixData, dval => ((dval > 0.0d) && (dval < 1.0d)));
+            DenseVector dvYData = DataAnalysis.DataVectorizedWithCondition(dmYdata, dval => (dval > 0.0d));
+            DenseVector dvRData = DataAnalysis.DataVectorizedWithCondition(dmRdata, dval => (dval > 0.0d));
+            DenseVector dvGData = DataAnalysis.DataVectorizedWithCondition(dmGdata, dval => (dval > 0.0d));
+            DenseVector dvBData = DataAnalysis.DataVectorizedWithCondition(dmBdata, dval => (dval > 0.0d));
+
+            retStatsData.brightnessStatsData = VariableStatsData(dvYData);
+            retStatsData.brightnessStatsData.varname = "Brightness";
+            retStatsData.brightnessStatsData.FileName = strFullFilePath;
+            retStatsData.grixStatsData = VariableStatsData(dvGrixData);
+            retStatsData.grixStatsData.varname = "GrIx";
+            retStatsData.grixStatsData.FileName = strFullFilePath;
+            retStatsData.rStatsData = VariableStatsData(dvRData);
+            retStatsData.rStatsData.varname = "Rchannel";
+            retStatsData.rStatsData.FileName = strFullFilePath;
+            retStatsData.gStatsData = VariableStatsData(dvGData);
+            retStatsData.gStatsData.varname = "Gchannel";
+            retStatsData.gStatsData.FileName = strFullFilePath;
+            retStatsData.bStatsData = VariableStatsData(dvBData);
+            retStatsData.bStatsData.varname = "Bchannel";
+            retStatsData.bStatsData.FileName = strFullFilePath;
+            retStatsData.FileName = strFullFilePath;
+
+            return retStatsData;
+        }
+
+
+
+        private static SkyImageVariableStatsData VariableStatsData(DenseVector dvSourceData)
+        {
+            SkyImageVariableStatsData retStatsData = new SkyImageVariableStatsData();
+            DescriptiveStatistics stats = new DescriptiveStatistics(dvSourceData, true);
+            List<FieldPercentileValue> lTplGrIxStats = new List<FieldPercentileValue>();
+            for (int i = 5; i <= 100; i += 5)
+            {
+                double currPercValue = dvSourceData.Percentile(i);
+                lTplGrIxStats.Add(new FieldPercentileValue(i, currPercValue));
+            }
+            retStatsData.lTplFieldPercentiles = lTplGrIxStats;
+            retStatsData.min = stats.Minimum;
+            retStatsData.max = stats.Maximum;
+            retStatsData.mean = stats.Mean;
+            retStatsData.variance = stats.Variance;
+            retStatsData.stdev = stats.StandardDeviation;
+            retStatsData.skewness = stats.Skewness;
+            retStatsData.kurtosis = stats.Kurtosis;
+            retStatsData.rms = dvSourceData.RootMeanSquare();
+
+            return retStatsData;
+        }
+
+
+
+
+
+
+
         /// <summary>
         /// Colores the densematrix data with colors from the colorscheme
         /// NOTE: the dynamic values used referring the max and min values in the DenseMatrix source
