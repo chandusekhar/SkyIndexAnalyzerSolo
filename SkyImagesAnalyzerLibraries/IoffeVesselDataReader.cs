@@ -147,6 +147,20 @@ namespace SkyImagesAnalyzerLibraries
             int readStructs = 0;
             while (true)
             {
+                //Stream stream = reader.BaseStream;
+                //long currPosition = stream.Position;
+                char[] possibleDualModeSign = reader.ReadChars(4);
+                if (new string(possibleDualModeSign) != "Dual")
+                {
+                    // вернуть позицию на 4 назад
+                    reader.BaseStream.Seek(-4, SeekOrigin.Current);
+                }
+                else
+                {
+                    ;
+                }
+
+
                 byte[] readBuffer = new byte[bytesCountPerObj];
                 readBuffer = reader.ReadBytes(bytesCountPerObj);
                 GCHandle handle = GCHandle.Alloc(readBuffer, GCHandleType.Pinned);

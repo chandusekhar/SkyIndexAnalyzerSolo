@@ -29,7 +29,7 @@
         private void InitializeComponent()
         {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(SunPresenceCollectingMainForm));
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle4 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle2 = new System.Windows.Forms.DataGridViewCellStyle();
             this.tabControl1 = new System.Windows.Forms.TabControl();
             this.tabSunDiskCondition = new System.Windows.Forms.TabPage();
             this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
@@ -81,6 +81,7 @@
             this.btnLearn = new System.Windows.Forms.Button();
             this.decisionTreeView1 = new Accord.Controls.DecisionTreeView();
             this.dgvPerformance = new System.Windows.Forms.DataGridView();
+            this.cbSearchImagesTopDirectoryOnly = new System.Windows.Forms.CheckBox();
             this.tabControl1.SuspendLayout();
             this.tabSunDiskCondition.SuspendLayout();
             this.tableLayoutPanel1.SuspendLayout();
@@ -425,14 +426,14 @@
             // 
             this.dataGridView1.AllowUserToOrderColumns = true;
             this.dataGridView1.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            dataGridViewCellStyle4.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle4.BackColor = System.Drawing.SystemColors.Window;
-            dataGridViewCellStyle4.Font = new System.Drawing.Font("Microsoft Sans Serif", 10.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            dataGridViewCellStyle4.ForeColor = System.Drawing.SystemColors.ControlText;
-            dataGridViewCellStyle4.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-            dataGridViewCellStyle4.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-            dataGridViewCellStyle4.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
-            this.dataGridView1.DefaultCellStyle = dataGridViewCellStyle4;
+            dataGridViewCellStyle2.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle2.BackColor = System.Drawing.SystemColors.Window;
+            dataGridViewCellStyle2.Font = new System.Drawing.Font("Microsoft Sans Serif", 10.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            dataGridViewCellStyle2.ForeColor = System.Drawing.SystemColors.ControlText;
+            dataGridViewCellStyle2.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+            dataGridViewCellStyle2.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle2.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
+            this.dataGridView1.DefaultCellStyle = dataGridViewCellStyle2;
             this.dataGridView1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.dataGridView1.Location = new System.Drawing.Point(3, 3);
             this.dataGridView1.Name = "dataGridView1";
@@ -455,7 +456,7 @@
             this.tableLayoutPanel3.ColumnCount = 3;
             this.tableLayoutPanel3.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 26.23574F));
             this.tableLayoutPanel3.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 73.76426F));
-            this.tableLayoutPanel3.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 69F));
+            this.tableLayoutPanel3.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 70F));
             this.tableLayoutPanel3.Controls.Add(this.label1, 0, 0);
             this.tableLayoutPanel3.Controls.Add(this.label2, 0, 1);
             this.tableLayoutPanel3.Controls.Add(this.rtbSourceDirectory, 1, 0);
@@ -467,8 +468,9 @@
             this.tableLayoutPanel3.Controls.Add(this.rtbServiceSourceDirectory, 1, 5);
             this.tableLayoutPanel3.Controls.Add(this.lblServiceSourceDirectoryTitle, 0, 5);
             this.tableLayoutPanel3.Controls.Add(this.tableLayoutPanel4, 0, 6);
-            this.tableLayoutPanel3.Controls.Add(this.btnStopCalculations, 0, 7);
+            this.tableLayoutPanel3.Controls.Add(this.btnStopCalculations, 0, 8);
             this.tableLayoutPanel3.Controls.Add(this.prbConversionProgress, 1, 3);
+            this.tableLayoutPanel3.Controls.Add(this.cbSearchImagesTopDirectoryOnly, 0, 7);
             this.tableLayoutPanel3.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tableLayoutPanel3.Location = new System.Drawing.Point(0, 0);
             this.tableLayoutPanel3.Name = "tableLayoutPanel3";
@@ -480,7 +482,7 @@
             this.tableLayoutPanel3.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 120F));
             this.tableLayoutPanel3.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 40F));
             this.tableLayoutPanel3.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 150F));
-            this.tableLayoutPanel3.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 60F));
+            this.tableLayoutPanel3.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 40F));
             this.tableLayoutPanel3.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
             this.tableLayoutPanel3.Size = new System.Drawing.Size(1052, 698);
             this.tableLayoutPanel3.TabIndex = 0;
@@ -517,7 +519,7 @@
             this.rtbSourceDirectory.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.rtbSourceDirectory.Location = new System.Drawing.Point(260, 3);
             this.rtbSourceDirectory.Name = "rtbSourceDirectory";
-            this.rtbSourceDirectory.Size = new System.Drawing.Size(719, 34);
+            this.rtbSourceDirectory.Size = new System.Drawing.Size(718, 34);
             this.rtbSourceDirectory.TabIndex = 2;
             this.rtbSourceDirectory.Text = "";
             // 
@@ -527,7 +529,7 @@
             this.rtbOutputDirectory.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.rtbOutputDirectory.Location = new System.Drawing.Point(260, 43);
             this.rtbOutputDirectory.Name = "rtbOutputDirectory";
-            this.rtbOutputDirectory.Size = new System.Drawing.Size(719, 34);
+            this.rtbOutputDirectory.Size = new System.Drawing.Size(718, 34);
             this.rtbOutputDirectory.TabIndex = 3;
             this.rtbOutputDirectory.Text = "";
             // 
@@ -537,9 +539,9 @@
             this.btnSelectSourceDirectory.Dock = System.Windows.Forms.DockStyle.Fill;
             this.btnSelectSourceDirectory.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnSelectSourceDirectory.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnSelectSourceDirectory.Location = new System.Drawing.Point(985, 3);
+            this.btnSelectSourceDirectory.Location = new System.Drawing.Point(984, 3);
             this.btnSelectSourceDirectory.Name = "btnSelectSourceDirectory";
-            this.btnSelectSourceDirectory.Size = new System.Drawing.Size(64, 34);
+            this.btnSelectSourceDirectory.Size = new System.Drawing.Size(65, 34);
             this.btnSelectSourceDirectory.TabIndex = 4;
             this.btnSelectSourceDirectory.Text = "...";
             this.btnSelectSourceDirectory.UseVisualStyleBackColor = false;
@@ -551,9 +553,9 @@
             this.btnSelectOutputDirectory.Dock = System.Windows.Forms.DockStyle.Fill;
             this.btnSelectOutputDirectory.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnSelectOutputDirectory.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnSelectOutputDirectory.Location = new System.Drawing.Point(985, 43);
+            this.btnSelectOutputDirectory.Location = new System.Drawing.Point(984, 43);
             this.btnSelectOutputDirectory.Name = "btnSelectOutputDirectory";
-            this.btnSelectOutputDirectory.Size = new System.Drawing.Size(64, 34);
+            this.btnSelectOutputDirectory.Size = new System.Drawing.Size(65, 34);
             this.btnSelectOutputDirectory.TabIndex = 5;
             this.btnSelectOutputDirectory.Text = "...";
             this.btnSelectOutputDirectory.UseVisualStyleBackColor = false;
@@ -567,7 +569,7 @@
             this.btnConvert.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.btnConvert.Location = new System.Drawing.Point(260, 83);
             this.btnConvert.Name = "btnConvert";
-            this.btnConvert.Size = new System.Drawing.Size(719, 114);
+            this.btnConvert.Size = new System.Drawing.Size(718, 114);
             this.btnConvert.TabIndex = 6;
             this.btnConvert.Text = "convert to CSV files (one for (M,P5) predictors and one for all statistical predi" +
     "ctors)";
@@ -580,9 +582,9 @@
             this.btnServiceInputDirectory.Dock = System.Windows.Forms.DockStyle.Fill;
             this.btnServiceInputDirectory.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnServiceInputDirectory.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnServiceInputDirectory.Location = new System.Drawing.Point(985, 343);
+            this.btnServiceInputDirectory.Location = new System.Drawing.Point(984, 343);
             this.btnServiceInputDirectory.Name = "btnServiceInputDirectory";
-            this.btnServiceInputDirectory.Size = new System.Drawing.Size(64, 34);
+            this.btnServiceInputDirectory.Size = new System.Drawing.Size(65, 34);
             this.btnServiceInputDirectory.TabIndex = 7;
             this.btnServiceInputDirectory.Text = "...";
             this.btnServiceInputDirectory.UseVisualStyleBackColor = false;
@@ -594,7 +596,7 @@
             this.rtbServiceSourceDirectory.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.rtbServiceSourceDirectory.Location = new System.Drawing.Point(260, 343);
             this.rtbServiceSourceDirectory.Name = "rtbServiceSourceDirectory";
-            this.rtbServiceSourceDirectory.Size = new System.Drawing.Size(719, 34);
+            this.rtbServiceSourceDirectory.Size = new System.Drawing.Size(718, 34);
             this.rtbServiceSourceDirectory.TabIndex = 8;
             this.rtbServiceSourceDirectory.Text = "";
             // 
@@ -679,9 +681,9 @@
             this.btnStopCalculations.Dock = System.Windows.Forms.DockStyle.Fill;
             this.btnStopCalculations.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnStopCalculations.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnStopCalculations.Location = new System.Drawing.Point(3, 533);
+            this.btnStopCalculations.Location = new System.Drawing.Point(3, 573);
             this.btnStopCalculations.Name = "btnStopCalculations";
-            this.btnStopCalculations.Size = new System.Drawing.Size(1046, 54);
+            this.btnStopCalculations.Size = new System.Drawing.Size(1046, 122);
             this.btnStopCalculations.TabIndex = 11;
             this.btnStopCalculations.Text = "STOP calculations";
             this.btnStopCalculations.UseVisualStyleBackColor = false;
@@ -692,7 +694,7 @@
             this.prbConversionProgress.Dock = System.Windows.Forms.DockStyle.Fill;
             this.prbConversionProgress.Location = new System.Drawing.Point(260, 203);
             this.prbConversionProgress.Name = "prbConversionProgress";
-            this.prbConversionProgress.Size = new System.Drawing.Size(719, 14);
+            this.prbConversionProgress.Size = new System.Drawing.Size(718, 14);
             this.prbConversionProgress.TabIndex = 12;
             // 
             // tabTrainAndPredict
@@ -714,7 +716,7 @@
             this.tableLayoutPanel5.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 20F));
             this.tableLayoutPanel5.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 20F));
             this.tableLayoutPanel5.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 20F));
-            this.tableLayoutPanel5.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 71F));
+            this.tableLayoutPanel5.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 75F));
             this.tableLayoutPanel5.Controls.Add(this.prgBarMLprogress, 0, 1);
             this.tableLayoutPanel5.Controls.Add(this.lblMLdataSourceDirectoryTitle, 0, 0);
             this.tableLayoutPanel5.Controls.Add(this.rtbMLdataSourceDirectory, 1, 0);
@@ -754,7 +756,7 @@
             this.lblMLdataSourceDirectoryTitle.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lblMLdataSourceDirectoryTitle.Location = new System.Drawing.Point(3, 0);
             this.lblMLdataSourceDirectoryTitle.Name = "lblMLdataSourceDirectoryTitle";
-            this.lblMLdataSourceDirectoryTitle.Size = new System.Drawing.Size(189, 40);
+            this.lblMLdataSourceDirectoryTitle.Size = new System.Drawing.Size(188, 40);
             this.lblMLdataSourceDirectoryTitle.TabIndex = 2;
             this.lblMLdataSourceDirectoryTitle.Text = "Source directory:";
             this.lblMLdataSourceDirectoryTitle.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
@@ -764,7 +766,7 @@
             this.tableLayoutPanel5.SetColumnSpan(this.rtbMLdataSourceDirectory, 4);
             this.rtbMLdataSourceDirectory.Dock = System.Windows.Forms.DockStyle.Fill;
             this.rtbMLdataSourceDirectory.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.rtbMLdataSourceDirectory.Location = new System.Drawing.Point(198, 3);
+            this.rtbMLdataSourceDirectory.Location = new System.Drawing.Point(197, 3);
             this.rtbMLdataSourceDirectory.Name = "rtbMLdataSourceDirectory";
             this.rtbMLdataSourceDirectory.Size = new System.Drawing.Size(770, 34);
             this.rtbMLdataSourceDirectory.TabIndex = 3;
@@ -778,7 +780,7 @@
             this.btnReadData.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.btnReadData.Location = new System.Drawing.Point(3, 63);
             this.btnReadData.Name = "btnReadData";
-            this.btnReadData.Size = new System.Drawing.Size(189, 54);
+            this.btnReadData.Size = new System.Drawing.Size(188, 54);
             this.btnReadData.TabIndex = 0;
             this.btnReadData.Text = "Read data";
             this.btnReadData.UseVisualStyleBackColor = false;
@@ -790,9 +792,9 @@
             this.btnMLdataSourceDirectoryBrowse.Dock = System.Windows.Forms.DockStyle.Fill;
             this.btnMLdataSourceDirectoryBrowse.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnMLdataSourceDirectoryBrowse.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnMLdataSourceDirectoryBrowse.Location = new System.Drawing.Point(974, 3);
+            this.btnMLdataSourceDirectoryBrowse.Location = new System.Drawing.Point(973, 3);
             this.btnMLdataSourceDirectoryBrowse.Name = "btnMLdataSourceDirectoryBrowse";
-            this.btnMLdataSourceDirectoryBrowse.Size = new System.Drawing.Size(69, 34);
+            this.btnMLdataSourceDirectoryBrowse.Size = new System.Drawing.Size(70, 34);
             this.btnMLdataSourceDirectoryBrowse.TabIndex = 4;
             this.btnMLdataSourceDirectoryBrowse.Text = "...";
             this.btnMLdataSourceDirectoryBrowse.UseVisualStyleBackColor = false;
@@ -804,7 +806,7 @@
             this.btnLearn.Dock = System.Windows.Forms.DockStyle.Fill;
             this.btnLearn.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnLearn.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnLearn.Location = new System.Drawing.Point(198, 63);
+            this.btnLearn.Location = new System.Drawing.Point(197, 63);
             this.btnLearn.Name = "btnLearn";
             this.btnLearn.Size = new System.Drawing.Size(188, 54);
             this.btnLearn.TabIndex = 5;
@@ -838,6 +840,19 @@
             this.dgvPerformance.RowTemplate.Height = 24;
             this.dgvPerformance.Size = new System.Drawing.Size(1040, 224);
             this.dgvPerformance.TabIndex = 7;
+            // 
+            // cbSearchImagesTopDirectoryOnly
+            // 
+            this.cbSearchImagesTopDirectoryOnly.AutoSize = true;
+            this.tableLayoutPanel3.SetColumnSpan(this.cbSearchImagesTopDirectoryOnly, 3);
+            this.cbSearchImagesTopDirectoryOnly.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.cbSearchImagesTopDirectoryOnly.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.cbSearchImagesTopDirectoryOnly.Location = new System.Drawing.Point(3, 533);
+            this.cbSearchImagesTopDirectoryOnly.Name = "cbSearchImagesTopDirectoryOnly";
+            this.cbSearchImagesTopDirectoryOnly.Size = new System.Drawing.Size(1046, 34);
+            this.cbSearchImagesTopDirectoryOnly.TabIndex = 13;
+            this.cbSearchImagesTopDirectoryOnly.Text = "check JPG files within top level of source directory only";
+            this.cbSearchImagesTopDirectoryOnly.UseVisualStyleBackColor = true;
             // 
             // SunPresenceCollectingMainForm
             // 
@@ -928,6 +943,7 @@
         private System.Windows.Forms.Button btnLearn;
         private Accord.Controls.DecisionTreeView decisionTreeView1;
         private System.Windows.Forms.DataGridView dgvPerformance;
+        private System.Windows.Forms.CheckBox cbSearchImagesTopDirectoryOnly;
     }
 }
 

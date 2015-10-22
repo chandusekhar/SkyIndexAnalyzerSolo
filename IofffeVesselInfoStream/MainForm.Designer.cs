@@ -1,4 +1,4 @@
-﻿namespace IofffeVesselInfoStream
+namespace IofffeVesselInfoStream
 {
     partial class MainForm
     {
@@ -59,7 +59,6 @@
             this.tbWindSpeedValue = new System.Windows.Forms.TextBox();
             this.tbWindDirectionValue = new System.Windows.Forms.TextBox();
             this.tbRelHumidityValue = new System.Windows.Forms.TextBox();
-            this.pbGeoTrack = new System.Windows.Forms.PictureBox();
             this.lblPressureGraphTitle = new System.Windows.Forms.Label();
             this.pbGraphs = new System.Windows.Forms.PictureBox();
             this.trbGeoTrackScale = new System.Windows.Forms.TrackBar();
@@ -69,8 +68,6 @@
             this.tbWaterTemperatureValue = new System.Windows.Forms.TextBox();
             this.tbWaterSalinityValue = new System.Windows.Forms.TextBox();
             this.lblStatusString = new System.Windows.Forms.Label();
-            this.scrbGeoTrackScrollLatValues = new System.Windows.Forms.VScrollBar();
-            this.scrbGeoTrackScrollLonValues = new System.Windows.Forms.HScrollBar();
             this.wcNavDataSoeedControl = new MRG.Controls.UI.LoadingCircle();
             this.wcMeteoDataSpeedControl = new MRG.Controls.UI.LoadingCircle();
             this.btnCenterToActualPosition = new System.Windows.Forms.Button();
@@ -92,6 +89,11 @@
             this.btnGraphDefault = new System.Windows.Forms.Button();
             this.btnGraphMoveFocusLeft = new System.Windows.Forms.Button();
             this.btnGraphZoomOut = new System.Windows.Forms.Button();
+            this.imgPanelGeotrack = new YLScsImage.ImagePanel();
+            this.tableLayoutPanel5 = new System.Windows.Forms.TableLayoutPanel();
+            this.btnDecreaseShorelineResolution = new System.Windows.Forms.Button();
+            this.btnIncreaseShorelineResolution = new System.Windows.Forms.Button();
+            this.cbNormalizeImage = new System.Windows.Forms.CheckBox();
             this.tpNavAndMeteoOverview = new System.Windows.Forms.TabPage();
             this.tableLayoutPanel3 = new System.Windows.Forms.TableLayoutPanel();
             this.label2 = new System.Windows.Forms.Label();
@@ -110,22 +112,16 @@
             this.btnFindIOFFEdataFiles = new System.Windows.Forms.Button();
             this.btnRepairAndWriteNCfile = new System.Windows.Forms.Button();
             this.prbMissingInfoSearchingProgress = new System.Windows.Forms.ProgressBar();
-            this.tpSeaSaveStream = new System.Windows.Forms.TabPage();
-            this.tableLayoutPanel2 = new System.Windows.Forms.TableLayoutPanel();
-            this.btnStartStopSeaSave = new System.Windows.Forms.Button();
-            this.tbSeaSaveLog = new System.Windows.Forms.TextBox();
             this.tabControl1.SuspendLayout();
             this.tpNavAndMeteo.SuspendLayout();
             this.tableLayoutPanel1.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.pbGeoTrack)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pbGraphs)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.trbGeoTrackScale)).BeginInit();
             this.groupBox1.SuspendLayout();
             this.tableLayoutPanel4.SuspendLayout();
+            this.tableLayoutPanel5.SuspendLayout();
             this.tpNavAndMeteoOverview.SuspendLayout();
             this.tableLayoutPanel3.SuspendLayout();
-            this.tpSeaSaveStream.SuspendLayout();
-            this.tableLayoutPanel2.SuspendLayout();
             this.SuspendLayout();
             // 
             // bgwSocketStreamReader
@@ -147,39 +143,38 @@
             // 
             this.tabControl1.Controls.Add(this.tpNavAndMeteo);
             this.tabControl1.Controls.Add(this.tpNavAndMeteoOverview);
-            this.tabControl1.Controls.Add(this.tpSeaSaveStream);
             this.tabControl1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tabControl1.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this.tabControl1.Location = new System.Drawing.Point(0, 0);
-            this.tabControl1.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.tabControl1.Margin = new System.Windows.Forms.Padding(4);
             this.tabControl1.Name = "tabControl1";
             this.tabControl1.SelectedIndex = 0;
-            this.tabControl1.Size = new System.Drawing.Size(1511, 1086);
+            this.tabControl1.Size = new System.Drawing.Size(1343, 869);
             this.tabControl1.TabIndex = 0;
             // 
             // tpNavAndMeteo
             // 
             this.tpNavAndMeteo.BackColor = System.Drawing.SystemColors.Control;
             this.tpNavAndMeteo.Controls.Add(this.tableLayoutPanel1);
-            this.tpNavAndMeteo.Location = new System.Drawing.Point(4, 34);
-            this.tpNavAndMeteo.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.tpNavAndMeteo.Location = new System.Drawing.Point(4, 29);
+            this.tpNavAndMeteo.Margin = new System.Windows.Forms.Padding(4);
             this.tpNavAndMeteo.Name = "tpNavAndMeteo";
-            this.tpNavAndMeteo.Padding = new System.Windows.Forms.Padding(4, 5, 4, 5);
-            this.tpNavAndMeteo.Size = new System.Drawing.Size(1503, 1048);
+            this.tpNavAndMeteo.Padding = new System.Windows.Forms.Padding(4);
+            this.tpNavAndMeteo.Size = new System.Drawing.Size(1335, 836);
             this.tpNavAndMeteo.TabIndex = 0;
             this.tpNavAndMeteo.Text = "Nav&Meteo";
             // 
             // tableLayoutPanel1
             // 
             this.tableLayoutPanel1.ColumnCount = 8;
-            this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 45F));
+            this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 40F));
             this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 20F));
             this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 30F));
-            this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 70F));
-            this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 60F));
+            this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 62F));
+            this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 53F));
             this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 20F));
             this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 30F));
-            this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 70F));
+            this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 62F));
             this.tableLayoutPanel1.Controls.Add(this.btnConnect, 0, 0);
             this.tableLayoutPanel1.Controls.Add(this.lblGPSlatTitle, 0, 4);
             this.tableLayoutPanel1.Controls.Add(this.lblGPSlonTitle, 0, 5);
@@ -205,7 +200,6 @@
             this.tableLayoutPanel1.Controls.Add(this.tbWindSpeedValue, 6, 5);
             this.tableLayoutPanel1.Controls.Add(this.tbWindDirectionValue, 6, 6);
             this.tableLayoutPanel1.Controls.Add(this.tbRelHumidityValue, 6, 7);
-            this.tableLayoutPanel1.Controls.Add(this.pbGeoTrack, 1, 12);
             this.tableLayoutPanel1.Controls.Add(this.lblPressureGraphTitle, 5, 11);
             this.tableLayoutPanel1.Controls.Add(this.pbGraphs, 5, 13);
             this.tableLayoutPanel1.Controls.Add(this.trbGeoTrackScale, 4, 12);
@@ -215,8 +209,6 @@
             this.tableLayoutPanel1.Controls.Add(this.tbWaterTemperatureValue, 6, 8);
             this.tableLayoutPanel1.Controls.Add(this.tbWaterSalinityValue, 6, 9);
             this.tableLayoutPanel1.Controls.Add(this.lblStatusString, 0, 17);
-            this.tableLayoutPanel1.Controls.Add(this.scrbGeoTrackScrollLatValues, 0, 12);
-            this.tableLayoutPanel1.Controls.Add(this.scrbGeoTrackScrollLonValues, 1, 16);
             this.tableLayoutPanel1.Controls.Add(this.wcNavDataSoeedControl, 2, 2);
             this.tableLayoutPanel1.Controls.Add(this.wcMeteoDataSpeedControl, 6, 2);
             this.tableLayoutPanel1.Controls.Add(this.btnCenterToActualPosition, 0, 11);
@@ -229,31 +221,32 @@
             this.tableLayoutPanel1.Controls.Add(this.btnToggleShowGraphs, 7, 11);
             this.tableLayoutPanel1.Controls.Add(this.wcUpdatimgGraph, 7, 12);
             this.tableLayoutPanel1.Controls.Add(this.tableLayoutPanel4, 5, 16);
+            this.tableLayoutPanel1.Controls.Add(this.imgPanelGeotrack, 0, 12);
+            this.tableLayoutPanel1.Controls.Add(this.tableLayoutPanel5, 0, 16);
             this.tableLayoutPanel1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.tableLayoutPanel1.Location = new System.Drawing.Point(4, 5);
-            this.tableLayoutPanel1.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.tableLayoutPanel1.Location = new System.Drawing.Point(4, 4);
+            this.tableLayoutPanel1.Margin = new System.Windows.Forms.Padding(4);
             this.tableLayoutPanel1.Name = "tableLayoutPanel1";
             this.tableLayoutPanel1.RowCount = 18;
-            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 61F));
-            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 46F));
-            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 46F));
-            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 46F));
-            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 46F));
-            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 46F));
-            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 46F));
-            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 46F));
-            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 46F));
-            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 46F));
-            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 15F));
-            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 61F));
-            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 60F));
+            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 49F));
+            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 37F));
+            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 37F));
+            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 37F));
+            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 37F));
+            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 37F));
+            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 37F));
+            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 37F));
+            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 37F));
+            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 37F));
+            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 12F));
+            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 49F));
+            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 48F));
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 33.33333F));
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 33.33334F));
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 33.33333F));
-            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 46F));
-            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 46F));
-            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 20F));
-            this.tableLayoutPanel1.Size = new System.Drawing.Size(1495, 1038);
+            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 50F));
+            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 37F));
+            this.tableLayoutPanel1.Size = new System.Drawing.Size(1327, 828);
             this.tableLayoutPanel1.TabIndex = 1;
             // 
             // btnConnect
@@ -263,10 +256,10 @@
             this.btnConnect.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnConnect.Font = new System.Drawing.Font("Microsoft Sans Serif", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this.btnConnect.ForeColor = System.Drawing.Color.Red;
-            this.btnConnect.Location = new System.Drawing.Point(4, 5);
-            this.btnConnect.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.btnConnect.Location = new System.Drawing.Point(4, 4);
+            this.btnConnect.Margin = new System.Windows.Forms.Padding(4);
             this.btnConnect.Name = "btnConnect";
-            this.btnConnect.Size = new System.Drawing.Size(1417, 51);
+            this.btnConnect.Size = new System.Drawing.Size(1257, 41);
             this.btnConnect.TabIndex = 0;
             this.btnConnect.Text = "CONNECT";
             this.btnConnect.UseVisualStyleBackColor = true;
@@ -279,10 +272,10 @@
             this.tableLayoutPanel1.SetColumnSpan(this.lblGPSlatTitle, 2);
             this.lblGPSlatTitle.Dock = System.Windows.Forms.DockStyle.Fill;
             this.lblGPSlatTitle.Font = new System.Drawing.Font("Microsoft Sans Serif", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.lblGPSlatTitle.Location = new System.Drawing.Point(4, 199);
+            this.lblGPSlatTitle.Location = new System.Drawing.Point(4, 160);
             this.lblGPSlatTitle.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.lblGPSlatTitle.Name = "lblGPSlatTitle";
-            this.lblGPSlatTitle.Size = new System.Drawing.Size(287, 46);
+            this.lblGPSlatTitle.Size = new System.Drawing.Size(254, 37);
             this.lblGPSlatTitle.TabIndex = 2;
             this.lblGPSlatTitle.Text = "GPS lat";
             this.lblGPSlatTitle.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
@@ -294,10 +287,10 @@
             this.tableLayoutPanel1.SetColumnSpan(this.lblGPSlonTitle, 2);
             this.lblGPSlonTitle.Dock = System.Windows.Forms.DockStyle.Fill;
             this.lblGPSlonTitle.Font = new System.Drawing.Font("Microsoft Sans Serif", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.lblGPSlonTitle.Location = new System.Drawing.Point(4, 245);
+            this.lblGPSlonTitle.Location = new System.Drawing.Point(4, 197);
             this.lblGPSlonTitle.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.lblGPSlonTitle.Name = "lblGPSlonTitle";
-            this.lblGPSlonTitle.Size = new System.Drawing.Size(287, 46);
+            this.lblGPSlonTitle.Size = new System.Drawing.Size(254, 37);
             this.lblGPSlonTitle.TabIndex = 3;
             this.lblGPSlonTitle.Text = "GPS lon";
             this.lblGPSlonTitle.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
@@ -309,10 +302,10 @@
             this.tableLayoutPanel1.SetColumnSpan(this.lblGPSDateTimeTitle, 2);
             this.lblGPSDateTimeTitle.Dock = System.Windows.Forms.DockStyle.Fill;
             this.lblGPSDateTimeTitle.Font = new System.Drawing.Font("Microsoft Sans Serif", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.lblGPSDateTimeTitle.Location = new System.Drawing.Point(4, 153);
+            this.lblGPSDateTimeTitle.Location = new System.Drawing.Point(4, 123);
             this.lblGPSDateTimeTitle.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.lblGPSDateTimeTitle.Name = "lblGPSDateTimeTitle";
-            this.lblGPSDateTimeTitle.Size = new System.Drawing.Size(287, 46);
+            this.lblGPSDateTimeTitle.Size = new System.Drawing.Size(254, 37);
             this.lblGPSDateTimeTitle.TabIndex = 4;
             this.lblGPSDateTimeTitle.Text = "GPS date";
             this.lblGPSDateTimeTitle.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
@@ -324,10 +317,10 @@
             this.tableLayoutPanel1.SetColumnSpan(this.lblTrueHeadTitle, 2);
             this.lblTrueHeadTitle.Dock = System.Windows.Forms.DockStyle.Fill;
             this.lblTrueHeadTitle.Font = new System.Drawing.Font("Microsoft Sans Serif", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.lblTrueHeadTitle.Location = new System.Drawing.Point(4, 291);
+            this.lblTrueHeadTitle.Location = new System.Drawing.Point(4, 234);
             this.lblTrueHeadTitle.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.lblTrueHeadTitle.Name = "lblTrueHeadTitle";
-            this.lblTrueHeadTitle.Size = new System.Drawing.Size(287, 46);
+            this.lblTrueHeadTitle.Size = new System.Drawing.Size(254, 37);
             this.lblTrueHeadTitle.TabIndex = 8;
             this.lblTrueHeadTitle.Text = "Head.(true)";
             this.lblTrueHeadTitle.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
@@ -339,10 +332,10 @@
             this.tableLayoutPanel1.SetColumnSpan(this.lblGyroHeadTitle, 2);
             this.lblGyroHeadTitle.Dock = System.Windows.Forms.DockStyle.Fill;
             this.lblGyroHeadTitle.Font = new System.Drawing.Font("Microsoft Sans Serif", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.lblGyroHeadTitle.Location = new System.Drawing.Point(4, 337);
+            this.lblGyroHeadTitle.Location = new System.Drawing.Point(4, 271);
             this.lblGyroHeadTitle.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.lblGyroHeadTitle.Name = "lblGyroHeadTitle";
-            this.lblGyroHeadTitle.Size = new System.Drawing.Size(287, 46);
+            this.lblGyroHeadTitle.Size = new System.Drawing.Size(254, 37);
             this.lblGyroHeadTitle.TabIndex = 9;
             this.lblGyroHeadTitle.Text = "Head.(gyro)";
             this.lblGyroHeadTitle.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
@@ -354,10 +347,10 @@
             this.tableLayoutPanel1.SetColumnSpan(this.lblSpeedKnotsTitle, 2);
             this.lblSpeedKnotsTitle.Dock = System.Windows.Forms.DockStyle.Fill;
             this.lblSpeedKnotsTitle.Font = new System.Drawing.Font("Microsoft Sans Serif", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.lblSpeedKnotsTitle.Location = new System.Drawing.Point(4, 383);
+            this.lblSpeedKnotsTitle.Location = new System.Drawing.Point(4, 308);
             this.lblSpeedKnotsTitle.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.lblSpeedKnotsTitle.Name = "lblSpeedKnotsTitle";
-            this.lblSpeedKnotsTitle.Size = new System.Drawing.Size(287, 46);
+            this.lblSpeedKnotsTitle.Size = new System.Drawing.Size(254, 37);
             this.lblSpeedKnotsTitle.TabIndex = 10;
             this.lblSpeedKnotsTitle.Text = "Speed (kn)";
             this.lblSpeedKnotsTitle.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
@@ -369,10 +362,10 @@
             this.tableLayoutPanel1.SetColumnSpan(this.lblDepthTitle, 2);
             this.lblDepthTitle.Dock = System.Windows.Forms.DockStyle.Fill;
             this.lblDepthTitle.Font = new System.Drawing.Font("Microsoft Sans Serif", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.lblDepthTitle.Location = new System.Drawing.Point(4, 429);
+            this.lblDepthTitle.Location = new System.Drawing.Point(4, 345);
             this.lblDepthTitle.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.lblDepthTitle.Name = "lblDepthTitle";
-            this.lblDepthTitle.Size = new System.Drawing.Size(287, 46);
+            this.lblDepthTitle.Size = new System.Drawing.Size(254, 37);
             this.lblDepthTitle.TabIndex = 11;
             this.lblDepthTitle.Text = "Depth";
             this.lblDepthTitle.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
@@ -383,12 +376,12 @@
             this.tableLayoutPanel1.SetColumnSpan(this.tbGPSDateTimeValue, 2);
             this.tbGPSDateTimeValue.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tbGPSDateTimeValue.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.tbGPSDateTimeValue.Location = new System.Drawing.Point(299, 158);
-            this.tbGPSDateTimeValue.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.tbGPSDateTimeValue.Location = new System.Drawing.Point(266, 127);
+            this.tbGPSDateTimeValue.Margin = new System.Windows.Forms.Padding(4);
             this.tbGPSDateTimeValue.Multiline = true;
             this.tbGPSDateTimeValue.Name = "tbGPSDateTimeValue";
             this.tbGPSDateTimeValue.ReadOnly = true;
-            this.tbGPSDateTimeValue.Size = new System.Drawing.Size(437, 36);
+            this.tbGPSDateTimeValue.Size = new System.Drawing.Size(387, 29);
             this.tbGPSDateTimeValue.TabIndex = 12;
             this.tbGPSDateTimeValue.Text = "---";
             this.tbGPSDateTimeValue.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
@@ -399,12 +392,12 @@
             this.tableLayoutPanel1.SetColumnSpan(this.tbGPSlonValue, 2);
             this.tbGPSlonValue.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tbGPSlonValue.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.tbGPSlonValue.Location = new System.Drawing.Point(299, 250);
-            this.tbGPSlonValue.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.tbGPSlonValue.Location = new System.Drawing.Point(266, 201);
+            this.tbGPSlonValue.Margin = new System.Windows.Forms.Padding(4);
             this.tbGPSlonValue.Multiline = true;
             this.tbGPSlonValue.Name = "tbGPSlonValue";
             this.tbGPSlonValue.ReadOnly = true;
-            this.tbGPSlonValue.Size = new System.Drawing.Size(437, 36);
+            this.tbGPSlonValue.Size = new System.Drawing.Size(387, 29);
             this.tbGPSlonValue.TabIndex = 13;
             this.tbGPSlonValue.Text = "---";
             this.tbGPSlonValue.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
@@ -415,12 +408,12 @@
             this.tableLayoutPanel1.SetColumnSpan(this.tbGPSlatValue, 2);
             this.tbGPSlatValue.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tbGPSlatValue.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.tbGPSlatValue.Location = new System.Drawing.Point(299, 204);
-            this.tbGPSlatValue.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.tbGPSlatValue.Location = new System.Drawing.Point(266, 164);
+            this.tbGPSlatValue.Margin = new System.Windows.Forms.Padding(4);
             this.tbGPSlatValue.Multiline = true;
             this.tbGPSlatValue.Name = "tbGPSlatValue";
             this.tbGPSlatValue.ReadOnly = true;
-            this.tbGPSlatValue.Size = new System.Drawing.Size(437, 36);
+            this.tbGPSlatValue.Size = new System.Drawing.Size(387, 29);
             this.tbGPSlatValue.TabIndex = 14;
             this.tbGPSlatValue.Text = "---";
             this.tbGPSlatValue.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
@@ -431,12 +424,12 @@
             this.tableLayoutPanel1.SetColumnSpan(this.tbTrueHeadValue, 2);
             this.tbTrueHeadValue.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tbTrueHeadValue.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.tbTrueHeadValue.Location = new System.Drawing.Point(299, 296);
-            this.tbTrueHeadValue.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.tbTrueHeadValue.Location = new System.Drawing.Point(266, 238);
+            this.tbTrueHeadValue.Margin = new System.Windows.Forms.Padding(4);
             this.tbTrueHeadValue.Multiline = true;
             this.tbTrueHeadValue.Name = "tbTrueHeadValue";
             this.tbTrueHeadValue.ReadOnly = true;
-            this.tbTrueHeadValue.Size = new System.Drawing.Size(437, 36);
+            this.tbTrueHeadValue.Size = new System.Drawing.Size(387, 29);
             this.tbTrueHeadValue.TabIndex = 15;
             this.tbTrueHeadValue.Text = "---";
             this.tbTrueHeadValue.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
@@ -447,12 +440,12 @@
             this.tableLayoutPanel1.SetColumnSpan(this.tbGyroHeadValue, 2);
             this.tbGyroHeadValue.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tbGyroHeadValue.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.tbGyroHeadValue.Location = new System.Drawing.Point(299, 342);
-            this.tbGyroHeadValue.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.tbGyroHeadValue.Location = new System.Drawing.Point(266, 275);
+            this.tbGyroHeadValue.Margin = new System.Windows.Forms.Padding(4);
             this.tbGyroHeadValue.Multiline = true;
             this.tbGyroHeadValue.Name = "tbGyroHeadValue";
             this.tbGyroHeadValue.ReadOnly = true;
-            this.tbGyroHeadValue.Size = new System.Drawing.Size(437, 36);
+            this.tbGyroHeadValue.Size = new System.Drawing.Size(387, 29);
             this.tbGyroHeadValue.TabIndex = 16;
             this.tbGyroHeadValue.Text = "---";
             this.tbGyroHeadValue.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
@@ -463,12 +456,12 @@
             this.tableLayoutPanel1.SetColumnSpan(this.tbSpeedKnotsValue, 2);
             this.tbSpeedKnotsValue.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tbSpeedKnotsValue.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.tbSpeedKnotsValue.Location = new System.Drawing.Point(299, 388);
-            this.tbSpeedKnotsValue.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.tbSpeedKnotsValue.Location = new System.Drawing.Point(266, 312);
+            this.tbSpeedKnotsValue.Margin = new System.Windows.Forms.Padding(4);
             this.tbSpeedKnotsValue.Multiline = true;
             this.tbSpeedKnotsValue.Name = "tbSpeedKnotsValue";
             this.tbSpeedKnotsValue.ReadOnly = true;
-            this.tbSpeedKnotsValue.Size = new System.Drawing.Size(437, 36);
+            this.tbSpeedKnotsValue.Size = new System.Drawing.Size(387, 29);
             this.tbSpeedKnotsValue.TabIndex = 17;
             this.tbSpeedKnotsValue.Text = "---";
             this.tbSpeedKnotsValue.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
@@ -479,12 +472,12 @@
             this.tableLayoutPanel1.SetColumnSpan(this.tbDepthValue, 2);
             this.tbDepthValue.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tbDepthValue.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.tbDepthValue.Location = new System.Drawing.Point(299, 434);
-            this.tbDepthValue.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.tbDepthValue.Location = new System.Drawing.Point(266, 349);
+            this.tbDepthValue.Margin = new System.Windows.Forms.Padding(4);
             this.tbDepthValue.Multiline = true;
             this.tbDepthValue.Name = "tbDepthValue";
             this.tbDepthValue.ReadOnly = true;
-            this.tbDepthValue.Size = new System.Drawing.Size(437, 36);
+            this.tbDepthValue.Size = new System.Drawing.Size(387, 29);
             this.tbDepthValue.TabIndex = 18;
             this.tbDepthValue.Text = "---";
             this.tbDepthValue.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
@@ -495,10 +488,10 @@
             this.lblPressureTitle.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.lblPressureTitle.Dock = System.Windows.Forms.DockStyle.Fill;
             this.lblPressureTitle.Font = new System.Drawing.Font("Microsoft Sans Serif", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.lblPressureTitle.Location = new System.Drawing.Point(804, 153);
+            this.lblPressureTitle.Location = new System.Drawing.Point(714, 123);
             this.lblPressureTitle.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.lblPressureTitle.Name = "lblPressureTitle";
-            this.lblPressureTitle.Size = new System.Drawing.Size(242, 46);
+            this.lblPressureTitle.Size = new System.Drawing.Size(214, 37);
             this.lblPressureTitle.TabIndex = 19;
             this.lblPressureTitle.Text = "Pressure, hPa";
             this.lblPressureTitle.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
@@ -509,10 +502,10 @@
             this.lblAirTemperatureTitle.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.lblAirTemperatureTitle.Dock = System.Windows.Forms.DockStyle.Fill;
             this.lblAirTemperatureTitle.Font = new System.Drawing.Font("Microsoft Sans Serif", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.lblAirTemperatureTitle.Location = new System.Drawing.Point(804, 199);
+            this.lblAirTemperatureTitle.Location = new System.Drawing.Point(714, 160);
             this.lblAirTemperatureTitle.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.lblAirTemperatureTitle.Name = "lblAirTemperatureTitle";
-            this.lblAirTemperatureTitle.Size = new System.Drawing.Size(242, 46);
+            this.lblAirTemperatureTitle.Size = new System.Drawing.Size(214, 37);
             this.lblAirTemperatureTitle.TabIndex = 20;
             this.lblAirTemperatureTitle.Text = "Air temp.";
             this.lblAirTemperatureTitle.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
@@ -523,10 +516,10 @@
             this.lblWindSpeedTitle.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.lblWindSpeedTitle.Dock = System.Windows.Forms.DockStyle.Fill;
             this.lblWindSpeedTitle.Font = new System.Drawing.Font("Microsoft Sans Serif", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.lblWindSpeedTitle.Location = new System.Drawing.Point(804, 245);
+            this.lblWindSpeedTitle.Location = new System.Drawing.Point(714, 197);
             this.lblWindSpeedTitle.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.lblWindSpeedTitle.Name = "lblWindSpeedTitle";
-            this.lblWindSpeedTitle.Size = new System.Drawing.Size(242, 46);
+            this.lblWindSpeedTitle.Size = new System.Drawing.Size(214, 37);
             this.lblWindSpeedTitle.TabIndex = 21;
             this.lblWindSpeedTitle.Text = "Wind speed";
             this.lblWindSpeedTitle.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
@@ -537,10 +530,10 @@
             this.lblWindDirectionTitle.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.lblWindDirectionTitle.Dock = System.Windows.Forms.DockStyle.Fill;
             this.lblWindDirectionTitle.Font = new System.Drawing.Font("Microsoft Sans Serif", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.lblWindDirectionTitle.Location = new System.Drawing.Point(804, 291);
+            this.lblWindDirectionTitle.Location = new System.Drawing.Point(714, 234);
             this.lblWindDirectionTitle.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.lblWindDirectionTitle.Name = "lblWindDirectionTitle";
-            this.lblWindDirectionTitle.Size = new System.Drawing.Size(242, 46);
+            this.lblWindDirectionTitle.Size = new System.Drawing.Size(214, 37);
             this.lblWindDirectionTitle.TabIndex = 22;
             this.lblWindDirectionTitle.Text = "Wind direction";
             this.lblWindDirectionTitle.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
@@ -551,10 +544,10 @@
             this.lblRelHumidityTitle.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.lblRelHumidityTitle.Dock = System.Windows.Forms.DockStyle.Fill;
             this.lblRelHumidityTitle.Font = new System.Drawing.Font("Microsoft Sans Serif", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.lblRelHumidityTitle.Location = new System.Drawing.Point(804, 337);
+            this.lblRelHumidityTitle.Location = new System.Drawing.Point(714, 271);
             this.lblRelHumidityTitle.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.lblRelHumidityTitle.Name = "lblRelHumidityTitle";
-            this.lblRelHumidityTitle.Size = new System.Drawing.Size(242, 46);
+            this.lblRelHumidityTitle.Size = new System.Drawing.Size(214, 37);
             this.lblRelHumidityTitle.TabIndex = 23;
             this.lblRelHumidityTitle.Text = "Rel. humidity";
             this.lblRelHumidityTitle.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
@@ -565,12 +558,12 @@
             this.tableLayoutPanel1.SetColumnSpan(this.tbPressureValue, 2);
             this.tbPressureValue.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tbPressureValue.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.tbPressureValue.Location = new System.Drawing.Point(1054, 158);
-            this.tbPressureValue.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.tbPressureValue.Location = new System.Drawing.Point(936, 127);
+            this.tbPressureValue.Margin = new System.Windows.Forms.Padding(4);
             this.tbPressureValue.Multiline = true;
             this.tbPressureValue.Name = "tbPressureValue";
             this.tbPressureValue.ReadOnly = true;
-            this.tbPressureValue.Size = new System.Drawing.Size(437, 36);
+            this.tbPressureValue.Size = new System.Drawing.Size(387, 29);
             this.tbPressureValue.TabIndex = 24;
             this.tbPressureValue.Text = "---";
             this.tbPressureValue.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
@@ -581,12 +574,12 @@
             this.tableLayoutPanel1.SetColumnSpan(this.tbAirTemperatureValue, 2);
             this.tbAirTemperatureValue.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tbAirTemperatureValue.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.tbAirTemperatureValue.Location = new System.Drawing.Point(1054, 204);
-            this.tbAirTemperatureValue.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.tbAirTemperatureValue.Location = new System.Drawing.Point(936, 164);
+            this.tbAirTemperatureValue.Margin = new System.Windows.Forms.Padding(4);
             this.tbAirTemperatureValue.Multiline = true;
             this.tbAirTemperatureValue.Name = "tbAirTemperatureValue";
             this.tbAirTemperatureValue.ReadOnly = true;
-            this.tbAirTemperatureValue.Size = new System.Drawing.Size(437, 36);
+            this.tbAirTemperatureValue.Size = new System.Drawing.Size(387, 29);
             this.tbAirTemperatureValue.TabIndex = 25;
             this.tbAirTemperatureValue.Text = "---";
             this.tbAirTemperatureValue.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
@@ -597,12 +590,12 @@
             this.tableLayoutPanel1.SetColumnSpan(this.tbWindSpeedValue, 2);
             this.tbWindSpeedValue.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tbWindSpeedValue.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.tbWindSpeedValue.Location = new System.Drawing.Point(1054, 250);
-            this.tbWindSpeedValue.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.tbWindSpeedValue.Location = new System.Drawing.Point(936, 201);
+            this.tbWindSpeedValue.Margin = new System.Windows.Forms.Padding(4);
             this.tbWindSpeedValue.Multiline = true;
             this.tbWindSpeedValue.Name = "tbWindSpeedValue";
             this.tbWindSpeedValue.ReadOnly = true;
-            this.tbWindSpeedValue.Size = new System.Drawing.Size(437, 36);
+            this.tbWindSpeedValue.Size = new System.Drawing.Size(387, 29);
             this.tbWindSpeedValue.TabIndex = 26;
             this.tbWindSpeedValue.Text = "---";
             this.tbWindSpeedValue.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
@@ -613,12 +606,12 @@
             this.tableLayoutPanel1.SetColumnSpan(this.tbWindDirectionValue, 2);
             this.tbWindDirectionValue.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tbWindDirectionValue.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.tbWindDirectionValue.Location = new System.Drawing.Point(1054, 296);
-            this.tbWindDirectionValue.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.tbWindDirectionValue.Location = new System.Drawing.Point(936, 238);
+            this.tbWindDirectionValue.Margin = new System.Windows.Forms.Padding(4);
             this.tbWindDirectionValue.Multiline = true;
             this.tbWindDirectionValue.Name = "tbWindDirectionValue";
             this.tbWindDirectionValue.ReadOnly = true;
-            this.tbWindDirectionValue.Size = new System.Drawing.Size(437, 36);
+            this.tbWindDirectionValue.Size = new System.Drawing.Size(387, 29);
             this.tbWindDirectionValue.TabIndex = 27;
             this.tbWindDirectionValue.Text = "---";
             this.tbWindDirectionValue.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
@@ -629,29 +622,15 @@
             this.tableLayoutPanel1.SetColumnSpan(this.tbRelHumidityValue, 2);
             this.tbRelHumidityValue.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tbRelHumidityValue.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.tbRelHumidityValue.Location = new System.Drawing.Point(1054, 342);
-            this.tbRelHumidityValue.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.tbRelHumidityValue.Location = new System.Drawing.Point(936, 275);
+            this.tbRelHumidityValue.Margin = new System.Windows.Forms.Padding(4);
             this.tbRelHumidityValue.Multiline = true;
             this.tbRelHumidityValue.Name = "tbRelHumidityValue";
             this.tbRelHumidityValue.ReadOnly = true;
-            this.tbRelHumidityValue.Size = new System.Drawing.Size(437, 36);
+            this.tbRelHumidityValue.Size = new System.Drawing.Size(387, 29);
             this.tbRelHumidityValue.TabIndex = 28;
             this.tbRelHumidityValue.Text = "---";
             this.tbRelHumidityValue.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
-            // 
-            // pbGeoTrack
-            // 
-            this.pbGeoTrack.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.tableLayoutPanel1.SetColumnSpan(this.pbGeoTrack, 3);
-            this.pbGeoTrack.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.pbGeoTrack.Location = new System.Drawing.Point(49, 556);
-            this.pbGeoTrack.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
-            this.pbGeoTrack.Name = "pbGeoTrack";
-            this.tableLayoutPanel1.SetRowSpan(this.pbGeoTrack, 4);
-            this.pbGeoTrack.Size = new System.Drawing.Size(687, 383);
-            this.pbGeoTrack.TabIndex = 29;
-            this.pbGeoTrack.TabStop = false;
-            this.pbGeoTrack.Click += new System.EventHandler(this.pbGeoTrack_Click);
             // 
             // lblPressureGraphTitle
             // 
@@ -659,10 +638,10 @@
             this.tableLayoutPanel1.SetColumnSpan(this.lblPressureGraphTitle, 2);
             this.lblPressureGraphTitle.Dock = System.Windows.Forms.DockStyle.Fill;
             this.lblPressureGraphTitle.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.lblPressureGraphTitle.Location = new System.Drawing.Point(804, 490);
+            this.lblPressureGraphTitle.Location = new System.Drawing.Point(714, 394);
             this.lblPressureGraphTitle.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.lblPressureGraphTitle.Name = "lblPressureGraphTitle";
-            this.lblPressureGraphTitle.Size = new System.Drawing.Size(617, 61);
+            this.lblPressureGraphTitle.Size = new System.Drawing.Size(547, 49);
             this.lblPressureGraphTitle.TabIndex = 31;
             this.lblPressureGraphTitle.Text = "Pressure, Temp., W.Speed, W.temp.";
             this.lblPressureGraphTitle.TextAlign = System.Drawing.ContentAlignment.BottomCenter;
@@ -672,11 +651,11 @@
             this.pbGraphs.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.tableLayoutPanel1.SetColumnSpan(this.pbGraphs, 3);
             this.pbGraphs.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.pbGraphs.Location = new System.Drawing.Point(804, 616);
-            this.pbGraphs.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.pbGraphs.Location = new System.Drawing.Point(714, 495);
+            this.pbGraphs.Margin = new System.Windows.Forms.Padding(4);
             this.pbGraphs.Name = "pbGraphs";
             this.tableLayoutPanel1.SetRowSpan(this.pbGraphs, 3);
-            this.pbGraphs.Size = new System.Drawing.Size(687, 323);
+            this.pbGraphs.Size = new System.Drawing.Size(609, 241);
             this.pbGraphs.TabIndex = 32;
             this.pbGraphs.TabStop = false;
             this.pbGraphs.Click += new System.EventHandler(this.pbGraphs_Click);
@@ -685,12 +664,12 @@
             // 
             this.trbGeoTrackScale.Dock = System.Windows.Forms.DockStyle.Fill;
             this.trbGeoTrackScale.LargeChange = 3;
-            this.trbGeoTrackScale.Location = new System.Drawing.Point(744, 556);
-            this.trbGeoTrackScale.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.trbGeoTrackScale.Location = new System.Drawing.Point(661, 447);
+            this.trbGeoTrackScale.Margin = new System.Windows.Forms.Padding(4);
             this.trbGeoTrackScale.Name = "trbGeoTrackScale";
             this.trbGeoTrackScale.Orientation = System.Windows.Forms.Orientation.Vertical;
-            this.tableLayoutPanel1.SetRowSpan(this.trbGeoTrackScale, 4);
-            this.trbGeoTrackScale.Size = new System.Drawing.Size(52, 383);
+            this.tableLayoutPanel1.SetRowSpan(this.trbGeoTrackScale, 5);
+            this.trbGeoTrackScale.Size = new System.Drawing.Size(45, 339);
             this.trbGeoTrackScale.TabIndex = 33;
             this.trbGeoTrackScale.ValueChanged += new System.EventHandler(this.trbGeoTrackScale_ValueChanged);
             // 
@@ -700,13 +679,13 @@
             this.wcUpdatimgGeoTrack.Color = System.Drawing.Color.FromArgb(((int)(((byte)(128)))), ((int)(((byte)(128)))), ((int)(((byte)(255)))));
             this.wcUpdatimgGeoTrack.Dock = System.Windows.Forms.DockStyle.Fill;
             this.wcUpdatimgGeoTrack.InnerCircleRadius = 8;
-            this.wcUpdatimgGeoTrack.Location = new System.Drawing.Point(744, 495);
-            this.wcUpdatimgGeoTrack.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.wcUpdatimgGeoTrack.Location = new System.Drawing.Point(661, 398);
+            this.wcUpdatimgGeoTrack.Margin = new System.Windows.Forms.Padding(4);
             this.wcUpdatimgGeoTrack.Name = "wcUpdatimgGeoTrack";
             this.wcUpdatimgGeoTrack.NumberSpoke = 24;
             this.wcUpdatimgGeoTrack.OuterCircleRadius = 9;
             this.wcUpdatimgGeoTrack.RotationSpeed = 100;
-            this.wcUpdatimgGeoTrack.Size = new System.Drawing.Size(52, 51);
+            this.wcUpdatimgGeoTrack.Size = new System.Drawing.Size(45, 41);
             this.wcUpdatimgGeoTrack.SpokeThickness = 4;
             this.wcUpdatimgGeoTrack.StylePreset = MRG.Controls.UI.LoadingCircle.StylePresets.IE7;
             this.wcUpdatimgGeoTrack.TabIndex = 35;
@@ -719,10 +698,10 @@
             this.lblWaterTemperatureTitle.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.lblWaterTemperatureTitle.Dock = System.Windows.Forms.DockStyle.Fill;
             this.lblWaterTemperatureTitle.Font = new System.Drawing.Font("Microsoft Sans Serif", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.lblWaterTemperatureTitle.Location = new System.Drawing.Point(804, 383);
+            this.lblWaterTemperatureTitle.Location = new System.Drawing.Point(714, 308);
             this.lblWaterTemperatureTitle.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.lblWaterTemperatureTitle.Name = "lblWaterTemperatureTitle";
-            this.lblWaterTemperatureTitle.Size = new System.Drawing.Size(242, 46);
+            this.lblWaterTemperatureTitle.Size = new System.Drawing.Size(214, 37);
             this.lblWaterTemperatureTitle.TabIndex = 36;
             this.lblWaterTemperatureTitle.Text = "Water temp.";
             this.lblWaterTemperatureTitle.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
@@ -733,10 +712,10 @@
             this.lblWaterSalinityTitle.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.lblWaterSalinityTitle.Dock = System.Windows.Forms.DockStyle.Fill;
             this.lblWaterSalinityTitle.Font = new System.Drawing.Font("Microsoft Sans Serif", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.lblWaterSalinityTitle.Location = new System.Drawing.Point(804, 429);
+            this.lblWaterSalinityTitle.Location = new System.Drawing.Point(714, 345);
             this.lblWaterSalinityTitle.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.lblWaterSalinityTitle.Name = "lblWaterSalinityTitle";
-            this.lblWaterSalinityTitle.Size = new System.Drawing.Size(242, 46);
+            this.lblWaterSalinityTitle.Size = new System.Drawing.Size(214, 37);
             this.lblWaterSalinityTitle.TabIndex = 37;
             this.lblWaterSalinityTitle.Text = "Water sal.";
             this.lblWaterSalinityTitle.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
@@ -747,12 +726,12 @@
             this.tableLayoutPanel1.SetColumnSpan(this.tbWaterTemperatureValue, 2);
             this.tbWaterTemperatureValue.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tbWaterTemperatureValue.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.tbWaterTemperatureValue.Location = new System.Drawing.Point(1054, 388);
-            this.tbWaterTemperatureValue.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.tbWaterTemperatureValue.Location = new System.Drawing.Point(936, 312);
+            this.tbWaterTemperatureValue.Margin = new System.Windows.Forms.Padding(4);
             this.tbWaterTemperatureValue.Multiline = true;
             this.tbWaterTemperatureValue.Name = "tbWaterTemperatureValue";
             this.tbWaterTemperatureValue.ReadOnly = true;
-            this.tbWaterTemperatureValue.Size = new System.Drawing.Size(437, 36);
+            this.tbWaterTemperatureValue.Size = new System.Drawing.Size(387, 29);
             this.tbWaterTemperatureValue.TabIndex = 38;
             this.tbWaterTemperatureValue.Text = "---";
             this.tbWaterTemperatureValue.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
@@ -763,12 +742,12 @@
             this.tableLayoutPanel1.SetColumnSpan(this.tbWaterSalinityValue, 2);
             this.tbWaterSalinityValue.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tbWaterSalinityValue.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.tbWaterSalinityValue.Location = new System.Drawing.Point(1054, 434);
-            this.tbWaterSalinityValue.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.tbWaterSalinityValue.Location = new System.Drawing.Point(936, 349);
+            this.tbWaterSalinityValue.Margin = new System.Windows.Forms.Padding(4);
             this.tbWaterSalinityValue.Multiline = true;
             this.tbWaterSalinityValue.Name = "tbWaterSalinityValue";
             this.tbWaterSalinityValue.ReadOnly = true;
-            this.tbWaterSalinityValue.Size = new System.Drawing.Size(437, 36);
+            this.tbWaterSalinityValue.Size = new System.Drawing.Size(387, 29);
             this.tbWaterSalinityValue.TabIndex = 39;
             this.tbWaterSalinityValue.Text = "---";
             this.tbWaterSalinityValue.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
@@ -780,38 +759,12 @@
             this.tableLayoutPanel1.SetColumnSpan(this.lblStatusString, 8);
             this.lblStatusString.Dock = System.Windows.Forms.DockStyle.Fill;
             this.lblStatusString.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.lblStatusString.Location = new System.Drawing.Point(4, 990);
+            this.lblStatusString.Location = new System.Drawing.Point(4, 790);
             this.lblStatusString.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.lblStatusString.Name = "lblStatusString";
-            this.lblStatusString.Size = new System.Drawing.Size(1487, 48);
+            this.lblStatusString.Size = new System.Drawing.Size(1319, 38);
             this.lblStatusString.TabIndex = 40;
             this.lblStatusString.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            // 
-            // scrbGeoTrackScrollLatValues
-            // 
-            this.scrbGeoTrackScrollLatValues.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.scrbGeoTrackScrollLatValues.LargeChange = 1;
-            this.scrbGeoTrackScrollLatValues.Location = new System.Drawing.Point(0, 551);
-            this.scrbGeoTrackScrollLatValues.Maximum = 1;
-            this.scrbGeoTrackScrollLatValues.Minimum = -1;
-            this.scrbGeoTrackScrollLatValues.Name = "scrbGeoTrackScrollLatValues";
-            this.tableLayoutPanel1.SetRowSpan(this.scrbGeoTrackScrollLatValues, 4);
-            this.scrbGeoTrackScrollLatValues.Size = new System.Drawing.Size(45, 393);
-            this.scrbGeoTrackScrollLatValues.TabIndex = 42;
-            this.scrbGeoTrackScrollLatValues.ValueChanged += new System.EventHandler(this.scrbGeoTrackScrollLatValues_ValueChanged);
-            // 
-            // scrbGeoTrackScrollLonValues
-            // 
-            this.tableLayoutPanel1.SetColumnSpan(this.scrbGeoTrackScrollLonValues, 3);
-            this.scrbGeoTrackScrollLonValues.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.scrbGeoTrackScrollLonValues.LargeChange = 1;
-            this.scrbGeoTrackScrollLonValues.Location = new System.Drawing.Point(45, 944);
-            this.scrbGeoTrackScrollLonValues.Maximum = 1;
-            this.scrbGeoTrackScrollLonValues.Minimum = -1;
-            this.scrbGeoTrackScrollLonValues.Name = "scrbGeoTrackScrollLonValues";
-            this.scrbGeoTrackScrollLonValues.Size = new System.Drawing.Size(695, 46);
-            this.scrbGeoTrackScrollLonValues.TabIndex = 43;
-            this.scrbGeoTrackScrollLonValues.ValueChanged += new System.EventHandler(this.scrbGeoTrackScrollLonValues_ValueChanged);
             // 
             // wcNavDataSoeedControl
             // 
@@ -820,13 +773,13 @@
             this.tableLayoutPanel1.SetColumnSpan(this.wcNavDataSoeedControl, 2);
             this.wcNavDataSoeedControl.Dock = System.Windows.Forms.DockStyle.Fill;
             this.wcNavDataSoeedControl.InnerCircleRadius = 5;
-            this.wcNavDataSoeedControl.Location = new System.Drawing.Point(299, 112);
-            this.wcNavDataSoeedControl.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.wcNavDataSoeedControl.Location = new System.Drawing.Point(266, 90);
+            this.wcNavDataSoeedControl.Margin = new System.Windows.Forms.Padding(4);
             this.wcNavDataSoeedControl.Name = "wcNavDataSoeedControl";
             this.wcNavDataSoeedControl.NumberSpoke = 12;
             this.wcNavDataSoeedControl.OuterCircleRadius = 11;
             this.wcNavDataSoeedControl.RotationSpeed = 1;
-            this.wcNavDataSoeedControl.Size = new System.Drawing.Size(437, 36);
+            this.wcNavDataSoeedControl.Size = new System.Drawing.Size(387, 29);
             this.wcNavDataSoeedControl.SpokeThickness = 2;
             this.wcNavDataSoeedControl.StylePreset = MRG.Controls.UI.LoadingCircle.StylePresets.MacOSX;
             this.wcNavDataSoeedControl.TabIndex = 44;
@@ -839,13 +792,13 @@
             this.tableLayoutPanel1.SetColumnSpan(this.wcMeteoDataSpeedControl, 2);
             this.wcMeteoDataSpeedControl.Dock = System.Windows.Forms.DockStyle.Top;
             this.wcMeteoDataSpeedControl.InnerCircleRadius = 5;
-            this.wcMeteoDataSpeedControl.Location = new System.Drawing.Point(1054, 112);
-            this.wcMeteoDataSpeedControl.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.wcMeteoDataSpeedControl.Location = new System.Drawing.Point(936, 90);
+            this.wcMeteoDataSpeedControl.Margin = new System.Windows.Forms.Padding(4);
             this.wcMeteoDataSpeedControl.Name = "wcMeteoDataSpeedControl";
             this.wcMeteoDataSpeedControl.NumberSpoke = 12;
             this.wcMeteoDataSpeedControl.OuterCircleRadius = 11;
             this.wcMeteoDataSpeedControl.RotationSpeed = 1;
-            this.wcMeteoDataSpeedControl.Size = new System.Drawing.Size(437, 35);
+            this.wcMeteoDataSpeedControl.Size = new System.Drawing.Size(387, 28);
             this.wcMeteoDataSpeedControl.SpokeThickness = 2;
             this.wcMeteoDataSpeedControl.StylePreset = MRG.Controls.UI.LoadingCircle.StylePresets.MacOSX;
             this.wcMeteoDataSpeedControl.TabIndex = 45;
@@ -857,10 +810,10 @@
             this.btnCenterToActualPosition.FlatAppearance.BorderSize = 0;
             this.btnCenterToActualPosition.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnCenterToActualPosition.Image = global::IofffeVesselInfoStream.Properties.Resources._74_location;
-            this.btnCenterToActualPosition.Location = new System.Drawing.Point(4, 495);
-            this.btnCenterToActualPosition.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.btnCenterToActualPosition.Location = new System.Drawing.Point(4, 398);
+            this.btnCenterToActualPosition.Margin = new System.Windows.Forms.Padding(4);
             this.btnCenterToActualPosition.Name = "btnCenterToActualPosition";
-            this.btnCenterToActualPosition.Size = new System.Drawing.Size(37, 51);
+            this.btnCenterToActualPosition.Size = new System.Drawing.Size(32, 41);
             this.btnCenterToActualPosition.TabIndex = 46;
             this.btnCenterToActualPosition.UseVisualStyleBackColor = true;
             this.btnCenterToActualPosition.Click += new System.EventHandler(this.btnCenterToActualPosition_Click);
@@ -872,10 +825,10 @@
             this.cbLogNCdata.CheckState = System.Windows.Forms.CheckState.Checked;
             this.tableLayoutPanel1.SetColumnSpan(this.cbLogNCdata, 4);
             this.cbLogNCdata.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.cbLogNCdata.Location = new System.Drawing.Point(4, 66);
-            this.cbLogNCdata.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.cbLogNCdata.Location = new System.Drawing.Point(4, 53);
+            this.cbLogNCdata.Margin = new System.Windows.Forms.Padding(4);
             this.cbLogNCdata.Name = "cbLogNCdata";
-            this.cbLogNCdata.Size = new System.Drawing.Size(732, 36);
+            this.cbLogNCdata.Size = new System.Drawing.Size(649, 29);
             this.cbLogNCdata.TabIndex = 47;
             this.cbLogNCdata.Text = "log data to *.nc and *.log files";
             this.cbLogNCdata.UseVisualStyleBackColor = true;
@@ -887,10 +840,10 @@
             this.cbLogMeasurementsData.CheckState = System.Windows.Forms.CheckState.Checked;
             this.tableLayoutPanel1.SetColumnSpan(this.cbLogMeasurementsData, 3);
             this.cbLogMeasurementsData.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.cbLogMeasurementsData.Location = new System.Drawing.Point(804, 66);
-            this.cbLogMeasurementsData.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.cbLogMeasurementsData.Location = new System.Drawing.Point(714, 53);
+            this.cbLogMeasurementsData.Margin = new System.Windows.Forms.Padding(4);
             this.cbLogMeasurementsData.Name = "cbLogMeasurementsData";
-            this.cbLogMeasurementsData.Size = new System.Drawing.Size(687, 36);
+            this.cbLogMeasurementsData.Size = new System.Drawing.Size(609, 29);
             this.cbLogMeasurementsData.TabIndex = 48;
             this.cbLogMeasurementsData.Text = "Write mesurements entry text file";
             this.cbLogMeasurementsData.UseVisualStyleBackColor = true;
@@ -903,18 +856,21 @@
             this.groupBox1.Controls.Add(this.rbtnAirTempGraph);
             this.groupBox1.Controls.Add(this.rbtnPressureGraph);
             this.groupBox1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.groupBox1.Location = new System.Drawing.Point(803, 554);
+            this.groupBox1.Location = new System.Drawing.Point(713, 445);
+            this.groupBox1.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(619, 54);
+            this.groupBox1.Padding = new System.Windows.Forms.Padding(3, 2, 3, 2);
+            this.groupBox1.Size = new System.Drawing.Size(549, 44);
             this.groupBox1.TabIndex = 49;
             this.groupBox1.TabStop = false;
             // 
             // rbtnWaterTempGraph
             // 
             this.rbtnWaterTempGraph.AutoSize = true;
-            this.rbtnWaterTempGraph.Location = new System.Drawing.Point(372, 19);
+            this.rbtnWaterTempGraph.Location = new System.Drawing.Point(331, 15);
+            this.rbtnWaterTempGraph.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.rbtnWaterTempGraph.Name = "rbtnWaterTempGraph";
-            this.rbtnWaterTempGraph.Size = new System.Drawing.Size(143, 29);
+            this.rbtnWaterTempGraph.Size = new System.Drawing.Size(121, 24);
             this.rbtnWaterTempGraph.TabIndex = 3;
             this.rbtnWaterTempGraph.TabStop = true;
             this.rbtnWaterTempGraph.Text = "Water temp.";
@@ -924,9 +880,10 @@
             // rbtnWindSpeedGraph
             // 
             this.rbtnWindSpeedGraph.AutoSize = true;
-            this.rbtnWindSpeedGraph.Location = new System.Drawing.Point(250, 19);
+            this.rbtnWindSpeedGraph.Location = new System.Drawing.Point(222, 15);
+            this.rbtnWindSpeedGraph.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.rbtnWindSpeedGraph.Name = "rbtnWindSpeedGraph";
-            this.rbtnWindSpeedGraph.Size = new System.Drawing.Size(116, 29);
+            this.rbtnWindSpeedGraph.Size = new System.Drawing.Size(95, 24);
             this.rbtnWindSpeedGraph.TabIndex = 2;
             this.rbtnWindSpeedGraph.TabStop = true;
             this.rbtnWindSpeedGraph.Text = "W.speed";
@@ -936,9 +893,10 @@
             // rbtnAirTempGraph
             // 
             this.rbtnAirTempGraph.AutoSize = true;
-            this.rbtnAirTempGraph.Location = new System.Drawing.Point(133, 19);
+            this.rbtnAirTempGraph.Location = new System.Drawing.Point(118, 15);
+            this.rbtnAirTempGraph.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.rbtnAirTempGraph.Name = "rbtnAirTempGraph";
-            this.rbtnAirTempGraph.Size = new System.Drawing.Size(114, 29);
+            this.rbtnAirTempGraph.Size = new System.Drawing.Size(97, 24);
             this.rbtnAirTempGraph.TabIndex = 1;
             this.rbtnAirTempGraph.TabStop = true;
             this.rbtnAirTempGraph.Text = "Air temp.";
@@ -949,9 +907,10 @@
             // 
             this.rbtnPressureGraph.AutoSize = true;
             this.rbtnPressureGraph.Checked = true;
-            this.rbtnPressureGraph.Location = new System.Drawing.Point(12, 19);
+            this.rbtnPressureGraph.Location = new System.Drawing.Point(11, 15);
+            this.rbtnPressureGraph.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.rbtnPressureGraph.Name = "rbtnPressureGraph";
-            this.rbtnPressureGraph.Size = new System.Drawing.Size(115, 29);
+            this.rbtnPressureGraph.Size = new System.Drawing.Size(98, 24);
             this.rbtnPressureGraph.TabIndex = 0;
             this.rbtnPressureGraph.TabStop = true;
             this.rbtnPressureGraph.Text = "Pressure";
@@ -964,9 +923,10 @@
             this.btnProperties.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Zoom;
             this.btnProperties.Dock = System.Windows.Forms.DockStyle.Fill;
             this.btnProperties.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnProperties.Location = new System.Drawing.Point(1428, 3);
+            this.btnProperties.Location = new System.Drawing.Point(1268, 2);
+            this.btnProperties.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.btnProperties.Name = "btnProperties";
-            this.btnProperties.Size = new System.Drawing.Size(64, 55);
+            this.btnProperties.Size = new System.Drawing.Size(56, 45);
             this.btnProperties.TabIndex = 50;
             this.btnProperties.UseVisualStyleBackColor = true;
             this.btnProperties.Click += new System.EventHandler(this.btnProperties_Click);
@@ -977,9 +937,10 @@
             this.btnToggleShowGeotrack.Dock = System.Windows.Forms.DockStyle.Fill;
             this.btnToggleShowGeotrack.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnToggleShowGeotrack.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.btnToggleShowGeotrack.Location = new System.Drawing.Point(673, 493);
+            this.btnToggleShowGeotrack.Location = new System.Drawing.Point(598, 396);
+            this.btnToggleShowGeotrack.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.btnToggleShowGeotrack.Name = "btnToggleShowGeotrack";
-            this.btnToggleShowGeotrack.Size = new System.Drawing.Size(64, 55);
+            this.btnToggleShowGeotrack.Size = new System.Drawing.Size(56, 45);
             this.btnToggleShowGeotrack.TabIndex = 51;
             this.btnToggleShowGeotrack.Text = "OFF";
             this.btnToggleShowGeotrack.UseVisualStyleBackColor = false;
@@ -991,9 +952,9 @@
             this.tableLayoutPanel1.SetColumnSpan(this.label1, 2);
             this.label1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.label1.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.label1.Location = new System.Drawing.Point(48, 490);
+            this.label1.Location = new System.Drawing.Point(43, 394);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(619, 61);
+            this.label1.Size = new System.Drawing.Size(549, 49);
             this.label1.TabIndex = 52;
             this.label1.Text = "Geotrack";
             this.label1.TextAlign = System.Drawing.ContentAlignment.BottomCenter;
@@ -1004,9 +965,10 @@
             this.btnToggleShowGraphs.Dock = System.Windows.Forms.DockStyle.Fill;
             this.btnToggleShowGraphs.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnToggleShowGraphs.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.btnToggleShowGraphs.Location = new System.Drawing.Point(1428, 493);
+            this.btnToggleShowGraphs.Location = new System.Drawing.Point(1268, 396);
+            this.btnToggleShowGraphs.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.btnToggleShowGraphs.Name = "btnToggleShowGraphs";
-            this.btnToggleShowGraphs.Size = new System.Drawing.Size(64, 55);
+            this.btnToggleShowGraphs.Size = new System.Drawing.Size(56, 45);
             this.btnToggleShowGraphs.TabIndex = 53;
             this.btnToggleShowGraphs.Text = "OFF";
             this.btnToggleShowGraphs.UseVisualStyleBackColor = false;
@@ -1018,12 +980,13 @@
             this.wcUpdatimgGraph.Color = System.Drawing.Color.FromArgb(((int)(((byte)(128)))), ((int)(((byte)(128)))), ((int)(((byte)(255)))));
             this.wcUpdatimgGraph.Dock = System.Windows.Forms.DockStyle.Fill;
             this.wcUpdatimgGraph.InnerCircleRadius = 8;
-            this.wcUpdatimgGraph.Location = new System.Drawing.Point(1428, 554);
+            this.wcUpdatimgGraph.Location = new System.Drawing.Point(1268, 445);
+            this.wcUpdatimgGraph.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.wcUpdatimgGraph.Name = "wcUpdatimgGraph";
             this.wcUpdatimgGraph.NumberSpoke = 24;
             this.wcUpdatimgGraph.OuterCircleRadius = 9;
             this.wcUpdatimgGraph.RotationSpeed = 100;
-            this.wcUpdatimgGraph.Size = new System.Drawing.Size(64, 54);
+            this.wcUpdatimgGraph.Size = new System.Drawing.Size(56, 44);
             this.wcUpdatimgGraph.SpokeThickness = 4;
             this.wcUpdatimgGraph.StylePreset = MRG.Controls.UI.LoadingCircle.StylePresets.IE7;
             this.wcUpdatimgGraph.TabIndex = 54;
@@ -1034,30 +997,32 @@
             // 
             this.tableLayoutPanel4.ColumnCount = 5;
             this.tableLayoutPanel1.SetColumnSpan(this.tableLayoutPanel4, 3);
-            this.tableLayoutPanel4.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 80F));
+            this.tableLayoutPanel4.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 71F));
             this.tableLayoutPanel4.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 33.33333F));
             this.tableLayoutPanel4.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 33.33333F));
             this.tableLayoutPanel4.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 33.33333F));
-            this.tableLayoutPanel4.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 81F));
+            this.tableLayoutPanel4.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 72F));
             this.tableLayoutPanel4.Controls.Add(this.btnGraphMoveFocusRight, 4, 0);
             this.tableLayoutPanel4.Controls.Add(this.btnGraphZoomIn, 3, 0);
             this.tableLayoutPanel4.Controls.Add(this.btnGraphDefault, 2, 0);
             this.tableLayoutPanel4.Controls.Add(this.btnGraphMoveFocusLeft, 0, 0);
             this.tableLayoutPanel4.Controls.Add(this.btnGraphZoomOut, 1, 0);
             this.tableLayoutPanel4.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.tableLayoutPanel4.Location = new System.Drawing.Point(803, 947);
+            this.tableLayoutPanel4.Location = new System.Drawing.Point(713, 742);
+            this.tableLayoutPanel4.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.tableLayoutPanel4.Name = "tableLayoutPanel4";
             this.tableLayoutPanel4.RowCount = 1;
             this.tableLayoutPanel4.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            this.tableLayoutPanel4.Size = new System.Drawing.Size(689, 40);
+            this.tableLayoutPanel4.Size = new System.Drawing.Size(611, 46);
             this.tableLayoutPanel4.TabIndex = 56;
             // 
             // btnGraphMoveFocusRight
             // 
             this.btnGraphMoveFocusRight.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.btnGraphMoveFocusRight.Location = new System.Drawing.Point(611, 3);
+            this.btnGraphMoveFocusRight.Location = new System.Drawing.Point(542, 2);
+            this.btnGraphMoveFocusRight.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.btnGraphMoveFocusRight.Name = "btnGraphMoveFocusRight";
-            this.btnGraphMoveFocusRight.Size = new System.Drawing.Size(75, 34);
+            this.btnGraphMoveFocusRight.Size = new System.Drawing.Size(66, 42);
             this.btnGraphMoveFocusRight.TabIndex = 1;
             this.btnGraphMoveFocusRight.Text = ">>";
             this.btnGraphMoveFocusRight.UseVisualStyleBackColor = true;
@@ -1066,9 +1031,10 @@
             // btnGraphZoomIn
             // 
             this.btnGraphZoomIn.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.btnGraphZoomIn.Location = new System.Drawing.Point(435, 3);
+            this.btnGraphZoomIn.Location = new System.Drawing.Point(386, 2);
+            this.btnGraphZoomIn.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.btnGraphZoomIn.Name = "btnGraphZoomIn";
-            this.btnGraphZoomIn.Size = new System.Drawing.Size(170, 34);
+            this.btnGraphZoomIn.Size = new System.Drawing.Size(150, 42);
             this.btnGraphZoomIn.TabIndex = 3;
             this.btnGraphZoomIn.Text = "zoom in";
             this.btnGraphZoomIn.UseVisualStyleBackColor = true;
@@ -1077,9 +1043,10 @@
             // btnGraphDefault
             // 
             this.btnGraphDefault.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.btnGraphDefault.Location = new System.Drawing.Point(259, 3);
+            this.btnGraphDefault.Location = new System.Drawing.Point(230, 2);
+            this.btnGraphDefault.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.btnGraphDefault.Name = "btnGraphDefault";
-            this.btnGraphDefault.Size = new System.Drawing.Size(170, 34);
+            this.btnGraphDefault.Size = new System.Drawing.Size(150, 42);
             this.btnGraphDefault.TabIndex = 4;
             this.btnGraphDefault.Text = "default";
             this.btnGraphDefault.UseVisualStyleBackColor = true;
@@ -1088,9 +1055,10 @@
             // btnGraphMoveFocusLeft
             // 
             this.btnGraphMoveFocusLeft.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.btnGraphMoveFocusLeft.Location = new System.Drawing.Point(3, 3);
+            this.btnGraphMoveFocusLeft.Location = new System.Drawing.Point(3, 2);
+            this.btnGraphMoveFocusLeft.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.btnGraphMoveFocusLeft.Name = "btnGraphMoveFocusLeft";
-            this.btnGraphMoveFocusLeft.Size = new System.Drawing.Size(74, 34);
+            this.btnGraphMoveFocusLeft.Size = new System.Drawing.Size(65, 42);
             this.btnGraphMoveFocusLeft.TabIndex = 0;
             this.btnGraphMoveFocusLeft.Text = "<<";
             this.btnGraphMoveFocusLeft.UseVisualStyleBackColor = true;
@@ -1099,22 +1067,92 @@
             // btnGraphZoomOut
             // 
             this.btnGraphZoomOut.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.btnGraphZoomOut.Location = new System.Drawing.Point(83, 3);
+            this.btnGraphZoomOut.Location = new System.Drawing.Point(74, 2);
+            this.btnGraphZoomOut.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.btnGraphZoomOut.Name = "btnGraphZoomOut";
-            this.btnGraphZoomOut.Size = new System.Drawing.Size(170, 34);
+            this.btnGraphZoomOut.Size = new System.Drawing.Size(150, 42);
             this.btnGraphZoomOut.TabIndex = 2;
             this.btnGraphZoomOut.Text = "zoom out";
             this.btnGraphZoomOut.UseVisualStyleBackColor = true;
             this.btnGraphZoomOut.Click += new System.EventHandler(this.btnGraphZoomOut_Click);
             // 
+            // imgPanelGeotrack
+            // 
+            this.imgPanelGeotrack.CanvasSize = new System.Drawing.Size(60, 40);
+            this.tableLayoutPanel1.SetColumnSpan(this.imgPanelGeotrack, 4);
+            this.imgPanelGeotrack.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.imgPanelGeotrack.Image = null;
+            this.imgPanelGeotrack.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.HighQualityBilinear;
+            this.imgPanelGeotrack.Location = new System.Drawing.Point(4, 448);
+            this.imgPanelGeotrack.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.imgPanelGeotrack.Name = "imgPanelGeotrack";
+            this.tableLayoutPanel1.SetRowSpan(this.imgPanelGeotrack, 4);
+            this.imgPanelGeotrack.Size = new System.Drawing.Size(649, 287);
+            this.imgPanelGeotrack.TabIndex = 57;
+            this.imgPanelGeotrack.Zoom = 1F;
+            this.imgPanelGeotrack.Click += new System.EventHandler(this.pbGeoTrack_Click);
+            // 
+            // tableLayoutPanel5
+            // 
+            this.tableLayoutPanel5.ColumnCount = 3;
+            this.tableLayoutPanel1.SetColumnSpan(this.tableLayoutPanel5, 4);
+            this.tableLayoutPanel5.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 33.33333F));
+            this.tableLayoutPanel5.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 33.33333F));
+            this.tableLayoutPanel5.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 33.33333F));
+            this.tableLayoutPanel5.Controls.Add(this.btnDecreaseShorelineResolution, 0, 0);
+            this.tableLayoutPanel5.Controls.Add(this.btnIncreaseShorelineResolution, 1, 0);
+            this.tableLayoutPanel5.Controls.Add(this.cbNormalizeImage, 2, 0);
+            this.tableLayoutPanel5.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.tableLayoutPanel5.Location = new System.Drawing.Point(3, 743);
+            this.tableLayoutPanel5.Name = "tableLayoutPanel5";
+            this.tableLayoutPanel5.RowCount = 1;
+            this.tableLayoutPanel5.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
+            this.tableLayoutPanel5.Size = new System.Drawing.Size(651, 44);
+            this.tableLayoutPanel5.TabIndex = 58;
+            // 
+            // btnDecreaseShorelineResolution
+            // 
+            this.btnDecreaseShorelineResolution.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.btnDecreaseShorelineResolution.Location = new System.Drawing.Point(3, 3);
+            this.btnDecreaseShorelineResolution.Name = "btnDecreaseShorelineResolution";
+            this.btnDecreaseShorelineResolution.Size = new System.Drawing.Size(211, 38);
+            this.btnDecreaseShorelineResolution.TabIndex = 0;
+            this.btnDecreaseShorelineResolution.Text = "Decrease shoreline resolution";
+            this.btnDecreaseShorelineResolution.UseVisualStyleBackColor = true;
+            this.btnDecreaseShorelineResolution.Click += new System.EventHandler(this.btnDecreaseResolution_Click);
+            // 
+            // btnIncreaseShorelineResolution
+            // 
+            this.btnIncreaseShorelineResolution.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.btnIncreaseShorelineResolution.Location = new System.Drawing.Point(220, 3);
+            this.btnIncreaseShorelineResolution.Name = "btnIncreaseShorelineResolution";
+            this.btnIncreaseShorelineResolution.Size = new System.Drawing.Size(211, 38);
+            this.btnIncreaseShorelineResolution.TabIndex = 1;
+            this.btnIncreaseShorelineResolution.Text = "Increase shoreline resolution";
+            this.btnIncreaseShorelineResolution.UseVisualStyleBackColor = true;
+            this.btnIncreaseShorelineResolution.Click += new System.EventHandler(this.btnIncreaseResolution_Click);
+            // 
+            // cbNormalizeImage
+            // 
+            this.cbNormalizeImage.AutoSize = true;
+            this.cbNormalizeImage.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.cbNormalizeImage.Location = new System.Drawing.Point(437, 3);
+            this.cbNormalizeImage.Name = "cbNormalizeImage";
+            this.cbNormalizeImage.Size = new System.Drawing.Size(211, 38);
+            this.cbNormalizeImage.TabIndex = 2;
+            this.cbNormalizeImage.Text = "norm. image";
+            this.cbNormalizeImage.UseVisualStyleBackColor = true;
+            this.cbNormalizeImage.CheckedChanged += new System.EventHandler(this.cbNormalizeImage_CheckedChanged);
+            // 
             // tpNavAndMeteoOverview
             // 
             this.tpNavAndMeteoOverview.BackColor = System.Drawing.SystemColors.Control;
             this.tpNavAndMeteoOverview.Controls.Add(this.tableLayoutPanel3);
-            this.tpNavAndMeteoOverview.Location = new System.Drawing.Point(4, 34);
+            this.tpNavAndMeteoOverview.Location = new System.Drawing.Point(4, 29);
+            this.tpNavAndMeteoOverview.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.tpNavAndMeteoOverview.Name = "tpNavAndMeteoOverview";
-            this.tpNavAndMeteoOverview.Padding = new System.Windows.Forms.Padding(3);
-            this.tpNavAndMeteoOverview.Size = new System.Drawing.Size(1503, 1048);
+            this.tpNavAndMeteoOverview.Padding = new System.Windows.Forms.Padding(3, 2, 3, 2);
+            this.tpNavAndMeteoOverview.Size = new System.Drawing.Size(1335, 836);
             this.tpNavAndMeteoOverview.TabIndex = 2;
             this.tpNavAndMeteoOverview.Text = "Overview nav & meteo data";
             // 
@@ -1148,20 +1186,21 @@
             this.tableLayoutPanel3.Controls.Add(this.btnRepairAndWriteNCfile, 6, 7);
             this.tableLayoutPanel3.Controls.Add(this.prbMissingInfoSearchingProgress, 0, 8);
             this.tableLayoutPanel3.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.tableLayoutPanel3.Location = new System.Drawing.Point(3, 3);
+            this.tableLayoutPanel3.Location = new System.Drawing.Point(3, 2);
+            this.tableLayoutPanel3.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.tableLayoutPanel3.Name = "tableLayoutPanel3";
             this.tableLayoutPanel3.RowCount = 10;
-            this.tableLayoutPanel3.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 60F));
-            this.tableLayoutPanel3.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 60F));
-            this.tableLayoutPanel3.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 20F));
-            this.tableLayoutPanel3.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 180F));
-            this.tableLayoutPanel3.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 180F));
+            this.tableLayoutPanel3.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 48F));
+            this.tableLayoutPanel3.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 48F));
+            this.tableLayoutPanel3.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 16F));
+            this.tableLayoutPanel3.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 144F));
+            this.tableLayoutPanel3.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 144F));
             this.tableLayoutPanel3.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 50F));
-            this.tableLayoutPanel3.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 60F));
-            this.tableLayoutPanel3.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 60F));
-            this.tableLayoutPanel3.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 20F));
+            this.tableLayoutPanel3.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 48F));
+            this.tableLayoutPanel3.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 48F));
+            this.tableLayoutPanel3.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 16F));
             this.tableLayoutPanel3.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 50F));
-            this.tableLayoutPanel3.Size = new System.Drawing.Size(1497, 1042);
+            this.tableLayoutPanel3.Size = new System.Drawing.Size(1329, 832);
             this.tableLayoutPanel3.TabIndex = 0;
             // 
             // label2
@@ -1172,7 +1211,7 @@
             this.label2.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this.label2.Location = new System.Drawing.Point(3, 0);
             this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(590, 60);
+            this.label2.Size = new System.Drawing.Size(522, 48);
             this.label2.TabIndex = 0;
             this.label2.Text = "Form data record log file for date-time:";
             this.label2.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
@@ -1182,10 +1221,11 @@
             this.tableLayoutPanel3.SetColumnSpan(this.maskedTextBox1, 3);
             this.maskedTextBox1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.maskedTextBox1.Font = new System.Drawing.Font("Microsoft Sans Serif", 16F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.maskedTextBox1.Location = new System.Drawing.Point(599, 3);
+            this.maskedTextBox1.Location = new System.Drawing.Point(531, 2);
+            this.maskedTextBox1.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.maskedTextBox1.Mask = "0000-00-00T90:00:00";
             this.maskedTextBox1.Name = "maskedTextBox1";
-            this.maskedTextBox1.Size = new System.Drawing.Size(441, 44);
+            this.maskedTextBox1.Size = new System.Drawing.Size(390, 38);
             this.maskedTextBox1.TabIndex = 1;
             // 
             // btnFindInfo
@@ -1194,9 +1234,10 @@
             this.btnFindInfo.Dock = System.Windows.Forms.DockStyle.Fill;
             this.btnFindInfo.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnFindInfo.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.btnFindInfo.Location = new System.Drawing.Point(1046, 3);
+            this.btnFindInfo.Location = new System.Drawing.Point(927, 2);
+            this.btnFindInfo.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.btnFindInfo.Name = "btnFindInfo";
-            this.btnFindInfo.Size = new System.Drawing.Size(292, 54);
+            this.btnFindInfo.Size = new System.Drawing.Size(258, 44);
             this.btnFindInfo.TabIndex = 2;
             this.btnFindInfo.Text = "find closest records";
             this.btnFindInfo.UseVisualStyleBackColor = true;
@@ -1207,9 +1248,10 @@
             this.btnWriteFile.Dock = System.Windows.Forms.DockStyle.Fill;
             this.btnWriteFile.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnWriteFile.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.btnWriteFile.Location = new System.Drawing.Point(1344, 3);
+            this.btnWriteFile.Location = new System.Drawing.Point(1191, 2);
+            this.btnWriteFile.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.btnWriteFile.Name = "btnWriteFile";
-            this.btnWriteFile.Size = new System.Drawing.Size(150, 54);
+            this.btnWriteFile.Size = new System.Drawing.Size(135, 44);
             this.btnWriteFile.TabIndex = 3;
             this.btnWriteFile.Text = "write";
             this.btnWriteFile.UseVisualStyleBackColor = true;
@@ -1221,9 +1263,9 @@
             this.lblFoundNavDataTitle.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.lblFoundNavDataTitle.Dock = System.Windows.Forms.DockStyle.Fill;
             this.lblFoundNavDataTitle.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.lblFoundNavDataTitle.Location = new System.Drawing.Point(3, 140);
+            this.lblFoundNavDataTitle.Location = new System.Drawing.Point(3, 112);
             this.lblFoundNavDataTitle.Name = "lblFoundNavDataTitle";
-            this.lblFoundNavDataTitle.Size = new System.Drawing.Size(143, 180);
+            this.lblFoundNavDataTitle.Size = new System.Drawing.Size(126, 144);
             this.lblFoundNavDataTitle.TabIndex = 6;
             this.lblFoundNavDataTitle.Text = "nav:";
             this.lblFoundNavDataTitle.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
@@ -1234,9 +1276,9 @@
             this.lblFoundMeteoDataTitle.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.lblFoundMeteoDataTitle.Dock = System.Windows.Forms.DockStyle.Fill;
             this.lblFoundMeteoDataTitle.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.lblFoundMeteoDataTitle.Location = new System.Drawing.Point(3, 320);
+            this.lblFoundMeteoDataTitle.Location = new System.Drawing.Point(3, 256);
             this.lblFoundMeteoDataTitle.Name = "lblFoundMeteoDataTitle";
-            this.lblFoundMeteoDataTitle.Size = new System.Drawing.Size(143, 180);
+            this.lblFoundMeteoDataTitle.Size = new System.Drawing.Size(126, 144);
             this.lblFoundMeteoDataTitle.TabIndex = 7;
             this.lblFoundMeteoDataTitle.Text = "meteo:";
             this.lblFoundMeteoDataTitle.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
@@ -1245,9 +1287,10 @@
             // 
             this.tableLayoutPanel3.SetColumnSpan(this.prbSearchingProgress, 10);
             this.prbSearchingProgress.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.prbSearchingProgress.Location = new System.Drawing.Point(3, 123);
+            this.prbSearchingProgress.Location = new System.Drawing.Point(3, 98);
+            this.prbSearchingProgress.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.prbSearchingProgress.Name = "prbSearchingProgress";
-            this.prbSearchingProgress.Size = new System.Drawing.Size(1491, 14);
+            this.prbSearchingProgress.Size = new System.Drawing.Size(1323, 12);
             this.prbSearchingProgress.TabIndex = 8;
             // 
             // lblFoundNavData
@@ -1255,12 +1298,13 @@
             this.tableLayoutPanel3.SetColumnSpan(this.lblFoundNavData, 9);
             this.lblFoundNavData.Dock = System.Windows.Forms.DockStyle.Fill;
             this.lblFoundNavData.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.lblFoundNavData.Location = new System.Drawing.Point(152, 143);
+            this.lblFoundNavData.Location = new System.Drawing.Point(135, 114);
+            this.lblFoundNavData.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.lblFoundNavData.Multiline = true;
             this.lblFoundNavData.Name = "lblFoundNavData";
             this.lblFoundNavData.ReadOnly = true;
             this.lblFoundNavData.ScrollBars = System.Windows.Forms.ScrollBars.Both;
-            this.lblFoundNavData.Size = new System.Drawing.Size(1342, 174);
+            this.lblFoundNavData.Size = new System.Drawing.Size(1191, 140);
             this.lblFoundNavData.TabIndex = 9;
             this.lblFoundNavData.Text = "---";
             // 
@@ -1269,12 +1313,13 @@
             this.tableLayoutPanel3.SetColumnSpan(this.lblFoundMetData, 9);
             this.lblFoundMetData.Dock = System.Windows.Forms.DockStyle.Fill;
             this.lblFoundMetData.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.lblFoundMetData.Location = new System.Drawing.Point(152, 323);
+            this.lblFoundMetData.Location = new System.Drawing.Point(135, 258);
+            this.lblFoundMetData.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.lblFoundMetData.Multiline = true;
             this.lblFoundMetData.Name = "lblFoundMetData";
             this.lblFoundMetData.ReadOnly = true;
             this.lblFoundMetData.ScrollBars = System.Windows.Forms.ScrollBars.Both;
-            this.lblFoundMetData.Size = new System.Drawing.Size(1342, 174);
+            this.lblFoundMetData.Size = new System.Drawing.Size(1191, 140);
             this.lblFoundMetData.TabIndex = 10;
             this.lblFoundMetData.Text = "---";
             // 
@@ -1283,9 +1328,10 @@
             this.lblPlusOneHour.Dock = System.Windows.Forms.DockStyle.Fill;
             this.lblPlusOneHour.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.lblPlusOneHour.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.lblPlusOneHour.Location = new System.Drawing.Point(748, 63);
+            this.lblPlusOneHour.Location = new System.Drawing.Point(663, 50);
+            this.lblPlusOneHour.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.lblPlusOneHour.Name = "lblPlusOneHour";
-            this.lblPlusOneHour.Size = new System.Drawing.Size(143, 54);
+            this.lblPlusOneHour.Size = new System.Drawing.Size(126, 44);
             this.lblPlusOneHour.TabIndex = 11;
             this.lblPlusOneHour.Text = "+1 hour";
             this.lblPlusOneHour.UseVisualStyleBackColor = true;
@@ -1296,9 +1342,10 @@
             this.btnPlusOneDay.Dock = System.Windows.Forms.DockStyle.Fill;
             this.btnPlusOneDay.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnPlusOneDay.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.btnPlusOneDay.Location = new System.Drawing.Point(599, 63);
+            this.btnPlusOneDay.Location = new System.Drawing.Point(531, 50);
+            this.btnPlusOneDay.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.btnPlusOneDay.Name = "btnPlusOneDay";
-            this.btnPlusOneDay.Size = new System.Drawing.Size(143, 54);
+            this.btnPlusOneDay.Size = new System.Drawing.Size(126, 44);
             this.btnPlusOneDay.TabIndex = 12;
             this.btnPlusOneDay.Text = "+1 day";
             this.btnPlusOneDay.UseVisualStyleBackColor = true;
@@ -1311,9 +1358,9 @@
             this.tableLayoutPanel3.SetColumnSpan(this.label3, 4);
             this.label3.Dock = System.Windows.Forms.DockStyle.Fill;
             this.label3.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.label3.Location = new System.Drawing.Point(3, 701);
+            this.label3.Location = new System.Drawing.Point(3, 560);
             this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(590, 60);
+            this.label3.Size = new System.Drawing.Size(522, 48);
             this.label3.TabIndex = 13;
             this.label3.Text = "find and repair lost data records for date:";
             this.label3.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
@@ -1323,10 +1370,11 @@
             this.tableLayoutPanel3.SetColumnSpan(this.maskedTextBox2, 2);
             this.maskedTextBox2.Dock = System.Windows.Forms.DockStyle.Fill;
             this.maskedTextBox2.Font = new System.Drawing.Font("Microsoft Sans Serif", 16F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.maskedTextBox2.Location = new System.Drawing.Point(599, 704);
+            this.maskedTextBox2.Location = new System.Drawing.Point(531, 562);
+            this.maskedTextBox2.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.maskedTextBox2.Mask = "0000-00-00";
             this.maskedTextBox2.Name = "maskedTextBox2";
-            this.maskedTextBox2.Size = new System.Drawing.Size(292, 44);
+            this.maskedTextBox2.Size = new System.Drawing.Size(258, 38);
             this.maskedTextBox2.TabIndex = 14;
             // 
             // btnFindIOFFEdataFiles
@@ -1335,9 +1383,10 @@
             this.btnFindIOFFEdataFiles.Dock = System.Windows.Forms.DockStyle.Fill;
             this.btnFindIOFFEdataFiles.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnFindIOFFEdataFiles.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.btnFindIOFFEdataFiles.Location = new System.Drawing.Point(897, 704);
+            this.btnFindIOFFEdataFiles.Location = new System.Drawing.Point(795, 562);
+            this.btnFindIOFFEdataFiles.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.btnFindIOFFEdataFiles.Name = "btnFindIOFFEdataFiles";
-            this.btnFindIOFFEdataFiles.Size = new System.Drawing.Size(597, 54);
+            this.btnFindIOFFEdataFiles.Size = new System.Drawing.Size(531, 44);
             this.btnFindIOFFEdataFiles.TabIndex = 15;
             this.btnFindIOFFEdataFiles.Text = "find IOFFE data files";
             this.btnFindIOFFEdataFiles.UseVisualStyleBackColor = true;
@@ -1349,9 +1398,10 @@
             this.btnRepairAndWriteNCfile.Dock = System.Windows.Forms.DockStyle.Fill;
             this.btnRepairAndWriteNCfile.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnRepairAndWriteNCfile.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.btnRepairAndWriteNCfile.Location = new System.Drawing.Point(897, 764);
+            this.btnRepairAndWriteNCfile.Location = new System.Drawing.Point(795, 610);
+            this.btnRepairAndWriteNCfile.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.btnRepairAndWriteNCfile.Name = "btnRepairAndWriteNCfile";
-            this.btnRepairAndWriteNCfile.Size = new System.Drawing.Size(597, 54);
+            this.btnRepairAndWriteNCfile.Size = new System.Drawing.Size(531, 44);
             this.btnRepairAndWriteNCfile.TabIndex = 16;
             this.btnRepairAndWriteNCfile.Text = "re-form nc-file with additional data";
             this.btnRepairAndWriteNCfile.UseVisualStyleBackColor = true;
@@ -1361,76 +1411,20 @@
             // 
             this.tableLayoutPanel3.SetColumnSpan(this.prbMissingInfoSearchingProgress, 10);
             this.prbMissingInfoSearchingProgress.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.prbMissingInfoSearchingProgress.Location = new System.Drawing.Point(3, 824);
+            this.prbMissingInfoSearchingProgress.Location = new System.Drawing.Point(3, 658);
+            this.prbMissingInfoSearchingProgress.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.prbMissingInfoSearchingProgress.Name = "prbMissingInfoSearchingProgress";
-            this.prbMissingInfoSearchingProgress.Size = new System.Drawing.Size(1491, 14);
+            this.prbMissingInfoSearchingProgress.Size = new System.Drawing.Size(1323, 12);
             this.prbMissingInfoSearchingProgress.TabIndex = 17;
-            // 
-            // tpSeaSaveStream
-            // 
-            this.tpSeaSaveStream.BackColor = System.Drawing.SystemColors.Control;
-            this.tpSeaSaveStream.Controls.Add(this.tableLayoutPanel2);
-            this.tpSeaSaveStream.Location = new System.Drawing.Point(4, 34);
-            this.tpSeaSaveStream.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
-            this.tpSeaSaveStream.Name = "tpSeaSaveStream";
-            this.tpSeaSaveStream.Padding = new System.Windows.Forms.Padding(4, 5, 4, 5);
-            this.tpSeaSaveStream.Size = new System.Drawing.Size(1503, 1048);
-            this.tpSeaSaveStream.TabIndex = 1;
-            this.tpSeaSaveStream.Text = "SeaSave";
-            // 
-            // tableLayoutPanel2
-            // 
-            this.tableLayoutPanel2.ColumnCount = 2;
-            this.tableLayoutPanel2.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50F));
-            this.tableLayoutPanel2.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50F));
-            this.tableLayoutPanel2.Controls.Add(this.btnStartStopSeaSave, 0, 0);
-            this.tableLayoutPanel2.Controls.Add(this.tbSeaSaveLog, 0, 1);
-            this.tableLayoutPanel2.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.tableLayoutPanel2.Location = new System.Drawing.Point(4, 5);
-            this.tableLayoutPanel2.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
-            this.tableLayoutPanel2.Name = "tableLayoutPanel2";
-            this.tableLayoutPanel2.RowCount = 2;
-            this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 61F));
-            this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            this.tableLayoutPanel2.Size = new System.Drawing.Size(1495, 1038);
-            this.tableLayoutPanel2.TabIndex = 0;
-            // 
-            // btnStartStopSeaSave
-            // 
-            this.tableLayoutPanel2.SetColumnSpan(this.btnStartStopSeaSave, 2);
-            this.btnStartStopSeaSave.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.btnStartStopSeaSave.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnStartStopSeaSave.Font = new System.Drawing.Font("Microsoft Sans Serif", 15.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.btnStartStopSeaSave.ForeColor = System.Drawing.Color.Red;
-            this.btnStartStopSeaSave.Location = new System.Drawing.Point(4, 5);
-            this.btnStartStopSeaSave.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
-            this.btnStartStopSeaSave.Name = "btnStartStopSeaSave";
-            this.btnStartStopSeaSave.Size = new System.Drawing.Size(1487, 51);
-            this.btnStartStopSeaSave.TabIndex = 0;
-            this.btnStartStopSeaSave.Text = "CONNECT SeaSave";
-            this.btnStartStopSeaSave.UseVisualStyleBackColor = true;
-            //this.btnStartStopSeaSave.Click += new System.EventHandler(this.button1_Click);
-            // 
-            // tbSeaSaveLog
-            // 
-            this.tableLayoutPanel2.SetColumnSpan(this.tbSeaSaveLog, 2);
-            this.tbSeaSaveLog.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.tbSeaSaveLog.Location = new System.Drawing.Point(4, 66);
-            this.tbSeaSaveLog.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
-            this.tbSeaSaveLog.Multiline = true;
-            this.tbSeaSaveLog.Name = "tbSeaSaveLog";
-            this.tbSeaSaveLog.ScrollBars = System.Windows.Forms.ScrollBars.Both;
-            this.tbSeaSaveLog.Size = new System.Drawing.Size(1487, 967);
-            this.tbSeaSaveLog.TabIndex = 1;
             // 
             // MainForm
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 20F);
+            this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1511, 1086);
+            this.ClientSize = new System.Drawing.Size(1343, 869);
             this.Controls.Add(this.tabControl1);
             this.KeyPreview = true;
-            this.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.Margin = new System.Windows.Forms.Padding(4);
             this.Name = "MainForm";
             this.Text = "Ioffe nav&meteo stream";
             this.Shown += new System.EventHandler(this.MainForm_Shown);
@@ -1439,18 +1433,16 @@
             this.tpNavAndMeteo.ResumeLayout(false);
             this.tableLayoutPanel1.ResumeLayout(false);
             this.tableLayoutPanel1.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.pbGeoTrack)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pbGraphs)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.trbGeoTrackScale)).EndInit();
             this.groupBox1.ResumeLayout(false);
             this.groupBox1.PerformLayout();
             this.tableLayoutPanel4.ResumeLayout(false);
+            this.tableLayoutPanel5.ResumeLayout(false);
+            this.tableLayoutPanel5.PerformLayout();
             this.tpNavAndMeteoOverview.ResumeLayout(false);
             this.tableLayoutPanel3.ResumeLayout(false);
             this.tableLayoutPanel3.PerformLayout();
-            this.tpSeaSaveStream.ResumeLayout(false);
-            this.tableLayoutPanel2.ResumeLayout(false);
-            this.tableLayoutPanel2.PerformLayout();
             this.ResumeLayout(false);
 
         }
@@ -1488,7 +1480,6 @@
         private System.Windows.Forms.TextBox tbWindSpeedValue;
         private System.Windows.Forms.TextBox tbWindDirectionValue;
         private System.Windows.Forms.TextBox tbRelHumidityValue;
-        private System.Windows.Forms.PictureBox pbGeoTrack;
         private System.Windows.Forms.Label lblPressureGraphTitle;
         private System.Windows.Forms.PictureBox pbGraphs;
         private System.Windows.Forms.TrackBar trbGeoTrackScale;
@@ -1498,12 +1489,6 @@
         private System.Windows.Forms.TextBox tbWaterTemperatureValue;
         private System.Windows.Forms.TextBox tbWaterSalinityValue;
         private System.Windows.Forms.Label lblStatusString;
-        private System.Windows.Forms.TabPage tpSeaSaveStream;
-        private System.Windows.Forms.VScrollBar scrbGeoTrackScrollLatValues;
-        private System.Windows.Forms.HScrollBar scrbGeoTrackScrollLonValues;
-        private System.Windows.Forms.TableLayoutPanel tableLayoutPanel2;
-        private System.Windows.Forms.Button btnStartStopSeaSave;
-        private System.Windows.Forms.TextBox tbSeaSaveLog;
         private MRG.Controls.UI.LoadingCircle wcNavDataSoeedControl;
         private MRG.Controls.UI.LoadingCircle wcMeteoDataSpeedControl;
         private System.Windows.Forms.Button btnCenterToActualPosition;
@@ -1543,7 +1528,10 @@
         private System.Windows.Forms.Button btnGraphZoomIn;
         private System.Windows.Forms.Button btnGraphDefault;
         private System.Windows.Forms.TableLayoutPanel tableLayoutPanel4;
-
+        private YLScsImage.ImagePanel imgPanelGeotrack;
+        private System.Windows.Forms.TableLayoutPanel tableLayoutPanel5;
+        private System.Windows.Forms.Button btnDecreaseShorelineResolution;
+        private System.Windows.Forms.Button btnIncreaseShorelineResolution;
+        private System.Windows.Forms.CheckBox cbNormalizeImage;
     }
 }
-

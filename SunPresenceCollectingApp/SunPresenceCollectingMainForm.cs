@@ -43,6 +43,7 @@ namespace SunPresenceCollectingApp
         private int maxConcurrentBackgroundWorkers = 8;
         private List<string> alreadyMarkedSunDiskConditionFiles = new List<string>();
         private bool bReviewMode = false;
+        private string SerializedDecisionTreePath = "";
 
 
         private ObservableCollection<BackgroundWorker> ocActiveStatsCalculationBgws = new ObservableCollection<BackgroundWorker>();
@@ -944,7 +945,7 @@ namespace SunPresenceCollectingApp
             }
 
 
-
+            // MLdataSourceDirectory
             if (defaultProperties.ContainsKey("MLdataSourceDirectory"))
             {
                 rtbMLdataSourceDirectory.Text = ((string)defaultProperties["MLdataSourceDirectory"]);
@@ -952,9 +953,22 @@ namespace SunPresenceCollectingApp
             else
             {
                 rtbMLdataSourceDirectory.Text = "";
+                defaultProperties.Add("MLdataSourceDirectory", rtbMLdataSourceDirectory.Text);
+                saveDefaultProperties();
             }
 
 
+            //SerializedDecisionTreePath
+            if (defaultProperties.ContainsKey("SerializedDecisionTreePath"))
+            {
+                SerializedDecisionTreePath = ((string)defaultProperties["SerializedDecisionTreePath"]);
+            }
+            else
+            {
+                SerializedDecisionTreePath = rtbOutputDirectory.Text;
+                defaultProperties.Add("SerializedDecisionTreePath", SerializedDecisionTreePath);
+                saveDefaultProperties();
+            }
         }
 
 
@@ -1402,7 +1416,11 @@ namespace SunPresenceCollectingApp
             strSourcePath += (strSourcePath.Last() == '\\') ? ("") : ("\\");
 
 
-            List<string> filesList = new List<string>(Directory.EnumerateFiles(strSourcePath, "*.jpg", SearchOption.TopDirectoryOnly));
+            List<string> filesList =
+                new List<string>(Directory.EnumerateFiles(strSourcePath, "*.jpg",
+                    (cbSearchImagesTopDirectoryOnly.Checked)
+                        ? (SearchOption.TopDirectoryOnly)
+                        : (SearchOption.AllDirectories)));
 
             filesList.RemoveAll(
                 strImgFilename => File.Exists(ConventionalTransitions.ImageGrIxYRGBstatsDataFileName(strImgFilename)));
@@ -1520,13 +1538,44 @@ namespace SunPresenceCollectingApp
         }
 
 
-        private void btnReadContinue(List<Tuple<SkyImageIndexesStatsData, SunDiskConditionData>> lOverallData)
+        private void btnReadContinue(List<Tuple<SkyImageIndexesStatsData, SunDiskConditionData>> lOverallData, string baseDir)
         {
             List<SunDiskConditionData> lSunDiskConditionData =
                     lOverallData.ConvertAll<SunDiskConditionData>(tpl => tpl.Item2);
             List<SkyImageIndexesStatsData> lStatsData =
                 lOverallData.ConvertAll<SkyImageIndexesStatsData>(tpl => tpl.Item1);
 
+            string fNameExistingStatsCollectionTemplate = baseDir + ((baseDir.Last() == '\\') ? ("") : ("\\")) +
+                                                          DateTime.Now.ToString("o").Replace(":", "-") +
+                                                          "-CombinedStatsData-";
+            ServiceTools.WriteObjectToXML(lSunDiskConditionData, fNameExistingStatsCollectionTemplate + "SunDiskConditionData.xml");
+            ServiceTools.WriteObjectToXML(lStatsData, fNameExistingStatsCollectionTemplate + "AllStatsData.xml");
+
+            theLogWindow = ServiceTools.LogAText(theLogWindow,
+                "saved combined stats data file:" + fNameExistingStatsCollectionTemplate + "SunDiskConditionData.xml");
+            theLogWindow = ServiceTools.LogAText(theLogWindow,
+                "saved combined sun disk condition data file:" + fNameExistingStatsCollectionTemplate + "AllStatsData.xml");
+
+
+            modelInputsHeaders = new List<string>(lStatsData[0].DoubleVariablesNames());
+
+            modelInputs =
+                (lStatsData.ConvertAll<double[]>(
+                    statsDatum => statsDatum.ToRawDoubleValuesEnumerable().ToArray<double>())).ToArray();
+
+            //int[] outputs = table.Columns["G"].ToArray<int>();
+            modelOutputs =
+                (lSunDiskConditionData.ConvertAll(sdCondDatum => sdCondDatum.sunDiskCondition)).ToArray();
+
+            theLogWindow = ServiceTools.LogAText(theLogWindow, "finished reading");
+        }
+
+
+
+
+
+        private void btnReadContinue(List<SkyImageIndexesStatsData> lStatsData, List<SunDiskConditionData> lSunDiskConditionData)
+        {
             modelInputsHeaders = new List<string>(lStatsData[0].DoubleVariablesNames());
 
             modelInputs =
@@ -1549,6 +1598,30 @@ namespace SunPresenceCollectingApp
         {
             //List<Tuple<SkyImageIndexesStatsData, SunDiskConditionData>> retData =
             //    new List<Tuple<SkyImageIndexesStatsData, SunDiskConditionData>>();
+
+            IEnumerable<string> fNamesExistingStatsCollections = Directory.EnumerateFiles(baseDir,
+                "*CombinedStatsData*.xml", SearchOption.TopDirectoryOnly);
+            if (fNamesExistingStatsCollections.Any())
+            {
+                IEnumerable<string> fNamesSunDiskConditionData = Directory.EnumerateFiles(baseDir, "*CombinedStatsData-SunDiskConditionData.xml", SearchOption.TopDirectoryOnly);
+                IEnumerable<string> fNamesStatsData = Directory.EnumerateFiles(baseDir, "*CombinedStatsData-AllStatsData.xml", SearchOption.TopDirectoryOnly);
+                List<SkyImageIndexesStatsData> lStatsData =
+                    (List<SkyImageIndexesStatsData>)
+                        ServiceTools.ReadObjectFromXML(fNamesStatsData.ElementAt(0),
+                            typeof (List<SkyImageIndexesStatsData>));
+                List<SunDiskConditionData> lSunDiskConditionData =
+                    (List<SunDiskConditionData>)
+                        ServiceTools.ReadObjectFromXML(fNamesSunDiskConditionData.ElementAt(0),
+                            typeof (List<SunDiskConditionData>));
+                
+                btnReadContinue(lStatsData, lSunDiskConditionData);
+
+                theLogWindow = ServiceTools.LogAText(theLogWindow,
+                    "found previously combined stats data files: " + Environment.NewLine + fNamesStatsData.ElementAt(0) +
+                    Environment.NewLine + fNamesSunDiskConditionData.ElementAt(0));
+
+                return;
+            }
 
             bgwPrecalculatedInformationRead = new BackgroundWorker();
             DoWorkEventHandler bgwPrecalculatedInformationRead_DoWorkHandler = delegate (object currBGWsender, DoWorkEventArgs args)
@@ -1656,10 +1729,10 @@ namespace SunPresenceCollectingApp
                     object[] currentBGWResults = (object[])args.Result;
                     List<Tuple<SkyImageIndexesStatsData, SunDiskConditionData>> retList =
                         currentBGWResults[0] as List<Tuple<SkyImageIndexesStatsData, SunDiskConditionData>>;
-
+                    
                     ThreadSafeOperations.UpdateProgressBar(prgBarMLprogress, 0);
 
-                    btnReadContinue(retList);
+                    btnReadContinue(retList, baseDir);
                 };
             bgwPrecalculatedInformationRead.RunWorkerCompleted += bgwPrecalculatedInformationRead_CompletedHandler;
             bgwPrecalculatedInformationRead.WorkerSupportsCancellation = true;
@@ -1696,6 +1769,16 @@ namespace SunPresenceCollectingApp
                 return;
             }
 
+            string treeFileName = "";
+            IEnumerable<string> filenames = Directory.EnumerateFiles(SerializedDecisionTreePath, "*.dtr",
+                SearchOption.TopDirectoryOnly);
+            if (filenames.Any())
+            {
+                treeFileName = filenames.ElementAt(0);
+                theLogWindow = ServiceTools.LogAText(theLogWindow,
+                    "found precalculated decision tree in file " + treeFileName);
+            }
+
             IEnumerable<IEnumerable<int>> idxesTrainTestSets =
                 MLhelper<SunDiskCondition>.createDataPartitionIndexes(modelOutputs, new[] {0.6d, 0.4d});
             List<Tuple<double[], int>> ienumTplsInputs =
@@ -1726,18 +1809,47 @@ namespace SunPresenceCollectingApp
                 modelInputsHeaders.ConvertAll<DecisionVariable>(strVarName => DecisionVariable.Continuous(strVarName))
                     .ToArray();
 
-            DecisionTree tree = new DecisionTree(vars, Enum.GetNames(typeof(SunDiskCondition)).Length);
             int[] modelOutputsTrainInt = outputsTrain.Apply(x => Convert.ToInt32(x));
             int[] modelOutputsTestInt = outputsTest.Apply(x => Convert.ToInt32(x));
 
-            C45Learning teacher = new C45Learning(tree);
-            double error = teacher.Run(inputsTrain, modelOutputsTrainInt);
+            DecisionTree tree;
+            bool haveToSaveTree = true;
+            if (File.Exists(treeFileName))
+            {
+                tree = DecisionTree.Load(treeFileName);
+                haveToSaveTree = false;
+            }
+            else
+            {
+                tree = new DecisionTree(vars, Enum.GetNames(typeof(SunDiskCondition)).Length);
+                C45Learning teacher = new C45Learning(tree);
+                double error = teacher.Run(inputsTrain, modelOutputsTrainInt);
+                //theLogWindow = ServiceTools.LogAText(theLogWindow, "Estimated error: " + error.ToString("e"));
+            }
+            
             int[] testPredictedOutput = inputsTest.Apply(dArr => tree.Compute(dArr));
 
             decisionTreeView1.TreeSource = tree;
 
             ConfusionMatrix cMatr = new ConfusionMatrix(testPredictedOutput, modelOutputsTestInt);
             dgvPerformance.DataSource = new[] { cMatr };
+
+            theLogWindow = ServiceTools.LogAText(theLogWindow, "out of sample accuracy: " + cMatr.Accuracy.ToString("e"));
+            theLogWindow = ServiceTools.LogAText(theLogWindow, "out of sample error: " + (1.0d-cMatr.Accuracy).ToString("e"));
+
+
+            if (treeFileName == "")
+            {
+                treeFileName = SerializedDecisionTreePath +
+                                  ((SerializedDecisionTreePath.Last() == '\\') ? ("") : ("\\")) + "DecisionTree-" +
+                                  DateTime.Now.ToString("o").Replace(":", "-") + ".dtr";
+            }
+
+            if (haveToSaveTree)
+            {
+                tree.Save(treeFileName);
+                theLogWindow = ServiceTools.LogAText(theLogWindow, "Calculated decision tree saved to: " + treeFileName);
+            }
         }
 
 

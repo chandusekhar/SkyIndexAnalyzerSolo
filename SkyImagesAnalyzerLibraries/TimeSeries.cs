@@ -647,7 +647,6 @@ namespace SkyImagesAnalyzerLibraries
 
 
 
-
         public DenseVector TimeStampsValuesSeconds
         {
             get

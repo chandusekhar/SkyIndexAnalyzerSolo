@@ -106,5 +106,6 @@ namespace SkyImagesAnalyzerLibraries
                                          "-GrIxMedianP5.xml";
             return strImageGrIxMedianP5DataFileName;
         }
+
     }
 }

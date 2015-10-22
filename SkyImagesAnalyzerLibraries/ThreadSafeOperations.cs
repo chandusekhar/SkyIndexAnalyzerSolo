@@ -5,6 +5,7 @@ using System.Windows.Forms;
 using Emgu.CV;
 using Emgu.CV.Structure;
 using MRG.Controls.UI;
+using YLScsImage;
 
 
 namespace SkyImagesAnalyzerLibraries
@@ -23,7 +24,7 @@ namespace SkyImagesAnalyzerLibraries
         delegate void SimpleShowPictureCallback(Form theFormCalling, Image Image2Show, bool NormalizeImage = false);
         delegate void ToggleLabelTextColorCallback(Label lblTarget, Color color);
         delegate void SetLoadingCircleStateCallback(LoadingCircle lcControl, bool bActive, bool bVisible, Color controlColor, int rotationSpeed = 100);
-
+        delegate int[] UpdateImagePanelCallback(ImagePanel imagePanelControl, Image Image2Show, bool NormalizeImage = false);
 
 
 
@@ -197,6 +198,51 @@ namespace SkyImagesAnalyzerLibraries
                 else
                 {
                     PictureBoxControl.Image = Image2Show;
+                    retval[0] = Image2Show.Width;
+                    retval[1] = Image2Show.Height;
+                }
+            }
+            return retval;
+        }
+
+
+
+
+
+
+        public static int[] UpdateImagePanel(ImagePanel imagePabelControl, Image Image2Show,
+            bool NormalizeImage = false)
+        {
+            int[] retval = new int[2]; retval[0] = 0; retval[1] = 0;
+            int[] nullretval = new int[2]; retval[0] = 0; retval[1] = 0;
+            if (imagePabelControl.InvokeRequired)
+            {
+                UpdateImagePanelCallback d = UpdateImagePanel;
+                imagePabelControl.Invoke(d, new object[] { imagePabelControl, Image2Show, NormalizeImage });
+            }
+            else
+            {
+                if (Image2Show == null)
+                {
+                    imagePabelControl.Image = null;
+                    return nullretval;
+                }
+                if (NormalizeImage)
+                {
+                    int th_width = imagePabelControl.Width;
+                    int th_height = (int)(Math.Round(((double)th_width / (double)Image2Show.Width) * (double)Image2Show.Height, 0));
+                    if (th_height > imagePabelControl.Height)
+                    {
+                        th_height = imagePabelControl.Height;
+                        th_width = (int)Math.Round((double)th_height * (double)Image2Show.Width / (double)Image2Show.Height);
+                    }
+                    imagePabelControl.Image = (Bitmap)Image2Show.GetThumbnailImage(th_width, th_height, null, IntPtr.Zero);
+                    retval[0] = th_width;
+                    retval[1] = th_height;
+                }
+                else
+                {
+                    imagePabelControl.Image = (Bitmap)Image2Show;
                     retval[0] = Image2Show.Width;
                     retval[1] = Image2Show.Height;
                 }

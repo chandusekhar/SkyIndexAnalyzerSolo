@@ -20,7 +20,10 @@ namespace SkyImagesAnalyzerLibraries
     }
 
 
-    public class AccelerometerData
+
+
+
+    public class AccelerometerData : CsvExportable
     {
         private int accX;
         private int accY;
@@ -32,6 +35,12 @@ namespace SkyImagesAnalyzerLibraries
         public int devID = 0;
 
         public bool validAccData = true;
+
+
+        #region for CSV export
+        public int CloudCamDevID => devID;
+        #endregion
+
 
         public int AccX
         {
@@ -475,7 +484,7 @@ namespace SkyImagesAnalyzerLibraries
 
 
 
-    public class GyroData
+    public class GyroData : CsvExportable
     {
         private int gyroX;
         private int gyroY;
@@ -485,6 +494,12 @@ namespace SkyImagesAnalyzerLibraries
         private double gyroDoubleZ;
         private double gyroMagnitude;
         public int devID = 0;
+
+
+        #region for CSV export
+        public int CloudCamDevID => devID;
+        #endregion
+
 
         public int GyroX
         {
@@ -807,7 +822,7 @@ namespace SkyImagesAnalyzerLibraries
 
 
 
-    public class MagnetometerData
+    public class MagnetometerData : CsvExportable
     {
         private int magnX;
         private int magnY;
@@ -817,6 +832,12 @@ namespace SkyImagesAnalyzerLibraries
         private double magnDoubleZ;
         private double magnMagnitude;
         public int devID = 0;
+
+
+        #region for CSV export
+        public int CloudCamDevID => devID;
+        #endregion
+
 
         public int MagnX
         {
@@ -1144,7 +1165,7 @@ namespace SkyImagesAnalyzerLibraries
 
 
 
-    public class GPSdata
+    public class GPSdata : CsvExportable
     {
         public string GPSstring;
         public double lat = 0.0d;
@@ -1163,6 +1184,21 @@ namespace SkyImagesAnalyzerLibraries
         public int devID = 0;
 
         public GPSdatasources dataSource = GPSdatasources.CloudCamArduinoGPS;
+
+
+
+        #region for CSV export
+
+        public string GpsString => GPSstring;
+        public DateTime DateTimeUTC => dateTimeUTC;
+        public double IoffeHeadingTrue => IOFFEdataHeadingTrue;
+        public double IoffeHeadingGyro => IOFFEdataHeadingGyro;
+        public double IoffeSpeedKnots => IOFFEdataSpeedKnots;
+        public double IoffeDepth => IOFFEdataDepth;
+        public int CloudCamDevID => devID;
+        public GPSdatasources DataSource => dataSource;
+
+        #endregion
 
 
 
@@ -1557,9 +1593,22 @@ namespace SkyImagesAnalyzerLibraries
 
         public static DenseMatrix ToDenseMatrix(IEnumerable<GPSdata> lGPSData)
         {
-            IEnumerable<DenseVector> lDVdata =
+            List<DenseVector> lDVdata =
                 new List<GPSdata>(lGPSData).ConvertAll(gpsDat => gpsDat.ToDenseVector());
-            DenseMatrix dmRetMatr = DenseMatrix.OfRows(lDVdata.Count(), lDVdata.ElementAt(0).Count, lDVdata);
+            IEnumerable<int> lDVdataVectorsLenth = lDVdata.ConvertAll<int>(dv => dv.Count);
+            int maxVectorLength = lDVdataVectorsLenth.Max();
+            lDVdata = lDVdata.ConvertAll(dv =>
+            {
+                if (dv.Count < maxVectorLength)
+                {
+                    List<double> dvValuesList = new List<double>(dv);
+                    DenseVector dvValuesToAppend = DenseVector.Create(maxVectorLength - dv.Count, 0.0d);
+                    dvValuesList.AddRange(new List<double>(dvValuesToAppend));
+                    return DenseVector.OfEnumerable(dvValuesList);
+                }
+                else return dv;
+            });
+            DenseMatrix dmRetMatr = DenseMatrix.OfRows(lDVdata.Count(), maxVectorLength, lDVdata);
             return dmRetMatr;
         }
 
@@ -1604,10 +1653,20 @@ namespace SkyImagesAnalyzerLibraries
                 try
                 {
                     lat = source.ElementAt(0);
+                    if (Math.Abs(lat) > 9000.0d)
+                    {
+                        validGPSdata = false;
+                        return;
+                    }
                     latHemisphere = (lat >= 0.0d) ? ("N") : ("S");
                     lat = Math.Abs(lat);
 
                     lon = source.ElementAt(1);
+                    if (Math.Abs(lon) > 18000.0d)
+                    {
+                        validGPSdata = false;
+                        return;
+                    }
                     lonHemisphere = (lon >= 0.0d) ? ("E") : ("W");
                     lon = Math.Abs(lon);
                 }
@@ -1617,15 +1676,25 @@ namespace SkyImagesAnalyzerLibraries
                     return;
                 }
             }
-            if (source.Count() == 3) // devID specified
+            else if (source.Count() == 3) // devID specified
             {
                 try
                 {
                     lat = source.ElementAt(0);
+                    if (Math.Abs(lat) > 9000.0d)
+                    {
+                        validGPSdata = false;
+                        return;
+                    }
                     latHemisphere = (lat >= 0.0d) ? ("N") : ("S");
                     lat = Math.Abs(lat);
 
                     lon = source.ElementAt(1);
+                    if (Math.Abs(lon) > 18000.0d)
+                    {
+                        validGPSdata = false;
+                        return;
+                    }
                     lonHemisphere = (lon >= 0.0d) ? ("E") : ("W");
                     lon = Math.Abs(lon);
 
@@ -1646,10 +1715,20 @@ namespace SkyImagesAnalyzerLibraries
                 try
                 {
                     lat = source.ElementAt(0);
+                    if (Math.Abs(lat) > 9000.0d)
+                    {
+                        validGPSdata = false;
+                        return;
+                    }
                     latHemisphere = (lat >= 0.0d) ? ("N") : ("S");
                     lat = Math.Abs(lat);
 
                     lon = source.ElementAt(1);
+                    if (Math.Abs(lon) > 18000.0d)
+                    {
+                        validGPSdata = false;
+                        return;
+                    }
                     lonHemisphere = (lon >= 0.0d) ? ("E") : ("W");
                     lon = Math.Abs(lon);
 
@@ -1673,10 +1752,20 @@ namespace SkyImagesAnalyzerLibraries
                 try
                 {
                     lat = source.ElementAt(0);
+                    if (Math.Abs(lat) > 9000.0d)
+                    {
+                        validGPSdata = false;
+                        return;
+                    }
                     latHemisphere = (lat >= 0.0d) ? ("N") : ("S");
                     lat = Math.Abs(lat);
 
                     lon = source.ElementAt(1);
+                    if (Math.Abs(lon) > 18000.0d)
+                    {
+                        validGPSdata = false;
+                        return;
+                    }
                     lonHemisphere = (lon >= 0.0d) ? ("E") : ("W");
                     lon = Math.Abs(lon);
 
@@ -1718,7 +1807,7 @@ namespace SkyImagesAnalyzerLibraries
             return
                 dmSource.EnumerateRowsIndexed()
                     .Select(tplRow => new GPSdata(tplRow.Item2))
-                    .Where(newgpsDatum => newgpsDatum != null)
+                    .Where(newgpsDatum => (newgpsDatum != null) && (newgpsDatum.validGPSdata))
                     .ToList();
         }
 
@@ -1742,7 +1831,7 @@ namespace SkyImagesAnalyzerLibraries
 
 
 
-    public class MeteoData
+    public class MeteoData : CsvExportable
     {
         public double pressure = 1000.0d; //mB, 100Pa, hPa
         public double Rhumidity = 90.0d;
@@ -1753,6 +1842,22 @@ namespace SkyImagesAnalyzerLibraries
         public double waterSalinity = 0.0d;
         //public Dictionary<string, double> additionalUnknownData = new Dictionary<string, double>();
         public bool validMeteoData = true;
+
+
+
+        #region for CSV export
+
+        public double Pressure => pressure;
+        public double RelHumidity => Rhumidity;
+        public double AirTemperature => airTemperature;
+        public double WindSpeed => windSpeed;
+        public double WindDirection => windDirection;
+        public double WaterTemperature => waterTemperature;
+        public double WaterSalinity => waterSalinity;
+
+        #endregion
+
+
 
 
         public MeteoData()
@@ -2077,7 +2182,6 @@ namespace SkyImagesAnalyzerLibraries
 
             return listRetMeteodata;
         }
-
     }
 
 
@@ -2429,7 +2533,7 @@ namespace SkyImagesAnalyzerLibraries
 
 
     [Serializable]
-    public class SunDiskConditionData
+    public class SunDiskConditionData : CsvExportable
     {
         public string filename { get; set; }
         public SunDiskCondition sunDiskCondition { get; set; }
@@ -2455,56 +2559,57 @@ namespace SkyImagesAnalyzerLibraries
 
 
 
+        #region // obsolete - moved to CsvExportable abstract class
+        //public string ToCSV()
+        //{
+        //    List<string> lStrPropertiesNames = ServiceTools.GetPropertiesNamesOfClass(this);
+        //    List<string> lStrValues = new List<string>();
+        //    string retStr = "";
 
-        public string ToCSV()
-        {
-            List<string> lStrPropertiesNames = ServiceTools.GetPropertiesNamesOfClass(this);
-            List<string> lStrValues = new List<string>();
-            string retStr = "";
+        //    foreach (string propertyName in lStrPropertiesNames)
+        //    {
 
-            foreach (string propertyName in lStrPropertiesNames)
-            {
+        //        object propValue = GetType().GetProperty(propertyName).GetValue(this, null);
+        //        if ((propValue.GetType() == typeof(double)) || (propValue.GetType() == typeof(float)))
+        //        {
+        //            lStrValues.Add(propValue.ToString().Replace(",", "."));
+        //        }
+        //        else
+        //        {
+        //            lStrValues.Add(propValue.ToString());
+        //        }
 
-                object propValue = GetType().GetProperty(propertyName).GetValue(this, null);
-                if ((propValue.GetType() == typeof(double)) || (propValue.GetType() == typeof(float)))
-                {
-                    lStrValues.Add(propValue.ToString().Replace(",", "."));
-                }
-                else
-                {
-                    lStrValues.Add(propValue.ToString());
-                }
+        //    }
 
-            }
-
-            retStr = String.Join(",", lStrValues.ToArray<string>());
-            return retStr;
-        }
-
-
+        //    retStr = String.Join(",", lStrValues.ToArray<string>());
+        //    return retStr;
+        //}
 
 
-        public string CSVHeader()
-        {
-            List<string> lStrPropertiesNames = ServiceTools.GetPropertiesNamesOfClass(this);
-            List<string> lStrHeaders = new List<string>();
-            string retStr = "";
 
-            foreach (string propertyName in lStrPropertiesNames)
-            {
-                lStrHeaders.Add(propertyName);
-            }
 
-            retStr = String.Join(",", lStrHeaders.ToArray<string>());
-            return retStr;
-        }
+        //public string CSVHeader()
+        //{
+        //    List<string> lStrPropertiesNames = ServiceTools.GetPropertiesNamesOfClass(this);
+        //    List<string> lStrHeaders = new List<string>();
+        //    string retStr = "";
+
+        //    foreach (string propertyName in lStrPropertiesNames)
+        //    {
+        //        lStrHeaders.Add(propertyName);
+        //    }
+
+        //    retStr = String.Join(",", lStrHeaders.ToArray<string>());
+        //    return retStr;
+        //}
+        #endregion // obsolete - moved to CsvExportable abstract class
     }
 
 
 
 
     [Serializable]
-    public class SkyImageMedianPerc5Data
+    public class SkyImageMedianPerc5Data : CsvExportable
     {
         public string FileName { get; set; }
         public double GrIxStatsMedian { get; set; }
@@ -2534,49 +2639,52 @@ namespace SkyImagesAnalyzerLibraries
 
 
 
+        #region // obsolete - moved to CsvExportable abstract class
 
-        public string ToCSV()
-        {
-            List<string> lStrPropertiesNames = ServiceTools.GetPropertiesNamesOfClass(this);
-            List<string> lStrValues = new List<string>();
-            string retStr = "";
+        //public string ToCSV()
+        //{
+        //    List<string> lStrPropertiesNames = ServiceTools.GetPropertiesNamesOfClass(this);
+        //    List<string> lStrValues = new List<string>();
+        //    string retStr = "";
 
-            foreach (string propertyName in lStrPropertiesNames)
-            {
+        //    foreach (string propertyName in lStrPropertiesNames)
+        //    {
 
-                object propValue = GetType().GetProperty(propertyName).GetValue(this, null);
-                if ((propValue.GetType() == typeof(double)) || (propValue.GetType() == typeof(float)))
-                {
-                    lStrValues.Add(propValue.ToString().Replace(",", "."));
-                }
-                else
-                {
-                    lStrValues.Add(propValue.ToString());
-                }
+        //        object propValue = GetType().GetProperty(propertyName).GetValue(this, null);
+        //        if ((propValue.GetType() == typeof(double)) || (propValue.GetType() == typeof(float)))
+        //        {
+        //            lStrValues.Add(propValue.ToString().Replace(",", "."));
+        //        }
+        //        else
+        //        {
+        //            lStrValues.Add(propValue.ToString());
+        //        }
 
-            }
+        //    }
 
-            retStr = String.Join(",", lStrValues.ToArray<string>());
-            return retStr;
-        }
-
-
+        //    retStr = String.Join(",", lStrValues.ToArray<string>());
+        //    return retStr;
+        //}
 
 
-        public string CSVHeader()
-        {
-            List<string> lStrPropertiesNames = ServiceTools.GetPropertiesNamesOfClass(this);
-            List<string> lStrHeaders = new List<string>();
-            string retStr = "";
 
-            foreach (string propertyName in lStrPropertiesNames)
-            {
-                lStrHeaders.Add(propertyName);
-            }
 
-            retStr = String.Join(",", lStrHeaders.ToArray<string>());
-            return retStr;
-        }
+        //public string CSVHeader()
+        //{
+        //    List<string> lStrPropertiesNames = ServiceTools.GetPropertiesNamesOfClass(this);
+        //    List<string> lStrHeaders = new List<string>();
+        //    string retStr = "";
+
+        //    foreach (string propertyName in lStrPropertiesNames)
+        //    {
+        //        lStrHeaders.Add(propertyName);
+        //    }
+
+        //    retStr = String.Join(",", lStrHeaders.ToArray<string>());
+        //    return retStr;
+        //}
+
+        #endregion // obsolete - moved to CsvExportable abstract class
     }
 
 
@@ -2588,7 +2696,7 @@ namespace SkyImagesAnalyzerLibraries
 
 
     [Serializable]
-    public class SkyImageVariableStatsData
+    public class SkyImageVariableStatsData : ICsvExportable
     {
         public string varname { get; set; }
         public string FileName { get; set; }
@@ -2769,7 +2877,7 @@ namespace SkyImagesAnalyzerLibraries
 
 
     [Serializable]
-    public class SkyImageIndexesStatsData
+    public class SkyImageIndexesStatsData : ICsvExportable
     {
         public string FileName { get; set; }
         public SkyImageVariableStatsData grixStatsData { get; set; }
@@ -2891,5 +2999,4 @@ namespace SkyImagesAnalyzerLibraries
             return lStrHeaders;
         }
     }
-
 }

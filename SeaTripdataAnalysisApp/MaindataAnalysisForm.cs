@@ -32,13 +32,95 @@ namespace SeaTripdataAnalysisApp
         private TimeSeries<GPSdata> gpsSeriaData = new TimeSeries<GPSdata>();
         private List<TimeSeries<double>> accSubseries = new List<TimeSeries<double>>();
         //private List<TimeSeries<GPSdata>> gpsSubseries = new List<TimeSeries<GPSdata>>();
+        private Dictionary<string, object> defaultProperties = new Dictionary<string, object>();
+        private string defaultPropertiesXMLfileName = "";
 
 
 
         public MaindataAnalysisForm()
         {
             InitializeComponent();
+
+            readDefaultProperties();
         }
+
+
+
+        private void saveDefaultProperties()
+        {
+            ServiceTools.WriteDictionaryToXml(defaultProperties, defaultPropertiesXMLfileName, false);
+        }
+
+
+
+        private void readDefaultProperties()
+        {
+            defaultProperties = new Dictionary<string, object>();
+            defaultPropertiesXMLfileName = Directory.GetCurrentDirectory() +
+                                         "\\settings\\SeaTripdataAnalysisApp-Settings.xml";
+
+            if (!File.Exists(defaultPropertiesXMLfileName))
+            {
+                defaultProperties = new Dictionary<string, object>();
+                defaultProperties.Add("DefaultExportDestinationDirectory", Directory.GetCurrentDirectory());
+                saveDefaultProperties();
+            }
+
+            defaultProperties = ServiceTools.ReadDictionaryFromXML(defaultPropertiesXMLfileName);
+
+            string CurDir = Directory.GetCurrentDirectory();
+            string currExportDirectoryPath = "";
+            if (defaultProperties.ContainsKey("DefaultExportDestinationDirectory"))
+            {
+                currExportDirectoryPath = (string)defaultProperties["DefaultExportDestinationDirectory"];
+            }
+            else
+            {
+                currExportDirectoryPath = CurDir+"\\data-export\\";
+            }
+            ThreadSafeOperations.SetTextTB(rtbExportDestinationDirectoryPath, currExportDirectoryPath, false);
+
+
+
+
+            if (defaultProperties.ContainsKey("InitialLogFilesDirectory"))
+            {
+                tbLogFilesPath.Text = (string)defaultProperties["InitialLogFilesDirectory"];
+                strLogFilesDirectory = (string)defaultProperties["InitialLogFilesDirectory"];
+            }
+            else
+            {
+                defaultProperties.Add("InitialLogFilesDirectory", "");
+                saveDefaultProperties();
+            }
+
+
+            if (defaultProperties.ContainsKey("ProcessedDataOutputDirectory"))
+            {
+                tbOutputDirectoryValue.Text = (string)defaultProperties["ProcessedDataOutputDirectory"];
+                strOutputDirectory = (string)defaultProperties["ProcessedDataOutputDirectory"];
+            }
+            else
+            {
+                defaultProperties.Add("ProcessedDataOutputDirectory", "");
+                saveDefaultProperties();
+            }
+
+
+            if (defaultProperties.ContainsKey("SourceDataDirectory"))
+            {
+                tbSourceDirectoryValue.Text = (string)defaultProperties["SourceDataDirectory"];
+                strSourceDirectory = (string)defaultProperties["SourceDataDirectory"];
+            }
+            else
+            {
+                defaultProperties.Add("SourceDataDirectory", "");
+                saveDefaultProperties();
+            }
+        }
+
+
+
 
         private void MaindataAnalysisForm_KeyPress(object sender, KeyPressEventArgs e)
         {
@@ -251,47 +333,13 @@ namespace SeaTripdataAnalysisApp
 
 
 
-        private void MaindataAnalysisForm_Load(object sender, EventArgs e)
-        {
-
-            Dictionary<string, object> dictGeneralSettings = ServiceTools.ReadDictionaryFromXML(generalSettingsFilename);
-            string strLogFilesDirectoryLoaded = dictGeneralSettings["InitialLogFilesDirectory"] as string;
-            if (strLogFilesDirectoryLoaded != null)
-            {
-                strLogFilesDirectory = strLogFilesDirectoryLoaded;
-                tbLogFilesPath.Text = strLogFilesDirectory;
-            }
-            string strOutputDirectoryLoaded = dictGeneralSettings["ProcessedDataOutputDirectory"] as string;
-            if (strOutputDirectoryLoaded != null)
-            {
-                strOutputDirectory = strOutputDirectoryLoaded;
-                tbOutputDirectoryValue.Text = strOutputDirectory;
-            }
-            string strSourceDataDirectoryLoaded = dictGeneralSettings["SourceDataDirectory"] as string;
-            if (strSourceDataDirectoryLoaded != null)
-            {
-                strSourceDirectory = strSourceDataDirectoryLoaded;
-                tbSourceDirectoryValue.Text = strSourceDirectory;
-            }
-        }
+        
 
 
-
-
-
-
-        private void SaveSettings()
-        {
-            Dictionary<string, object> dictDataToSave = new Dictionary<string, object>();
-            dictDataToSave.Add("InitialLogFilesDirectory", strLogFilesDirectory);
-            dictDataToSave.Add("ProcessedDataOutputDirectory", strOutputDirectory);
-            dictDataToSave.Add("SourceDataDirectory", strSourceDirectory);
-            ServiceTools.WriteDictionaryToXml(dictDataToSave, generalSettingsFilename, false);
-        }
-
+        
         private void MaindataAnalysisForm_FormClosing(object sender, System.Windows.Forms.FormClosingEventArgs e)
         {
-            SaveSettings();
+            saveDefaultProperties();
         }
 
         private void btnBrowseSourceDirectory_Click(object sender, EventArgs e)
@@ -592,6 +640,126 @@ namespace SeaTripdataAnalysisApp
 
             bgwConvert.RunWorkerAsync(bgwConvertArgs);
         }
+
+
+
+
+
+        #region Export data
+
+        private void btnSelectExportDirectory_Click(object sender, EventArgs e)
+        {
+            FolderBrowserDialog dlg = new FolderBrowserDialog();
+            dlg.ShowNewFolderButton = true;
+            if (rtbExportDestinationDirectoryPath.Text != "")
+            {
+                if (Directory.Exists(rtbExportDestinationDirectoryPath.Text))
+                {
+                    dlg.SelectedPath = rtbExportDestinationDirectoryPath.Text;
+                }
+            }
+            DialogResult dlgRes = dlg.ShowDialog();
+            if (dlgRes != DialogResult.OK)
+            {
+                return;
+            }
+            else
+            {
+                string path = dlg.SelectedPath;
+                rtbExportDestinationDirectoryPath.Text = path;
+                if (!defaultProperties.ContainsKey("DefaultExportDestinationDirectory"))
+                {
+                    defaultProperties.Add("DefaultExportDestinationDirectory", path);
+                }
+                else
+                    defaultProperties["DefaultExportDestinationDirectory"] = path;
+
+                saveDefaultProperties();
+            }
+        }
+
+
+        private void btnPerformExport_Click(object sender, EventArgs e)
+        {
+            string outPath = rtbExportDestinationDirectoryPath.Text;
+            outPath += (outPath.Last() == '\\') ? ("") : ("\\");
+
+            if (cbExportMeteoData.Checked)
+            {
+                //export meteo data
+
+                BackgroundWorker bgwReadMeteoData = new BackgroundWorker();
+                bgwReadMeteoData.WorkerSupportsCancellation = false;
+                bgwReadMeteoData.WorkerReportsProgress = true;
+                bgwReadMeteoData.DoWork += delegate(object currBGWsender, DoWorkEventArgs args)
+                {
+                    BackgroundWorker selfWorker = currBGWsender as BackgroundWorker;
+                    TimeSeries<MeteoData> tsMeteoData = new TimeSeries<MeteoData>();
+                    string[] meteoDataFiles = Directory.GetFiles(Directory.GetCurrentDirectory() + "\\logs\\",
+                        "*MeteoDataLog*.nc");
+                    int totalFilesCount = meteoDataFiles.Count();
+                    int readFiles = 0;
+                    foreach (string meteoDataFileName in meteoDataFiles)
+                    {
+                        ThreadSafeOperations.SetText(lblStatusBar, "reading " + Path.GetFileName(meteoDataFileName), false);
+
+                        Dictionary<string, object> currMeteoFileData =
+                            NetCDFoperations.ReadDataFromFile(meteoDataFileName);
+
+                        List<MeteoData> currFileMeteoData =
+                            MeteoData.OfDenseMatrix(currMeteoFileData["MeteoData"] as DenseMatrix);
+                        List<long> currFileDatetimeLong = new List<long>(currMeteoFileData["DateTime"] as long[]);
+                        List<DateTime> currFileDatetime =
+                            currFileDatetimeLong.ConvertAll<DateTime>(longDT => new DateTime(longDT));
+                        tsMeteoData.AddSubseriaData(currFileMeteoData, currFileDatetime, true);
+
+                        readFiles++;
+
+                        selfWorker.ReportProgress(Convert.ToInt32(100.0d*readFiles/totalFilesCount));
+                    }
+
+                    args.Result = new object[] {tsMeteoData};
+                };
+
+
+                bgwReadMeteoData.ProgressChanged += delegate(object currBGWsender, ProgressChangedEventArgs args)
+                {
+                    ThreadSafeOperations.UpdateProgressBar(prbExportProgress, args.ProgressPercentage);
+                };
+
+
+                bgwReadMeteoData.RunWorkerCompleted += delegate(object currBGWsender, RunWorkerCompletedEventArgs args)
+                {
+                    ThreadSafeOperations.UpdateProgressBar(prbExportProgress, 0);
+
+                    TimeSeries<MeteoData> tsMeteoData = (args.Result as object[])[0] as TimeSeries<MeteoData>;
+
+                    List<Tuple<DateTime, MeteoData>> lTplMeteoData =
+                        tsMeteoData.TimeStamps.Zip(tsMeteoData.DataValues,
+                            (dt, dat) => new Tuple<DateTime, MeteoData>(dt, dat)).ToList();
+
+                    if (cbExportFormatCSV.Checked)
+                    {
+                        List<string> tsMeteoDataCSV = lTplMeteoData.ConvertAll<string>(tpl => tpl.Item1.ToString("o") + "," + tpl.Item2.ToCSV());
+                        string tsMeteoDataCSVForFile = String.Join(Environment.NewLine, tsMeteoDataCSV.ToArray<string>());
+                        ServiceTools.logToTextFile(outPath + "MeteoData.csv", "DateTime," + lTplMeteoData[0].Item2.CSVHeader() + Environment.NewLine, false, false);
+                        ServiceTools.logToTextFile(outPath + "MeteoData.csv", tsMeteoDataCSVForFile, true, false);
+                    }
+
+                };
+
+
+
+                ThreadSafeOperations.SetText(lblStatusBar, "meteo data read started", false);
+                bgwReadMeteoData.RunWorkerAsync();
+                
+
+            }
+        }
+
+
+        #endregion
+
 
     }
 }

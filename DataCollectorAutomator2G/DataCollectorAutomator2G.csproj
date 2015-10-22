@@ -79,6 +79,10 @@
       <HintPath>..\packages\MathNet.Numerics.3.5.0\lib\net40\MathNet.Numerics.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="MRG.Controls.UI">
+      <HintPath>..\..\MRG.Controls.UI\bin\MRG.Controls.UI.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Data" />
@@ -143,11 +147,6 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\MRG.Controls.UI\MRG.Controls.UI.csproj">
-      <Project>{48e18b56-4c37-4d69-aba7-429c42b45aac}</Project>
-      <Name>MRG.Controls.UI</Name>
-      <Private>False</Private>
-    </ProjectReference>
     <ProjectReference Include="..\SkyImagesAnalyzerLibraries\SkyImagesAnalyzerLibraries.csproj">
       <Project>{7beac8e4-e53f-466a-b824-1fe69e60d114}</Project>
       <Name>SkyImagesAnalyzerLibraries</Name>

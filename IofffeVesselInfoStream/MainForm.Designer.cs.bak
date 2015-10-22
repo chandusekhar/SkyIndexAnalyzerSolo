@@ -1,0 +1,492 @@
+﻿namespace IofffeVesselInfoStream
+{
+    partial class MainForm
+    {
+        /// <summary>
+        /// Требуется переменная конструктора.
+        /// </summary>
+        private System.ComponentModel.IContainer components = null;
+
+        /// <summary>
+        /// Освободить все используемые ресурсы.
+        /// </summary>
+        /// <param name="disposing">истинно, если управляемый ресурс должен быть удален; иначе ложно.</param>
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing && (components != null))
+            {
+                components.Dispose();
+            }
+            base.Dispose(disposing);
+        }
+
+        #region Код, автоматически созданный конструктором форм Windows
+
+        /// <summary>
+        /// Обязательный метод для поддержки конструктора - не изменяйте
+        /// содержимое данного метода при помощи редактора кода.
+        /// </summary>
+        private void InitializeComponent()
+        {
+            this.bgwSocketStreamReader = new System.ComponentModel.BackgroundWorker();
+            this.bgwGeotrackRenderer = new System.ComponentModel.BackgroundWorker();
+            this.bgwStreamDataProcessing = new System.ComponentModel.BackgroundWorker();
+            this.tabControl1 = new System.Windows.Forms.TabControl();
+            this.tpNavAndMeteo = new System.Windows.Forms.TabPage();
+            this.tpNavAndMeteoOverview = new System.Windows.Forms.TabPage();
+            this.tableLayoutPanel3 = new System.Windows.Forms.TableLayoutPanel();
+            this.label2 = new System.Windows.Forms.Label();
+            this.maskedTextBox1 = new System.Windows.Forms.MaskedTextBox();
+            this.btnFindInfo = new System.Windows.Forms.Button();
+            this.btnWriteFile = new System.Windows.Forms.Button();
+            this.lblFoundNavDataTitle = new System.Windows.Forms.Label();
+            this.lblFoundMeteoDataTitle = new System.Windows.Forms.Label();
+            this.prbSearchingProgress = new System.Windows.Forms.ProgressBar();
+            this.lblFoundNavData = new System.Windows.Forms.TextBox();
+            this.lblFoundMetData = new System.Windows.Forms.TextBox();
+            this.lblPlusOneHour = new System.Windows.Forms.Button();
+            this.btnPlusOneDay = new System.Windows.Forms.Button();
+            this.label3 = new System.Windows.Forms.Label();
+            this.maskedTextBox2 = new System.Windows.Forms.MaskedTextBox();
+            this.btnFindIOFFEdataFiles = new System.Windows.Forms.Button();
+            this.btnRepairAndWriteNCfile = new System.Windows.Forms.Button();
+            this.prbMissingInfoSearchingProgress = new System.Windows.Forms.ProgressBar();
+            this.tpSeaSaveStream = new System.Windows.Forms.TabPage();
+            this.tableLayoutPanel2 = new System.Windows.Forms.TableLayoutPanel();
+            this.btnStartStopSeaSave = new System.Windows.Forms.Button();
+            this.tbSeaSaveLog = new System.Windows.Forms.TextBox();
+            this.tabControl1.SuspendLayout();
+            this.tpNavAndMeteoOverview.SuspendLayout();
+            this.tableLayoutPanel3.SuspendLayout();
+            this.tpSeaSaveStream.SuspendLayout();
+            this.tableLayoutPanel2.SuspendLayout();
+            this.SuspendLayout();
+            // 
+            // bgwSocketStreamReader
+            // 
+            this.bgwSocketStreamReader.WorkerSupportsCancellation = true;
+            this.bgwSocketStreamReader.DoWork += new System.ComponentModel.DoWorkEventHandler(this.bgwSocketStreamReader_DoWork);
+            // 
+            // bgwGeotrackRenderer
+            // 
+            this.bgwGeotrackRenderer.WorkerSupportsCancellation = true;
+            this.bgwGeotrackRenderer.DoWork += new System.ComponentModel.DoWorkEventHandler(this.bgwGraphsRenderer_DoWork);
+            // 
+            // bgwStreamDataProcessing
+            // 
+            this.bgwStreamDataProcessing.WorkerSupportsCancellation = true;
+            this.bgwStreamDataProcessing.DoWork += new System.ComponentModel.DoWorkEventHandler(this.bgwStreamDataProcessing_DoWork);
+            // 
+            // tabControl1
+            // 
+            this.tabControl1.Controls.Add(this.tpNavAndMeteo);
+            this.tabControl1.Controls.Add(this.tpNavAndMeteoOverview);
+            this.tabControl1.Controls.Add(this.tpSeaSaveStream);
+            this.tabControl1.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.tabControl1.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.tabControl1.Location = new System.Drawing.Point(0, 0);
+            this.tabControl1.Margin = new System.Windows.Forms.Padding(4);
+            this.tabControl1.Name = "tabControl1";
+            this.tabControl1.SelectedIndex = 0;
+            this.tabControl1.Size = new System.Drawing.Size(1343, 928);
+            this.tabControl1.TabIndex = 0;
+            // 
+            // tpNavAndMeteo
+            // 
+            this.tpNavAndMeteo.BackColor = System.Drawing.SystemColors.Control;
+            this.tpNavAndMeteo.Location = new System.Drawing.Point(4, 29);
+            this.tpNavAndMeteo.Margin = new System.Windows.Forms.Padding(4);
+            this.tpNavAndMeteo.Name = "tpNavAndMeteo";
+            this.tpNavAndMeteo.Padding = new System.Windows.Forms.Padding(4);
+            this.tpNavAndMeteo.Size = new System.Drawing.Size(1335, 895);
+            this.tpNavAndMeteo.TabIndex = 0;
+            this.tpNavAndMeteo.Text = "Nav&Meteo";
+            // 
+            // tpNavAndMeteoOverview
+            // 
+            this.tpNavAndMeteoOverview.BackColor = System.Drawing.SystemColors.Control;
+            this.tpNavAndMeteoOverview.Controls.Add(this.tableLayoutPanel3);
+            this.tpNavAndMeteoOverview.Location = new System.Drawing.Point(4, 29);
+            this.tpNavAndMeteoOverview.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
+            this.tpNavAndMeteoOverview.Name = "tpNavAndMeteoOverview";
+            this.tpNavAndMeteoOverview.Padding = new System.Windows.Forms.Padding(3, 2, 3, 2);
+            this.tpNavAndMeteoOverview.Size = new System.Drawing.Size(1335, 895);
+            this.tpNavAndMeteoOverview.TabIndex = 2;
+            this.tpNavAndMeteoOverview.Text = "Overview nav & meteo data";
+            // 
+            // tableLayoutPanel3
+            // 
+            this.tableLayoutPanel3.ColumnCount = 10;
+            this.tableLayoutPanel3.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 10F));
+            this.tableLayoutPanel3.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 10F));
+            this.tableLayoutPanel3.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 10F));
+            this.tableLayoutPanel3.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 10F));
+            this.tableLayoutPanel3.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 10F));
+            this.tableLayoutPanel3.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 10F));
+            this.tableLayoutPanel3.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 10F));
+            this.tableLayoutPanel3.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 10F));
+            this.tableLayoutPanel3.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 10F));
+            this.tableLayoutPanel3.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 10F));
+            this.tableLayoutPanel3.Controls.Add(this.label2, 0, 0);
+            this.tableLayoutPanel3.Controls.Add(this.maskedTextBox1, 4, 0);
+            this.tableLayoutPanel3.Controls.Add(this.btnFindInfo, 7, 0);
+            this.tableLayoutPanel3.Controls.Add(this.btnWriteFile, 9, 0);
+            this.tableLayoutPanel3.Controls.Add(this.lblFoundNavDataTitle, 0, 3);
+            this.tableLayoutPanel3.Controls.Add(this.lblFoundMeteoDataTitle, 0, 4);
+            this.tableLayoutPanel3.Controls.Add(this.prbSearchingProgress, 0, 2);
+            this.tableLayoutPanel3.Controls.Add(this.lblFoundNavData, 1, 3);
+            this.tableLayoutPanel3.Controls.Add(this.lblFoundMetData, 1, 4);
+            this.tableLayoutPanel3.Controls.Add(this.lblPlusOneHour, 5, 1);
+            this.tableLayoutPanel3.Controls.Add(this.btnPlusOneDay, 4, 1);
+            this.tableLayoutPanel3.Controls.Add(this.label3, 0, 6);
+            this.tableLayoutPanel3.Controls.Add(this.maskedTextBox2, 4, 6);
+            this.tableLayoutPanel3.Controls.Add(this.btnFindIOFFEdataFiles, 6, 6);
+            this.tableLayoutPanel3.Controls.Add(this.btnRepairAndWriteNCfile, 6, 7);
+            this.tableLayoutPanel3.Controls.Add(this.prbMissingInfoSearchingProgress, 0, 8);
+            this.tableLayoutPanel3.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.tableLayoutPanel3.Location = new System.Drawing.Point(3, 2);
+            this.tableLayoutPanel3.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
+            this.tableLayoutPanel3.Name = "tableLayoutPanel3";
+            this.tableLayoutPanel3.RowCount = 10;
+            this.tableLayoutPanel3.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 48F));
+            this.tableLayoutPanel3.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 48F));
+            this.tableLayoutPanel3.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 16F));
+            this.tableLayoutPanel3.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 144F));
+            this.tableLayoutPanel3.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 144F));
+            this.tableLayoutPanel3.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 50F));
+            this.tableLayoutPanel3.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 48F));
+            this.tableLayoutPanel3.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 48F));
+            this.tableLayoutPanel3.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 16F));
+            this.tableLayoutPanel3.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 50F));
+            this.tableLayoutPanel3.Size = new System.Drawing.Size(1329, 891);
+            this.tableLayoutPanel3.TabIndex = 0;
+            // 
+            // label2
+            // 
+            this.label2.AutoSize = true;
+            this.tableLayoutPanel3.SetColumnSpan(this.label2, 4);
+            this.label2.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.label2.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.label2.Location = new System.Drawing.Point(3, 0);
+            this.label2.Name = "label2";
+            this.label2.Size = new System.Drawing.Size(522, 48);
+            this.label2.TabIndex = 0;
+            this.label2.Text = "Form data record log file for date-time:";
+            this.label2.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            // 
+            // maskedTextBox1
+            // 
+            this.tableLayoutPanel3.SetColumnSpan(this.maskedTextBox1, 3);
+            this.maskedTextBox1.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.maskedTextBox1.Font = new System.Drawing.Font("Microsoft Sans Serif", 16F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.maskedTextBox1.Location = new System.Drawing.Point(531, 2);
+            this.maskedTextBox1.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
+            this.maskedTextBox1.Mask = "0000-00-00T90:00:00";
+            this.maskedTextBox1.Name = "maskedTextBox1";
+            this.maskedTextBox1.Size = new System.Drawing.Size(390, 38);
+            this.maskedTextBox1.TabIndex = 1;
+            // 
+            // btnFindInfo
+            // 
+            this.tableLayoutPanel3.SetColumnSpan(this.btnFindInfo, 2);
+            this.btnFindInfo.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.btnFindInfo.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnFindInfo.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.btnFindInfo.Location = new System.Drawing.Point(927, 2);
+            this.btnFindInfo.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
+            this.btnFindInfo.Name = "btnFindInfo";
+            this.btnFindInfo.Size = new System.Drawing.Size(258, 44);
+            this.btnFindInfo.TabIndex = 2;
+            this.btnFindInfo.Text = "find closest records";
+            this.btnFindInfo.UseVisualStyleBackColor = true;
+            this.btnFindInfo.Click += new System.EventHandler(this.btnFindInfo_Click);
+            // 
+            // btnWriteFile
+            // 
+            this.btnWriteFile.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.btnWriteFile.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnWriteFile.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.btnWriteFile.Location = new System.Drawing.Point(1191, 2);
+            this.btnWriteFile.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
+            this.btnWriteFile.Name = "btnWriteFile";
+            this.btnWriteFile.Size = new System.Drawing.Size(135, 44);
+            this.btnWriteFile.TabIndex = 3;
+            this.btnWriteFile.Text = "write";
+            this.btnWriteFile.UseVisualStyleBackColor = true;
+            this.btnWriteFile.Click += new System.EventHandler(this.btnWriteFile_Click);
+            // 
+            // lblFoundNavDataTitle
+            // 
+            this.lblFoundNavDataTitle.AutoSize = true;
+            this.lblFoundNavDataTitle.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.lblFoundNavDataTitle.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.lblFoundNavDataTitle.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.lblFoundNavDataTitle.Location = new System.Drawing.Point(3, 112);
+            this.lblFoundNavDataTitle.Name = "lblFoundNavDataTitle";
+            this.lblFoundNavDataTitle.Size = new System.Drawing.Size(126, 144);
+            this.lblFoundNavDataTitle.TabIndex = 6;
+            this.lblFoundNavDataTitle.Text = "nav:";
+            this.lblFoundNavDataTitle.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            // 
+            // lblFoundMeteoDataTitle
+            // 
+            this.lblFoundMeteoDataTitle.AutoSize = true;
+            this.lblFoundMeteoDataTitle.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.lblFoundMeteoDataTitle.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.lblFoundMeteoDataTitle.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.lblFoundMeteoDataTitle.Location = new System.Drawing.Point(3, 256);
+            this.lblFoundMeteoDataTitle.Name = "lblFoundMeteoDataTitle";
+            this.lblFoundMeteoDataTitle.Size = new System.Drawing.Size(126, 144);
+            this.lblFoundMeteoDataTitle.TabIndex = 7;
+            this.lblFoundMeteoDataTitle.Text = "meteo:";
+            this.lblFoundMeteoDataTitle.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            // 
+            // prbSearchingProgress
+            // 
+            this.tableLayoutPanel3.SetColumnSpan(this.prbSearchingProgress, 10);
+            this.prbSearchingProgress.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.prbSearchingProgress.Location = new System.Drawing.Point(3, 98);
+            this.prbSearchingProgress.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
+            this.prbSearchingProgress.Name = "prbSearchingProgress";
+            this.prbSearchingProgress.Size = new System.Drawing.Size(1323, 12);
+            this.prbSearchingProgress.TabIndex = 8;
+            // 
+            // lblFoundNavData
+            // 
+            this.tableLayoutPanel3.SetColumnSpan(this.lblFoundNavData, 9);
+            this.lblFoundNavData.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.lblFoundNavData.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.lblFoundNavData.Location = new System.Drawing.Point(135, 114);
+            this.lblFoundNavData.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
+            this.lblFoundNavData.Multiline = true;
+            this.lblFoundNavData.Name = "lblFoundNavData";
+            this.lblFoundNavData.ReadOnly = true;
+            this.lblFoundNavData.ScrollBars = System.Windows.Forms.ScrollBars.Both;
+            this.lblFoundNavData.Size = new System.Drawing.Size(1191, 140);
+            this.lblFoundNavData.TabIndex = 9;
+            this.lblFoundNavData.Text = "---";
+            // 
+            // lblFoundMetData
+            // 
+            this.tableLayoutPanel3.SetColumnSpan(this.lblFoundMetData, 9);
+            this.lblFoundMetData.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.lblFoundMetData.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.lblFoundMetData.Location = new System.Drawing.Point(135, 258);
+            this.lblFoundMetData.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
+            this.lblFoundMetData.Multiline = true;
+            this.lblFoundMetData.Name = "lblFoundMetData";
+            this.lblFoundMetData.ReadOnly = true;
+            this.lblFoundMetData.ScrollBars = System.Windows.Forms.ScrollBars.Both;
+            this.lblFoundMetData.Size = new System.Drawing.Size(1191, 140);
+            this.lblFoundMetData.TabIndex = 10;
+            this.lblFoundMetData.Text = "---";
+            // 
+            // lblPlusOneHour
+            // 
+            this.lblPlusOneHour.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.lblPlusOneHour.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.lblPlusOneHour.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.lblPlusOneHour.Location = new System.Drawing.Point(663, 50);
+            this.lblPlusOneHour.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
+            this.lblPlusOneHour.Name = "lblPlusOneHour";
+            this.lblPlusOneHour.Size = new System.Drawing.Size(126, 44);
+            this.lblPlusOneHour.TabIndex = 11;
+            this.lblPlusOneHour.Text = "+1 hour";
+            this.lblPlusOneHour.UseVisualStyleBackColor = true;
+            this.lblPlusOneHour.Click += new System.EventHandler(this.lblPlusOneHour_Click);
+            // 
+            // btnPlusOneDay
+            // 
+            this.btnPlusOneDay.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.btnPlusOneDay.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnPlusOneDay.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.btnPlusOneDay.Location = new System.Drawing.Point(531, 50);
+            this.btnPlusOneDay.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
+            this.btnPlusOneDay.Name = "btnPlusOneDay";
+            this.btnPlusOneDay.Size = new System.Drawing.Size(126, 44);
+            this.btnPlusOneDay.TabIndex = 12;
+            this.btnPlusOneDay.Text = "+1 day";
+            this.btnPlusOneDay.UseVisualStyleBackColor = true;
+            this.btnPlusOneDay.Click += new System.EventHandler(this.btnPlusOneDay_Click);
+            // 
+            // label3
+            // 
+            this.label3.AutoSize = true;
+            this.label3.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.tableLayoutPanel3.SetColumnSpan(this.label3, 4);
+            this.label3.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.label3.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.label3.Location = new System.Drawing.Point(3, 589);
+            this.label3.Name = "label3";
+            this.label3.Size = new System.Drawing.Size(522, 48);
+            this.label3.TabIndex = 13;
+            this.label3.Text = "find and repair lost data records for date:";
+            this.label3.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            // 
+            // maskedTextBox2
+            // 
+            this.tableLayoutPanel3.SetColumnSpan(this.maskedTextBox2, 2);
+            this.maskedTextBox2.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.maskedTextBox2.Font = new System.Drawing.Font("Microsoft Sans Serif", 16F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.maskedTextBox2.Location = new System.Drawing.Point(531, 591);
+            this.maskedTextBox2.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
+            this.maskedTextBox2.Mask = "0000-00-00";
+            this.maskedTextBox2.Name = "maskedTextBox2";
+            this.maskedTextBox2.Size = new System.Drawing.Size(258, 38);
+            this.maskedTextBox2.TabIndex = 14;
+            // 
+            // btnFindIOFFEdataFiles
+            // 
+            this.tableLayoutPanel3.SetColumnSpan(this.btnFindIOFFEdataFiles, 4);
+            this.btnFindIOFFEdataFiles.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.btnFindIOFFEdataFiles.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnFindIOFFEdataFiles.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.btnFindIOFFEdataFiles.Location = new System.Drawing.Point(795, 591);
+            this.btnFindIOFFEdataFiles.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
+            this.btnFindIOFFEdataFiles.Name = "btnFindIOFFEdataFiles";
+            this.btnFindIOFFEdataFiles.Size = new System.Drawing.Size(531, 44);
+            this.btnFindIOFFEdataFiles.TabIndex = 15;
+            this.btnFindIOFFEdataFiles.Text = "find IOFFE data files";
+            this.btnFindIOFFEdataFiles.UseVisualStyleBackColor = true;
+            this.btnFindIOFFEdataFiles.Click += new System.EventHandler(this.btnFindIOFFEdataFiles_Click);
+            // 
+            // btnRepairAndWriteNCfile
+            // 
+            this.tableLayoutPanel3.SetColumnSpan(this.btnRepairAndWriteNCfile, 4);
+            this.btnRepairAndWriteNCfile.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.btnRepairAndWriteNCfile.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnRepairAndWriteNCfile.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.btnRepairAndWriteNCfile.Location = new System.Drawing.Point(795, 639);
+            this.btnRepairAndWriteNCfile.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
+            this.btnRepairAndWriteNCfile.Name = "btnRepairAndWriteNCfile";
+            this.btnRepairAndWriteNCfile.Size = new System.Drawing.Size(531, 44);
+            this.btnRepairAndWriteNCfile.TabIndex = 16;
+            this.btnRepairAndWriteNCfile.Text = "re-form nc-file with additional data";
+            this.btnRepairAndWriteNCfile.UseVisualStyleBackColor = true;
+            this.btnRepairAndWriteNCfile.Click += new System.EventHandler(this.btnRepairAndWriteNCfile_Click);
+            // 
+            // prbMissingInfoSearchingProgress
+            // 
+            this.tableLayoutPanel3.SetColumnSpan(this.prbMissingInfoSearchingProgress, 10);
+            this.prbMissingInfoSearchingProgress.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.prbMissingInfoSearchingProgress.Location = new System.Drawing.Point(3, 687);
+            this.prbMissingInfoSearchingProgress.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
+            this.prbMissingInfoSearchingProgress.Name = "prbMissingInfoSearchingProgress";
+            this.prbMissingInfoSearchingProgress.Size = new System.Drawing.Size(1323, 12);
+            this.prbMissingInfoSearchingProgress.TabIndex = 17;
+            // 
+            // tpSeaSaveStream
+            // 
+            this.tpSeaSaveStream.BackColor = System.Drawing.SystemColors.Control;
+            this.tpSeaSaveStream.Controls.Add(this.tableLayoutPanel2);
+            this.tpSeaSaveStream.Location = new System.Drawing.Point(4, 29);
+            this.tpSeaSaveStream.Margin = new System.Windows.Forms.Padding(4);
+            this.tpSeaSaveStream.Name = "tpSeaSaveStream";
+            this.tpSeaSaveStream.Padding = new System.Windows.Forms.Padding(4);
+            this.tpSeaSaveStream.Size = new System.Drawing.Size(1335, 895);
+            this.tpSeaSaveStream.TabIndex = 1;
+            this.tpSeaSaveStream.Text = "SeaSave";
+            // 
+            // tableLayoutPanel2
+            // 
+            this.tableLayoutPanel2.ColumnCount = 2;
+            this.tableLayoutPanel2.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50F));
+            this.tableLayoutPanel2.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50F));
+            this.tableLayoutPanel2.Controls.Add(this.btnStartStopSeaSave, 0, 0);
+            this.tableLayoutPanel2.Controls.Add(this.tbSeaSaveLog, 0, 1);
+            this.tableLayoutPanel2.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.tableLayoutPanel2.Location = new System.Drawing.Point(4, 4);
+            this.tableLayoutPanel2.Margin = new System.Windows.Forms.Padding(4);
+            this.tableLayoutPanel2.Name = "tableLayoutPanel2";
+            this.tableLayoutPanel2.RowCount = 2;
+            this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 49F));
+            this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
+            this.tableLayoutPanel2.Size = new System.Drawing.Size(1327, 887);
+            this.tableLayoutPanel2.TabIndex = 0;
+            // 
+            // btnStartStopSeaSave
+            // 
+            this.tableLayoutPanel2.SetColumnSpan(this.btnStartStopSeaSave, 2);
+            this.btnStartStopSeaSave.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.btnStartStopSeaSave.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnStartStopSeaSave.Font = new System.Drawing.Font("Microsoft Sans Serif", 15.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.btnStartStopSeaSave.ForeColor = System.Drawing.Color.Red;
+            this.btnStartStopSeaSave.Location = new System.Drawing.Point(4, 4);
+            this.btnStartStopSeaSave.Margin = new System.Windows.Forms.Padding(4);
+            this.btnStartStopSeaSave.Name = "btnStartStopSeaSave";
+            this.btnStartStopSeaSave.Size = new System.Drawing.Size(1319, 41);
+            this.btnStartStopSeaSave.TabIndex = 0;
+            this.btnStartStopSeaSave.Text = "CONNECT SeaSave";
+            this.btnStartStopSeaSave.UseVisualStyleBackColor = true;
+            // 
+            // tbSeaSaveLog
+            // 
+            this.tableLayoutPanel2.SetColumnSpan(this.tbSeaSaveLog, 2);
+            this.tbSeaSaveLog.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.tbSeaSaveLog.Location = new System.Drawing.Point(4, 53);
+            this.tbSeaSaveLog.Margin = new System.Windows.Forms.Padding(4);
+            this.tbSeaSaveLog.Multiline = true;
+            this.tbSeaSaveLog.Name = "tbSeaSaveLog";
+            this.tbSeaSaveLog.ScrollBars = System.Windows.Forms.ScrollBars.Both;
+            this.tbSeaSaveLog.Size = new System.Drawing.Size(1319, 830);
+            this.tbSeaSaveLog.TabIndex = 1;
+            // 
+            // MainForm
+            // 
+            this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
+            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.ClientSize = new System.Drawing.Size(1343, 928);
+            this.Controls.Add(this.tabControl1);
+            this.KeyPreview = true;
+            this.Margin = new System.Windows.Forms.Padding(4);
+            this.Name = "MainForm";
+            this.Text = "Ioffe nav&meteo stream";
+            this.Shown += new System.EventHandler(this.MainForm_Shown);
+            this.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.MainForm_KeyPress);
+            this.tabControl1.ResumeLayout(false);
+            this.tpNavAndMeteoOverview.ResumeLayout(false);
+            this.tableLayoutPanel3.ResumeLayout(false);
+            this.tableLayoutPanel3.PerformLayout();
+            this.tpSeaSaveStream.ResumeLayout(false);
+            this.tableLayoutPanel2.ResumeLayout(false);
+            this.tableLayoutPanel2.PerformLayout();
+            this.ResumeLayout(false);
+
+        }
+
+        #endregion
+
+        private System.ComponentModel.BackgroundWorker bgwSocketStreamReader;
+        private System.ComponentModel.BackgroundWorker bgwGeotrackRenderer;
+        private System.ComponentModel.BackgroundWorker bgwStreamDataProcessing;
+        private System.Windows.Forms.TabControl tabControl1;
+        private System.Windows.Forms.TabPage tpNavAndMeteo;
+        private MRG.Controls.UI.LoadingCircle wcUpdatimgGeoTrack;
+        private System.Windows.Forms.TabPage tpSeaSaveStream;
+        private System.Windows.Forms.TableLayoutPanel tableLayoutPanel2;
+        private System.Windows.Forms.Button btnStartStopSeaSave;
+        private System.Windows.Forms.TextBox tbSeaSaveLog;
+        private MRG.Controls.UI.LoadingCircle wcNavDataSoeedControl;
+        private MRG.Controls.UI.LoadingCircle wcMeteoDataSpeedControl;
+        private System.Windows.Forms.TabPage tpNavAndMeteoOverview;
+        private System.Windows.Forms.TableLayoutPanel tableLayoutPanel3;
+        private System.Windows.Forms.Label label2;
+        private System.Windows.Forms.MaskedTextBox maskedTextBox1;
+        private System.Windows.Forms.Button btnFindInfo;
+        private System.Windows.Forms.Button btnWriteFile;
+        private System.Windows.Forms.Label lblFoundNavDataTitle;
+        private System.Windows.Forms.Label lblFoundMeteoDataTitle;
+        private System.Windows.Forms.ProgressBar prbSearchingProgress;
+        private System.Windows.Forms.TextBox lblFoundNavData;
+        private System.Windows.Forms.TextBox lblFoundMetData;
+        private System.Windows.Forms.Button lblPlusOneHour;
+        private System.Windows.Forms.Button btnPlusOneDay;
+        private System.Windows.Forms.Label label3;
+        private System.Windows.Forms.MaskedTextBox maskedTextBox2;
+        private System.Windows.Forms.Button btnFindIOFFEdataFiles;
+        private System.Windows.Forms.Button btnRepairAndWriteNCfile;
+        private System.Windows.Forms.ProgressBar prbMissingInfoSearchingProgress;
+        private MRG.Controls.UI.LoadingCircle wcUpdatimgGraph;
+    }
+}
+
