@@ -104,15 +104,21 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\components\EmguCV-2.4.10-compiled\bin\debug\x64\Emgu.Util.dll</HintPath>
     </Reference>
-    <Reference Include="ILNumerics, Version=4.7.0.0, Culture=neutral, PublicKeyToken=8d9bf50ef854734d, processorArchitecture=MSIL">
+    <Reference Include="ILNumerics.Computing, Version=4.9.0.0, Culture=neutral, PublicKeyToken=8d9bf50ef854734d, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>C:\Program Files (x86)\ILNumerics\ILNumerics Ultimate VS Standard Edition\bin\ILNumerics.dll</HintPath>
-      <Private>True</Private>
+      <HintPath>C:\Program Files (x86)\ILNumerics\ILNumerics Ultimate VS\bin\ILNumerics.Computing.dll</HintPath>
     </Reference>
-    <Reference Include="ILNumerics.IO.HDF5, Version=4.7.0.0, Culture=neutral, PublicKeyToken=85055996c33d20cc, processorArchitecture=MSIL">
+    <Reference Include="ILNumerics.Core, Version=4.9.0.0, Culture=neutral, PublicKeyToken=9651adc37f12bb00, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>C:\Program Files (x86)\ILNumerics\ILNumerics Ultimate VS Standard Edition\bin\ILNumerics.IO.HDF5.dll</HintPath>
-      <Private>True</Private>
+      <HintPath>C:\Program Files (x86)\ILNumerics\ILNumerics Ultimate VS\bin\ILNumerics.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="ILNumerics.Drawing, Version=4.9.0.0, Culture=neutral, PublicKeyToken=e22c8a010c3b081a, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>C:\Program Files (x86)\ILNumerics\ILNumerics Ultimate VS\bin\ILNumerics.Drawing.dll</HintPath>
+    </Reference>
+    <Reference Include="ILNumerics.IO.HDF5, Version=4.9.0.0, Culture=neutral, PublicKeyToken=85055996c33d20cc, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>C:\Program Files (x86)\ILNumerics\ILNumerics Ultimate VS\bin\ILNumerics.IO.HDF5.dll</HintPath>
     </Reference>
     <Reference Include="MathNet.Numerics, Version=3.5.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -126,6 +132,14 @@
     <Reference Include="MRG.Controls.UI, Version=1.0.5740.34405, Culture=neutral, processorArchitecture=AMD64">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\MRG.Controls.UI\bin\MRG.Controls.UI.dll</HintPath>
+    </Reference>
+    <Reference Include="OpenTK, Version=1.1.0.0, Culture=neutral, PublicKeyToken=bad199fe84eb3df4, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>C:\Program Files (x86)\ILNumerics\ILNumerics Ultimate VS\bin\OpenTK.dll</HintPath>
+    </Reference>
+    <Reference Include="OpenTK.GLControl, Version=1.1.0.0, Culture=neutral, PublicKeyToken=bad199fe84eb3df4, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>C:\Program Files (x86)\ILNumerics\ILNumerics Ultimate VS\bin\OpenTK.GLControl.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Configuration" />
@@ -178,6 +192,7 @@
     </Compile>
     <Compile Include="HistogramDataAndProperties.cs" />
     <Compile Include="IcsvExportable.cs" />
+    <Compile Include="ILNumerics_deploy\ILNHelper.cs" />
     <Compile Include="IncomingUDPmessageBoundle.cs" />
     <Compile Include="InteractiveImage.cs" />
     <Compile Include="IoffeVesselDataReader.cs" />
@@ -288,6 +303,7 @@
     <EmbeddedResource Include="HistogramCalcAndShowForm.resx">
       <DependentUpon>HistogramCalcAndShowForm.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="ILNumerics_deploy\ilnumerics.lic" />
     <EmbeddedResource Include="MultipleProgressIndicatingForm.resx">
       <DependentUpon>MultipleProgressIndicatingForm.cs</DependentUpon>
     </EmbeddedResource>
@@ -321,6 +337,8 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
+    <None Include="ILNumerics_deploy\ILNImports1.targets" />
+    <None Include="ILNumerics_deploy\ILNImports2.targets" />
     <None Include="matlab_jet.rgb">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
@@ -388,6 +406,8 @@
     </PropertyGroup>
     <Error Condition="!Exists('..\packages\Accord.3.0.2\build\Accord.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Accord.3.0.2\build\Accord.targets'))" />
   </Target>
+  <Import Project="ILNumerics_deploy\ILNImports1.targets" Condition="$(ILNLicCompile) != 'true'" />
+  <Import Project="ILNumerics_deploy\ILNImports2.targets" Condition="$(ILNLicCompile) == 'true'" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">
