@@ -1,0 +1,15 @@
+<?xml version="1.0" standalone="yes"?>
+<DataSet xmlns="NetFrameWork">
+  <table>
+    <key>ImagesBasePath</key>
+    <value>D:\_gulevlab\SkyImagesAnalysis_appData\AI44\v01-selected\</value>
+  </table>
+  <table>
+    <key>imageYRGBstatsXMLdataFilesDirectory</key>
+    <value>D:\_gulevlab\SkyImagesAnalysis_appData\AI44\stats\GrIxYRGB\</value>
+  </table>
+  <table>
+    <key>strConcurrentGPSdataXMLfilesPath</key>
+    <value>D:\_gulevlab\SkyImagesAnalysis_appData\AI44\ConcurrentGPSdata\</value>
+  </table>
+</DataSet>

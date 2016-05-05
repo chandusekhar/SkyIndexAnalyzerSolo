@@ -276,7 +276,7 @@ namespace SkyImagesAnalyzerLibraries
             //dRulerValueGap = (dRulerValueGap < 1.0d) ? (1.0d) : dRulerValueGap;
             int deciGap = Convert.ToInt32(Math.Truncate(Math.Log(dRulerValueGap, 2.0d)));
             double rulerValueGap = Math.Pow(2.0, (double)deciGap);
-            double lowerMarkerValue = overallFuncMin - Math.IEEERemainder(overallFuncMin, rulerValueGap);
+            double lowerMarkerValue = overallFuncMin - overallFuncMin%rulerValueGap;// Math.IEEERemainder(overallFuncMin, rulerValueGap);
             lowerMarkerValue = (lowerMarkerValue < overallFuncMin) ? (lowerMarkerValue + rulerValueGap) : (lowerMarkerValue);
 
             List<double> yMarkersValues = new List<double>();
@@ -355,7 +355,7 @@ namespace SkyImagesAnalyzerLibraries
                 //int deciGapX = Convert.ToInt32(Math.Truncate(Math.Log(dRulerValueGapX, 2.0d)));
                 //rulerValueGapX = Math.Pow(2.0, (double)deciGapX);
                 rulerValueGapX = dRulerValueGapX;
-                lowerMarkerValueX = xSpaceMin - Math.IEEERemainder(xSpaceMin, rulerValueGapX);
+                lowerMarkerValueX = xSpaceMin - (xSpaceMin % rulerValueGapX); // Math.IEEERemainder(xSpaceMin, rulerValueGapX);
                 lowerMarkerValueX = (lowerMarkerValueX < xSpaceMin) ? (lowerMarkerValueX + rulerValueGapX) : (lowerMarkerValueX);
                 
                 double firstMarkerValueX = lowerMarkerValueX;
@@ -386,6 +386,11 @@ namespace SkyImagesAnalyzerLibraries
                 if (totalTextBarsWidth > pictureWidth - leftServiceSpaceGapX - rightServiceSpaceGapX)
                 {
                     dMarkersCountX = dMarkersCountX - 1.0d;
+                    if (dMarkersCountX <=2)
+                    {
+                        dMarkersCountX = 2.0d;
+                        markersCountRight = true;
+                    }
                 }
                 else
                 {

@@ -360,30 +360,39 @@ namespace SkyImagesAnalyzer
 
 
             imageConditionAndData theResultvar = null;
+            bool cbApplyMaskVal = true;
             if (theOKbutton == btnOK1)
             {
                 //bmRes1 = imgP.tmpImageBitmap();
                 theResultvar = result1;
                 //result1.DmSourceData = (MathNet.Numerics.LinearAlgebra.Double.DenseMatrix)imgP.eval(formulaString, channelDataR.DmSourceData, channelDataG.DmSourceData, channelDataB.DmSourceData, currentStatsTextbox).Clone();
+                cbApplyMaskVal = cbRes1ApplyMask.Checked;
             }
             else if (theOKbutton == btnOK2)
             {
                 //bmRes2 = imgP.tmpImageBitmap();
                 theResultvar = result2;
                 //result2.DmSourceData = (DenseMatrix)imgP.eval(formulaString, channelDataR.DmSourceData, channelDataG.DmSourceData, channelDataB.DmSourceData, currentStatsTextbox).Clone();
+                cbApplyMaskVal = cbRes2ApplyMask.Checked;
             }
             else if (theOKbutton == btnOK3)
             {
                 //bmRes3 = imgP.tmpImageBitmap();
                 theResultvar = result3;
                 //result3.DmSourceData = (DenseMatrix)imgP.eval(formulaString, channelDataR.DmSourceData, channelDataG.DmSourceData, channelDataB.DmSourceData, currentStatsTextbox).Clone();
+                cbApplyMaskVal = cbRes3ApplyMask.Checked;
             }
             //imgP.Dispose();
             DenseMatrix dmres =
                 (DenseMatrix)
                     imgP.eval(formulaString, channelDataR.DmSourceData, channelDataG.DmSourceData,
                         channelDataB.DmSourceData, currentStatsTextbox).Clone();
-            dmres = (DenseMatrix)dmres.PointwiseMultiply(imgP.dmSignificantMaskCircled(95.0d));
+
+            if (cbApplyMaskVal)
+            {
+                dmres = (DenseMatrix)dmres.PointwiseMultiply(imgP.dmSignificantMaskCircled(95.0d));
+            }
+
             DenseMatrix dmEdgesCut = DenseMatrix.Create(dmres.RowCount, dmres.ColumnCount, new Func<int, int, double>(
                 (row, col) =>
                 {

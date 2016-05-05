@@ -1,15 +1,5 @@
 ﻿<?xml version='1.0' encoding='utf-8'?>
-<SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="FilesFilteringApp.Properties" GeneratedClassName="Settings">
+<SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)">
   <Profiles />
-  <Settings>
-    <Setting Name="FromPath" Type="System.String" Scope="User">
-      <Value Profile="(Default)">D:\_gulevlab\SkyImagesAnalysis_appData\AI45-total\ID1\</Value>
-    </Setting>
-    <Setting Name="ToPath" Type="System.String" Scope="User">
-      <Value Profile="(Default)">D:\_gulevlab\SkyImagesAnalysis_appData\AI45-with-concurrent-data\input\</Value>
-    </Setting>
-    <Setting Name="FromConcurrentPath" Type="System.String" Scope="User">
-      <Value Profile="(Default)">D:\_gulevlab\SkyImagesAnalysis_appData\AI45-total\ID1\concurrentdata\</Value>
-    </Setting>
-  </Settings>
+  <Settings />
 </SettingsFile>

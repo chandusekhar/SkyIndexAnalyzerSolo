@@ -1,0 +1,27 @@
+<?xml version="1.0" standalone="yes"?>
+<DataSet xmlns="NetFrameWork">
+  <table>
+    <key>ImagesBasePath</key>
+    <value>D:\_gulevlab\SkyImagesAnalysis_appData\Sun-Condition-data-collection\AI49-total\images\</value>
+  </table>
+  <table>
+    <key>imageYRGBstatsXMLdataFilesDirectory</key>
+    <value>D:\_gulevlab\SkyImagesAnalysis_appData\Sun-Condition-data-collection\AI49-total\stats\GrIxYRGB\</value>
+  </table>
+  <table>
+    <key>imageMP5statsXMLdataFilesDirectory</key>
+    <value>D:\_gulevlab\SkyImagesAnalysis_appData\Sun-Condition-data-collection\AI49-total\stats\MP5stats\</value>
+  </table>
+  <table>
+    <key>maxConcurrentImagesProcessing</key>
+    <value>4</value>
+  </table>
+  <table>
+    <key>ImagesRoundMasksXMLfilesMappingList</key>
+    <value>D:\_gulevlab\SkyImagesAnalysis\_DBGbin\settings\ImagesRoundMasksXMLfilesMappingList.csv</value>
+  </table>
+  <table>
+    <key>strPerformanceCountersStatsFile</key>
+    <value>D:\_gulevlab\SkyImagesAnalysis\_DBGbin\logs\ImagesStatsCalculatingApp-perf-data.csv</value>
+  </table>
+</DataSet>

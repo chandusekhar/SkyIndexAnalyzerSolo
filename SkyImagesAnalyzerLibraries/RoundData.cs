@@ -147,6 +147,20 @@ namespace SkyImagesAnalyzerLibraries
         }
 
 
+
+
+        public string ToCSVstring(string separator=";")
+        {
+            if (!IsNull)
+            {
+                return "" + dCenterX + separator + dCenterY + separator + dRadius;
+            }
+            else return "N/A";
+        }
+
+
+
+
         public bool IsNull
         {
             get { return nullCircle; }

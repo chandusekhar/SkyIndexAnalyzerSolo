@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">x86</Platform>
@@ -62,6 +62,9 @@
   </PropertyGroup>
   <PropertyGroup />
   <PropertyGroup />
+  <PropertyGroup>
+    <StartupObject>DataCollectorAutomator.Program</StartupObject>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="Emgu.CV">
       <HintPath>..\..\components\EmguCV-2.4.10-compiled\bin\debug\x64\Emgu.CV.dll</HintPath>
@@ -80,7 +83,7 @@
       <Private>False</Private>
     </Reference>
     <Reference Include="MRG.Controls.UI">
-      <HintPath>..\..\MRG.Controls.UI\bin\MRG.Controls.UI.dll</HintPath>
+      <HintPath>..\..\components\MRG.Controls.UI\bin\MRG.Controls.UI.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="System" />

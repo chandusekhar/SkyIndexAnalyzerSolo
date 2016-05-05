@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -12,7 +13,9 @@ using System.Windows.Forms;
 using Emgu.CV;
 using Emgu.CV.Structure;
 using MathNet.Numerics.LinearAlgebra.Double;
+using SkyImagesAnalyzer;
 using SkyImagesAnalyzerLibraries;
+using SolarPositioning;
 
 namespace CloudCamsDataAnalysis
 {
@@ -30,6 +33,8 @@ namespace CloudCamsDataAnalysis
         private Rectangle partialImgID2Rect;
         private RoundData rdImgID1 = null;
         private RoundData rdImgID2 = null;
+        private RoundData rdImgID1SunElevation = null;
+        private RoundData rdImgID2SunElevation = null;
         private string imgID1filename = "";
         private string imgID2filename = "";
 
@@ -44,6 +49,11 @@ namespace CloudCamsDataAnalysis
         private PointD pC2ID2 = new PointD();
 
         private List<string> lProcessedFiles = new List<string>();
+
+        private Dictionary<string, object> defaultProperties = new Dictionary<string, object>();
+        private string defaultPropertiesXMLfileName = "";
+        private bool SaveSunLocationsOnAutomaticDetection = true;
+        private string strConcurrentDataXMLfilesPath = "";
 
 
         public MainForm()
@@ -75,6 +85,12 @@ namespace CloudCamsDataAnalysis
                 wholeImgID1Copy.Draw(rdImgID1_halfRadius.CircleF(), new Bgr(Color.Magenta),
                     Convert.ToInt32(Math.Sqrt(wholeImgID1.Size.Width * wholeImgID1.Size.Height) / 300.0d));
                 wholeImgID1Copy.Draw(rdImgID1_CenterPoint.CircleF(), new Bgr(Color.Magenta), 0);
+
+                if (rdImgID1SunElevation != null)
+                {
+                    wholeImgID1Copy.Draw(rdImgID1SunElevation.CircleF(), new Bgr(Color.Yellow),
+                        Convert.ToInt32(Math.Sqrt(wholeImgID1.Size.Width * wholeImgID1.Size.Height) / 300.0d));
+                }
             }
 
             if (partialImgID1Rect.Size == wholeImgID1Copy.Size)
@@ -118,6 +134,12 @@ namespace CloudCamsDataAnalysis
                 wholeImgID2Copy.Draw(rdImgID2_halfRadius.CircleF(), new Bgr(Color.Magenta),
                     Convert.ToInt32(Math.Sqrt(wholeImgID1.Size.Width * wholeImgID1.Size.Height) / 300.0d));
                 wholeImgID2Copy.Draw(rdImgID2_CenterPoint.CircleF(), new Bgr(Color.Magenta), 0);
+
+                if (rdImgID2SunElevation != null)
+                {
+                    wholeImgID2Copy.Draw(rdImgID2SunElevation.CircleF(), new Bgr(Color.Yellow),
+                        Convert.ToInt32(Math.Sqrt(wholeImgID2.Size.Width * wholeImgID2.Size.Height) / 300.0d));
+                }
             }
 
             if (partialImgID2Rect.Size == wholeImgID2.Size)
@@ -163,23 +185,7 @@ namespace CloudCamsDataAnalysis
 
         private void MainForm_Load(object sender, EventArgs e)
         {
-            string generalSettingsFilename = Directory.GetCurrentDirectory() +
-                                      "\\settings\\CloudCamsDataAnalysisAppSettings.xml";
-            string savedDataFileName = Directory.GetCurrentDirectory() +
-                                         "\\settings\\CloudCamsDataAnalysisAppSavedData.xml";
-
-
-            Dictionary<string, object> generalSettings = ServiceTools.ReadDictionaryFromXML(generalSettingsFilename);
-            string strSunLocationsAnalysisDirectory = generalSettings["SunLocationProcessingDirectory"] as string;
-            if (strSunLocationsAnalysisDirectory != null)
-            {
-                tbSunLocationProcessingDirectory.Text = strSunLocationsAnalysisDirectory;
-            }
-            strOutputDirectory = generalSettings["OutputDirectory"] as string;
-            if (strOutputDirectory == null)
-            {
-                strOutputDirectory = Directory.GetCurrentDirectory() + "\\output\\";
-            }
+            readDefaultProperties();
         }
 
 
@@ -285,7 +291,7 @@ namespace CloudCamsDataAnalysis
                 //найдем пару
                 //img-2014-09-18T08-49-..devID1.jpg
                 FileInfo[] fInfoDevID2coupledFiles =
-                    dirInfo.GetFiles("" + currFileInfo.Name.Substring(0, 21) + "??devID2.jpg",
+                    dirInfo.GetFiles("" + currFileInfo.Name.Substring(0, 22) + "?devID2.jpg",
                         SearchOption.TopDirectoryOnly);
                 if (fInfoDevID2coupledFiles.Count() == 0)
                 {
@@ -383,19 +389,24 @@ namespace CloudCamsDataAnalysis
 
             #region preparing settings dictionary
             Dictionary<string, object> classificatorSettings = new Dictionary<string, object>();
-            classificatorSettings.Add("JapanCloudSkySeparationValue", 0.1d);
-            classificatorSettings.Add("GrIxSunDetectionMinimalSunAreaPartial", 0.0003d);
-            classificatorSettings.Add("GrIxSunDetectionMaximalSunAreaPartial", 0.05d);
-            classificatorSettings.Add("GrIxSunDetectionDesiredSunAreaPartial", 0.01d);
-            classificatorSettings.Add("GrIxStdDevMarginValueDefiningTrueSkyArea", 0.65d);
-            classificatorSettings.Add("GrIxDefaultSkyCloudMarginWithoutSun", 0.9d);
-            classificatorSettings.Add("GrIxDefaultSkyCloudMarginWithSun", 0.1d);
-            classificatorSettings.Add("GrIxAnalysisImageCircledCropFactor", 0.9d);
-            classificatorSettings.Add("GrIxMinimalSunburnYvalue", 247.0d);
-            classificatorSettings.Add("GrIxMinimalSunburnGrIxvalue", 0.98);
-            classificatorSettings.Add("GrIxProcessingVerbosityLevel", 2);
-            classificatorSettings.Add("GrIxSunDetectorArcedCropFactor", 0.95d);
-            classificatorSettings.Add("GrIxSunDetectorConcurrentThreadsLimit", 4);
+            string classificatorSettingsXMLdataFile = Directory.GetCurrentDirectory() +
+                                                      "\\settings\\SkyImagesAnalyzerSettings.xml";
+            classificatorSettings = ServiceTools.ReadDictionaryFromXML(classificatorSettingsXMLdataFile);
+
+
+            //classificatorSettings.Add("JapanCloudSkySeparationValue", 0.1d);
+            //classificatorSettings.Add("GrIxSunDetectionMinimalSunAreaPartial", 0.0003d);
+            //classificatorSettings.Add("GrIxSunDetectionMaximalSunAreaPartial", 0.05d);
+            //classificatorSettings.Add("GrIxSunDetectionDesiredSunAreaPartial", 0.01d);
+            //classificatorSettings.Add("GrIxStdDevMarginValueDefiningTrueSkyArea", 0.65d);
+            //classificatorSettings.Add("GrIxDefaultSkyCloudMarginWithoutSun", 0.9d);
+            //classificatorSettings.Add("GrIxDefaultSkyCloudMarginWithSun", 0.1d);
+            //classificatorSettings.Add("GrIxAnalysisImageCircledCropFactor", 0.9d);
+            //classificatorSettings.Add("GrIxMinimalSunburnYvalue", 247.0d);
+            //classificatorSettings.Add("GrIxMinimalSunburnGrIxvalue", 0.98);
+            //classificatorSettings.Add("GrIxProcessingVerbosityLevel", 2);
+            //classificatorSettings.Add("GrIxSunDetectorArcedCropFactor", 0.95d);
+            //classificatorSettings.Add("GrIxSunDetectorConcurrentThreadsLimit", 4);
             #endregion
 
             SkyCloudClassification classificatorID1 = new SkyCloudClassification(imgBgrID1, classificatorSettings);
@@ -404,6 +415,22 @@ namespace CloudCamsDataAnalysis
             string randomFileName = "processing-" + (new FileInfo(filenameImgID1)).Name;
             randomFileName = randomFileName.Replace(".jpg", "");
             RoundData sunRoundDataID1 = classificatorID1.DetectSunWithSerieOfArcs(imgPid1, dmProcessingData, strOutputDirectory, randomFileName);
+
+            #region save detected sun disk location
+            if (SaveSunLocationsOnAutomaticDetection)
+            {
+                if (!sunRoundDataID1.IsNull)
+                {
+                    RoundDataWithUnderlyingImgSize infoToSave = new RoundDataWithUnderlyingImgSize()
+                    {
+                        circle = sunRoundDataID1,
+                        imgSize = imgBgrID1.Size,
+                    };
+                    ServiceTools.WriteObjectToXML(infoToSave, ConventionalTransitions.SunDiskInfoFileName(filenameImgID1));
+                }
+            }
+            #endregion save detected sun disk location
+
 
             theLogWindow = ServiceTools.LogAText(theLogWindow, "devID1 camera snapshot sun location: " + Environment.NewLine + sunRoundDataID1.ToString());
 
@@ -438,6 +465,23 @@ namespace CloudCamsDataAnalysis
             randomFileName = "processing-" + (new FileInfo(filenameImgID2)).Name;
             randomFileName = randomFileName.Replace(".jpg", "");
             RoundData sunRoundDataID2 = classificatorID2.DetectSunWithSerieOfArcs(imgPid2, dmProcessingData, strOutputDirectory, randomFileName);
+
+
+            #region save detected sun disk location
+            if (SaveSunLocationsOnAutomaticDetection)
+            {
+                if (!sunRoundDataID2.IsNull)
+                {
+                    RoundDataWithUnderlyingImgSize infoToSave = new RoundDataWithUnderlyingImgSize()
+                    {
+                        circle = sunRoundDataID2,
+                        imgSize = imgBgrID2.Size,
+                    };
+                    ServiceTools.WriteObjectToXML(infoToSave, ConventionalTransitions.SunDiskInfoFileName(filenameImgID2));
+                }
+            }
+            #endregion save detected sun disk location
+
 
             theLogWindow = ServiceTools.LogAText(theLogWindow, "devID2 camera snapshot sun location: " + Environment.NewLine + sunRoundDataID2.ToString());
 
@@ -540,7 +584,7 @@ namespace CloudCamsDataAnalysis
 
         private BackgroundWorker bgwFileCoupleCenterDetectionID1 = null;
         private BackgroundWorker bgwFileCoupleCenterDetectionID2 = null;
-        private void DoOnFilesSelectedForManualPointsMarking(FileInfo fInfoID1, FileInfo fInfoID2)
+        private void DoOnFilesSelectedForManualPointsMarking(FileInfo fInfoID1, FileInfo fInfoID2, GPSdata gpsDataID1, GPSdata gpsDataID2)
         {
             ThreadSafeOperations.SetText(lblImageID1Comments, "---", false);
             ThreadSafeOperations.SetText(lblImageID2Comments, "---", false);
@@ -564,32 +608,59 @@ namespace CloudCamsDataAnalysis
 
 
             DoWorkEventHandler bgwFileCoupleCenterDetectionDoWorkHandler =
-                delegate(object currBGWsender, DoWorkEventArgs args)
+                delegate (object currBGWsender, DoWorkEventArgs args)
                 {
                     object[] currBGWarguments = (object[])args.Argument;
                     Image<Bgr, byte> inputImg = (Image<Bgr, byte>)currBGWarguments[0];
                     int devID = (int)currBGWarguments[1];
+                    object arg3 = currBGWarguments[2];
+                    AzimuthZenithAngle sunPositionSPAext = null;
+
+                    if (arg3 != null)
+                    {
+                        GPSdata gpsDataCurrentDevID = arg3 as GPSdata;
+                        double lat = gpsDataCurrentDevID.LatDec;
+                        // double lat = 55.755826; // - Moscow
+                        double lon = gpsDataCurrentDevID.LonDec;
+                        // double lon = 37.6173; // - Moscow
+                        SPA spaCalc = new SPA(gpsDataCurrentDevID.dateTimeUTC.Year,
+                            gpsDataCurrentDevID.dateTimeUTC.Month, gpsDataCurrentDevID.dateTimeUTC.Day,
+                            gpsDataCurrentDevID.dateTimeUTC.Hour,
+                            gpsDataCurrentDevID.dateTimeUTC.Minute, gpsDataCurrentDevID.dateTimeUTC.Second, (float)lon,
+                            (float)lat, (float)SPAConst.DeltaT(gpsDataCurrentDevID.dateTimeUTC));
+                        int res = spaCalc.spa_calculate();
+                        sunPositionSPAext = new AzimuthZenithAngle(spaCalc.spa.azimuth, spaCalc.spa.zenith);
+                    }
 
                     Image<Bgr, byte> imgOperatingImage = inputImg.Copy();
                     ImageProcessing imgP = new ImageProcessing(imgOperatingImage, true);
                     RoundData rdRetData = imgP.imageRD;
+                    RoundData sunZenithCircle = imgP.imageRD.Copy();
+                    if (sunPositionSPAext != null)
+                    {
+                        sunZenithCircle.DRadius *= (sunPositionSPAext.ZenithAngle / 90.0d);
+                    }
+
                     imgP.Dispose();
 
-                    args.Result = new object[] { rdRetData, devID };
+                    args.Result = new object[] { rdRetData, devID, sunZenithCircle };
                 };
 
             RunWorkerCompletedEventHandler bgwFileCoupleCenterDetectionCompletedHandler =
-                delegate(object currBGWCompletedSender, RunWorkerCompletedEventArgs args)
+                delegate (object currBGWCompletedSender, RunWorkerCompletedEventArgs args)
                 {
                     object[] currentBGWResults = (object[])args.Result;
                     RoundData rdRetData = (RoundData)currentBGWResults[0];
                     int retDevID = (int)currentBGWResults[1];
+                    RoundData sunZenithCircle = (RoundData)currentBGWResults[2];
+
                     if (retDevID == 1)
                     {
                         rdImgID1 = rdRetData;
                         ThreadSafeOperations.SetText(lblImageID1Comments, rdImgID1.ToString(), false);
                         ThreadSafeOperations.SetLoadingCircleState(lcCalculatingImageID1RoundData, false, false,
                             lcCalculatingImageID1RoundData.Color);
+                        rdImgID1SunElevation = sunZenithCircle;
                     }
                     else if (retDevID == 2)
                     {
@@ -597,6 +668,7 @@ namespace CloudCamsDataAnalysis
                         ThreadSafeOperations.SetText(lblImageID2Comments, rdImgID2.ToString(), false);
                         ThreadSafeOperations.SetLoadingCircleState(lcCalculatingImageID2RoundData, false, false,
                             lcCalculatingImageID2RoundData.Color);
+                        rdImgID2SunElevation = sunZenithCircle;
                     }
 
                     //CalculateSubImageWithScaleAndCenter();
@@ -607,7 +679,7 @@ namespace CloudCamsDataAnalysis
             bgwFileCoupleCenterDetectionID1 = new BackgroundWorker();
             bgwFileCoupleCenterDetectionID1.DoWork += bgwFileCoupleCenterDetectionDoWorkHandler;
             bgwFileCoupleCenterDetectionID1.RunWorkerCompleted += bgwFileCoupleCenterDetectionCompletedHandler;
-            object[] BGWargsID1 = new object[] { wholeImgID1, 1 };
+            object[] BGWargsID1 = new object[] { wholeImgID1, 1, gpsDataID1 };
             bgwFileCoupleCenterDetectionID1.RunWorkerAsync(BGWargsID1);
             ThreadSafeOperations.SetLoadingCircleState(lcCalculatingImageID1RoundData, true, true,
                 lcCalculatingImageID1RoundData.Color);
@@ -615,7 +687,7 @@ namespace CloudCamsDataAnalysis
             bgwFileCoupleCenterDetectionID2 = new BackgroundWorker();
             bgwFileCoupleCenterDetectionID2.DoWork += bgwFileCoupleCenterDetectionDoWorkHandler;
             bgwFileCoupleCenterDetectionID2.RunWorkerCompleted += bgwFileCoupleCenterDetectionCompletedHandler;
-            object[] BGWargsID2 = new object[] { wholeImgID2, 2 };
+            object[] BGWargsID2 = new object[] { wholeImgID2, 2, gpsDataID2 };
             bgwFileCoupleCenterDetectionID2.RunWorkerAsync(BGWargsID2);
             ThreadSafeOperations.SetLoadingCircleState(lcCalculatingImageID2RoundData, true, true,
                 lcCalculatingImageID2RoundData.Color);
@@ -641,7 +713,7 @@ namespace CloudCamsDataAnalysis
             ThreadSafeOperations.SetTextTB(tbControlPoint2id2, "", false);
         }
 
-
+        
 
 
 
@@ -657,12 +729,19 @@ namespace CloudCamsDataAnalysis
                 fileOpenDialog.Filter = "JPEG images for camera ID2 | *ID2.jpg";
             }
 
+            string strConcurrentDataXMLfilesPath = Directory.GetCurrentDirectory();
+            strConcurrentDataXMLfilesPath = strConcurrentDataXMLfilesPath +
+                                            ((strConcurrentDataXMLfilesPath.Last() == '\\') ? ("") : ("\\"));
+            strConcurrentDataXMLfilesPath += "results\\";
+
             fileOpenDialog.Multiselect = false;
             DialogResult res = fileOpenDialog.ShowDialog();
             if (res == DialogResult.OK)
             {
                 FileInfo fInfoID1 = null;
                 FileInfo fInfoID2 = null;
+                GPSdata gpsDataID1 = null;
+                GPSdata gpsDataID2 = null;
 
                 if (sender == btnOpenFileID1)
                 {
@@ -670,8 +749,35 @@ namespace CloudCamsDataAnalysis
                     fInfoID1 = new FileInfo(imgID1filename);
                     DirectoryInfo dirInfo = fInfoID1.Directory;
 
+
+                    #region find concurrent data, get GPS data
+
+                    string err = "";
+                    string strConcurrentDataXMLfileID1 = CommonTools.FindConcurrentDataXMLfile(fInfoID1.FullName, out err,
+                        strConcurrentDataXMLfilesPath);
+                    if (strConcurrentDataXMLfileID1 == "")
+                    {
+                        theLogWindow = ServiceTools.LogAText(theLogWindow, err + Environment.NewLine, true);
+                    }
+                    else
+                    {
+                        if (File.Exists(strConcurrentDataXMLfileID1))
+                        {
+                            Dictionary<string, object> dictConcurrentData =
+                                ServiceTools.ReadDictionaryFromXML(strConcurrentDataXMLfileID1) as
+                                    Dictionary<string, object>;
+                            gpsDataID1 = new GPSdata((string) dictConcurrentData["GPSdata"],
+                                GPSdatasources.CloudCamArduinoGPS,
+                                DateTime.Parse((string) dictConcurrentData["GPSDateTimeUTC"], null,
+                                    System.Globalization.DateTimeStyles.RoundtripKind));
+                        }
+                    }
+                    #endregion find concurrent data, get GPS data
+
+
+
                     FileInfo[] fInfoDevID2coupledFiles =
-                    dirInfo.GetFiles("" + fInfoID1.Name.Substring(0, 21) + "??devID2.jpg",
+                    dirInfo.GetFiles("" + fInfoID1.Name.Substring(0, 22) + "?devID2.jpg",
                         SearchOption.TopDirectoryOnly);
                     if (fInfoDevID2coupledFiles.Count() == 0)
                     {
@@ -689,6 +795,30 @@ namespace CloudCamsDataAnalysis
                     }
 
                     fInfoID2 = fInfoDevID2coupledFiles[0];
+
+                    #region find concurrent data, get GPS data
+
+                    string strConcurrentDataXMLfileID2 = CommonTools.FindConcurrentDataXMLfile(fInfoID2.FullName, out err,
+                        strConcurrentDataXMLfilesPath);
+
+                    if (strConcurrentDataXMLfileID2 == "")
+                    {
+                        theLogWindow = ServiceTools.LogAText(theLogWindow, err + Environment.NewLine, true);
+                    }
+                    else
+                    {
+                        if (File.Exists(strConcurrentDataXMLfileID2))
+                        {
+                            Dictionary<string, object> dictConcurrentData =
+                                ServiceTools.ReadDictionaryFromXML(strConcurrentDataXMLfileID2) as
+                                    Dictionary<string, object>;
+                            gpsDataID2 = new GPSdata((string) dictConcurrentData["GPSdata"],
+                                GPSdatasources.CloudCamArduinoGPS,
+                                DateTime.Parse((string) dictConcurrentData["GPSDateTimeUTC"], null,
+                                    System.Globalization.DateTimeStyles.RoundtripKind));
+                        }
+                    }
+                    #endregion find concurrent data, get GPS data
                 }
                 else if (sender == btnOpenFileID2)
                 {
@@ -696,8 +826,35 @@ namespace CloudCamsDataAnalysis
                     fInfoID2 = new FileInfo(imgID2filename);
                     DirectoryInfo dirInfo = fInfoID2.Directory;
 
+
+
+                    #region find concurrent data, get GPS data
+                    string err = "";
+                    string strConcurrentDataXMLfileID2 = CommonTools.FindConcurrentDataXMLfile(fInfoID2.FullName, out err,
+                        strConcurrentDataXMLfilesPath);
+                    if (strConcurrentDataXMLfileID2 == "")
+                    {
+                        theLogWindow = ServiceTools.LogAText(theLogWindow, err + Environment.NewLine, true);
+                    }
+                    else
+                    {
+                        if (File.Exists(strConcurrentDataXMLfileID2))
+                        {
+                            Dictionary<string, object> dictConcurrentData =
+                                ServiceTools.ReadDictionaryFromXML(strConcurrentDataXMLfileID2) as
+                                    Dictionary<string, object>;
+                            gpsDataID2 = new GPSdata((string) dictConcurrentData["GPSdata"],
+                                GPSdatasources.CloudCamArduinoGPS,
+                                DateTime.Parse((string) dictConcurrentData["GPSDateTimeUTC"], null,
+                                    System.Globalization.DateTimeStyles.RoundtripKind));
+                        }
+                    }
+                    #endregion find concurrent data, get GPS data
+
+
+
                     FileInfo[] fInfoDevID1coupledFiles =
-                    dirInfo.GetFiles("" + fInfoID2.Name.Substring(0, 21) + "??devID1.jpg",
+                    dirInfo.GetFiles("" + fInfoID2.Name.Substring(0, 22) + "?devID1.jpg",
                         SearchOption.TopDirectoryOnly);
                     if (fInfoDevID1coupledFiles.Count() == 0)
                     {
@@ -715,10 +872,33 @@ namespace CloudCamsDataAnalysis
                     }
 
                     fInfoID1 = fInfoDevID1coupledFiles[0];
+
+                    #region find concurrent data, get GPS data
+                    string strConcurrentDataXMLfileID1 = CommonTools.FindConcurrentDataXMLfile(fInfoID1.FullName, out err,
+                        strConcurrentDataXMLfilesPath);
+
+                    if (strConcurrentDataXMLfileID1 == "")
+                    {
+                        theLogWindow = ServiceTools.LogAText(theLogWindow, err + Environment.NewLine, true);
+                    }
+                    else
+                    {
+                        if (File.Exists(strConcurrentDataXMLfileID1))
+                        {
+                            Dictionary<string, object> dictConcurrentData =
+                                ServiceTools.ReadDictionaryFromXML(strConcurrentDataXMLfileID1) as
+                                    Dictionary<string, object>;
+                            gpsDataID1 = new GPSdata((string) dictConcurrentData["GPSdata"],
+                                GPSdatasources.CloudCamArduinoGPS,
+                                DateTime.Parse((string) dictConcurrentData["GPSDateTimeUTC"], null,
+                                    System.Globalization.DateTimeStyles.RoundtripKind));
+                        }
+                    }
+                    #endregion find concurrent data, get GPS data
                 }
 
 
-                DoOnFilesSelectedForManualPointsMarking(fInfoID1, fInfoID2);
+                DoOnFilesSelectedForManualPointsMarking(fInfoID1, fInfoID2, gpsDataID1, gpsDataID2);
             }
         }
 
@@ -1038,6 +1218,14 @@ namespace CloudCamsDataAnalysis
                 return;
             }
 
+
+            string strConcurrentDataXMLfilesPath = Directory.GetCurrentDirectory();
+            strConcurrentDataXMLfilesPath = strConcurrentDataXMLfilesPath +
+                                            ((strConcurrentDataXMLfilesPath.Last() == '\\') ? ("") : ("\\"));
+            strConcurrentDataXMLfilesPath += "results\\";
+
+
+
             DirectoryInfo dirInfo = new DirectoryInfo(strInputDirectory);
             FileInfo[] files = dirInfo.GetFiles("*devID1.jpg", SearchOption.TopDirectoryOnly);
 
@@ -1047,6 +1235,33 @@ namespace CloudCamsDataAnalysis
                 {
                     continue;
                 }
+
+                GPSdata gpsDataID1 = null;
+                GPSdata gpsDataID2 = null;
+
+                #region find concurrent data, get GPS data
+
+                string err = "";
+                string strConcurrentDataXMLfileID1 = CommonTools.FindConcurrentDataXMLfile(currFileInfo.FullName, out err,
+                    strConcurrentDataXMLfilesPath);
+                if (strConcurrentDataXMLfileID1 == "")
+                {
+                    theLogWindow = ServiceTools.LogAText(theLogWindow, err + Environment.NewLine, true);
+                }
+                else
+                {
+                    if (File.Exists(strConcurrentDataXMLfileID1))
+                    {
+                        Dictionary<string, object> dictConcurrentData =
+                            ServiceTools.ReadDictionaryFromXML(strConcurrentDataXMLfileID1) as
+                                Dictionary<string, object>;
+                        gpsDataID1 = new GPSdata((string) dictConcurrentData["GPSdata"],
+                            GPSdatasources.CloudCamArduinoGPS,
+                            DateTime.Parse((string) dictConcurrentData["GPSDateTimeUTC"], null,
+                                System.Globalization.DateTimeStyles.RoundtripKind));
+                    }
+                }
+                #endregion find concurrent data, get GPS data
 
                 //найдем пару
                 //img-2014-09-18T08-49-..devID1.jpg
@@ -1068,7 +1283,32 @@ namespace CloudCamsDataAnalysis
                     continue;
                 }
 
-                DoOnFilesSelectedForManualPointsMarking(currFileInfo, fInfoDevID2coupledFiles[0]);
+
+                #region find concurrent data, get GPS data
+                string strConcurrentDataXMLfileID2 = CommonTools.FindConcurrentDataXMLfile(fInfoDevID2coupledFiles[0].FullName, out err,
+                    strConcurrentDataXMLfilesPath);
+                if (strConcurrentDataXMLfileID2 == "")
+                {
+                    theLogWindow = ServiceTools.LogAText(theLogWindow, err + Environment.NewLine, true);
+                }
+                else
+                {
+                    if (File.Exists(strConcurrentDataXMLfileID2))
+                    {
+                        Dictionary<string, object> dictConcurrentData =
+                            ServiceTools.ReadDictionaryFromXML(strConcurrentDataXMLfileID2) as
+                                Dictionary<string, object>;
+                        gpsDataID2 = new GPSdata((string) dictConcurrentData["GPSdata"],
+                            GPSdatasources.CloudCamArduinoGPS,
+                            DateTime.Parse((string) dictConcurrentData["GPSDateTimeUTC"], null,
+                                System.Globalization.DateTimeStyles.RoundtripKind));
+                    }
+                }
+                #endregion find concurrent data, get GPS data
+
+
+
+                DoOnFilesSelectedForManualPointsMarking(currFileInfo, fInfoDevID2coupledFiles[0], gpsDataID1, gpsDataID2);
 
                 break;
             }
@@ -1085,7 +1325,12 @@ namespace CloudCamsDataAnalysis
                 string processedFilesListFilename = strOutputDirectory + "ProcessedFiles.xml";
                 ServiceTools.WriteListToXml(lDataToWrite, processedFilesListFilename, true);
             }
+
+
+            saveDefaultProperties();
         }
+
+
 
         private void tbSunLocationID1_MouseClick(object sender, MouseEventArgs e)
         {
@@ -1103,7 +1348,10 @@ namespace CloudCamsDataAnalysis
 
         private void btnImg1DetectSun_Click(object sender, EventArgs e)
         {
-            DoWorkEventHandler bgwFindSunLocationDoWork = delegate(object currBGWsender, DoWorkEventArgs args)
+            theLogWindow = ServiceTools.LogAText(theLogWindow,
+                "started searching sun location for file " + Environment.NewLine + imgID1filename);
+
+            DoWorkEventHandler bgwFindSunLocationDoWork = delegate (object currBGWsender, DoWorkEventArgs args)
                 {
                     object[] currBGWarguments = (object[])args.Argument;
                     Image<Bgr, byte> inImageToProcess = (Image<Bgr, byte>)currBGWarguments[0];
@@ -1135,19 +1383,24 @@ namespace CloudCamsDataAnalysis
 
                     #region preparing settings dictionary
                     Dictionary<string, object> classificatorSettings = new Dictionary<string, object>();
-                    classificatorSettings.Add("JapanCloudSkySeparationValue", 0.1d);
-                    classificatorSettings.Add("GrIxSunDetectionMinimalSunAreaPartial", 0.0003d);
-                    classificatorSettings.Add("GrIxSunDetectionMaximalSunAreaPartial", 0.05d);
-                    classificatorSettings.Add("GrIxSunDetectionDesiredSunAreaPartial", 0.01d);
-                    classificatorSettings.Add("GrIxStdDevMarginValueDefiningTrueSkyArea", 0.65d);
-                    classificatorSettings.Add("GrIxDefaultSkyCloudMarginWithoutSun", 0.9d);
-                    classificatorSettings.Add("GrIxDefaultSkyCloudMarginWithSun", 0.1d);
-                    classificatorSettings.Add("GrIxAnalysisImageCircledCropFactor", 0.9d);
-                    classificatorSettings.Add("GrIxMinimalSunburnYvalue", 247.0d);
-                    classificatorSettings.Add("GrIxMinimalSunburnGrIxvalue", 0.98);
-                    classificatorSettings.Add("GrIxProcessingVerbosityLevel", 2);
-                    classificatorSettings.Add("GrIxSunDetectorArcedCropFactor", 0.95d);
-                    classificatorSettings.Add("GrIxSunDetectorConcurrentThreadsLimit", 4);
+
+                    string classificatorSettingsXMLdataFile = Directory.GetCurrentDirectory() +
+                                                              "\\settings\\SkyImagesAnalyzerSettings.xml";
+                    classificatorSettings = ServiceTools.ReadDictionaryFromXML(classificatorSettingsXMLdataFile);
+
+                    //classificatorSettings.Add("JapanCloudSkySeparationValue", 0.1d);
+                    //classificatorSettings.Add("GrIxSunDetectionMinimalSunAreaPartial", 0.0003d);
+                    //classificatorSettings.Add("GrIxSunDetectionMaximalSunAreaPartial", 0.05d);
+                    //classificatorSettings.Add("GrIxSunDetectionDesiredSunAreaPartial", 0.01d);
+                    //classificatorSettings.Add("GrIxStdDevMarginValueDefiningTrueSkyArea", 0.65d);
+                    //classificatorSettings.Add("GrIxDefaultSkyCloudMarginWithoutSun", 0.9d);
+                    //classificatorSettings.Add("GrIxDefaultSkyCloudMarginWithSun", 0.1d);
+                    //classificatorSettings.Add("GrIxAnalysisImageCircledCropFactor", 0.9d);
+                    //classificatorSettings.Add("GrIxMinimalSunburnYvalue", 247.0d);
+                    //classificatorSettings.Add("GrIxMinimalSunburnGrIxvalue", 0.98);
+                    //classificatorSettings.Add("GrIxProcessingVerbosityLevel", 2);
+                    //classificatorSettings.Add("GrIxSunDetectorArcedCropFactor", 0.95d);
+                    //classificatorSettings.Add("GrIxSunDetectorConcurrentThreadsLimit", 4);
                     #endregion
 
                     SkyCloudClassification classificatorID1 = new SkyCloudClassification(imgBgrID1, classificatorSettings);
@@ -1158,17 +1411,33 @@ namespace CloudCamsDataAnalysis
                     RoundData sunRoundDataID1 = classificatorID1.DetectSunWithSerieOfArcs(imgPid1, dmProcessingData,
                         outputDirectory, randomFileName);
 
+
+                    #region save detected sun disk location
+                    if (SaveSunLocationsOnAutomaticDetection)
+                    {
+                        if (!sunRoundDataID1.IsNull)
+                        {
+                            RoundDataWithUnderlyingImgSize infoToSave = new RoundDataWithUnderlyingImgSize()
+                            {
+                                circle = sunRoundDataID1,
+                                imgSize = imgBgrID1.Size,
+                            };
+                            ServiceTools.WriteObjectToXML(infoToSave, ConventionalTransitions.SunDiskInfoFileName(inImgFilename));
+                        }
+                    }
+                    #endregion save detected sun disk location
+
+
                     theLogWindow = ServiceTools.LogAText(theLogWindow,
                         (new FileInfo(inImgFilename)).Name + ": sun location: " + Environment.NewLine +
                         sunRoundDataID1.ToString());
 
-            
+
                     if (sunRoundDataID1.IsNull)
                     {
                         theLogWindow = ServiceTools.LogAText(theLogWindow,
                             "couldn`t detect sun disk for " + (new FileInfo(inImgFilename)).Name);
                     }
-            
 
 
                     args.Result = new object[] { sunRoundDataID1 };
@@ -1176,10 +1445,10 @@ namespace CloudCamsDataAnalysis
 
 
             RunWorkerCompletedEventHandler bgwFindSunLocationCompletedHandler =
-                delegate(object currBGWCompletedSender, RunWorkerCompletedEventArgs args)
+                delegate (object currBGWCompletedSender, RunWorkerCompletedEventArgs args)
                 {
-                    object[] currentBGWResults = (object[]) args.Result;
-                    RoundData rdRetData = (RoundData) currentBGWResults[0];
+                    object[] currentBGWResults = (object[])args.Result;
+                    RoundData rdRetSunData = (RoundData)currentBGWResults[0];
                 };
 
 
@@ -1191,8 +1460,90 @@ namespace CloudCamsDataAnalysis
             bgwFindSunLocation.RunWorkerAsync(BGWargs);
         }
 
+
+
         private void btnImg2DetectSun_Click(object sender, EventArgs e)
         {
+
+        }
+
+        private void btnProperties_Click(object sender, EventArgs e)
+        {
+            PropertiesEditor propForm = new PropertiesEditor(defaultProperties, defaultPropertiesXMLfileName);
+            propForm.FormClosed += new FormClosedEventHandler(PropertiesFormClosed);
+            propForm.ShowDialog();
+        }
+
+
+        public void PropertiesFormClosed(object sender, FormClosedEventArgs e)
+        {
+            readDefaultProperties();
+        }
+
+
+        private void saveDefaultProperties()
+        {
+            ServiceTools.WriteDictionaryToXml(defaultProperties, defaultPropertiesXMLfileName, false);
+        }
+
+
+
+
+        private void readDefaultProperties()
+        {
+            defaultProperties = new Dictionary<string, object>();
+            defaultPropertiesXMLfileName = Directory.GetCurrentDirectory() +
+                                         "\\settings\\CloudCamsDataAnalysisAppSettings.xml";
+            if (!File.Exists(defaultPropertiesXMLfileName)) return;
+            defaultProperties = ServiceTools.ReadDictionaryFromXML(defaultPropertiesXMLfileName);
+
+            string CurDir = Directory.GetCurrentDirectory();
+
+
+            string strSunLocationsAnalysisDirectory = defaultProperties["SunLocationProcessingDirectory"] as string;
+            if (strSunLocationsAnalysisDirectory != null)
+            {
+                tbSunLocationProcessingDirectory.Text = strSunLocationsAnalysisDirectory;
+            }
+            strOutputDirectory = defaultProperties["OutputDirectory"] as string;
+            if (strOutputDirectory == null)
+            {
+                strOutputDirectory = Directory.GetCurrentDirectory() + "\\output\\";
+            }
+
+
+
+            if (defaultProperties.ContainsKey("SaveSunLocationsOnAutomaticDetection"))
+            {
+                SaveSunLocationsOnAutomaticDetection =
+                    (((string)defaultProperties["SaveSunLocationsOnAutomaticDetection"]).ToLower() == "true");
+            }
+            else
+            {
+                defaultProperties.Add("SaveSunLocationsOnAutomaticDetection", false);
+                saveDefaultProperties();
+            }
+
+
+
+            if (defaultProperties.ContainsKey("strConcurrentDataXMLfilesPath"))
+            {
+                strConcurrentDataXMLfilesPath = (string) defaultProperties["strConcurrentDataXMLfilesPath"];
+                if (!Directory.Exists(strConcurrentDataXMLfilesPath))
+                {
+                    theLogWindow = ServiceTools.LogAText(theLogWindow,
+                        "Cant find concurrent XML data files directory. Some functions may fail or work incorrect.", true);
+                }
+            }
+            else
+            {
+                strConcurrentDataXMLfilesPath = Directory.GetCurrentDirectory();
+                strConcurrentDataXMLfilesPath = strConcurrentDataXMLfilesPath +
+                                                ((strConcurrentDataXMLfilesPath.Last() == '\\') ? ("") : ("\\"));
+                strConcurrentDataXMLfilesPath += "results\\";
+                defaultProperties.Add("strConcurrentDataXMLfilesPath", strConcurrentDataXMLfilesPath);
+                saveDefaultProperties();
+            }
 
         }
     }

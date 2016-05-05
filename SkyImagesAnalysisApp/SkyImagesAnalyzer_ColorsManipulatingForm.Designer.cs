@@ -91,6 +91,9 @@
             this.btnRes13Dview = new System.Windows.Forms.Button();
             this.btnRes23Dview = new System.Windows.Forms.Button();
             this.btnRes33Dview = new System.Windows.Forms.Button();
+            this.cbRes1ApplyMask = new System.Windows.Forms.CheckBox();
+            this.cbRes2ApplyMask = new System.Windows.Forms.CheckBox();
+            this.cbRes3ApplyMask = new System.Windows.Forms.CheckBox();
             this.groupBox7.SuspendLayout();
             this.tableLayoutPanel1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pbRes3)).BeginInit();
@@ -115,9 +118,10 @@
             // 
             this.chbRes3DynamicScale.AutoSize = true;
             this.chbRes3DynamicScale.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.chbRes3DynamicScale.Location = new System.Drawing.Point(1109, 593);
+            this.chbRes3DynamicScale.Location = new System.Drawing.Point(1485, 721);
+            this.chbRes3DynamicScale.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.chbRes3DynamicScale.Name = "chbRes3DynamicScale";
-            this.chbRes3DynamicScale.Size = new System.Drawing.Size(81, 24);
+            this.chbRes3DynamicScale.Size = new System.Drawing.Size(115, 32);
             this.chbRes3DynamicScale.TabIndex = 73;
             this.chbRes3DynamicScale.Text = "Dynamic";
             this.chbRes3DynamicScale.UseVisualStyleBackColor = true;
@@ -127,9 +131,10 @@
             // 
             this.chbRes2DynamicScale.AutoSize = true;
             this.chbRes2DynamicScale.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.chbRes2DynamicScale.Location = new System.Drawing.Point(713, 593);
+            this.chbRes2DynamicScale.Location = new System.Drawing.Point(955, 721);
+            this.chbRes2DynamicScale.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.chbRes2DynamicScale.Name = "chbRes2DynamicScale";
-            this.chbRes2DynamicScale.Size = new System.Drawing.Size(76, 24);
+            this.chbRes2DynamicScale.Size = new System.Drawing.Size(101, 32);
             this.chbRes2DynamicScale.TabIndex = 72;
             this.chbRes2DynamicScale.Text = "Dynamic";
             this.chbRes2DynamicScale.UseVisualStyleBackColor = true;
@@ -139,9 +144,10 @@
             // 
             this.chbRes1DynamicScale.AutoSize = true;
             this.chbRes1DynamicScale.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.chbRes1DynamicScale.Location = new System.Drawing.Point(317, 593);
+            this.chbRes1DynamicScale.Location = new System.Drawing.Point(425, 721);
+            this.chbRes1DynamicScale.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.chbRes1DynamicScale.Name = "chbRes1DynamicScale";
-            this.chbRes1DynamicScale.Size = new System.Drawing.Size(76, 24);
+            this.chbRes1DynamicScale.Size = new System.Drawing.Size(101, 32);
             this.chbRes1DynamicScale.TabIndex = 71;
             this.chbRes1DynamicScale.Text = "Dynamic";
             this.chbRes1DynamicScale.UseVisualStyleBackColor = true;
@@ -154,9 +160,11 @@
             this.groupBox7.Controls.Add(this.rbtnSwitchChannelG);
             this.groupBox7.Controls.Add(this.rbtnSwitchChannelR);
             this.groupBox7.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.groupBox7.Location = new System.Drawing.Point(795, 229);
+            this.groupBox7.Location = new System.Drawing.Point(1064, 277);
+            this.groupBox7.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.groupBox7.Name = "groupBox7";
-            this.groupBox7.Size = new System.Drawing.Size(308, 24);
+            this.groupBox7.Padding = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.groupBox7.Size = new System.Drawing.Size(413, 32);
             this.groupBox7.TabIndex = 67;
             this.groupBox7.TabStop = false;
             // 
@@ -165,9 +173,10 @@
             this.rbtnSwitchChannelB.AutoSize = true;
             this.rbtnSwitchChannelB.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this.rbtnSwitchChannelB.ForeColor = System.Drawing.Color.Blue;
-            this.rbtnSwitchChannelB.Location = new System.Drawing.Point(139, 4);
+            this.rbtnSwitchChannelB.Location = new System.Drawing.Point(185, 5);
+            this.rbtnSwitchChannelB.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.rbtnSwitchChannelB.Name = "rbtnSwitchChannelB";
-            this.rbtnSwitchChannelB.Size = new System.Drawing.Size(57, 20);
+            this.rbtnSwitchChannelB.Size = new System.Drawing.Size(68, 24);
             this.rbtnSwitchChannelB.TabIndex = 2;
             this.rbtnSwitchChannelB.Text = "Blue";
             this.rbtnSwitchChannelB.UseVisualStyleBackColor = true;
@@ -178,9 +187,10 @@
             this.rbtnSwitchChannelG.AutoSize = true;
             this.rbtnSwitchChannelG.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this.rbtnSwitchChannelG.ForeColor = System.Drawing.Color.Green;
-            this.rbtnSwitchChannelG.Location = new System.Drawing.Point(67, 4);
+            this.rbtnSwitchChannelG.Location = new System.Drawing.Point(89, 5);
+            this.rbtnSwitchChannelG.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.rbtnSwitchChannelG.Name = "rbtnSwitchChannelG";
-            this.rbtnSwitchChannelG.Size = new System.Drawing.Size(68, 20);
+            this.rbtnSwitchChannelG.Size = new System.Drawing.Size(81, 24);
             this.rbtnSwitchChannelG.TabIndex = 1;
             this.rbtnSwitchChannelG.Text = "Green";
             this.rbtnSwitchChannelG.UseVisualStyleBackColor = true;
@@ -192,9 +202,10 @@
             this.rbtnSwitchChannelR.Checked = true;
             this.rbtnSwitchChannelR.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this.rbtnSwitchChannelR.ForeColor = System.Drawing.Color.Red;
-            this.rbtnSwitchChannelR.Location = new System.Drawing.Point(6, 4);
+            this.rbtnSwitchChannelR.Location = new System.Drawing.Point(8, 5);
+            this.rbtnSwitchChannelR.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.rbtnSwitchChannelR.Name = "rbtnSwitchChannelR";
-            this.rbtnSwitchChannelR.Size = new System.Drawing.Size(55, 20);
+            this.rbtnSwitchChannelR.Size = new System.Drawing.Size(63, 24);
             this.rbtnSwitchChannelR.TabIndex = 0;
             this.rbtnSwitchChannelR.TabStop = true;
             this.rbtnSwitchChannelR.Text = "Red";
@@ -204,9 +215,10 @@
             // tbChannelThresh
             // 
             this.tbChannelThresh.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.tbChannelThresh.Location = new System.Drawing.Point(1109, 3);
+            this.tbChannelThresh.Location = new System.Drawing.Point(1485, 4);
+            this.tbChannelThresh.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.tbChannelThresh.Name = "tbChannelThresh";
-            this.tbChannelThresh.Size = new System.Drawing.Size(81, 20);
+            this.tbChannelThresh.Size = new System.Drawing.Size(115, 22);
             this.tbChannelThresh.TabIndex = 64;
             this.tbChannelThresh.Text = "255";
             this.tbChannelThresh.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.tbRedThresh_KeyPress);
@@ -214,9 +226,10 @@
             // tbRes3Thresh
             // 
             this.tbRes3Thresh.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.tbRes3Thresh.Location = new System.Drawing.Point(1109, 349);
+            this.tbRes3Thresh.Location = new System.Drawing.Point(1485, 437);
+            this.tbRes3Thresh.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.tbRes3Thresh.Name = "tbRes3Thresh";
-            this.tbRes3Thresh.Size = new System.Drawing.Size(81, 20);
+            this.tbRes3Thresh.Size = new System.Drawing.Size(115, 22);
             this.tbRes3Thresh.TabIndex = 63;
             this.tbRes3Thresh.Text = "255";
             this.tbRes3Thresh.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.tbResultThresh_KeyPress);
@@ -224,9 +237,10 @@
             // tbRes2Thresh
             // 
             this.tbRes2Thresh.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.tbRes2Thresh.Location = new System.Drawing.Point(713, 349);
+            this.tbRes2Thresh.Location = new System.Drawing.Point(955, 437);
+            this.tbRes2Thresh.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.tbRes2Thresh.Name = "tbRes2Thresh";
-            this.tbRes2Thresh.Size = new System.Drawing.Size(76, 20);
+            this.tbRes2Thresh.Size = new System.Drawing.Size(101, 22);
             this.tbRes2Thresh.TabIndex = 62;
             this.tbRes2Thresh.Text = "255";
             this.tbRes2Thresh.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.tbResultThresh_KeyPress);
@@ -234,9 +248,10 @@
             // tbRes1Thresh
             // 
             this.tbRes1Thresh.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.tbRes1Thresh.Location = new System.Drawing.Point(317, 349);
+            this.tbRes1Thresh.Location = new System.Drawing.Point(425, 437);
+            this.tbRes1Thresh.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.tbRes1Thresh.Name = "tbRes1Thresh";
-            this.tbRes1Thresh.Size = new System.Drawing.Size(76, 20);
+            this.tbRes1Thresh.Size = new System.Drawing.Size(101, 22);
             this.tbRes1Thresh.TabIndex = 61;
             this.tbRes1Thresh.Text = "255";
             this.tbRes1Thresh.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.tbResultThresh_KeyPress);
@@ -246,9 +261,10 @@
             this.btnBrowseColorScheme1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.btnBrowseColorScheme1.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnBrowseColorScheme1.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.btnBrowseColorScheme1.Location = new System.Drawing.Point(317, 319);
+            this.btnBrowseColorScheme1.Location = new System.Drawing.Point(425, 397);
+            this.btnBrowseColorScheme1.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.btnBrowseColorScheme1.Name = "btnBrowseColorScheme1";
-            this.btnBrowseColorScheme1.Size = new System.Drawing.Size(76, 24);
+            this.btnBrowseColorScheme1.Size = new System.Drawing.Size(101, 32);
             this.btnBrowseColorScheme1.TabIndex = 46;
             this.btnBrowseColorScheme1.Text = ". . .";
             this.btnBrowseColorScheme1.TextAlign = System.Drawing.ContentAlignment.TopCenter;
@@ -258,9 +274,10 @@
             // tbColorSchemePath1
             // 
             this.tbColorSchemePath1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.tbColorSchemePath1.Location = new System.Drawing.Point(160, 319);
+            this.tbColorSchemePath1.Location = new System.Drawing.Point(215, 397);
+            this.tbColorSchemePath1.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.tbColorSchemePath1.Name = "tbColorSchemePath1";
-            this.tbColorSchemePath1.Size = new System.Drawing.Size(151, 20);
+            this.tbColorSchemePath1.Size = new System.Drawing.Size(202, 22);
             this.tbColorSchemePath1.TabIndex = 43;
             // 
             // lblUsingColorScheme1
@@ -268,9 +285,10 @@
             this.lblUsingColorScheme1.AutoSize = true;
             this.lblUsingColorScheme1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.lblUsingColorScheme1.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.lblUsingColorScheme1.Location = new System.Drawing.Point(3, 316);
+            this.lblUsingColorScheme1.Location = new System.Drawing.Point(4, 393);
+            this.lblUsingColorScheme1.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.lblUsingColorScheme1.Name = "lblUsingColorScheme1";
-            this.lblUsingColorScheme1.Size = new System.Drawing.Size(151, 30);
+            this.lblUsingColorScheme1.Size = new System.Drawing.Size(203, 40);
             this.lblUsingColorScheme1.TabIndex = 40;
             this.lblUsingColorScheme1.Text = "Color scheme:";
             this.lblUsingColorScheme1.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
@@ -279,39 +297,43 @@
             // 
             this.tableLayoutPanel1.SetColumnSpan(this.tbStats3, 2);
             this.tbStats3.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.tbStats3.Location = new System.Drawing.Point(795, 623);
+            this.tbStats3.Location = new System.Drawing.Point(1064, 801);
+            this.tbStats3.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.tbStats3.Multiline = true;
             this.tbStats3.Name = "tbStats3";
-            this.tbStats3.Size = new System.Drawing.Size(308, 65);
+            this.tbStats3.Size = new System.Drawing.Size(413, 82);
             this.tbStats3.TabIndex = 39;
             // 
             // tbStats2
             // 
             this.tableLayoutPanel1.SetColumnSpan(this.tbStats2, 2);
             this.tbStats2.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.tbStats2.Location = new System.Drawing.Point(399, 623);
+            this.tbStats2.Location = new System.Drawing.Point(534, 801);
+            this.tbStats2.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.tbStats2.Multiline = true;
             this.tbStats2.Name = "tbStats2";
-            this.tbStats2.Size = new System.Drawing.Size(308, 65);
+            this.tbStats2.Size = new System.Drawing.Size(413, 82);
             this.tbStats2.TabIndex = 38;
             // 
             // tbStats1
             // 
             this.tableLayoutPanel1.SetColumnSpan(this.tbStats1, 2);
             this.tbStats1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.tbStats1.Location = new System.Drawing.Point(3, 623);
+            this.tbStats1.Location = new System.Drawing.Point(4, 801);
+            this.tbStats1.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.tbStats1.Multiline = true;
             this.tbStats1.Name = "tbStats1";
-            this.tbStats1.Size = new System.Drawing.Size(308, 65);
+            this.tbStats1.Size = new System.Drawing.Size(413, 82);
             this.tbStats1.TabIndex = 37;
             // 
             // btnOK1
             // 
             this.btnOK1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.btnOK1.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnOK1.Location = new System.Drawing.Point(317, 289);
+            this.btnOK1.Location = new System.Drawing.Point(425, 357);
+            this.btnOK1.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.btnOK1.Name = "btnOK1";
-            this.btnOK1.Size = new System.Drawing.Size(76, 24);
+            this.btnOK1.Size = new System.Drawing.Size(101, 32);
             this.btnOK1.TabIndex = 27;
             this.btnOK1.Text = "OK";
             this.btnOK1.UseVisualStyleBackColor = true;
@@ -321,9 +343,10 @@
             // 
             this.tableLayoutPanel1.SetColumnSpan(this.tbFormula1, 2);
             this.tbFormula1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.tbFormula1.Location = new System.Drawing.Point(3, 289);
+            this.tbFormula1.Location = new System.Drawing.Point(4, 357);
+            this.tbFormula1.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.tbFormula1.Name = "tbFormula1";
-            this.tbFormula1.Size = new System.Drawing.Size(308, 20);
+            this.tbFormula1.Size = new System.Drawing.Size(413, 22);
             this.tbFormula1.TabIndex = 26;
             // 
             // lblSourceImage
@@ -332,9 +355,10 @@
             this.tableLayoutPanel1.SetColumnSpan(this.lblSourceImage, 2);
             this.lblSourceImage.Dock = System.Windows.Forms.DockStyle.Fill;
             this.lblSourceImage.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.lblSourceImage.Location = new System.Drawing.Point(3, 0);
+            this.lblSourceImage.Location = new System.Drawing.Point(4, 0);
+            this.lblSourceImage.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.lblSourceImage.Name = "lblSourceImage";
-            this.lblSourceImage.Size = new System.Drawing.Size(308, 30);
+            this.lblSourceImage.Size = new System.Drawing.Size(413, 37);
             this.lblSourceImage.TabIndex = 1;
             this.lblSourceImage.Text = "Исходное изображение";
             this.lblSourceImage.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
@@ -345,9 +369,10 @@
             this.tableLayoutPanel1.SetColumnSpan(this.lblSkyIndex, 2);
             this.lblSkyIndex.Dock = System.Windows.Forms.DockStyle.Fill;
             this.lblSkyIndex.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.lblSkyIndex.Location = new System.Drawing.Point(399, 0);
+            this.lblSkyIndex.Location = new System.Drawing.Point(534, 0);
+            this.lblSkyIndex.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.lblSkyIndex.Name = "lblSkyIndex";
-            this.lblSkyIndex.Size = new System.Drawing.Size(308, 30);
+            this.lblSkyIndex.Size = new System.Drawing.Size(413, 37);
             this.lblSkyIndex.TabIndex = 3;
             this.lblSkyIndex.Text = "SkyIndex";
             this.lblSkyIndex.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
@@ -358,9 +383,10 @@
             this.tableLayoutPanel1.SetColumnSpan(this.lblBlue, 2);
             this.lblBlue.Dock = System.Windows.Forms.DockStyle.Fill;
             this.lblBlue.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.lblBlue.Location = new System.Drawing.Point(795, 0);
+            this.lblBlue.Location = new System.Drawing.Point(1064, 0);
+            this.lblBlue.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.lblBlue.Name = "lblBlue";
-            this.lblBlue.Size = new System.Drawing.Size(308, 30);
+            this.lblBlue.Size = new System.Drawing.Size(413, 37);
             this.lblBlue.TabIndex = 5;
             this.lblBlue.Text = "Цветовой канал";
             this.lblBlue.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
@@ -371,9 +397,10 @@
             this.lblResult1.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.lblResult1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.lblResult1.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.lblResult1.Location = new System.Drawing.Point(3, 256);
+            this.lblResult1.Location = new System.Drawing.Point(4, 313);
+            this.lblResult1.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.lblResult1.Name = "lblResult1";
-            this.lblResult1.Size = new System.Drawing.Size(151, 30);
+            this.lblResult1.Size = new System.Drawing.Size(203, 40);
             this.lblResult1.TabIndex = 25;
             this.lblResult1.Text = "Result 1";
             this.lblResult1.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
@@ -384,9 +411,10 @@
             this.lblResult2.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.lblResult2.Dock = System.Windows.Forms.DockStyle.Fill;
             this.lblResult2.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.lblResult2.Location = new System.Drawing.Point(399, 256);
+            this.lblResult2.Location = new System.Drawing.Point(534, 313);
+            this.lblResult2.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.lblResult2.Name = "lblResult2";
-            this.lblResult2.Size = new System.Drawing.Size(151, 30);
+            this.lblResult2.Size = new System.Drawing.Size(203, 40);
             this.lblResult2.TabIndex = 29;
             this.lblResult2.Text = "Result 2";
             this.lblResult2.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
@@ -395,9 +423,10 @@
             // 
             this.btnOK2.Dock = System.Windows.Forms.DockStyle.Fill;
             this.btnOK2.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnOK2.Location = new System.Drawing.Point(713, 289);
+            this.btnOK2.Location = new System.Drawing.Point(955, 357);
+            this.btnOK2.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.btnOK2.Name = "btnOK2";
-            this.btnOK2.Size = new System.Drawing.Size(76, 24);
+            this.btnOK2.Size = new System.Drawing.Size(101, 32);
             this.btnOK2.TabIndex = 31;
             this.btnOK2.Text = "OK";
             this.btnOK2.UseVisualStyleBackColor = true;
@@ -407,9 +436,10 @@
             // 
             this.tableLayoutPanel1.SetColumnSpan(this.tbFormula2, 2);
             this.tbFormula2.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.tbFormula2.Location = new System.Drawing.Point(399, 289);
+            this.tbFormula2.Location = new System.Drawing.Point(534, 357);
+            this.tbFormula2.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.tbFormula2.Name = "tbFormula2";
-            this.tbFormula2.Size = new System.Drawing.Size(308, 20);
+            this.tbFormula2.Size = new System.Drawing.Size(413, 22);
             this.tbFormula2.TabIndex = 30;
             // 
             // lblResult3
@@ -418,9 +448,10 @@
             this.lblResult3.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.lblResult3.Dock = System.Windows.Forms.DockStyle.Fill;
             this.lblResult3.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.lblResult3.Location = new System.Drawing.Point(795, 256);
+            this.lblResult3.Location = new System.Drawing.Point(1064, 313);
+            this.lblResult3.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.lblResult3.Name = "lblResult3";
-            this.lblResult3.Size = new System.Drawing.Size(151, 30);
+            this.lblResult3.Size = new System.Drawing.Size(203, 40);
             this.lblResult3.TabIndex = 33;
             this.lblResult3.Text = "Result 3";
             this.lblResult3.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
@@ -429,9 +460,10 @@
             // 
             this.btnOK3.Dock = System.Windows.Forms.DockStyle.Fill;
             this.btnOK3.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnOK3.Location = new System.Drawing.Point(1109, 289);
+            this.btnOK3.Location = new System.Drawing.Point(1485, 357);
+            this.btnOK3.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.btnOK3.Name = "btnOK3";
-            this.btnOK3.Size = new System.Drawing.Size(81, 24);
+            this.btnOK3.Size = new System.Drawing.Size(115, 32);
             this.btnOK3.TabIndex = 35;
             this.btnOK3.Text = "OK";
             this.btnOK3.UseVisualStyleBackColor = true;
@@ -441,9 +473,10 @@
             // 
             this.tableLayoutPanel1.SetColumnSpan(this.tbFormula3, 2);
             this.tbFormula3.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.tbFormula3.Location = new System.Drawing.Point(795, 289);
+            this.tbFormula3.Location = new System.Drawing.Point(1064, 357);
+            this.tbFormula3.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.tbFormula3.Name = "tbFormula3";
-            this.tbFormula3.Size = new System.Drawing.Size(308, 20);
+            this.tbFormula3.Size = new System.Drawing.Size(413, 22);
             this.tbFormula3.TabIndex = 34;
             // 
             // lblUsingColorScheme2
@@ -451,9 +484,10 @@
             this.lblUsingColorScheme2.AutoSize = true;
             this.lblUsingColorScheme2.Dock = System.Windows.Forms.DockStyle.Fill;
             this.lblUsingColorScheme2.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.lblUsingColorScheme2.Location = new System.Drawing.Point(399, 316);
+            this.lblUsingColorScheme2.Location = new System.Drawing.Point(534, 393);
+            this.lblUsingColorScheme2.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.lblUsingColorScheme2.Name = "lblUsingColorScheme2";
-            this.lblUsingColorScheme2.Size = new System.Drawing.Size(151, 30);
+            this.lblUsingColorScheme2.Size = new System.Drawing.Size(203, 40);
             this.lblUsingColorScheme2.TabIndex = 41;
             this.lblUsingColorScheme2.Text = "Color scheme:";
             this.lblUsingColorScheme2.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
@@ -463,9 +497,10 @@
             this.lblUsingColorScheme3.AutoSize = true;
             this.lblUsingColorScheme3.Dock = System.Windows.Forms.DockStyle.Fill;
             this.lblUsingColorScheme3.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.lblUsingColorScheme3.Location = new System.Drawing.Point(795, 316);
+            this.lblUsingColorScheme3.Location = new System.Drawing.Point(1064, 393);
+            this.lblUsingColorScheme3.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.lblUsingColorScheme3.Name = "lblUsingColorScheme3";
-            this.lblUsingColorScheme3.Size = new System.Drawing.Size(151, 30);
+            this.lblUsingColorScheme3.Size = new System.Drawing.Size(203, 40);
             this.lblUsingColorScheme3.TabIndex = 42;
             this.lblUsingColorScheme3.Text = "Color scheme:";
             this.lblUsingColorScheme3.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
@@ -473,17 +508,19 @@
             // tbColorSchemePath2
             // 
             this.tbColorSchemePath2.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.tbColorSchemePath2.Location = new System.Drawing.Point(556, 319);
+            this.tbColorSchemePath2.Location = new System.Drawing.Point(745, 397);
+            this.tbColorSchemePath2.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.tbColorSchemePath2.Name = "tbColorSchemePath2";
-            this.tbColorSchemePath2.Size = new System.Drawing.Size(151, 20);
+            this.tbColorSchemePath2.Size = new System.Drawing.Size(202, 22);
             this.tbColorSchemePath2.TabIndex = 44;
             // 
             // tbColorSchemePath3
             // 
             this.tbColorSchemePath3.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.tbColorSchemePath3.Location = new System.Drawing.Point(952, 319);
+            this.tbColorSchemePath3.Location = new System.Drawing.Point(1275, 397);
+            this.tbColorSchemePath3.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.tbColorSchemePath3.Name = "tbColorSchemePath3";
-            this.tbColorSchemePath3.Size = new System.Drawing.Size(151, 20);
+            this.tbColorSchemePath3.Size = new System.Drawing.Size(202, 22);
             this.tbColorSchemePath3.TabIndex = 45;
             // 
             // btnBrowseColorScheme2
@@ -491,9 +528,10 @@
             this.btnBrowseColorScheme2.Dock = System.Windows.Forms.DockStyle.Fill;
             this.btnBrowseColorScheme2.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnBrowseColorScheme2.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.btnBrowseColorScheme2.Location = new System.Drawing.Point(713, 319);
+            this.btnBrowseColorScheme2.Location = new System.Drawing.Point(955, 397);
+            this.btnBrowseColorScheme2.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.btnBrowseColorScheme2.Name = "btnBrowseColorScheme2";
-            this.btnBrowseColorScheme2.Size = new System.Drawing.Size(76, 24);
+            this.btnBrowseColorScheme2.Size = new System.Drawing.Size(101, 32);
             this.btnBrowseColorScheme2.TabIndex = 47;
             this.btnBrowseColorScheme2.Text = ". . .";
             this.btnBrowseColorScheme2.TextAlign = System.Drawing.ContentAlignment.TopCenter;
@@ -505,9 +543,10 @@
             this.btnBrowseColorScheme3.Dock = System.Windows.Forms.DockStyle.Fill;
             this.btnBrowseColorScheme3.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnBrowseColorScheme3.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.btnBrowseColorScheme3.Location = new System.Drawing.Point(1109, 319);
+            this.btnBrowseColorScheme3.Location = new System.Drawing.Point(1485, 397);
+            this.btnBrowseColorScheme3.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.btnBrowseColorScheme3.Name = "btnBrowseColorScheme3";
-            this.btnBrowseColorScheme3.Size = new System.Drawing.Size(81, 24);
+            this.btnBrowseColorScheme3.Size = new System.Drawing.Size(115, 32);
             this.btnBrowseColorScheme3.TabIndex = 48;
             this.btnBrowseColorScheme3.Text = ". . .";
             this.btnBrowseColorScheme3.TextAlign = System.Drawing.ContentAlignment.TopCenter;
@@ -519,13 +558,13 @@
             this.tableLayoutPanel1.ColumnCount = 9;
             this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 16.66667F));
             this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 16.66666F));
-            this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 82F));
+            this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 109F));
             this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 16.66667F));
             this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 16.66666F));
-            this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 82F));
+            this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 109F));
             this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 16.66667F));
             this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 16.66666F));
-            this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 86F));
+            this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 120F));
             this.tableLayoutPanel1.Controls.Add(this.btnSaveDataRes3, 7, 14);
             this.tableLayoutPanel1.Controls.Add(this.btnSaveDataRes2, 4, 14);
             this.tableLayoutPanel1.Controls.Add(this.btnBrowseColorScheme3, 8, 8);
@@ -550,9 +589,9 @@
             this.tableLayoutPanel1.Controls.Add(this.tbFormula1, 0, 7);
             this.tableLayoutPanel1.Controls.Add(this.btnOK1, 2, 7);
             this.tableLayoutPanel1.Controls.Add(this.pbRes1, 0, 9);
-            this.tableLayoutPanel1.Controls.Add(this.tbStats1, 0, 15);
-            this.tableLayoutPanel1.Controls.Add(this.tbStats2, 3, 15);
-            this.tableLayoutPanel1.Controls.Add(this.tbStats3, 6, 15);
+            this.tableLayoutPanel1.Controls.Add(this.tbStats1, 0, 16);
+            this.tableLayoutPanel1.Controls.Add(this.tbStats2, 3, 16);
+            this.tableLayoutPanel1.Controls.Add(this.tbStats3, 6, 16);
             this.tableLayoutPanel1.Controls.Add(this.lblUsingColorScheme1, 0, 8);
             this.tableLayoutPanel1.Controls.Add(this.tbColorSchemePath1, 1, 8);
             this.tableLayoutPanel1.Controls.Add(this.btnBrowseColorScheme1, 2, 8);
@@ -584,36 +623,42 @@
             this.tableLayoutPanel1.Controls.Add(this.btnRes13Dview, 1, 6);
             this.tableLayoutPanel1.Controls.Add(this.btnRes23Dview, 4, 6);
             this.tableLayoutPanel1.Controls.Add(this.btnRes33Dview, 7, 6);
+            this.tableLayoutPanel1.Controls.Add(this.cbRes1ApplyMask, 0, 15);
+            this.tableLayoutPanel1.Controls.Add(this.cbRes2ApplyMask, 3, 15);
+            this.tableLayoutPanel1.Controls.Add(this.cbRes3ApplyMask, 6, 15);
             this.tableLayoutPanel1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tableLayoutPanel1.Location = new System.Drawing.Point(0, 0);
+            this.tableLayoutPanel1.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.tableLayoutPanel1.Name = "tableLayoutPanel1";
-            this.tableLayoutPanel1.RowCount = 16;
-            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 30F));
+            this.tableLayoutPanel1.RowCount = 17;
+            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 37F));
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 20F));
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 20F));
-            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 30F));
-            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 30F));
-            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 30F));
-            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 30F));
-            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 30F));
-            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 30F));
-            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 20F));
-            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 20F));
+            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 40F));
+            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 40F));
+            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 40F));
+            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 40F));
+            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 40F));
+            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 40F));
+            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 25F));
+            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 25F));
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 20F));
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 20F));
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 20F));
-            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 30F));
-            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 70F));
-            this.tableLayoutPanel1.Size = new System.Drawing.Size(1193, 691);
+            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 40F));
+            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 40F));
+            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 86F));
+            this.tableLayoutPanel1.Size = new System.Drawing.Size(1604, 887);
             this.tableLayoutPanel1.TabIndex = 0;
             // 
             // btnSaveDataRes3
             // 
             this.btnSaveDataRes3.Dock = System.Windows.Forms.DockStyle.Fill;
             this.btnSaveDataRes3.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnSaveDataRes3.Location = new System.Drawing.Point(952, 593);
+            this.btnSaveDataRes3.Location = new System.Drawing.Point(1275, 721);
+            this.btnSaveDataRes3.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.btnSaveDataRes3.Name = "btnSaveDataRes3";
-            this.btnSaveDataRes3.Size = new System.Drawing.Size(151, 24);
+            this.btnSaveDataRes3.Size = new System.Drawing.Size(202, 32);
             this.btnSaveDataRes3.TabIndex = 76;
             this.btnSaveDataRes3.Text = "save data...";
             this.btnSaveDataRes3.UseVisualStyleBackColor = true;
@@ -623,9 +668,10 @@
             // 
             this.btnSaveDataRes2.Dock = System.Windows.Forms.DockStyle.Fill;
             this.btnSaveDataRes2.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnSaveDataRes2.Location = new System.Drawing.Point(556, 593);
+            this.btnSaveDataRes2.Location = new System.Drawing.Point(745, 721);
+            this.btnSaveDataRes2.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.btnSaveDataRes2.Name = "btnSaveDataRes2";
-            this.btnSaveDataRes2.Size = new System.Drawing.Size(151, 24);
+            this.btnSaveDataRes2.Size = new System.Drawing.Size(202, 32);
             this.btnSaveDataRes2.TabIndex = 75;
             this.btnSaveDataRes2.Text = "save data...";
             this.btnSaveDataRes2.UseVisualStyleBackColor = true;
@@ -636,10 +682,11 @@
             this.pbRes3.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.tableLayoutPanel1.SetColumnSpan(this.pbRes3, 2);
             this.pbRes3.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.pbRes3.Location = new System.Drawing.Point(795, 349);
+            this.pbRes3.Location = new System.Drawing.Point(1064, 437);
+            this.pbRes3.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.pbRes3.Name = "pbRes3";
             this.tableLayoutPanel1.SetRowSpan(this.pbRes3, 5);
-            this.pbRes3.Size = new System.Drawing.Size(308, 238);
+            this.pbRes3.Size = new System.Drawing.Size(413, 276);
             this.pbRes3.TabIndex = 36;
             this.pbRes3.TabStop = false;
             this.pbRes3.MouseDoubleClick += new System.Windows.Forms.MouseEventHandler(this.pbImageData_MouseDoubleClick);
@@ -652,10 +699,11 @@
             this.pbRes2.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.tableLayoutPanel1.SetColumnSpan(this.pbRes2, 2);
             this.pbRes2.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.pbRes2.Location = new System.Drawing.Point(399, 349);
+            this.pbRes2.Location = new System.Drawing.Point(534, 437);
+            this.pbRes2.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.pbRes2.Name = "pbRes2";
             this.tableLayoutPanel1.SetRowSpan(this.pbRes2, 5);
-            this.pbRes2.Size = new System.Drawing.Size(308, 238);
+            this.pbRes2.Size = new System.Drawing.Size(413, 276);
             this.pbRes2.TabIndex = 32;
             this.pbRes2.TabStop = false;
             this.pbRes2.MouseDoubleClick += new System.Windows.Forms.MouseEventHandler(this.pbImageData_MouseDoubleClick);
@@ -668,10 +716,11 @@
             this.pbChannel.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.tableLayoutPanel1.SetColumnSpan(this.pbChannel, 2);
             this.pbChannel.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.pbChannel.Location = new System.Drawing.Point(795, 33);
+            this.pbChannel.Location = new System.Drawing.Point(1064, 41);
+            this.pbChannel.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.pbChannel.Name = "pbChannel";
             this.tableLayoutPanel1.SetRowSpan(this.pbChannel, 4);
-            this.pbChannel.Size = new System.Drawing.Size(308, 190);
+            this.pbChannel.Size = new System.Drawing.Size(413, 228);
             this.pbChannel.TabIndex = 0;
             this.pbChannel.TabStop = false;
             this.pbChannel.MouseDoubleClick += new System.Windows.Forms.MouseEventHandler(this.pbImageData_MouseDoubleClick);
@@ -684,10 +733,11 @@
             this.pbRes1.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.tableLayoutPanel1.SetColumnSpan(this.pbRes1, 2);
             this.pbRes1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.pbRes1.Location = new System.Drawing.Point(3, 349);
+            this.pbRes1.Location = new System.Drawing.Point(4, 437);
+            this.pbRes1.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.pbRes1.Name = "pbRes1";
             this.tableLayoutPanel1.SetRowSpan(this.pbRes1, 5);
-            this.pbRes1.Size = new System.Drawing.Size(308, 238);
+            this.pbRes1.Size = new System.Drawing.Size(413, 276);
             this.pbRes1.TabIndex = 28;
             this.pbRes1.TabStop = false;
             this.pbRes1.MouseDoubleClick += new System.Windows.Forms.MouseEventHandler(this.pbImageData_MouseDoubleClick);
@@ -699,10 +749,11 @@
             // 
             this.pbScale.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.pbScale.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.pbScale.Location = new System.Drawing.Point(1109, 33);
+            this.pbScale.Location = new System.Drawing.Point(1485, 41);
+            this.pbScale.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.pbScale.Name = "pbScale";
             this.tableLayoutPanel1.SetRowSpan(this.pbScale, 4);
-            this.pbScale.Size = new System.Drawing.Size(81, 190);
+            this.pbScale.Size = new System.Drawing.Size(115, 228);
             this.pbScale.TabIndex = 49;
             this.pbScale.TabStop = false;
             this.pbScale.Click += new System.EventHandler(this.pbScale_Click);
@@ -717,10 +768,11 @@
             // 
             this.pbRes1Scale.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.pbRes1Scale.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.pbRes1Scale.Location = new System.Drawing.Point(317, 369);
+            this.pbRes1Scale.Location = new System.Drawing.Point(425, 462);
+            this.pbRes1Scale.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.pbRes1Scale.Name = "pbRes1Scale";
             this.tableLayoutPanel1.SetRowSpan(this.pbRes1Scale, 4);
-            this.pbRes1Scale.Size = new System.Drawing.Size(76, 218);
+            this.pbRes1Scale.Size = new System.Drawing.Size(101, 251);
             this.pbRes1Scale.TabIndex = 52;
             this.pbRes1Scale.TabStop = false;
             this.pbRes1Scale.MouseClick += new System.Windows.Forms.MouseEventHandler(this.pbResScale_MouseClick);
@@ -734,10 +786,11 @@
             // 
             this.pbRes2Scale.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.pbRes2Scale.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.pbRes2Scale.Location = new System.Drawing.Point(713, 369);
+            this.pbRes2Scale.Location = new System.Drawing.Point(955, 462);
+            this.pbRes2Scale.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.pbRes2Scale.Name = "pbRes2Scale";
             this.tableLayoutPanel1.SetRowSpan(this.pbRes2Scale, 4);
-            this.pbRes2Scale.Size = new System.Drawing.Size(76, 218);
+            this.pbRes2Scale.Size = new System.Drawing.Size(101, 251);
             this.pbRes2Scale.TabIndex = 53;
             this.pbRes2Scale.TabStop = false;
             this.pbRes2Scale.MouseClick += new System.Windows.Forms.MouseEventHandler(this.pbResScale_MouseClick);
@@ -751,10 +804,11 @@
             // 
             this.pbRes3Scale.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.pbRes3Scale.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.pbRes3Scale.Location = new System.Drawing.Point(1109, 369);
+            this.pbRes3Scale.Location = new System.Drawing.Point(1485, 462);
+            this.pbRes3Scale.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.pbRes3Scale.Name = "pbRes3Scale";
             this.tableLayoutPanel1.SetRowSpan(this.pbRes3Scale, 4);
-            this.pbRes3Scale.Size = new System.Drawing.Size(81, 218);
+            this.pbRes3Scale.Size = new System.Drawing.Size(115, 251);
             this.pbRes3Scale.TabIndex = 54;
             this.pbRes3Scale.TabStop = false;
             this.pbRes3Scale.MouseClick += new System.Windows.Forms.MouseEventHandler(this.pbResScale_MouseClick);
@@ -768,10 +822,11 @@
             // 
             this.tableLayoutPanel1.SetColumnSpan(this.pbSourceImage, 2);
             this.pbSourceImage.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.pbSourceImage.Location = new System.Drawing.Point(3, 33);
+            this.pbSourceImage.Location = new System.Drawing.Point(4, 41);
+            this.pbSourceImage.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.pbSourceImage.Name = "pbSourceImage";
             this.tableLayoutPanel1.SetRowSpan(this.pbSourceImage, 4);
-            this.pbSourceImage.Size = new System.Drawing.Size(308, 190);
+            this.pbSourceImage.Size = new System.Drawing.Size(413, 228);
             this.pbSourceImage.TabIndex = 68;
             this.pbSourceImage.TabStop = false;
             // 
@@ -779,10 +834,11 @@
             // 
             this.tableLayoutPanel1.SetColumnSpan(this.pbSkyIndexImage, 2);
             this.pbSkyIndexImage.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.pbSkyIndexImage.Location = new System.Drawing.Point(399, 33);
+            this.pbSkyIndexImage.Location = new System.Drawing.Point(534, 41);
+            this.pbSkyIndexImage.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.pbSkyIndexImage.Name = "pbSkyIndexImage";
             this.tableLayoutPanel1.SetRowSpan(this.pbSkyIndexImage, 4);
-            this.pbSkyIndexImage.Size = new System.Drawing.Size(308, 190);
+            this.pbSkyIndexImage.Size = new System.Drawing.Size(413, 228);
             this.pbSkyIndexImage.TabIndex = 69;
             this.pbSkyIndexImage.TabStop = false;
             // 
@@ -790,10 +846,11 @@
             // 
             this.pbSkyIndexScale.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.pbSkyIndexScale.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.pbSkyIndexScale.Location = new System.Drawing.Point(713, 33);
+            this.pbSkyIndexScale.Location = new System.Drawing.Point(955, 41);
+            this.pbSkyIndexScale.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.pbSkyIndexScale.Name = "pbSkyIndexScale";
             this.tableLayoutPanel1.SetRowSpan(this.pbSkyIndexScale, 4);
-            this.pbSkyIndexScale.Size = new System.Drawing.Size(76, 190);
+            this.pbSkyIndexScale.Size = new System.Drawing.Size(101, 228);
             this.pbSkyIndexScale.TabIndex = 70;
             this.pbSkyIndexScale.TabStop = false;
             // 
@@ -801,9 +858,10 @@
             // 
             this.btnSaveDataRes1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.btnSaveDataRes1.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnSaveDataRes1.Location = new System.Drawing.Point(160, 593);
+            this.btnSaveDataRes1.Location = new System.Drawing.Point(215, 721);
+            this.btnSaveDataRes1.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.btnSaveDataRes1.Name = "btnSaveDataRes1";
-            this.btnSaveDataRes1.Size = new System.Drawing.Size(151, 24);
+            this.btnSaveDataRes1.Size = new System.Drawing.Size(202, 32);
             this.btnSaveDataRes1.TabIndex = 74;
             this.btnSaveDataRes1.Text = "save data...";
             this.btnSaveDataRes1.UseVisualStyleBackColor = true;
@@ -813,9 +871,10 @@
             // 
             this.btnTestProcess.Dock = System.Windows.Forms.DockStyle.Fill;
             this.btnTestProcess.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnTestProcess.Location = new System.Drawing.Point(317, 33);
+            this.btnTestProcess.Location = new System.Drawing.Point(425, 41);
+            this.btnTestProcess.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.btnTestProcess.Name = "btnTestProcess";
-            this.btnTestProcess.Size = new System.Drawing.Size(76, 62);
+            this.btnTestProcess.Size = new System.Drawing.Size(101, 70);
             this.btnTestProcess.TabIndex = 77;
             this.btnTestProcess.Text = "test FFT";
             this.btnTestProcess.UseVisualStyleBackColor = true;
@@ -825,9 +884,10 @@
             // 
             this.btnSaveDataSkyIndexData.Dock = System.Windows.Forms.DockStyle.Fill;
             this.btnSaveDataSkyIndexData.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnSaveDataSkyIndexData.Location = new System.Drawing.Point(713, 229);
+            this.btnSaveDataSkyIndexData.Location = new System.Drawing.Point(955, 277);
+            this.btnSaveDataSkyIndexData.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.btnSaveDataSkyIndexData.Name = "btnSaveDataSkyIndexData";
-            this.btnSaveDataSkyIndexData.Size = new System.Drawing.Size(76, 24);
+            this.btnSaveDataSkyIndexData.Size = new System.Drawing.Size(101, 32);
             this.btnSaveDataSkyIndexData.TabIndex = 78;
             this.btnSaveDataSkyIndexData.Text = "save data...";
             this.btnSaveDataSkyIndexData.UseVisualStyleBackColor = true;
@@ -837,9 +897,10 @@
             // 
             this.button1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.button1.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.button1.Location = new System.Drawing.Point(317, 101);
+            this.button1.Location = new System.Drawing.Point(425, 119);
+            this.button1.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(76, 62);
+            this.button1.Size = new System.Drawing.Size(101, 70);
             this.button1.TabIndex = 79;
             this.button1.Text = "test Grad";
             this.button1.UseVisualStyleBackColor = true;
@@ -849,9 +910,10 @@
             // 
             this.btnRes1Hist.Dock = System.Windows.Forms.DockStyle.Fill;
             this.btnRes1Hist.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnRes1Hist.Location = new System.Drawing.Point(317, 259);
+            this.btnRes1Hist.Location = new System.Drawing.Point(425, 317);
+            this.btnRes1Hist.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.btnRes1Hist.Name = "btnRes1Hist";
-            this.btnRes1Hist.Size = new System.Drawing.Size(76, 24);
+            this.btnRes1Hist.Size = new System.Drawing.Size(101, 32);
             this.btnRes1Hist.TabIndex = 80;
             this.btnRes1Hist.Text = "histogram";
             this.btnRes1Hist.UseVisualStyleBackColor = true;
@@ -861,9 +923,10 @@
             // 
             this.btnRes2Hist.Dock = System.Windows.Forms.DockStyle.Fill;
             this.btnRes2Hist.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnRes2Hist.Location = new System.Drawing.Point(713, 259);
+            this.btnRes2Hist.Location = new System.Drawing.Point(955, 317);
+            this.btnRes2Hist.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.btnRes2Hist.Name = "btnRes2Hist";
-            this.btnRes2Hist.Size = new System.Drawing.Size(76, 24);
+            this.btnRes2Hist.Size = new System.Drawing.Size(101, 32);
             this.btnRes2Hist.TabIndex = 81;
             this.btnRes2Hist.Text = "histogram";
             this.btnRes2Hist.UseVisualStyleBackColor = true;
@@ -873,9 +936,10 @@
             // 
             this.btnRes3Hist.Dock = System.Windows.Forms.DockStyle.Fill;
             this.btnRes3Hist.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnRes3Hist.Location = new System.Drawing.Point(1109, 259);
+            this.btnRes3Hist.Location = new System.Drawing.Point(1485, 317);
+            this.btnRes3Hist.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.btnRes3Hist.Name = "btnRes3Hist";
-            this.btnRes3Hist.Size = new System.Drawing.Size(81, 24);
+            this.btnRes3Hist.Size = new System.Drawing.Size(115, 32);
             this.btnRes3Hist.TabIndex = 82;
             this.btnRes3Hist.Text = "histogram";
             this.btnRes3Hist.UseVisualStyleBackColor = true;
@@ -885,9 +949,10 @@
             // 
             this.btnSectionProfile1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.btnSectionProfile1.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnSectionProfile1.Location = new System.Drawing.Point(3, 593);
+            this.btnSectionProfile1.Location = new System.Drawing.Point(4, 721);
+            this.btnSectionProfile1.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.btnSectionProfile1.Name = "btnSectionProfile1";
-            this.btnSectionProfile1.Size = new System.Drawing.Size(151, 24);
+            this.btnSectionProfile1.Size = new System.Drawing.Size(203, 32);
             this.btnSectionProfile1.TabIndex = 83;
             this.btnSectionProfile1.Text = "Section profile...";
             this.btnSectionProfile1.UseVisualStyleBackColor = true;
@@ -897,9 +962,10 @@
             // 
             this.btnSectionProfile2.Dock = System.Windows.Forms.DockStyle.Fill;
             this.btnSectionProfile2.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnSectionProfile2.Location = new System.Drawing.Point(399, 593);
+            this.btnSectionProfile2.Location = new System.Drawing.Point(534, 721);
+            this.btnSectionProfile2.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.btnSectionProfile2.Name = "btnSectionProfile2";
-            this.btnSectionProfile2.Size = new System.Drawing.Size(151, 24);
+            this.btnSectionProfile2.Size = new System.Drawing.Size(203, 32);
             this.btnSectionProfile2.TabIndex = 84;
             this.btnSectionProfile2.Text = "Section profile...";
             this.btnSectionProfile2.UseVisualStyleBackColor = true;
@@ -909,9 +975,10 @@
             // 
             this.btnSectionProfile3.Dock = System.Windows.Forms.DockStyle.Fill;
             this.btnSectionProfile3.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnSectionProfile3.Location = new System.Drawing.Point(795, 593);
+            this.btnSectionProfile3.Location = new System.Drawing.Point(1064, 721);
+            this.btnSectionProfile3.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.btnSectionProfile3.Name = "btnSectionProfile3";
-            this.btnSectionProfile3.Size = new System.Drawing.Size(151, 24);
+            this.btnSectionProfile3.Size = new System.Drawing.Size(203, 32);
             this.btnSectionProfile3.TabIndex = 85;
             this.btnSectionProfile3.Text = "Section profile...";
             this.btnSectionProfile3.UseVisualStyleBackColor = true;
@@ -922,10 +989,10 @@
             this.btnRes13Dview.Dock = System.Windows.Forms.DockStyle.Fill;
             this.btnRes13Dview.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnRes13Dview.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnRes13Dview.Location = new System.Drawing.Point(159, 258);
-            this.btnRes13Dview.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.btnRes13Dview.Location = new System.Drawing.Point(214, 315);
+            this.btnRes13Dview.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.btnRes13Dview.Name = "btnRes13Dview";
-            this.btnRes13Dview.Size = new System.Drawing.Size(153, 26);
+            this.btnRes13Dview.Size = new System.Drawing.Size(204, 36);
             this.btnRes13Dview.TabIndex = 86;
             this.btnRes13Dview.Text = "3D view";
             this.btnRes13Dview.UseVisualStyleBackColor = true;
@@ -936,10 +1003,10 @@
             this.btnRes23Dview.Dock = System.Windows.Forms.DockStyle.Fill;
             this.btnRes23Dview.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnRes23Dview.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnRes23Dview.Location = new System.Drawing.Point(555, 258);
-            this.btnRes23Dview.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.btnRes23Dview.Location = new System.Drawing.Point(744, 315);
+            this.btnRes23Dview.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.btnRes23Dview.Name = "btnRes23Dview";
-            this.btnRes23Dview.Size = new System.Drawing.Size(153, 26);
+            this.btnRes23Dview.Size = new System.Drawing.Size(204, 36);
             this.btnRes23Dview.TabIndex = 87;
             this.btnRes23Dview.Text = "3D view";
             this.btnRes23Dview.UseVisualStyleBackColor = true;
@@ -950,22 +1017,62 @@
             this.btnRes33Dview.Dock = System.Windows.Forms.DockStyle.Fill;
             this.btnRes33Dview.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnRes33Dview.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnRes33Dview.Location = new System.Drawing.Point(951, 258);
-            this.btnRes33Dview.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.btnRes33Dview.Location = new System.Drawing.Point(1274, 315);
+            this.btnRes33Dview.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.btnRes33Dview.Name = "btnRes33Dview";
-            this.btnRes33Dview.Size = new System.Drawing.Size(153, 26);
+            this.btnRes33Dview.Size = new System.Drawing.Size(204, 36);
             this.btnRes33Dview.TabIndex = 88;
             this.btnRes33Dview.Text = "3D view";
             this.btnRes33Dview.UseVisualStyleBackColor = true;
             this.btnRes33Dview.Click += new System.EventHandler(this.btnRes3Dview);
             // 
+            // cbRes1ApplyMask
+            // 
+            this.cbRes1ApplyMask.AutoSize = true;
+            this.cbRes1ApplyMask.Checked = true;
+            this.cbRes1ApplyMask.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.cbRes1ApplyMask.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.cbRes1ApplyMask.Location = new System.Drawing.Point(3, 760);
+            this.cbRes1ApplyMask.Name = "cbRes1ApplyMask";
+            this.cbRes1ApplyMask.Size = new System.Drawing.Size(205, 34);
+            this.cbRes1ApplyMask.TabIndex = 89;
+            this.cbRes1ApplyMask.Text = "Apply mask";
+            this.cbRes1ApplyMask.UseVisualStyleBackColor = true;
+            // 
+            // cbRes2ApplyMask
+            // 
+            this.cbRes2ApplyMask.AutoSize = true;
+            this.cbRes2ApplyMask.Checked = true;
+            this.cbRes2ApplyMask.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.cbRes2ApplyMask.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.cbRes2ApplyMask.Location = new System.Drawing.Point(533, 760);
+            this.cbRes2ApplyMask.Name = "cbRes2ApplyMask";
+            this.cbRes2ApplyMask.Size = new System.Drawing.Size(205, 34);
+            this.cbRes2ApplyMask.TabIndex = 90;
+            this.cbRes2ApplyMask.Text = "Apply mask";
+            this.cbRes2ApplyMask.UseVisualStyleBackColor = true;
+            // 
+            // cbRes3ApplyMask
+            // 
+            this.cbRes3ApplyMask.AutoSize = true;
+            this.cbRes3ApplyMask.Checked = true;
+            this.cbRes3ApplyMask.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.cbRes3ApplyMask.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.cbRes3ApplyMask.Location = new System.Drawing.Point(1063, 760);
+            this.cbRes3ApplyMask.Name = "cbRes3ApplyMask";
+            this.cbRes3ApplyMask.Size = new System.Drawing.Size(205, 34);
+            this.cbRes3ApplyMask.TabIndex = 91;
+            this.cbRes3ApplyMask.Text = "Apply mask";
+            this.cbRes3ApplyMask.UseVisualStyleBackColor = true;
+            // 
             // SkyImagesAnalyzer_ColorsManipulatingForm
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
+            this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1193, 691);
+            this.ClientSize = new System.Drawing.Size(1604, 887);
             this.Controls.Add(this.tableLayoutPanel1);
             this.KeyPreview = true;
+            this.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.Name = "SkyImagesAnalyzer_ColorsManipulatingForm";
             this.Text = "SkyIndexAnalyzing_ColorsManipulatingForm";
             this.Load += new System.EventHandler(this.SkyIndexAnalyzing_ColorsManipulatingForm_Load);
@@ -1056,5 +1163,8 @@
         private System.Windows.Forms.Button btnRes13Dview;
         private System.Windows.Forms.Button btnRes23Dview;
         private System.Windows.Forms.Button btnRes33Dview;
+        private System.Windows.Forms.CheckBox cbRes1ApplyMask;
+        private System.Windows.Forms.CheckBox cbRes2ApplyMask;
+        private System.Windows.Forms.CheckBox cbRes3ApplyMask;
     }
 }

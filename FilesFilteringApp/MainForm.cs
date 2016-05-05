@@ -6,10 +6,13 @@ using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Windows;
+using SkyImagesAnalyzer;
 using SkyImagesAnalyzerLibraries;
 
 
@@ -17,6 +20,17 @@ namespace FilesFilteringApp
 {
     public partial class MainForm : Form
     {
+        private Dictionary<string, object> defaultProperties = null;
+        private string defaultPropertiesXMLfileName = "";
+        private string CopyImagesFrom_Path = "";
+        string CopyImagesAndDataTo_Path = "";
+        string ConcurrentDataXMLfilesPath = "";
+        string GrIxYRGBstatsXMLfilesPath = "";
+        private TimeSpan filterTolerance = new TimeSpan(0, 1, 0);
+        private LogWindow theLogWindow = null;
+
+
+
         public MainForm()
         {
             InitializeComponent();
@@ -41,6 +55,10 @@ namespace FilesFilteringApp
             {
                 currFilenameTextbox = rtbConcurrentDataDir;
             }
+            else if (sender == btnStatsDirPathSelect)
+            {
+                currFilenameTextbox = rtbGrIxYRGBstatsDir;
+            }
 
             FolderBrowserDialog opFD = new FolderBrowserDialog();
             opFD.ShowNewFolderButton = true;
@@ -59,43 +77,37 @@ namespace FilesFilteringApp
 
         private void MainForm_Load(object sender, EventArgs e)
         {
-            ThreadSafeOperations.SetTextTB(rtbFromPath, Properties.Settings.Default.FromPath, false);
-            ThreadSafeOperations.SetTextTB(rtbToPath, Properties.Settings.Default.ToPath, false);
-            ThreadSafeOperations.SetTextTB(rtbConcurrentDataDir, Properties.Settings.Default.FromConcurrentPath, false);
+            readDefaultProperties();
         }
+
+
+
+
 
         private void btnDoWork_Click(object sender, EventArgs e)
         {
-            //ThreadSafeOperations.SetTextTB(tbLog, "#001" + Environment.NewLine, true);
+            theLogWindow = ServiceTools.LogAText(theLogWindow,
+                "=========== Processing started on " + DateTime.Now.ToString("s") + " ===========");
+
             if (bgwCopier.IsBusy)
             {
-                //ThreadSafeOperations.SetTextTB(tbLog, "#002" + Environment.NewLine, true);
                 bgwCopier.CancelAsync();
             }
             else
             {
 
-                object[] args = new object[] { rtbFromPath.Text, rtbConcurrentDataDir.Text, rtbToPath.Text };
+                object[] args = new object[] { rtbFromPath.Text, rtbConcurrentDataDir.Text, rtbToPath.Text, rtbGrIxYRGBstatsDir.Text };
 
                 bgwCopier.RunWorkerAsync(args);
                 ThreadSafeOperations.ToggleButtonState(btnDoWork, true, "CANCEL", true);
             }
-            //ThreadSafeOperations.ToggleButtonState(btnDoWork, true, "CANCEL", true);
-            //CopierWork();
         }
+
+
 
         private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
         {
-            if (rtbFromPath.Text != Properties.Settings.Default.FromPath)
-            {
-                Properties.Settings.Default.FromPath = rtbFromPath.Text;
-            }
-            if (rtbToPath.Text != Properties.Settings.Default.ToPath)
-            {
-                Properties.Settings.Default.ToPath = rtbToPath.Text;
-            }
-
-            Properties.Settings.Default.Save();
+            saveDefaultProperties();
         }
 
 
@@ -162,28 +174,65 @@ namespace FilesFilteringApp
 
         private void bgwCopier_DoWork(object sender, DoWorkEventArgs e)
         {
-            System.ComponentModel.BackgroundWorker SelfWorker = sender as System.ComponentModel.BackgroundWorker;
+            BackgroundWorker SelfWorker = sender as BackgroundWorker;
             object[] bgwArgs = e.Argument as object[];
             string fromPath = bgwArgs[0] as string;
             string concurrentDataFilesPath = bgwArgs[1] as string;
             string toPath = bgwArgs[2] as string;
-
-            bool copyConcurrentDataFiles = ((concurrentDataFilesPath != "") && (Directory.Exists(concurrentDataFilesPath)));
+            string imagesStatsXMLfilesDir = bgwArgs[3] as string;
 
             DirectoryInfo dir = new DirectoryInfo(fromPath);
-            String destDirectory = toPath + "\\";
+            String destDirectory = toPath +
+                                   ((toPath.Last() == Path.DirectorySeparatorChar)
+                                       ? ("")
+                                       : (Path.DirectorySeparatorChar.ToString()));
 
             if (!dir.Exists)
             {
-                ThreadSafeOperations.SetTextTB(tbLog, "Операция не выполнена. Не найдена директория:" + Environment.NewLine + fromPath + Environment.NewLine, true);
+                theLogWindow = ServiceTools.LogAText(theLogWindow,
+                    "Операция не выполнена. Не найдена директория:" + Environment.NewLine + fromPath +
+                    Environment.NewLine);
+                //ThreadSafeOperations.SetTextTB(tbLog, "Операция не выполнена. Не найдена директория:" + Environment.NewLine + fromPath + Environment.NewLine, true);
                 return;
             }
 
 
             FileInfo[] FileList2Process = dir.GetFiles("*.jpg", SearchOption.AllDirectories);
+            List<Tuple<string, string>> imagesStatsXMLfiles = new List<Tuple<string, string>>();
+            if (Directory.Exists(imagesStatsXMLfilesDir))
+            {
+                imagesStatsXMLfiles =
+                    (new DirectoryInfo(imagesStatsXMLfilesDir)).EnumerateFiles(
+                        ConventionalTransitions.ImageGrIxYRGBstatsFileNamesPattern(), SearchOption.AllDirectories)
+                        .ToList()
+                        .ConvertAll(fInfo => new Tuple<string, string>(fInfo.Name, fInfo.FullName));
+            }
+
+
+            DirectoryInfo dirConcurrentDataFiles = new DirectoryInfo(concurrentDataFilesPath);
+            List<Tuple<string, DateTime>> lConcurrentDataFiles =
+                dirConcurrentDataFiles.EnumerateFiles(ConventionalTransitions.ImageConcurrentDataFilesNamesPattern(),
+                    SearchOption.AllDirectories).ToList().ConvertAll(fInfo =>
+                    {
+                        // data-2015-12-15T06-12-56.0590302Z.xml
+                        string strDateTimeOfFile = Path.GetFileNameWithoutExtension(fInfo.Name).Substring(5, 28);
+                        strDateTimeOfFile = strDateTimeOfFile.Substring(0, 11) +
+                                            strDateTimeOfFile.Substring(11).Replace('-', ':');
+                        DateTime currFileDT = DateTime.Parse(strDateTimeOfFile, null, System.Globalization.DateTimeStyles.AdjustToUniversal);
+                        currFileDT = DateTime.SpecifyKind(currFileDT, DateTimeKind.Utc);
+                        return new Tuple<string, DateTime>(fInfo.FullName, currFileDT);
+                    });
+
+
+
+
+
             int filesCount = FileList2Process.Length;
-            ThreadSafeOperations.SetTextTB(tbLog, "searching in directory: " + dir.FullName + Environment.NewLine, true);
-            ThreadSafeOperations.SetTextTB(tbLog, "files found count: " + filesCount + Environment.NewLine, true);
+            theLogWindow = ServiceTools.LogAText(theLogWindow,
+                "searching in directory: " + dir.FullName + Environment.NewLine);
+            //ThreadSafeOperations.SetTextTB(tbLog, "searching in directory: " + dir.FullName + Environment.NewLine, true);
+            theLogWindow = ServiceTools.LogAText(theLogWindow, "files found count: " + filesCount + Environment.NewLine);
+            //ThreadSafeOperations.SetTextTB(tbLog, "files found count: " + filesCount + Environment.NewLine, true);
 
             String usedDateTimes = "";
 
@@ -220,79 +269,141 @@ namespace FilesFilteringApp
 
 
                 //curDateTime = dateTime;
-                DateTime theHour = DateTime.UtcNow;
+                DateTime curImgDateTime;
+                DateTime theHour = RoundToHour(DateTime.UtcNow);
                 try
                 {
-                    DateTime curDateTime = DateTimeOfString(strDateTimeEXIF);
-                    theHour = RoundToHour(curDateTime);
+                    //curImgDateTime = DateTimeOfString(strDateTimeEXIF);
+                    curImgDateTime = ConventionalTransitions.DateTimeOfSkyImageFilename(fileInfo.Name);
+                    theHour = RoundToHour(curImgDateTime);
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
                     continue;
                 }
 
 
-                minute = Convert.ToInt32(strDateTimeEXIF.Substring(14, 2));
+                //minute = Convert.ToInt32(strDateTimeEXIF.Substring(14, 2));
 
-                if ((minute == 0) && (!listUsedHours.Contains(theHour)))
+                //if ((minute == 0) && (!listUsedHours.Contains(theHour)))
+                if (new TimeSpan(Math.Abs((theHour-curImgDateTime).Ticks)) <= filterTolerance)
                 {
+                    #region copy the image file itself
                     listUsedHours.Add(theHour);
-                    String newFileName = destDirectory + fileInfo.Name;
-                    File.Copy(fileInfo.FullName, newFileName);
-                    ThreadSafeOperations.SetTextTB(tbLog, "COPY: " + fileInfo.FullName + "   >>>   " + newFileName + Environment.NewLine, true);
 
-                    if (copyConcurrentDataFiles)
+                    string dateDirectorySuffix = curImgDateTime.ToString("yyyy-MM-dd");
+                    string currDateDestDirectory = destDirectory + dateDirectorySuffix + Path.DirectorySeparatorChar;
+                    if (!ServiceTools.CheckIfDirectoryExists(currDateDestDirectory))
                     {
-                        DirectoryInfo dirConcurrentDataFiles = new DirectoryInfo(concurrentDataFilesPath);
+                        currDateDestDirectory = destDirectory;
+                    }
+                    
 
-                        FileInfo[] concurrentDataFilesList =
-                            dirConcurrentDataFiles.GetFiles(
-                                "data-" + theHour.ToString("s").Replace(":", "-").Substring(0, 16) + "*.xml",
-                                SearchOption.TopDirectoryOnly);
-                        if (concurrentDataFilesList.Any())
+
+                    String newFileName = currDateDestDirectory + fileInfo.Name;
+                    File.Copy(fileInfo.FullName, newFileName);
+                    theLogWindow = ServiceTools.LogAText(theLogWindow,
+                        "COPY: " + fileInfo.FullName + "   >>>   " + newFileName + Environment.NewLine);
+                    //ThreadSafeOperations.SetTextTB(tbLog, "COPY: " + fileInfo.FullName + "   >>>   " + newFileName + Environment.NewLine, true);
+                    #endregion copy the image file itself
+
+
+                    #region find and copy the GrIx,YRGB stats data file
+                    if (imagesStatsXMLfiles.Any())
+                    {
+                        string xmlStatsFileName =
+                            ConventionalTransitions.ImageGrIxYRGBstatsDataFileName(fileInfo.FullName, "", false);
+
+                        Tuple<string, string> foundXMLfile =
+                            imagesStatsXMLfiles.Find(tpl => tpl.Item1 == xmlStatsFileName);
+
+                        if (foundXMLfile != null)
                         {
-                            Dictionary<string, object> dictSavedData = ServiceTools.ReadDictionaryFromXML(concurrentDataFilesList[0].FullName);
-                            GPSdata gps = new GPSdata((string)dictSavedData["GPSdata"], GPSdatasources.CloudCamArduinoGPS);
-                            if (!gps.validGPSdata)
-                            {
-                                FileInfo[] concurrentDataFilesListTry =
-                                    dirConcurrentDataFiles.GetFiles(
-                                        "data-" + theHour.ToString("s").Replace(":", "-").Substring(0, 15) + "*.xml",
-                                        SearchOption.TopDirectoryOnly);
-                                List<Tuple<string, Dictionary<string, object>>> XMLfilesData =
-                                    new List<Tuple<string, Dictionary<string, object>>>();
-                                foreach (FileInfo fInfo in concurrentDataFilesListTry)
-                                {
-                                    XMLfilesData.Add(new Tuple<string, Dictionary<string, object>>(fInfo.FullName,
-                                        ServiceTools.ReadDictionaryFromXML(fInfo.FullName)));
-                                }
-
-                                List <Tuple<string, GPSdata>> lGPSdata =
-                                    XMLfilesData.ConvertAll(tplXML => new Tuple<string, GPSdata>(tplXML.Item1, new GPSdata((string)tplXML.Item2["GPSdata"], GPSdatasources.CloudCamArduinoGPS)));
-
-                                lGPSdata.RemoveAll(tpl => !tpl.Item2.validGPSdata);
-
-                                if (lGPSdata.Any())
-                                {
-                                    File.Copy(lGPSdata[0].Item1, destDirectory + "data-" + fileInfo.Name + ".xml");
-                                }
-                                else
-                                {
-                                    ThreadSafeOperations.SetTextTB(tbLog, "========== ERROR: couldn`t find concurrent data file for " + fileInfo.FullName + Environment.NewLine, true);
-                                }
-                            }
-                            else
-                            {
-                                File.Copy(concurrentDataFilesList[0].FullName,
-                                destDirectory + "data-" + fileInfo.Name + ".xml");
-                            }
+                            string sStatsXMLfilename = foundXMLfile.Item2;
+                            string newStatsXMLfilename = currDateDestDirectory + foundXMLfile.Item1;
+                            File.Copy(sStatsXMLfilename, newStatsXMLfilename);
+                            theLogWindow = ServiceTools.LogAText(theLogWindow,
+                                "COPY: " + sStatsXMLfilename + "   >>>   " + newStatsXMLfilename + Environment.NewLine);
+                            //ThreadSafeOperations.SetTextTB(tbLog,
+                            //    "COPY: " + sStatsXMLfilename + "   >>>   " + newStatsXMLfilename + Environment.NewLine,
+                            //    true);
                         }
                         else
                         {
-                            ThreadSafeOperations.SetTextTB(tbLog, "========== ERROR: couldn`t find concurrent data file for " + fileInfo.FullName + Environment.NewLine, true);
+                            theLogWindow = ServiceTools.LogAText(theLogWindow,
+                                "========== ERROR: couldn`t find GrIx,YRGB stats XML file" + Environment.NewLine);
+                            //ThreadSafeOperations.SetTextTB(tbLog,
+                            //    "========== ERROR: couldn`t find GrIx,YRGB stats XML file" + Environment.NewLine, true);
                         }
                     }
+                    #endregion find and copy the GrIx,YRGB stats data file
 
+
+                    #region find and copy concurrent data XML file
+                    if (lConcurrentDataFiles.Any())
+                    {
+                        //найдем ближайший по времени
+                        List<Tuple<string, TimeSpan>> lCurrFileConcurrentDataNearest =
+                            lConcurrentDataFiles.ConvertAll(
+                                tpl =>
+                                    new Tuple<string, TimeSpan>(tpl.Item1,
+                                        new TimeSpan(Math.Abs((tpl.Item2 - curImgDateTime).Ticks))));
+                        lCurrFileConcurrentDataNearest.Sort(new Comparison<Tuple<string, TimeSpan>>((tpl1, tpl2) =>
+                        {
+                            if (tpl1 == null)
+                            {
+                                if (tpl2 == null) return 0;
+                                else return -1;
+                            }
+                            else
+                            {
+                                if (tpl2 == null) return 1;
+                                else return tpl1.Item2.CompareTo(tpl2.Item2);
+                            }
+
+                        }));
+
+                        GPSdata gps = new GPSdata();
+                        Tuple<string, TimeSpan> nearestConcurrentDataFile = null;
+                        int concurrentDataFileIdx = 0;
+                        
+                        while (!gps.validGPSdata)
+                        {
+                            nearestConcurrentDataFile = lCurrFileConcurrentDataNearest[concurrentDataFileIdx];
+
+                            Dictionary<string, object> dictSavedData = ServiceTools.ReadDictionaryFromXML(nearestConcurrentDataFile.Item1);
+
+                            gps = new GPSdata((string)dictSavedData["GPSdata"],
+                                GPSdatasources.CloudCamArduinoGPS,
+                                DateTime.Parse((string)dictSavedData["GPSDateTimeUTC"], null,
+                                    System.Globalization.DateTimeStyles.RoundtripKind));
+
+                            concurrentDataFileIdx++;
+                        }
+
+                        string currValidConcurrentDataFile = nearestConcurrentDataFile.Item1;
+                        string currValidConcurrentDataFileToCopyTo = currDateDestDirectory + "data-" +
+                                                                     Path.GetFileNameWithoutExtension(fileInfo.FullName) + ".xml";
+                        File.Copy(currValidConcurrentDataFile, currValidConcurrentDataFileToCopyTo);
+                        theLogWindow = ServiceTools.LogAText(theLogWindow,
+                            "COPY: " + currValidConcurrentDataFile + "   >>>   " + currValidConcurrentDataFileToCopyTo +
+                            Environment.NewLine);
+                        //ThreadSafeOperations.SetTextTB(tbLog,
+                        //    "COPY: " + currValidConcurrentDataFile + "   >>>   " + currValidConcurrentDataFileToCopyTo +
+                        //    Environment.NewLine, true);
+
+                    }
+                    else
+                    {
+                        theLogWindow = ServiceTools.LogAText(theLogWindow,
+                            "========== ERROR: couldn`t find concurrent data file for " + fileInfo.FullName +
+                            Environment.NewLine);
+                        //ThreadSafeOperations.SetTextTB(tbLog, "========== ERROR: couldn`t find concurrent data file for " + fileInfo.FullName + Environment.NewLine, true);
+                    }
+                    #endregion find and copy concurrent data XML file
+
+
+                    theLogWindow.ClearLog();
                 }
             }
         }
@@ -313,6 +424,11 @@ namespace FilesFilteringApp
             return dt;
         }
 
+        
+
+
+
+
 
         static DateTime RoundToHour(DateTime dt)
         {
@@ -331,14 +447,17 @@ namespace FilesFilteringApp
         {
             if (e.Error != null)
             {
-                ThreadSafeOperations.SetTextTB(tbLog, "ERROR has been caught: " + Environment.NewLine, true);
-                ThreadSafeOperations.SetTextTB(tbLog, e.Error.Message + Environment.NewLine, true);
+                theLogWindow = ServiceTools.LogAText(theLogWindow,
+                    "ERROR has been caught: " + Environment.NewLine + e.Error.Message + Environment.NewLine);
+                //ThreadSafeOperations.SetTextTB(tbLog, "ERROR has been caught: " + Environment.NewLine, true);
+                //ThreadSafeOperations.SetTextTB(tbLog, e.Error.Message + Environment.NewLine, true);
             }
 
 
             //ThreadSafeOperations.SetTextTB(tbLog, "#007" + Environment.NewLine, true);
             ThreadSafeOperations.UpdateProgressBar(prbUniversalProgress, 0);
-            ThreadSafeOperations.SetTextTB(tbLog, "Finished work" + Environment.NewLine, true);
+            theLogWindow = ServiceTools.LogAText(theLogWindow, "Finished work" + Environment.NewLine);
+            //ThreadSafeOperations.SetTextTB(tbLog, "Finished work" + Environment.NewLine, true);
             ThreadSafeOperations.ToggleButtonState(btnDoWork, true, "SELECT", false);
         }
 
@@ -349,6 +468,168 @@ namespace FilesFilteringApp
             if (e.KeyChar == 27)//escape key
             {
                 this.Close();
+            }
+        }
+
+
+
+
+        private void btnProperties_Click(object sender, EventArgs e)
+        {
+            PropertiesEditor propForm = new PropertiesEditor(defaultProperties, defaultPropertiesXMLfileName);
+            propForm.FormClosed += new FormClosedEventHandler(PropertiesFormClosed);
+            propForm.ShowDialog();
+        }
+
+
+
+        private void PropertiesFormClosed(object sender, FormClosedEventArgs e)
+        {
+            readDefaultProperties();
+        }
+
+
+        private void readDefaultProperties()
+        {
+            defaultProperties = new Dictionary<string, object>();
+            defaultPropertiesXMLfileName = Directory.GetCurrentDirectory() +
+                                           Path.DirectorySeparatorChar + "settings" + Path.DirectorySeparatorChar +
+                                           Path.GetFileNameWithoutExtension(Assembly.GetEntryAssembly().Location) +
+                                           "-Settings.xml";
+            if (!File.Exists(defaultPropertiesXMLfileName)) return;
+            defaultProperties = ServiceTools.ReadDictionaryFromXML(defaultPropertiesXMLfileName);
+            bool bDefaultPropertiesHasBeenUpdated = false;
+
+
+
+            if (defaultProperties.ContainsKey("CopyImagesFrom_Path"))
+            {
+                CopyImagesFrom_Path = (string)defaultProperties["CopyImagesFrom_Path"];
+            }
+            else
+            {
+                CopyImagesFrom_Path = "";
+                defaultProperties.Add("CopyImagesFrom_Path", CopyImagesFrom_Path);
+                bDefaultPropertiesHasBeenUpdated = true;
+            }
+            ThreadSafeOperations.SetTextTB(rtbFromPath, CopyImagesFrom_Path, false);
+
+
+
+
+
+            if (defaultProperties.ContainsKey("CopyImagesAndDataTo_Path"))
+            {
+                CopyImagesAndDataTo_Path = (string)defaultProperties["CopyImagesAndDataTo_Path"];
+            }
+            else
+            {
+                CopyImagesAndDataTo_Path = "";
+                defaultProperties.Add("CopyImagesAndDataTo_Path", CopyImagesAndDataTo_Path);
+                bDefaultPropertiesHasBeenUpdated = true;
+            }
+            ThreadSafeOperations.SetTextTB(rtbToPath, CopyImagesAndDataTo_Path, false);
+
+
+
+
+            if (defaultProperties.ContainsKey("ConcurrentDataXMLfilesPath"))
+            {
+                ConcurrentDataXMLfilesPath = (string)defaultProperties["ConcurrentDataXMLfilesPath"];
+            }
+            else
+            {
+                ConcurrentDataXMLfilesPath = "";
+                defaultProperties.Add("ConcurrentDataXMLfilesPath", ConcurrentDataXMLfilesPath);
+                bDefaultPropertiesHasBeenUpdated = true;
+            }
+            ThreadSafeOperations.SetTextTB(rtbConcurrentDataDir, ConcurrentDataXMLfilesPath, false);
+
+
+
+
+            if (defaultProperties.ContainsKey("GrIxYRGBstatsXMLfilesPath"))
+            {
+                GrIxYRGBstatsXMLfilesPath = (string)defaultProperties["GrIxYRGBstatsXMLfilesPath"];
+            }
+            else
+            {
+                GrIxYRGBstatsXMLfilesPath = "";
+                defaultProperties.Add("GrIxYRGBstatsXMLfilesPath", GrIxYRGBstatsXMLfilesPath);
+                bDefaultPropertiesHasBeenUpdated = true;
+            }
+            ThreadSafeOperations.SetTextTB(rtbGrIxYRGBstatsDir, GrIxYRGBstatsXMLfilesPath, false);
+
+
+
+            if (defaultProperties.ContainsKey("filterTolerance"))
+            {
+                filterTolerance = TimeSpan.Parse((string)defaultProperties["filterTolerance"]);
+            }
+            else
+            {
+                defaultProperties.Add("filterTolerance", filterTolerance.ToString());
+                bDefaultPropertiesHasBeenUpdated = true;
+            }
+
+
+
+            if (bDefaultPropertiesHasBeenUpdated)
+            {
+                saveDefaultProperties();
+            }
+        }
+
+
+
+
+        private void saveDefaultProperties()
+        {
+            ServiceTools.WriteDictionaryToXml(defaultProperties, defaultPropertiesXMLfileName, false);
+        }
+
+
+
+
+        private void rtb_TextChanged(object sender, EventArgs e)
+        {
+            string currKey = "";
+            string currValue = "";
+            if (sender == rtbConcurrentDataDir)
+            {
+                currKey = "ConcurrentDataXMLfilesPath";
+                currValue = rtbConcurrentDataDir.Text;
+                ConcurrentDataXMLfilesPath = currValue;
+            }
+            else if (sender == rtbFromPath)
+            {
+                currKey = "CopyImagesFrom_Path";
+                currValue = rtbFromPath.Text;
+                CopyImagesFrom_Path = currValue;
+            }
+            else if (sender == rtbGrIxYRGBstatsDir)
+            {
+                currKey = "GrIxYRGBstatsXMLfilesPath";
+                currValue = rtbGrIxYRGBstatsDir.Text;
+                GrIxYRGBstatsXMLfilesPath = currValue;
+            }
+            else if (sender == rtbToPath)
+            {
+                currKey = "CopyImagesAndDataTo_Path";
+                currValue = rtbToPath.Text;
+                CopyImagesAndDataTo_Path = currValue;
+            }
+
+
+            if (defaultProperties.ContainsKey(currKey))
+            {
+                defaultProperties[currKey] = currValue;
+                saveDefaultProperties();
+            }
+            else
+            {
+                defaultProperties.Add(currKey, currValue);
+                saveDefaultProperties();
             }
         }
     }

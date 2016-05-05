@@ -70,6 +70,7 @@
     <Compile Include="DEFINE.cs" />
     <Compile Include="JacobianMatrixCalc.cs" />
     <Compile Include="NonLinLeastSqProbWithBC.cs" />
+    <Compile Include="NonLinLeastSqProbWithBCNative.cs" />
     <Compile Include="NonLinLeastSqProbWoConstraints.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
@@ -80,6 +81,10 @@
   <PropertyGroup>
     <PreBuildEvent>
     </PreBuildEvent>
+  </PropertyGroup>
+  <PropertyGroup>
+    <PostBuildEvent>rem copy "$(IFORT_COMPILER16)redist\ia32\mkl\*.dll" $(windir)\System32\
+rem copy "$(IFORT_COMPILER16)redist\ia32\mkl\1041\*.dll" $(windir)\System32\</PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

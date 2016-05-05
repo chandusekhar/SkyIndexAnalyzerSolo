@@ -77,6 +77,7 @@
             this.lblSunAzimuth = new System.Windows.Forms.Label();
             this.btnPrefs = new System.Windows.Forms.Button();
             this.btnAccCalibrationData = new System.Windows.Forms.Button();
+            this.lblWhetherRestrictsObtainingDataDueSunElevation = new System.Windows.Forms.Label();
             this.tabPageService = new System.Windows.Forms.TabPage();
             this.tableLayoutPanel2 = new System.Windows.Forms.TableLayoutPanel();
             this.tbMainLog = new System.Windows.Forms.TextBox();
@@ -145,7 +146,7 @@
             this.tabControl1.Margin = new System.Windows.Forms.Padding(4);
             this.tabControl1.Name = "tabControl1";
             this.tabControl1.SelectedIndex = 0;
-            this.tabControl1.Size = new System.Drawing.Size(1289, 792);
+            this.tabControl1.Size = new System.Drawing.Size(1289, 793);
             this.tabControl1.TabIndex = 0;
             // 
             // tabPageMain
@@ -156,7 +157,7 @@
             this.tabPageMain.Margin = new System.Windows.Forms.Padding(4);
             this.tabPageMain.Name = "tabPageMain";
             this.tabPageMain.Padding = new System.Windows.Forms.Padding(4);
-            this.tabPageMain.Size = new System.Drawing.Size(1281, 763);
+            this.tabPageMain.Size = new System.Drawing.Size(1281, 764);
             this.tabPageMain.TabIndex = 1;
             this.tabPageMain.Text = "Main";
             this.tabPageMain.UseVisualStyleBackColor = true;
@@ -194,8 +195,8 @@
             this.tableLayoutPanel1.Controls.Add(this.btnCollectImmediately, 0, 5);
             this.tableLayoutPanel1.Controls.Add(this.label3, 3, 4);
             this.tableLayoutPanel1.Controls.Add(this.label5, 3, 5);
-            this.tableLayoutPanel1.Controls.Add(this.lblNextShotIn, 6, 4);
-            this.tableLayoutPanel1.Controls.Add(this.lblSinceLastShot, 6, 5);
+            this.tableLayoutPanel1.Controls.Add(this.lblNextShotIn, 9, 4);
+            this.tableLayoutPanel1.Controls.Add(this.lblSinceLastShot, 9, 5);
             this.tableLayoutPanel1.Controls.Add(this.lblAccelerometerSignID1, 14, 4);
             this.tableLayoutPanel1.Controls.Add(this.lblAccMagnTitleID1, 16, 4);
             this.tableLayoutPanel1.Controls.Add(this.lblAccDevAngleTitleID1, 18, 4);
@@ -230,6 +231,7 @@
             this.tableLayoutPanel1.Controls.Add(this.lblSunAzimuth, 18, 17);
             this.tableLayoutPanel1.Controls.Add(this.btnPrefs, 18, 0);
             this.tableLayoutPanel1.Controls.Add(this.btnAccCalibrationData, 15, 0);
+            this.tableLayoutPanel1.Controls.Add(this.lblWhetherRestrictsObtainingDataDueSunElevation, 14, 9);
             this.tableLayoutPanel1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tableLayoutPanel1.Location = new System.Drawing.Point(4, 4);
             this.tableLayoutPanel1.Margin = new System.Windows.Forms.Padding(4);
@@ -255,7 +257,7 @@
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 11.11111F));
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 12F));
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 11.11111F));
-            this.tableLayoutPanel1.Size = new System.Drawing.Size(1273, 755);
+            this.tableLayoutPanel1.Size = new System.Drawing.Size(1273, 756);
             this.tableLayoutPanel1.TabIndex = 2;
             // 
             // pbThumbPreviewCam2
@@ -389,14 +391,15 @@
             // label3
             // 
             this.label3.AutoSize = true;
-            this.tableLayoutPanel1.SetColumnSpan(this.label3, 3);
+            this.label3.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.tableLayoutPanel1.SetColumnSpan(this.label3, 6);
             this.label3.Dock = System.Windows.Forms.DockStyle.Fill;
             this.label3.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.label3.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label3.Location = new System.Drawing.Point(211, 152);
             this.label3.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(199, 43);
+            this.label3.Size = new System.Drawing.Size(350, 43);
             this.label3.TabIndex = 67;
             this.label3.Text = "next shot in:";
             this.label3.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
@@ -404,14 +407,15 @@
             // label5
             // 
             this.label5.AutoSize = true;
-            this.tableLayoutPanel1.SetColumnSpan(this.label5, 3);
+            this.label5.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.tableLayoutPanel1.SetColumnSpan(this.label5, 6);
             this.label5.Dock = System.Windows.Forms.DockStyle.Fill;
             this.label5.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.label5.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label5.Location = new System.Drawing.Point(211, 195);
             this.label5.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label5.Name = "label5";
-            this.label5.Size = new System.Drawing.Size(199, 43);
+            this.label5.Size = new System.Drawing.Size(350, 43);
             this.label5.TabIndex = 69;
             this.label5.Text = "since last shot:";
             this.label5.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
@@ -419,13 +423,14 @@
             // lblNextShotIn
             // 
             this.lblNextShotIn.AutoSize = true;
-            this.tableLayoutPanel1.SetColumnSpan(this.lblNextShotIn, 3);
+            this.lblNextShotIn.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.tableLayoutPanel1.SetColumnSpan(this.lblNextShotIn, 4);
             this.lblNextShotIn.Dock = System.Windows.Forms.DockStyle.Fill;
             this.lblNextShotIn.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.lblNextShotIn.Location = new System.Drawing.Point(418, 152);
+            this.lblNextShotIn.Location = new System.Drawing.Point(569, 152);
             this.lblNextShotIn.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.lblNextShotIn.Name = "lblNextShotIn";
-            this.lblNextShotIn.Size = new System.Drawing.Size(143, 43);
+            this.lblNextShotIn.Size = new System.Drawing.Size(268, 43);
             this.lblNextShotIn.TabIndex = 66;
             this.lblNextShotIn.Text = "00:00:00";
             this.lblNextShotIn.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
@@ -433,13 +438,14 @@
             // lblSinceLastShot
             // 
             this.lblSinceLastShot.AutoSize = true;
-            this.tableLayoutPanel1.SetColumnSpan(this.lblSinceLastShot, 3);
+            this.lblSinceLastShot.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.tableLayoutPanel1.SetColumnSpan(this.lblSinceLastShot, 4);
             this.lblSinceLastShot.Dock = System.Windows.Forms.DockStyle.Fill;
             this.lblSinceLastShot.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.lblSinceLastShot.Location = new System.Drawing.Point(418, 195);
+            this.lblSinceLastShot.Location = new System.Drawing.Point(569, 195);
             this.lblSinceLastShot.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.lblSinceLastShot.Name = "lblSinceLastShot";
-            this.lblSinceLastShot.Size = new System.Drawing.Size(143, 43);
+            this.lblSinceLastShot.Size = new System.Drawing.Size(268, 43);
             this.lblSinceLastShot.TabIndex = 68;
             this.lblSinceLastShot.Text = "00:00:00";
             this.lblSinceLastShot.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
@@ -654,7 +660,7 @@
             this.lblPressureTitle.Location = new System.Drawing.Point(858, 705);
             this.lblPressureTitle.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.lblPressureTitle.Name = "lblPressureTitle";
-            this.lblPressureTitle.Size = new System.Drawing.Size(130, 50);
+            this.lblPressureTitle.Size = new System.Drawing.Size(130, 51);
             this.lblPressureTitle.TabIndex = 93;
             this.lblPressureTitle.Text = "Pressure";
             this.lblPressureTitle.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
@@ -669,7 +675,7 @@
             this.lblPressureValue.Location = new System.Drawing.Point(996, 705);
             this.lblPressureValue.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.lblPressureValue.Name = "lblPressureValue";
-            this.lblPressureValue.Size = new System.Drawing.Size(273, 50);
+            this.lblPressureValue.Size = new System.Drawing.Size(273, 51);
             this.lblPressureValue.TabIndex = 94;
             this.lblPressureValue.Text = "---";
             this.lblPressureValue.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
@@ -834,7 +840,7 @@
             this.lblGotSnapshotDateTimeID1.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.lblGotSnapshotDateTimeID1.Name = "lblGotSnapshotDateTimeID1";
             this.tableLayoutPanel1.SetRowSpan(this.lblGotSnapshotDateTimeID1, 2);
-            this.lblGotSnapshotDateTimeID1.Size = new System.Drawing.Size(406, 62);
+            this.lblGotSnapshotDateTimeID1.Size = new System.Drawing.Size(406, 63);
             this.lblGotSnapshotDateTimeID1.TabIndex = 107;
             this.lblGotSnapshotDateTimeID1.Text = "-";
             this.lblGotSnapshotDateTimeID1.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
@@ -850,7 +856,7 @@
             this.lblGotSnapshotDateTimeID2.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.lblGotSnapshotDateTimeID2.Name = "lblGotSnapshotDateTimeID2";
             this.tableLayoutPanel1.SetRowSpan(this.lblGotSnapshotDateTimeID2, 2);
-            this.lblGotSnapshotDateTimeID2.Size = new System.Drawing.Size(406, 62);
+            this.lblGotSnapshotDateTimeID2.Size = new System.Drawing.Size(406, 63);
             this.lblGotSnapshotDateTimeID2.TabIndex = 108;
             this.lblGotSnapshotDateTimeID2.Text = "-";
             this.lblGotSnapshotDateTimeID2.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
@@ -929,6 +935,7 @@
             // 
             // btnPrefs
             // 
+            this.btnPrefs.BackColor = System.Drawing.Color.Gainsboro;
             this.btnPrefs.BackgroundImage = global::DataCollectorAutomator2G.Properties.Resources.gearIcon;
             this.btnPrefs.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Zoom;
             this.tableLayoutPanel1.SetColumnSpan(this.btnPrefs, 2);
@@ -940,11 +947,12 @@
             this.tableLayoutPanel1.SetRowSpan(this.btnPrefs, 2);
             this.btnPrefs.Size = new System.Drawing.Size(137, 74);
             this.btnPrefs.TabIndex = 114;
-            this.btnPrefs.UseVisualStyleBackColor = true;
+            this.btnPrefs.UseVisualStyleBackColor = false;
             this.btnPrefs.Click += new System.EventHandler(this.btnPrefs_Click);
             // 
             // btnAccCalibrationData
             // 
+            this.btnAccCalibrationData.BackColor = System.Drawing.Color.Gainsboro;
             this.tableLayoutPanel1.SetColumnSpan(this.btnAccCalibrationData, 3);
             this.btnAccCalibrationData.Dock = System.Windows.Forms.DockStyle.Fill;
             this.btnAccCalibrationData.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
@@ -956,8 +964,23 @@
             this.btnAccCalibrationData.Size = new System.Drawing.Size(201, 74);
             this.btnAccCalibrationData.TabIndex = 115;
             this.btnAccCalibrationData.Text = "Accelerometers calibration data";
-            this.btnAccCalibrationData.UseVisualStyleBackColor = true;
+            this.btnAccCalibrationData.UseVisualStyleBackColor = false;
             this.btnAccCalibrationData.Click += new System.EventHandler(this.btnAccCalibrationData_Click);
+            // 
+            // lblWhetherRestrictsObtainingDataDueSunElevation
+            // 
+            this.lblWhetherRestrictsObtainingDataDueSunElevation.AutoSize = true;
+            this.tableLayoutPanel1.SetColumnSpan(this.lblWhetherRestrictsObtainingDataDueSunElevation, 6);
+            this.lblWhetherRestrictsObtainingDataDueSunElevation.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.lblWhetherRestrictsObtainingDataDueSunElevation.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.lblWhetherRestrictsObtainingDataDueSunElevation.ForeColor = System.Drawing.Color.OrangeRed;
+            this.lblWhetherRestrictsObtainingDataDueSunElevation.Location = new System.Drawing.Point(858, 330);
+            this.lblWhetherRestrictsObtainingDataDueSunElevation.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.lblWhetherRestrictsObtainingDataDueSunElevation.Name = "lblWhetherRestrictsObtainingDataDueSunElevation";
+            this.lblWhetherRestrictsObtainingDataDueSunElevation.Size = new System.Drawing.Size(411, 37);
+            this.lblWhetherRestrictsObtainingDataDueSunElevation.TabIndex = 116;
+            this.lblWhetherRestrictsObtainingDataDueSunElevation.Text = "---";
+            this.lblWhetherRestrictsObtainingDataDueSunElevation.TextAlign = System.Drawing.ContentAlignment.BottomCenter;
             // 
             // tabPageService
             // 
@@ -967,7 +990,7 @@
             this.tabPageService.Margin = new System.Windows.Forms.Padding(4);
             this.tabPageService.Name = "tabPageService";
             this.tabPageService.Padding = new System.Windows.Forms.Padding(4);
-            this.tabPageService.Size = new System.Drawing.Size(1281, 763);
+            this.tabPageService.Size = new System.Drawing.Size(1281, 764);
             this.tabPageService.TabIndex = 0;
             this.tabPageService.Text = "Service";
             this.tabPageService.UseVisualStyleBackColor = true;
@@ -1000,7 +1023,7 @@
             this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 48F));
             this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 48F));
             this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 48F));
-            this.tableLayoutPanel2.Size = new System.Drawing.Size(1273, 755);
+            this.tableLayoutPanel2.Size = new System.Drawing.Size(1273, 756);
             this.tableLayoutPanel2.TabIndex = 0;
             // 
             // tbMainLog
@@ -1013,7 +1036,7 @@
             this.tbMainLog.Multiline = true;
             this.tbMainLog.Name = "tbMainLog";
             this.tbMainLog.ScrollBars = System.Windows.Forms.ScrollBars.Both;
-            this.tbMainLog.Size = new System.Drawing.Size(1265, 517);
+            this.tbMainLog.Size = new System.Drawing.Size(1265, 518);
             this.tbMainLog.TabIndex = 10;
             // 
             // btnSwapBcstLog
@@ -1068,7 +1091,7 @@
             this.tableLayoutPanel2.SetColumnSpan(this.lblUDPpacketsRecievingSpeedTitle, 2);
             this.lblUDPpacketsRecievingSpeedTitle.Dock = System.Windows.Forms.DockStyle.Fill;
             this.lblUDPpacketsRecievingSpeedTitle.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.lblUDPpacketsRecievingSpeedTitle.Location = new System.Drawing.Point(3, 611);
+            this.lblUDPpacketsRecievingSpeedTitle.Location = new System.Drawing.Point(3, 612);
             this.lblUDPpacketsRecievingSpeedTitle.Name = "lblUDPpacketsRecievingSpeedTitle";
             this.lblUDPpacketsRecievingSpeedTitle.Size = new System.Drawing.Size(418, 48);
             this.lblUDPpacketsRecievingSpeedTitle.TabIndex = 13;
@@ -1082,7 +1105,7 @@
             this.tableLayoutPanel2.SetColumnSpan(this.lblUDPpacketsProcessingSpeedTitle, 2);
             this.lblUDPpacketsProcessingSpeedTitle.Dock = System.Windows.Forms.DockStyle.Fill;
             this.lblUDPpacketsProcessingSpeedTitle.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.lblUDPpacketsProcessingSpeedTitle.Location = new System.Drawing.Point(3, 659);
+            this.lblUDPpacketsProcessingSpeedTitle.Location = new System.Drawing.Point(3, 660);
             this.lblUDPpacketsProcessingSpeedTitle.Name = "lblUDPpacketsProcessingSpeedTitle";
             this.lblUDPpacketsProcessingSpeedTitle.Size = new System.Drawing.Size(418, 48);
             this.lblUDPpacketsProcessingSpeedTitle.TabIndex = 14;
@@ -1096,7 +1119,7 @@
             this.tableLayoutPanel2.SetColumnSpan(this.lblUDPpacketsRecievingSpeedValue, 4);
             this.lblUDPpacketsRecievingSpeedValue.Dock = System.Windows.Forms.DockStyle.Fill;
             this.lblUDPpacketsRecievingSpeedValue.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.lblUDPpacketsRecievingSpeedValue.Location = new System.Drawing.Point(427, 611);
+            this.lblUDPpacketsRecievingSpeedValue.Location = new System.Drawing.Point(427, 612);
             this.lblUDPpacketsRecievingSpeedValue.Name = "lblUDPpacketsRecievingSpeedValue";
             this.lblUDPpacketsRecievingSpeedValue.Size = new System.Drawing.Size(843, 48);
             this.lblUDPpacketsRecievingSpeedValue.TabIndex = 15;
@@ -1110,7 +1133,7 @@
             this.tableLayoutPanel2.SetColumnSpan(this.lblUDPpacketsProcessingSpeedValue, 4);
             this.lblUDPpacketsProcessingSpeedValue.Dock = System.Windows.Forms.DockStyle.Fill;
             this.lblUDPpacketsProcessingSpeedValue.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.lblUDPpacketsProcessingSpeedValue.Location = new System.Drawing.Point(427, 659);
+            this.lblUDPpacketsProcessingSpeedValue.Location = new System.Drawing.Point(427, 660);
             this.lblUDPpacketsProcessingSpeedValue.Name = "lblUDPpacketsProcessingSpeedValue";
             this.lblUDPpacketsProcessingSpeedValue.Size = new System.Drawing.Size(843, 48);
             this.lblUDPpacketsProcessingSpeedValue.TabIndex = 16;
@@ -1125,7 +1148,7 @@
             this.SensorsCalibration.Margin = new System.Windows.Forms.Padding(4);
             this.SensorsCalibration.Name = "SensorsCalibration";
             this.SensorsCalibration.Padding = new System.Windows.Forms.Padding(4);
-            this.SensorsCalibration.Size = new System.Drawing.Size(1281, 763);
+            this.SensorsCalibration.Size = new System.Drawing.Size(1281, 764);
             this.SensorsCalibration.TabIndex = 2;
             this.SensorsCalibration.Text = "Sensors calibration";
             this.SensorsCalibration.UseVisualStyleBackColor = true;
@@ -1190,7 +1213,7 @@
             this.tableLayoutPanel3.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 6.976745F));
             this.tableLayoutPanel3.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 6.976745F));
             this.tableLayoutPanel3.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 23.25581F));
-            this.tableLayoutPanel3.Size = new System.Drawing.Size(1273, 755);
+            this.tableLayoutPanel3.Size = new System.Drawing.Size(1273, 756);
             this.tableLayoutPanel3.TabIndex = 0;
             // 
             // label4
@@ -1667,7 +1690,7 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1289, 792);
+            this.ClientSize = new System.Drawing.Size(1289, 793);
             this.Controls.Add(this.tabControl1);
             this.KeyPreview = true;
             this.Margin = new System.Windows.Forms.Padding(4);
@@ -1794,8 +1817,7 @@
         private System.Windows.Forms.Label lblUDPpacketsProcessingSpeedTitle;
         private System.Windows.Forms.Label lblUDPpacketsRecievingSpeedValue;
         private System.Windows.Forms.Label lblUDPpacketsProcessingSpeedValue;
-
-
+        private System.Windows.Forms.Label lblWhetherRestrictsObtainingDataDueSunElevation;
     }
 }
 

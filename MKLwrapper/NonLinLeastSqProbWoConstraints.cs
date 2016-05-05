@@ -171,8 +171,8 @@ namespace MKLwrapper
                             JacobianMatrixCalc jCalculator = new JacobianMatrixCalc();
                             //jCalculator.mSpaceVector = (new List<double>(mSpaceVector)).ToArray();
                             //jCalculator.mFittingValuesVector = (new List<double>(mFittingValuesVector)).ToArray();
-                            jCalculator.mPointsSetLength = mFittingValuesVector.Count();
-                            jCalculator.nXspacePoint = (new List<double>(x)).ToArray();
+                            jCalculator.mEventsPointsSetLength = mFittingValuesVector.Count();
+                            jCalculator.nParametersSpacePoint = (new List<double>(x)).ToArray();
                             jCalculator.objectiveFunction = xPoint => ObjectiveFunctional(xPoint).ToArray();
                             double[,] tmpNewJacobi = jCalculator.SolveJacobianMatrix(precision);
 

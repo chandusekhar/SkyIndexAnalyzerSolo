@@ -5,9 +5,13 @@ using Emgu.CV;
 using Emgu.CV.CvEnum;
 using Emgu.CV.Structure;
 using System;
+using System.ComponentModel;
+using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Management.Automation;
+using System.Threading;
 using Emgu.CV.Util;
 using MathNet.Numerics.LinearAlgebra.Double;
 using MathNet.Numerics.Statistics;
@@ -87,6 +91,10 @@ namespace SkyImagesAnalyzerLibraries
         public ColorScheme evaluatingColorScheme;
 
 
+
+
+
+
         public ImageProcessing(Bitmap inBM)
         {
             //bm2Process = (Bitmap)inBM.Clone(); ;
@@ -127,6 +135,33 @@ namespace SkyImagesAnalyzerLibraries
                 getImageContourCircled();
                 getImageOctLined();
             }
+            tmpImage = img2process.Copy();
+        }
+
+
+
+
+        public ImageProcessing(Image<Bgr, byte> inImg, RoundData predefinedRoundedMask = null)
+        {
+            //bm2Process = ServiceTools.CopyBitmap(inImg.Bitmap);
+            img2process = inImg.Copy();
+            overallImageArea = (double)img2process.Width * (double)img2process.Height;
+            if (predefinedRoundedMask == null)
+            {
+                getImageSignificantMask();
+                getImageContour();
+                getImageContourCircled();
+                getImageOctLined();
+            }
+            else
+            {
+                getImageSignificantMask();
+                getImageContour();
+                imageRD = predefinedRoundedMask;
+                getImageContourCircled();
+                getImageOctLined();
+            }
+
             tmpImage = img2process.Copy();
         }
 
@@ -181,7 +216,7 @@ namespace SkyImagesAnalyzerLibraries
                     neededContour = cnt;
                 }
             }
-            
+
             maskSignificantArea = currArea;
 
             Image<Gray, Byte> maskImage = BinaryEmguImage.CopyBlank();
@@ -305,6 +340,8 @@ namespace SkyImagesAnalyzerLibraries
         }
 
 
+
+
         public void getImageContourCircled()
         {
             Image<Bgr, Byte> circleImage = img2process.Copy();
@@ -423,23 +460,38 @@ namespace SkyImagesAnalyzerLibraries
 
             //нашли контур с максимальной площадью
             List<PointD> pointsList = (from contourPoint in contourFound.ToArray()
-                where
-                    (contourPoint.X >= 10) && (contourPoint.X <= tmpMaskImage.Width - 10) &&
-                    (contourPoint.Y <= tmpMaskImage.Height - 10) && (contourPoint.Y >= 10)
-                select new PointD(contourPoint)).ToList();
+                                       where
+                                           (contourPoint.X >= 10) && (contourPoint.X <= tmpMaskImage.Width - 10) &&
+                                           (contourPoint.Y <= tmpMaskImage.Height - 10) && (contourPoint.Y >= 10)
+                                       select new PointD(contourPoint)).ToList();
 
 
-//#if DEBUG
-//            Image<Bgr, byte> tmpDebugImg = img2process.Copy().Mul(0.7d);
-//            foreach (PointD ptd in pointsList)
-//            {
-//                tmpDebugImg.Draw(new CircleF(ptd.PointF(), 1), new Bgr(Color.LightYellow), 1);
-//            }
-//            if (ServiceTools.CheckIfDirectoryExists("D:\\_gulevlab\\SkyImagesAnalysis_appData\\output\\"))
-//            {
-//                tmpDebugImg.Save("D:\\_gulevlab\\SkyImagesAnalysis_appData\\output\\test.jpg");
-//            }
-//#endif
+            #region // not using - ML exercise
+#if DEBUG
+            //List<string> lPointsCoordsStr = pointsList.ConvertAll(ptd => ptd.X.ToString() + ";" + ptd.Y.ToString() + ";");
+            //string strPointsDataFilename = "D:\\ML\\points.csv";
+            //ServiceTools.logToTextFile(strPointsDataFilename, "x; y;", true);
+            //foreach (string pointCoord in lPointsCoordsStr)
+            //{
+            //    ServiceTools.logToTextFile(strPointsDataFilename, Environment.NewLine + pointCoord, true);
+            //}
+#endif
+            #endregion // not used - ML exercise
+
+
+            #region debugging presentations
+#if DEBUG
+            //Image<Bgr, byte> tmpDebugImg = img2process.Copy().Mul(0.7d);
+            //foreach (PointD ptd in pointsList)
+            //{
+            //    tmpDebugImg.Draw(new CircleF(ptd.PointF(), 1), new Bgr(Color.LightYellow), 1);
+            //}
+            //if (ServiceTools.CheckIfDirectoryExists("D:\\_gulevlab\\SkyImagesAnalysis_appData\\RV-ANS-31-test\\"))
+            //{
+            //    tmpDebugImg.Save("D:\\_gulevlab\\SkyImagesAnalysis_appData\\RV-ANS-31-test\\test.jpg");
+            //}
+#endif
+            #endregion debugging presentations
 
 
 
@@ -450,6 +502,16 @@ namespace SkyImagesAnalyzerLibraries
                 double r = dvParameters[2];
                 PointD ptdCenter = new PointD(centerX, centerY);
                 return (r - pt.Distance(ptdCenter));
+            };
+
+            Func<DenseVector, PointD, double[]> minimizingFuncPartDeriv = (dvParameters, pt) =>
+            {
+                double centerX = dvParameters[0];
+                double centerY = dvParameters[1];
+                double r = dvParameters[2];
+                PointD ptdCenter = new PointD(centerX, centerY);
+                double dist = pt.Distance(ptdCenter);
+                return new double[] { centerX / dist, centerY / dist, 1.0d };
             };
 
 
@@ -465,26 +527,62 @@ namespace SkyImagesAnalyzerLibraries
             //DenseVector approximatedParameters = approximator.ApproximationGradientDescent2DPt(dvInitialParameters, initialParametersIncremnt, 0.000001d);
             double[] dvLowerBoundsConstraints = { 0.0d, 0.0d, 0.0d };
             double[] dvUpperBoundsConstraints = { tmpMaskImage.Width, tmpMaskImage.Height, tmpMaskImage.Width };
+            //NonLinLeastSqProbWithBCandOutliersDetection<PointD> approximator = new NonLinLeastSqProbWithBCandOutliersDetection<PointD>();
             NonLinLeastSqProbWithBC<PointD> approximator = new NonLinLeastSqProbWithBC<PointD>();
-            approximator.nXspacePoint = dvInitialParameters.Copy();
+            approximator.nParametersSpacePoint = dvInitialParameters.Copy();
             approximator.mFittingValuesVector = DenseVector.Create(pointsList.Count, 0.0d);
-            approximator.mSpaceVector = pointsList;
+            approximator.mEventsSpaceVector = pointsList;
             approximator.fittingFunction = (iEnumVec, ptD) => minimizingFunc(DenseVector.OfEnumerable(iEnumVec), ptD);
+            approximator.fittingFunctionPartDeriv = (iEnumVec, ptD) => minimizingFuncPartDeriv(DenseVector.OfEnumerable(iEnumVec), ptD);
             approximator.lowerBoundConstraints = dvLowerBoundsConstraints;
             approximator.upperBoundConstraints = dvUpperBoundsConstraints;
 
-            List<double> approximatedParameters = new List<double>(approximator.SolveOptimizationProblem());
+            List<List<double>> approximatedParametersHistory;
+            List<List<PointD>> filteredEventsListsHistory;
+            //List<double> approximatedParameters =
+            //    new List<double>(
+            //        approximator.SolveOptimizationProblemWithOutliersFiltering(out approximatedParametersHistory,
+            //            out filteredEventsListsHistory));
+            List<double> approximatedParameters =
+                new List<double>(
+                    approximator.SolveOptimizationProblem());
+
 
             imageRD = new RoundData(approximatedParameters[0], approximatedParameters[1], approximatedParameters[2]);
 
-//#if DEBUG
-//            tmpDebugImg.Draw(imageRD.CircleF(), new Bgr(Color.Red), 1);
-//
-//            if (ServiceTools.CheckIfDirectoryExists("D:\\_gulevlab\\SkyImagesAnalysis_appData\\output\\"))
-//            {
-//                tmpDebugImg.Save("D:\\_gulevlab\\SkyImagesAnalysis_appData\\output\\test2.jpg");
-//            }
-//#endif
+            #region debugging presentations
+#if DEBUG
+            //tmpDebugImg.Draw(imageRD.CircleF(), new Bgr(Color.Yellow), 2);
+
+            //if (ServiceTools.CheckIfDirectoryExists("D:\\_gulevlab\\SkyImagesAnalysis_appData\\RV-ANS-31-test\\"))
+            //{
+            //    tmpDebugImg.Save("D:\\_gulevlab\\SkyImagesAnalysis_appData\\RV-ANS-31-test\\test-final.jpg");
+
+
+            //    for (int i = 0; i < approximatedParametersHistory.Count; i++)
+            //    {
+            //        Image<Bgr, byte> tmpDebugImgHistory = img2process.Copy().Mul(0.7d);
+            //        List<double> approximatedParametersCurrHist = approximatedParametersHistory[i];
+            //        RoundData imageRDCurrHist = new RoundData(approximatedParametersCurrHist[0],
+            //            approximatedParametersCurrHist[1], approximatedParametersCurrHist[2]);
+            //        tmpDebugImgHistory.Draw(imageRDCurrHist.CircleF(), new Bgr(Color.Yellow), 2);
+            //        List<PointD> currHistoryPointsList = filteredEventsListsHistory[i];
+
+            //        foreach (PointD ptd in currHistoryPointsList)
+            //        {
+            //            tmpDebugImgHistory.Draw(new CircleF(ptd.PointF(), 1), new Bgr(Color.LightYellow), 1);
+            //        }
+            //        if (ServiceTools.CheckIfDirectoryExists("D:\\_gulevlab\\SkyImagesAnalysis_appData\\RV-ANS-31-test\\"))
+            //        {
+            //            tmpDebugImgHistory.Save("D:\\_gulevlab\\SkyImagesAnalysis_appData\\RV-ANS-31-test\\test-hist-" + i.ToString("D3") + ".jpg");
+            //        }
+            //    }
+
+
+
+            //}
+#endif
+            #endregion debugging presentations
         }
 
 
@@ -741,9 +839,9 @@ namespace SkyImagesAnalyzerLibraries
 
 
 
-        public static Tuple<double, double> CalculateMedianPerc5Values(string strFullFilePath, int MaxImageSize = 0)
+        public static Tuple<double, double, ImageProcessing> CalculateMedianPerc5Values(string strFullFilePath, int MaxImageSize = 0)
         {
-            Tuple<double, double> retTpl;
+            Tuple<double, double, ImageProcessing> retTpl;
 
             if (!File.Exists(strFullFilePath))
             {
@@ -764,8 +862,8 @@ namespace SkyImagesAnalyzerLibraries
             DescriptiveStatistics stats = new DescriptiveStatistics(dvGrixData, true);
             double median = dvGrixData.Median();
             double perc5 = dvGrixData.Percentile(5);
-            retTpl = new Tuple<double, double>(median, perc5);
-            
+            retTpl = new Tuple<double, double, ImageProcessing>(median, perc5, imgP);
+
             return retTpl;
         }
 
@@ -774,31 +872,182 @@ namespace SkyImagesAnalyzerLibraries
 
 
 
-        public static SkyImageIndexesStatsData CalculateIndexesStats(string strFullFilePath, int MaxImageSize = 0)
+        public static SkyImageIndexesStatsData CalculateImageIndexesStats(string strFullFilePath, out ImageProcessing imgP, int MaxImageSize = 0, RoundData predefinedRoundedMask = null, string logFileName = "")
         {
             SkyImageIndexesStatsData retStatsData = new SkyImageIndexesStatsData();
             if (!File.Exists(strFullFilePath))
             {
+                imgP = null;
                 return null;
             }
 
-            Image<Bgr, byte> currImg = new Image<Bgr, byte>(strFullFilePath);
+            #region debug report
+#if (MONO && DEBUG)
+            if (logFileName == "")
+            {
+                Console.WriteLine("reached position #1");
+            }
+            else
+            {
+                ServiceTools.logToTextFile(logFileName, "reached position #1" + Environment.NewLine, true);
+            }
+#endif
+            #endregion debug report
+
+            Image<Bgr, byte> currImg;
+
+#if (MONO && DEBUG)
+
+            #region debug report
+            if (logFileName == "")
+            {
+                Console.WriteLine("image file exists? " + File.Exists(strFullFilePath));
+            }
+            else
+            {
+                ServiceTools.logToTextFile(logFileName, "image file exists? " + File.Exists(strFullFilePath) + Environment.NewLine, true);
+            }
+            #endregion debug report
+
+            try
+            {
+                currImg = new Image<Bgr, byte>(strFullFilePath);
+            }
+            catch (Exception ex)
+            {
+                #region report exception
+
+                string reportStr = "Error processing file: " + Environment.NewLine + strFullFilePath +
+                                   Environment.NewLine + "messages: " +
+                                   ServiceTools.GetExceptionMessages(ex) + Environment.NewLine +
+                                   "Stack trace: " + Environment.NewLine +
+                                   Environment.StackTrace + Environment.NewLine + Environment.NewLine;
+                if (logFileName == "")
+                {
+                    Console.WriteLine(reportStr, true, true);
+                }
+                else
+                {
+                    ServiceTools.logToTextFile(logFileName, reportStr, true);
+                }
+
+                #endregion report exception
+                throw;
+            }
+#else
+            currImg = new Image<Bgr, byte>(strFullFilePath);
+#endif
+
+
+            #region debug report
+#if (MONO && DEBUG)
+            if (logFileName == "")
+            {
+                Console.WriteLine("reached position #2");
+            }
+            else
+            {
+                ServiceTools.logToTextFile(logFileName, "reached position #2" + Environment.NewLine, true);
+            }
+#endif
+            #endregion debug report
+
+
             if (MaxImageSize != 0)
             {
                 currImg = ImageProcessing.ImageResizer(currImg, MaxImageSize);
             }
 
-            ImageProcessing imgP = new ImageProcessing(currImg, true);
+            #region debug report
+#if (MONO && DEBUG)
+            if (logFileName == "")
+            {
+                Console.WriteLine("reached position #3");
+            }
+            else
+            {
+                ServiceTools.logToTextFile(logFileName, "reached position #3" + Environment.NewLine, true);
+            }
+#endif
+            #endregion debug report
+
+
+            if (predefinedRoundedMask == null)
+            {
+                #region debug report
+#if (MONO && DEBUG)
+                string strReport = "predefinedRoundedMask = null";
+                if (logFileName == "")
+                {
+                    Console.WriteLine(strReport);
+                }
+                else
+                {
+                    ServiceTools.logToTextFile(logFileName, strReport + Environment.NewLine, true);
+                }
+#endif
+                #endregion debug report
+
+                imgP = new ImageProcessing(currImg, true);
+            }
+            else
+            {
+
+                #region debug report
+#if (MONO && DEBUG)
+                string strReport = "found predefinedRoundedMask = " + predefinedRoundedMask;
+                if (logFileName == "")
+                {
+                    Console.WriteLine(strReport);
+                }
+                else
+                {
+                    ServiceTools.logToTextFile(logFileName, strReport + Environment.NewLine, true);
+                }
+#endif
+                #endregion debug report
+
+                imgP = new ImageProcessing(currImg, predefinedRoundedMask);
+            }
+
+            #region debug report
+#if (MONO && DEBUG)
+            if (logFileName == "")
+            {
+                Console.WriteLine("reached position #4");
+            }
+            else
+            {
+                ServiceTools.logToTextFile(logFileName, "reached position #4" + Environment.NewLine, true);
+            }
+#endif
+            #endregion debug report
+
+
             DenseMatrix dmGrixData = imgP.eval("grix", null);
             DenseMatrix dmYdata = imgP.eval("Y", null);
             DenseMatrix dmRdata = imgP.eval("R", null);
             DenseMatrix dmGdata = imgP.eval("G", null);
             DenseMatrix dmBdata = imgP.eval("B", null);
 
+            #region debug report
+#if (MONO && DEBUG)
+            if (logFileName == "")
+            {
+                Console.WriteLine("reached position #5");
+            }
+            else
+            {
+                ServiceTools.logToTextFile(logFileName, "reached position #5" + Environment.NewLine, true);
+            }
+#endif
+            #endregion debug report
+
+
             Image<Gray, Byte> maskImageCircled = imgP.imageSignificantMaskCircled();
             DenseMatrix dmMaskCircled100 = ImageProcessing.DenseMatrixFromImage(maskImageCircled);
             dmGrixData = (DenseMatrix)dmGrixData.PointwiseMultiply(dmMaskCircled100);
-            dmYdata = (DenseMatrix) dmYdata.PointwiseMultiply(dmMaskCircled100);
+            dmYdata = (DenseMatrix)dmYdata.PointwiseMultiply(dmMaskCircled100);
             dmRdata = (DenseMatrix)dmRdata.PointwiseMultiply(dmMaskCircled100);
             dmGdata = (DenseMatrix)dmGdata.PointwiseMultiply(dmMaskCircled100);
             dmBdata = (DenseMatrix)dmBdata.PointwiseMultiply(dmMaskCircled100);
@@ -808,6 +1057,20 @@ namespace SkyImagesAnalyzerLibraries
             DenseVector dvRData = DataAnalysis.DataVectorizedWithCondition(dmRdata, dval => (dval > 0.0d));
             DenseVector dvGData = DataAnalysis.DataVectorizedWithCondition(dmGdata, dval => (dval > 0.0d));
             DenseVector dvBData = DataAnalysis.DataVectorizedWithCondition(dmBdata, dval => (dval > 0.0d));
+
+            #region debug report
+#if (MONO && DEBUG)
+            if (logFileName == "")
+            {
+                Console.WriteLine("reached position #6");
+            }
+            else
+            {
+                ServiceTools.logToTextFile(logFileName, "reached position #6" + Environment.NewLine, true);
+            }
+#endif
+            #endregion debug report
+
 
             retStatsData.brightnessStatsData = VariableStatsData(dvYData);
             retStatsData.brightnessStatsData.varname = "Brightness";
@@ -886,7 +1149,7 @@ namespace SkyImagesAnalyzerLibraries
 
             double[,] doubleArrDmTmp = dmColCh.ToArray();
             byte[,] byteArrDmTmp = ServiceTools.DoubleToByteDepth(doubleArrDmTmp);
-            byte[, ,] byte2DArrDmTmp = ServiceTools.AddedThirdIndexArray3DFrom2D(byteArrDmTmp);
+            byte[,,] byte2DArrDmTmp = ServiceTools.AddedThirdIndexArray3DFrom2D(byteArrDmTmp);
             imgRch = new Image<Gray, byte>(byte2DArrDmTmp);
             if (binaryMaskImage != null)
             {
@@ -976,7 +1239,7 @@ namespace SkyImagesAnalyzerLibraries
 
             double[,] doubleArrDmTmp = dmColCh.ToArray();
             byte[,] byteArrDmTmp = ServiceTools.DoubleToByteDepth(doubleArrDmTmp);
-            byte[, ,] byte2DArrDmTmp = ServiceTools.AddedThirdIndexArray3DFrom2D(byteArrDmTmp);
+            byte[,,] byte2DArrDmTmp = ServiceTools.AddedThirdIndexArray3DFrom2D(byteArrDmTmp);
             imgRch = new Image<Gray, byte>(byte2DArrDmTmp);
             if (binaryMaskImage != null)
             {
@@ -1074,7 +1337,7 @@ namespace SkyImagesAnalyzerLibraries
 
             double[,] doubleArrDmTmp = dmColCh.ToArray();
             byte[,] byteArrDmTmp = ServiceTools.DoubleToByteDepth(doubleArrDmTmp);
-            byte[, ,] byte2DArrDmTmp = ServiceTools.AddedThirdIndexArray3DFrom2D(byteArrDmTmp);
+            byte[,,] byte2DArrDmTmp = ServiceTools.AddedThirdIndexArray3DFrom2D(byteArrDmTmp);
             imgRch = new Image<Gray, byte>(byte2DArrDmTmp);
             ServiceTools.FlushMemory(null, "");
             return imgRch;
@@ -1105,7 +1368,7 @@ namespace SkyImagesAnalyzerLibraries
 
             double[,] doubleArrDmTmp = dmColCh.ToArray();
             byte[,] byteArrDmTmp = ServiceTools.DoubleToByteDepth(doubleArrDmTmp);
-            byte[, ,] byte2DArrDmTmp = ServiceTools.AddedThirdIndexArray3DFrom2D(byteArrDmTmp);
+            byte[,,] byte2DArrDmTmp = ServiceTools.AddedThirdIndexArray3DFrom2D(byteArrDmTmp);
             imgRch = new Image<Gray, byte>(byte2DArrDmTmp);
             //dmColCh = null;
             //doubleArrDmTmp = null;
@@ -1371,7 +1634,7 @@ namespace SkyImagesAnalyzerLibraries
 
 
         #region 3D-2D array operations
-        public static double[,] ThirdIndexArraySliceDouble2DFromDouble3D(double[, ,] inputArray, int thirdIndex)
+        public static double[,] ThirdIndexArraySliceDouble2DFromDouble3D(double[,,] inputArray, int thirdIndex)
         {
             double[,] result = new double[inputArray.GetLength(0), inputArray.GetLength(1)];
 
@@ -1386,7 +1649,7 @@ namespace SkyImagesAnalyzerLibraries
             return result;
         }
 
-        public static double[,] ThirdIndexArraySliceDouble2DFromByte3D(Byte[, ,] inputArray, int thirdIndex)
+        public static double[,] ThirdIndexArraySliceDouble2DFromByte3D(Byte[,,] inputArray, int thirdIndex)
         {
             double[,] result = new double[inputArray.GetLength(0), inputArray.GetLength(1)];
 
@@ -1401,7 +1664,7 @@ namespace SkyImagesAnalyzerLibraries
             return result;
         }
 
-        public static Byte[,] ThirdIndexArraySliceByte2DFromByte3D(Byte[, ,] inputArray, int thirdIndex)
+        public static Byte[,] ThirdIndexArraySliceByte2DFromByte3D(Byte[,,] inputArray, int thirdIndex)
         {
             Byte[,] result = new Byte[inputArray.GetLength(0), inputArray.GetLength(1)];
 
@@ -1416,7 +1679,7 @@ namespace SkyImagesAnalyzerLibraries
             return result;
         }
 
-        public static Byte[,] ThirdIndexArraySliceByte2DFromDouble3D(double[, ,] inputArray, int thirdIndex)
+        public static Byte[,] ThirdIndexArraySliceByte2DFromDouble3D(double[,,] inputArray, int thirdIndex)
         {
             Byte[,] result = new Byte[inputArray.GetLength(0), inputArray.GetLength(1)];
 
@@ -1521,6 +1784,347 @@ namespace SkyImagesAnalyzerLibraries
                 return bmToResize;
             }
         }
+
+
+
+
+
+
+        public static void CalculateImageStatsData_BGWdoWork(object sender, DoWorkEventArgs e)
+        {
+            //ThreadSafeOperations.SetLoadingCircleState(circBgwProcessingImage, true, true,
+            //    circBgwProcessingImage.Color);
+
+            string strSaveControlImagesToPath = "";
+
+            List<Tuple<string, string>> lImagesRoundMasksMappingFiles = null;
+
+            WorkersWithWatchers currWorkerWithWatchers = null;
+
+            object[] currBGWarguments = (object[])e.Argument;
+            string currentFullFileName = (string)currBGWarguments[0];
+            if (currBGWarguments.Count() > 1)
+            {
+                Dictionary<string, object> optionalParameters = currBGWarguments[1] as Dictionary<string, object>;
+                if (optionalParameters.ContainsKey("SaveControlImagesToPath"))
+                {
+                    strSaveControlImagesToPath = (string)optionalParameters["SaveControlImagesToPath"];
+                }
+
+                if (optionalParameters.ContainsKey("ImagesRoundMasksXMLfilesMappingList"))
+                {
+                    string ImagesRoundMasksXMLfilesMappingList = (string)optionalParameters["ImagesRoundMasksXMLfilesMappingList"];
+                    if (File.Exists(ImagesRoundMasksXMLfilesMappingList))
+                    {
+                        List<List<string>> llImagesRoundMasksMappingFiles =
+                            ServiceTools.ReadDataFromCSV(ImagesRoundMasksXMLfilesMappingList, 0, true, ";", Environment.NewLine);
+                        lImagesRoundMasksMappingFiles =
+                            llImagesRoundMasksMappingFiles.ConvertAll(
+                                list => new Tuple<string, string>(list[0], list[1]));
+                        // item1: images filename pattern
+                        // item2: image rounded mask parameters XML file
+                    }
+                }
+
+                if (optionalParameters.ContainsKey("currWorkerWithWatchers"))
+                {
+                    currWorkerWithWatchers = optionalParameters["currWorkerWithWatchers"] as WorkersWithWatchers;
+                    currWorkerWithWatchers.procTotalProcessorTimeStart = Process.GetCurrentProcess().TotalProcessorTime;
+                }
+            }
+
+
+            e.Result = new object[] { currentFullFileName, null, true, null };
+
+            try
+            {
+                //Tuple<double, double, ImageProcessing> tplMedianPerc5Data = ImageProcessing.CalculateMedianPerc5Values(currentFullFileName);
+                //SkyImageMedianPerc5Data mp5dt = new SkyImageMedianPerc5Data(currentFullFileName, tplMedianPerc5Data.Item1, tplMedianPerc5Data.Item2);
+
+                ImageProcessing imgP = null;
+                RoundData predefinedRoundedMask = null;
+                if (lImagesRoundMasksMappingFiles != null)
+                {
+                    if (lImagesRoundMasksMappingFiles.Any())
+                    {
+                        if (lImagesRoundMasksMappingFiles.Find(tpl => (new WildcardPattern(tpl.Item1)).IsMatch(currentFullFileName)) != null)
+                        {
+                            string strFoundPredefinedRoundedMaskParametersXMLfile =
+                                lImagesRoundMasksMappingFiles.Find(
+                                    tpl => (new WildcardPattern(tpl.Item1)).IsMatch(currentFullFileName)).Item2;
+                            predefinedRoundedMask =
+                                ServiceTools.ReadObjectFromXML(strFoundPredefinedRoundedMaskParametersXMLfile,
+                                    typeof(RoundData)) as RoundData;
+                        }
+                    }
+                }
+
+                SkyImageIndexesStatsData grixyrgbStatsData = ImageProcessing.CalculateImageIndexesStats(currentFullFileName, out imgP, 0, predefinedRoundedMask);
+
+                SkyImageMedianPerc5Data mp5dt = new SkyImageMedianPerc5Data(currentFullFileName,
+                    grixyrgbStatsData.grixStatsData.lTplFieldPercentiles.Find(perc => perc.percIndex == 50).percValue,
+                    grixyrgbStatsData.grixStatsData.lTplFieldPercentiles.Find(perc => perc.percIndex == 5).percValue);
+
+                if (strSaveControlImagesToPath != "")
+                {
+                    string strControlImageFileName = "";
+                    if (strSaveControlImagesToPath == "same as source image")
+                    {
+                        strControlImageFileName = Path.GetDirectoryName(currentFullFileName);
+                        strControlImageFileName += ((strControlImageFileName.Last() == Path.DirectorySeparatorChar)
+                            ? ("")
+                            : (Path.DirectorySeparatorChar.ToString()));
+                        strControlImageFileName += Path.GetFileNameWithoutExtension(currentFullFileName) +
+                                                   "-control.jpg";
+                    }
+                    else
+                    {
+                        if (Directory.Exists(strSaveControlImagesToPath))
+                        {
+                            strControlImageFileName = strSaveControlImagesToPath +
+                                                      ((strSaveControlImagesToPath.Last() == Path.DirectorySeparatorChar)
+                                                          ? ("")
+                                                          : (Path.DirectorySeparatorChar.ToString())) +
+                                                      Path.GetFileNameWithoutExtension(currentFullFileName) +
+                                                      "-control.jpg";
+                        }
+                        else
+                        {
+                            strControlImageFileName = "";
+                        }
+                    }
+
+                    if (strControlImageFileName != "")
+                    {
+                        // save control image
+                        imgP.significantMaskImageOctLined.Save(strControlImageFileName);
+                    }
+
+                }
+
+                e.Result = new object[] { currentFullFileName, mp5dt, true, grixyrgbStatsData };
+
+                if (currWorkerWithWatchers != null)
+                {
+                    currWorkerWithWatchers.procTotalProcessorTimeEnd = Process.GetCurrentProcess().TotalProcessorTime;
+                }
+            }
+            catch (Exception ex)
+            {
+                //theLogWindow = ServiceTools.LogAText(theLogWindow,
+                //            "exception has been thrown: " + ex.Message + Environment.NewLine +
+                //            ServiceTools.CurrentCodeLineDescription());
+
+                // SkyImageMedianPerc5Data mp5dt = new SkyImageMedianPerc5Data(currentFullFileName, 0.0d, 0.0d);
+
+                e.Result = new object[] { currentFullFileName, null, false, null, ex };
+                return;
+            }
+        }
+
+
+
+
+
+        public static ImageStatsDataCalculationResult CalculateImageStatsData(string imgFileName = "", Dictionary<string, object> optionalParameters = null)
+        {
+            if (imgFileName == "")
+            {
+                return null;
+            }
+
+            ImageStatsDataCalculationResult Result = new ImageStatsDataCalculationResult();
+            List<Tuple<string, string>> lImagesRoundMasksMappingFiles = null;
+            Stopwatch stopwatch = null;
+
+            string currentFullFileName = imgFileName;
+            string logFileName = "";
+            if (optionalParameters != null)
+            {
+                if (optionalParameters.ContainsKey("ImagesRoundMasksXMLfilesMappingList"))
+                {
+                    string ImagesRoundMasksXMLfilesMappingList = (string)optionalParameters["ImagesRoundMasksXMLfilesMappingList"];
+                    if (File.Exists(ImagesRoundMasksXMLfilesMappingList))
+                    {
+                        List<List<string>> llImagesRoundMasksMappingFiles =
+                            ServiceTools.ReadDataFromCSV(ImagesRoundMasksXMLfilesMappingList, 0, true, ";", Environment.NewLine);
+                        lImagesRoundMasksMappingFiles =
+                            llImagesRoundMasksMappingFiles.ConvertAll(
+                                list => new Tuple<string, string>(list[0], list[1]));
+                        // item1: images filename pattern
+                        // item2: image rounded mask parameters XML file
+                    }
+                }
+
+
+                if (optionalParameters.ContainsKey("Stopwatch"))
+                {
+                    stopwatch = optionalParameters["Stopwatch"] as Stopwatch;
+                }
+
+                if (optionalParameters.ContainsKey("logFileName"))
+                {
+                    logFileName = optionalParameters["logFileName"] as string;
+                }
+            }
+
+            TimeSpan procStart = Process.GetCurrentProcess().TotalProcessorTime;
+
+            try
+            {
+                ImageProcessing imgP = null;
+                RoundData predefinedRoundedMask = null;
+                if (lImagesRoundMasksMappingFiles != null)
+                {
+                    #region debug report
+#if (MONO && DEBUG)
+                    string strReport = "lImagesRoundMasksMappingFiles = " + lImagesRoundMasksMappingFiles;
+                    if (logFileName == "")
+                    {
+                        Console.WriteLine(strReport);
+                    }
+                    else
+                    {
+                        ServiceTools.logToTextFile(logFileName, strReport + Environment.NewLine, true);
+                    }
+#endif
+                    #endregion debug report
+
+                    if (lImagesRoundMasksMappingFiles.Any())
+                    {
+                        #region debug report
+#if (MONO && DEBUG)
+                        strReport = "lImagesRoundMasksMappingFiles count = " + lImagesRoundMasksMappingFiles.Count;
+                        if (logFileName == "")
+                        {
+                            Console.WriteLine(strReport);
+                        }
+                        else
+                        {
+                            ServiceTools.logToTextFile(logFileName, strReport + Environment.NewLine, true);
+                        }
+#endif
+                        #endregion debug report
+
+                        if (lImagesRoundMasksMappingFiles.Find(tpl => (new WildcardPattern(tpl.Item1)).IsMatch(currentFullFileName)) != null)
+                        {
+                            #region debug report
+#if (MONO && DEBUG)
+                            strReport = "wildcard pattern to match: " + currentFullFileName;
+                            if (logFileName == "")
+                            {
+                                Console.WriteLine(strReport);
+                            }
+                            else
+                            {
+                                ServiceTools.logToTextFile(logFileName, strReport + Environment.NewLine, true);
+                            }
+#endif
+                            #endregion debug report
+
+                            string strFoundPredefinedRoundedMaskParametersXMLfile =
+                                lImagesRoundMasksMappingFiles.Find(
+                                    tpl => (new WildcardPattern(tpl.Item1)).IsMatch(currentFullFileName)).Item2;
+                            strFoundPredefinedRoundedMaskParametersXMLfile =
+                                strFoundPredefinedRoundedMaskParametersXMLfile.Substring(0, strFoundPredefinedRoundedMaskParametersXMLfile.IndexOf(".xml") + 4);
+                                
+
+                            #region debug report
+#if (MONO && DEBUG)
+                            strReport = "found strFoundPredefinedRoundedMaskParametersXMLfile? " +
+                                        strFoundPredefinedRoundedMaskParametersXMLfile + Environment.NewLine +
+                                        "strFoundPredefinedRoundedMaskParametersXMLfile exists? " +
+                                        File.Exists(strFoundPredefinedRoundedMaskParametersXMLfile);
+                            if (logFileName == "")
+                            {
+                                Console.WriteLine(strReport);
+                            }
+                            else
+                            {
+                                ServiceTools.logToTextFile(logFileName, strReport + Environment.NewLine, true);
+                            }
+#endif
+                            #endregion debug report
+
+                            predefinedRoundedMask =
+                                ServiceTools.ReadObjectFromXML(strFoundPredefinedRoundedMaskParametersXMLfile,
+                                    typeof(RoundData)) as RoundData;
+
+                            #region debug report
+#if (MONO && DEBUG)
+                            strReport = "read predefinedRoundedMask? " + (predefinedRoundedMask != null);
+                            if (logFileName == "")
+                            {
+                                Console.WriteLine(strReport);
+                            }
+                            else
+                            {
+                                ServiceTools.logToTextFile(logFileName, strReport + Environment.NewLine, true);
+                            }
+#endif
+                            #endregion debug report
+                        }
+                    }
+                }
+
+                SkyImageIndexesStatsData grixyrgbStatsData = ImageProcessing.CalculateImageIndexesStats(currentFullFileName, out imgP, 0, predefinedRoundedMask, logFileName);
+
+
+                SkyImageMedianPerc5Data mp5dt = new SkyImageMedianPerc5Data(currentFullFileName,
+                    grixyrgbStatsData.grixStatsData.lTplFieldPercentiles.Find(perc => perc.percIndex == 50).percValue,
+                    grixyrgbStatsData.grixStatsData.lTplFieldPercentiles.Find(perc => perc.percIndex == 5).percValue);
+
+                TimeSpan procEnd = Process.GetCurrentProcess().TotalProcessorTime;
+
+                Result = new ImageStatsDataCalculationResult()
+                {
+                    calcResult = true,
+                    imgFilename = currentFullFileName,
+                    mp5Result = mp5dt,
+                    grixyrgbStatsData = grixyrgbStatsData,
+                    stopwatch = stopwatch,
+                    exception = null,
+                    procTotalProcessorTimeEnd = procEnd,
+                    procTotalProcessorTimeStart = procStart
+                };
+
+                return Result;
+            }
+            catch (Exception ex)
+            {
+                #region report
+
+#if MONO
+                string strReport = "Error processing file: " + Environment.NewLine + currentFullFileName +
+                                        Environment.NewLine + "messages: " +
+                                        ServiceTools.GetExceptionMessages(ex) + Environment.NewLine +
+                                        "Stack trace: " + Environment.NewLine +
+                                        Environment.StackTrace + Environment.NewLine + Environment.NewLine;
+                if (logFileName == "")
+                {
+                    Console.WriteLine(strReport, true, true);
+                }
+                else
+                {
+                    ServiceTools.logToTextFile(logFileName, strReport, true);
+                }
+#endif
+                #endregion report
+
+                TimeSpan procEnd = Process.GetCurrentProcess().TotalProcessorTime;
+                Result = new ImageStatsDataCalculationResult()
+                {
+                    calcResult = false,
+                    imgFilename = currentFullFileName,
+                    stopwatch = stopwatch,
+                    exception = ex,
+                    procTotalProcessorTimeEnd = procEnd,
+                    procTotalProcessorTimeStart = procStart
+                };
+                return Result;
+            }
+        }
+
 
 
 

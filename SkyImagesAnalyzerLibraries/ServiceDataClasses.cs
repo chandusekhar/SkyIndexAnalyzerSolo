@@ -4,6 +4,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using MathNet.Numerics.LinearAlgebra;
@@ -32,13 +33,17 @@ namespace SkyImagesAnalyzerLibraries
         private double accDoubleY;
         private double accDoubleZ;
         private double accMagnitude;
-        public int devID = 0;
+        public int devID = 1;
 
         public bool validAccData = true;
 
 
         #region for CSV export
-        public int CloudCamDevID => devID;
+        public int CloudCamDevID
+        {
+            get { return devID; }
+        }
+
         #endregion
 
 
@@ -471,10 +476,22 @@ namespace SkyImagesAnalyzerLibraries
 
         public static DenseMatrix ToDenseMatrix(IEnumerable<AccelerometerData> lAccData, Dictionary<string, AccelerometerData> dctCalibrationAccDataByDevID)
         {
-            IEnumerable<DenseVector> lDVdata =
-                new List<AccelerometerData>(lAccData).ConvertAll(accDat => accDat.ToDenseVector(dctCalibrationAccDataByDevID));
-            DenseMatrix dmRetMatr = DenseMatrix.OfRows(lDVdata.Count(), lDVdata.ElementAt(0).Count, lDVdata);
-            return dmRetMatr;
+            if (lAccData.Count() == 0)
+            {
+                AccelerometerData acc1 = new AccelerometerData();
+                DenseVector dvAcc1 = acc1.ToDenseVector(dctCalibrationAccDataByDevID);
+                IEnumerable<DenseVector> lDVdata = new List<DenseVector>() { dvAcc1 };
+                DenseMatrix dmRetMatr = DenseMatrix.OfRows(lDVdata.Count(), lDVdata.ElementAt(0).Count, lDVdata);
+                return dmRetMatr;
+            }
+            else
+            {
+                IEnumerable<DenseVector> lDVdata =
+                    new List<AccelerometerData>(lAccData).ConvertAll(
+                        accDat => accDat.ToDenseVector(dctCalibrationAccDataByDevID));
+                DenseMatrix dmRetMatr = DenseMatrix.OfRows(lDVdata.Count(), lDVdata.ElementAt(0).Count, lDVdata);
+                return dmRetMatr;
+            }
         }
     }
 
@@ -497,7 +514,11 @@ namespace SkyImagesAnalyzerLibraries
 
 
         #region for CSV export
-        public int CloudCamDevID => devID;
+        public int CloudCamDevID
+        {
+            get { return devID; }
+        }
+
         #endregion
 
 
@@ -633,19 +654,28 @@ namespace SkyImagesAnalyzerLibraries
 
         public GyroData(IEnumerable<string> source)
         {
-            try
-            {
-                this.GyroDoubleX = Convert.ToDouble(source.ElementAt(0));
-                this.GyroDoubleY = Convert.ToDouble(source.ElementAt(1));
-                this.GyroDoubleZ = Convert.ToDouble(source.ElementAt(2));
-            }
-            catch (Exception)
+            if (source.Count() != 3)
             {
                 this.GyroDoubleX = 0.0d;
                 this.GyroDoubleY = 0.0d;
                 this.GyroDoubleZ = 0.0d;
             }
+            else
+            {
 
+                try
+                {
+                    this.GyroDoubleX = Convert.ToDouble(source.ElementAt(0));
+                    this.GyroDoubleY = Convert.ToDouble(source.ElementAt(1));
+                    this.GyroDoubleZ = Convert.ToDouble(source.ElementAt(2));
+                }
+                catch (Exception ex)
+                {
+                    this.GyroDoubleX = 0.0d;
+                    this.GyroDoubleY = 0.0d;
+                    this.GyroDoubleZ = 0.0d;
+                }
+            }
         }
 
 
@@ -835,7 +865,11 @@ namespace SkyImagesAnalyzerLibraries
 
 
         #region for CSV export
-        public int CloudCamDevID => devID;
+        public int CloudCamDevID
+        {
+            get { return devID; }
+        }
+
         #endregion
 
 
@@ -1189,24 +1223,69 @@ namespace SkyImagesAnalyzerLibraries
 
         #region for CSV export
 
-        public string GpsString => GPSstring;
-        public DateTime DateTimeUTC => dateTimeUTC;
-        public double IoffeHeadingTrue => IOFFEdataHeadingTrue;
-        public double IoffeHeadingGyro => IOFFEdataHeadingGyro;
-        public double IoffeSpeedKnots => IOFFEdataSpeedKnots;
-        public double IoffeDepth => IOFFEdataDepth;
-        public int CloudCamDevID => devID;
-        public GPSdatasources DataSource => dataSource;
+        public string GpsString
+        {
+            get { return GPSstring; }
+        }
+
+        public DateTime DateTimeUTC
+        {
+            get { return dateTimeUTC; }
+        }
+
+        public double IoffeHeadingTrue
+        {
+            get { return IOFFEdataHeadingTrue; }
+        }
+
+        public double IoffeHeadingGyro
+        {
+            get { return IOFFEdataHeadingGyro; }
+        }
+
+        public double IoffeSpeedKnots
+        {
+            get { return IOFFEdataSpeedKnots; }
+        }
+
+        public double IoffeDepth
+        {
+            get { return IOFFEdataDepth; }
+        }
+
+        public int CloudCamDevID
+        {
+            get { return devID; }
+        }
+
+        public GPSdatasources DataSource
+        {
+            get { return dataSource; }
+        }
 
         #endregion
 
 
 
-        public GPSdata(string gpsString, GPSdatasources source)
+        /// <summary>
+        /// Initializes a new instance of the <see cref="GPSdata" /> class.
+        /// 
+        /// NOTE!!! Use only with the today-strings only!
+        /// NMEA GPS data of GPGGA type doesn`t include DATE information!!!
+        /// </summary>
+        /// <param name="gpsString">The GPS NMEA GPGGA-type string.</param>
+        /// <param name="source">The source.</param>
+        public GPSdata(string gpsString, GPSdatasources source, DateTime date)
         {
             GPSstring = gpsString;
             dataSource = source;
             parseGPSstring();
+
+            if (source == GPSdatasources.CloudCamArduinoGPS)
+            {
+                dateTimeUTC = new DateTime(date.Year, date.Month, date.Day, DateTimeUTC.Hour, DateTimeUTC.Minute,
+                    DateTimeUTC.Second, DateTimeUTC.Millisecond);
+            }
         }
 
 
@@ -1368,6 +1447,11 @@ namespace SkyImagesAnalyzerLibraries
 
 
 
+        /// <summary>
+        /// Parses the gps string.
+        /// NOTE!!! Use only with the today-strings only!
+        /// NMEA GPS data of GPGGA type doesn`t include DATE information!!!
+        /// </summary>
         private void parseGPSstring()
         {
             string[] strValues = GPSstring.Split(',');
@@ -1847,13 +1931,40 @@ namespace SkyImagesAnalyzerLibraries
 
         #region for CSV export
 
-        public double Pressure => pressure;
-        public double RelHumidity => Rhumidity;
-        public double AirTemperature => airTemperature;
-        public double WindSpeed => windSpeed;
-        public double WindDirection => windDirection;
-        public double WaterTemperature => waterTemperature;
-        public double WaterSalinity => waterSalinity;
+        public double Pressure
+        {
+            get { return pressure; }
+        }
+
+        public double RelHumidity
+        {
+            get { return Rhumidity; }
+        }
+
+        public double AirTemperature
+        {
+            get { return airTemperature; }
+        }
+
+        public double WindSpeed
+        {
+            get { return windSpeed; }
+        }
+
+        public double WindDirection
+        {
+            get { return windDirection; }
+        }
+
+        public double WaterTemperature
+        {
+            get { return waterTemperature; }
+        }
+
+        public double WaterSalinity
+        {
+            get { return waterSalinity; }
+        }
 
         #endregion
 
@@ -2266,7 +2377,22 @@ namespace SkyImagesAnalyzerLibraries
 
         public List<T> ToList()
         {
-            List<T> lRet = queue.ToList();
+            List<T> lRet = new List<T>();
+            int counter = 0;
+            bool succeess = false;
+            while (!succeess)
+            {
+                try
+                {
+                    lRet = queue.ToList();
+                    succeess = true;
+                }
+                catch (Exception ex)
+                {
+                    succeess = false;
+                    counter++;
+                }
+            }
             lRet.Reverse();
             return lRet;
         }
@@ -2274,7 +2400,23 @@ namespace SkyImagesAnalyzerLibraries
 
         public T[] ToArray()
         {
-            List<T> lRet = queue.ToList();
+            List<T> lRet = new List<T>();
+            int counter = 0;
+            bool succeess = false;
+            while (!succeess)
+            {
+                try
+                {
+                    lRet = queue.ToList();
+                    succeess = true;
+                }
+                catch (Exception ex)
+                {
+                    succeess = false;
+                    counter++;
+                }
+            }
+
             lRet.Reverse();
             return lRet.ToArray();
         }
@@ -2311,9 +2453,16 @@ namespace SkyImagesAnalyzerLibraries
 
         public new virtual T Dequeue()
         {
-            var item = base.Dequeue();
-            this.OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Remove, item));
-            return item;
+            try
+            {
+                var item = base.Dequeue();
+                this.OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Remove, item));
+                return item;
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
         }
 
         public new virtual void Enqueue(T item)
@@ -2527,7 +2676,8 @@ namespace SkyImagesAnalyzerLibraries
         Sun0,
         Sun1,
         Sun2,
-        Defect
+        Defect,
+        Undefined
     }
 
 
@@ -2786,7 +2936,7 @@ namespace SkyImagesAnalyzerLibraries
                 }
             }
 
-            
+
             return lValues;
         }
 
@@ -2995,8 +3145,220 @@ namespace SkyImagesAnalyzerLibraries
                 }
             }
 
-            
+
             return lStrHeaders;
+        }
+    }
+
+
+
+
+
+    public class ImageStatsDataCalculationResult
+    {
+        // currentFullFileName, mp5dt, true, grixyrgbStatsData, stopwatch, procStart, procEnd
+        public string imgFilename { get; set; }
+        public Stopwatch stopwatch { get; set; }
+        public TimeSpan procTotalProcessorTimeStart { get; set; }
+        public TimeSpan procTotalProcessorTimeEnd { get; set; }
+        public bool calcResult { get; set; }
+        public Exception exception { get; set; }
+        public SkyImageMedianPerc5Data mp5Result { get; set; }
+        public SkyImageIndexesStatsData grixyrgbStatsData { get; set; }
+
+
+        public ImageStatsDataCalculationResult()
+        {
+            imgFilename = "";
+            stopwatch = null;
+            procTotalProcessorTimeStart = new TimeSpan(0);
+            procTotalProcessorTimeEnd = new TimeSpan(0);
+            calcResult = false;
+            exception = null;
+            mp5Result = null;
+            grixyrgbStatsData = null;
+        }
+    }
+
+
+
+
+
+
+    public class ImagesProcessingData
+    {
+        public string filename
+        {
+            get; set;
+        }
+
+
+        public string concurrentDataXMLfile
+        {
+            get; set;
+        }
+
+
+
+        public ConcurrentData concurrentData { get; set; }
+
+
+
+        public string grixyrgbStatsXMLfile
+        {
+            get; set;
+        }
+
+
+
+        public SkyImageIndexesStatsData grixyrgbStats { get; set; }
+    }
+
+
+
+
+
+    public class ObservedClCoverData
+    {
+        public DateTime dt { get; set; }
+        public int CloudCoverTotal { get; set; }
+        public int CloudCoverLower { get; set; }
+
+        public ObservedClCoverData() { }
+
+        public ObservedClCoverData(IEnumerable<string> csvData)
+        {
+            dt = DateTime.Parse(csvData.ElementAt(0), null, System.Globalization.DateTimeStyles.AdjustToUniversal);
+            CloudCoverTotal = Convert.ToInt32(csvData.ElementAt(1));
+            CloudCoverLower = Convert.ToInt32(csvData.ElementAt(2));
+        }
+    }
+
+
+
+
+    public class SkyImagesDataWith_Concurrent_Stats_CloudCover
+    {
+        public string skyImageFullFileName { get; set; }
+        public string skyImageFileName { get; set; }
+        public DateTime currImageDateTime { get; set; }
+        public ObservedClCoverData observedCloudCoverData { get; set; }
+        public string concurrentDataXMLfile{ get; set; }
+        public ConcurrentData concurrentData { get; set; }
+        public string grixyrgbStatsXMLfile{get; set;}
+        public SkyImageIndexesStatsData grixyrgbStats { get; set; }
+
+
+        public SkyImagesDataWith_Concurrent_Stats_CloudCover() { }
+    }
+
+
+
+
+    public class SkyImagesDataWith_Concurrent_Stats_CloudCover_SDC
+    {
+        public string skyImageFullFileName { get; set; }
+        public string skyImageFileName { get; set; }
+        public DateTime currImageDateTime { get; set; }
+        public ObservedClCoverData observedCloudCoverData { get; set; }
+        public string concurrentDataXMLfile { get; set; }
+        public ConcurrentData concurrentData { get; set; }
+        public string grixyrgbStatsXMLfile { get; set; }
+        public SkyImageIndexesStatsData grixyrgbStats { get; set; }
+        public SunDiskCondition SDCvalue { get; set; }
+
+
+        public SkyImagesDataWith_Concurrent_Stats_CloudCover_SDC() { }
+    }
+
+
+
+
+
+    public class MissionsObservedData
+    {
+        public DateTime dateTime { get; set; }
+        public double latNMEA { get; set; }
+        public double lonNMEA { get; set; }
+        public double heading { get; set; }
+        public double headingGyro { get; set; }
+        public double speedKt { get; set; }
+        public double pressure { get; set; }
+        public double T_air { get; set; }
+        public double T_water { get; set; }
+        public double windSpeed { get; set; }
+        public double windDirection { get; set; }
+        public double relHumidity { get; set; }
+        public int swell { get; set; }
+        public int CloudCoverTotal { get; set; }
+        public int CloudCoverLower { get; set; }
+        public string CloudTypesObserved { get; set; }
+        public int LowerCloudsIndex { get; set; }
+        public int MedCloudsIndex { get; set; }
+        public int HighCloudsIndex { get; set; }
+        public SunDiskCondition SDC { get; set; }
+        public string report { get; set; }
+
+
+        public MissionsObservedData(){}
+
+        public MissionsObservedData(List<string> observationRecord)
+        {
+            DateTime outDT = DateTime.UtcNow;
+            bool dtRes = DateTime.TryParse(observationRecord[0], out outDT);
+            if (dtRes)
+            {
+                dateTime = outDT;
+            }
+            else
+            {
+                throw new InvalidCastException("unable to parse date-time string " + observationRecord[0]);
+            }
+
+            try
+            {
+                latNMEA = Convert.ToDouble(observationRecord[1].Replace(".", ","));
+                lonNMEA = Convert.ToDouble(observationRecord[2].Replace(".", ","));
+                heading = Convert.ToDouble(observationRecord[3].Replace(".", ","));
+                headingGyro = Convert.ToDouble(observationRecord[4].Replace(".", ","));
+                speedKt = Convert.ToDouble(observationRecord[5].Replace(".", ","));
+                pressure = Convert.ToDouble(observationRecord[6].Replace(".", ","));
+                T_air = Convert.ToDouble(observationRecord[7].Replace(".", ","));
+                T_water = Convert.ToDouble(observationRecord[8].Replace(".", ","));
+                windSpeed = Convert.ToDouble(observationRecord[9].Replace(".", ","));
+                windDirection = Convert.ToDouble(observationRecord[10].Replace(".", ","));
+                relHumidity = Convert.ToDouble(observationRecord[11].Replace(".", ","));
+                swell = Convert.ToInt32(observationRecord[12].Replace(".", ","));
+                CloudCoverTotal = Convert.ToInt32(observationRecord[13].Replace(".", ","));
+                CloudCoverLower = Convert.ToInt32(observationRecord[14].Replace(".", ","));
+                CloudTypesObserved = observationRecord[15];
+                LowerCloudsIndex = Convert.ToInt32(observationRecord[16].Replace(".", ","));
+                MedCloudsIndex = Convert.ToInt32(observationRecord[17].Replace(".", ","));
+                HighCloudsIndex = Convert.ToInt32(observationRecord[18].Replace(".", ","));
+                int SDCint = Convert.ToInt32(observationRecord[19].Replace(".", ","));
+                switch (SDCint)
+                {
+                    case 1:
+                        SDC = SunDiskCondition.Sun0;
+                        break;
+                    case 2:
+                        SDC = SunDiskCondition.Sun1;
+                        break;
+                    case 3:
+                        SDC = SunDiskCondition.Sun2;
+                        break;
+                    case 4:
+                        SDC = SunDiskCondition.NoSun;
+                        break;
+                }
+            }
+            catch (Exception ex)
+            {
+                
+                throw ex;
+            }
+            
+            
         }
     }
 }

@@ -134,8 +134,24 @@
       <HintPath>..\..\components\EmguCV-2.4.10-compiled\bin\debug\x64\Emgu.Util.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="ILNumerics.Computing, Version=4.9.0.0, Culture=neutral, PublicKeyToken=8d9bf50ef854734d, processorArchitecture=MSIL">
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="ILNumerics.Core, Version=4.9.0.0, Culture=neutral, PublicKeyToken=9651adc37f12bb00, processorArchitecture=MSIL">
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="ILNumerics.Drawing, Version=4.9.0.0, Culture=neutral, PublicKeyToken=e22c8a010c3b081a, processorArchitecture=MSIL">
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="ILNumerics.IO.HDF5, Version=4.9.0.0, Culture=neutral, PublicKeyToken=85055996c33d20cc, processorArchitecture=MSIL">
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="MathNet.Numerics">
+      <HintPath>..\packages\MathNet.Numerics.3.5.0\lib\net40\MathNet.Numerics.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
     <Reference Include="MRG.Controls.UI">
-      <HintPath>..\..\MRG.Controls.UI\bin\MRG.Controls.UI.dll</HintPath>
+      <HintPath>..\..\components\MRG.Controls.UI\bin\MRG.Controls.UI.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="System" />
@@ -155,6 +171,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ILNumerics_deploy\ILNHelper.cs" />
     <Compile Include="SunPresenceCollectingMainForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -163,6 +180,7 @@
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <EmbeddedResource Include="ILNumerics_deploy\ilnumerics.lic" />
     <EmbeddedResource Include="SunPresenceCollectingMainForm.resx">
       <DependentUpon>SunPresenceCollectingMainForm.cs</DependentUpon>
     </EmbeddedResource>
@@ -176,6 +194,8 @@
       <DependentUpon>Resources.resx</DependentUpon>
       <DesignTime>True</DesignTime>
     </Compile>
+    <None Include="ILNumerics_deploy\ILNImports1.targets" />
+    <None Include="ILNumerics_deploy\ILNImports2.targets" />
     <None Include="packages.config" />
     <None Include="Properties\app.manifest" />
     <None Include="Properties\Settings.settings">
@@ -192,9 +212,19 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\ANN\ANN.csproj">
+      <Project>{257524fd-f280-487a-a4de-23580cce20b5}</Project>
+      <Name>ANN</Name>
+      <Private>False</Private>
+    </ProjectReference>
     <ProjectReference Include="..\SkyImagesAnalyzerLibraries\SkyImagesAnalyzerLibraries.csproj">
       <Project>{7beac8e4-e53f-466a-b824-1fe69e60d114}</Project>
       <Name>SkyImagesAnalyzerLibraries</Name>
+      <Private>False</Private>
+    </ProjectReference>
+    <ProjectReference Include="..\SolarPositioning\SolarPositioning.csproj">
+      <Project>{3499BE05-5C5B-49F0-9655-05CB2E5E6B3D}</Project>
+      <Name>SolarPositioning</Name>
       <Private>False</Private>
     </ProjectReference>
   </ItemGroup>
@@ -205,6 +235,18 @@
     <None Include="nosun.png" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="settings\NNconfig.csv">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="settings\NNtrainedParameters.csv">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="settings\NormMeans.csv">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="settings\NormRange.csv">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Include="sun0.png" />
   </ItemGroup>
   <ItemGroup>
@@ -226,8 +268,17 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
+    <None Include="settings\ImagesRoundMasksXMLfilesMappingList.csv">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Include="sadSmile.png" />
     <Content Include="License-LGPL.txt" />
+    <Content Include="settings\imageRD-stats-devID1-RoundImagemask.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="settings\imageRD-stats-devID2-RoundImagemask.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="settings\SunPresenceCollectingApp-Settings.xml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
@@ -240,6 +291,8 @@
     </PropertyGroup>
     <Error Condition="!Exists('..\packages\Accord.3.0.2\build\Accord.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Accord.3.0.2\build\Accord.targets'))" />
   </Target>
+  <Import Project="ILNumerics_deploy\ILNImports1.targets" Condition="$(ILNLicCompile) != 'true'" />
+  <Import Project="ILNumerics_deploy\ILNImports2.targets" Condition="$(ILNLicCompile) == 'true'" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

@@ -9,12 +9,18 @@ using MathNet.Numerics.LinearAlgebra.Double;
 using System.Drawing.Imaging;
 using System.Threading;
 using System.Reflection;
+using System.Threading.Tasks;
 using System.Xml.Serialization;
+using Accord.MachineLearning.DecisionTrees;
+using Accord.MachineLearning.DecisionTrees.Learning;
 using Emgu.CV;
 using Emgu.CV.Structure;
 using MathNet.Numerics.Statistics;
 using SkyImagesAnalyzerLibraries;
 using SolarPositioning;
+using Accord.Math;
+using ANN;
+using System.Management.Automation;
 
 
 namespace SkyImagesAnalyzer
@@ -54,9 +60,27 @@ namespace SkyImagesAnalyzer
         private Dictionary<string, object> defaultProperties = null;
         private string defaultPropertiesXMLfileName = "";
         private LogWindow theLogWindow = null;
+
+        private string strConcurrentDataXMLfilesPath = "";
+
+        private string errorLogFilename = Directory.GetCurrentDirectory() + Path.DirectorySeparatorChar + "logs" +
+                                          Path.DirectorySeparatorChar +
+                                          Path.GetFileNameWithoutExtension(Assembly.GetEntryAssembly().Location) +
+                                          "-error.log";
+        #endregion vars
+
+        #region ML related vars
+        private string strMLdefaultDataDirectory = "";
         #endregion
 
+
+        private string FilesAndConcurrentDataListToProcessForCloudCover = "";
+
+
+
         private DelegateOpenFile m_DelegateOpenFile;
+
+
 
         #region //OBSOLETE
         //private double tunedIFMMargin; 
@@ -103,7 +127,7 @@ namespace SkyImagesAnalyzer
 
 
 
-
+        #region PropertiesForm behaviour
 
         private void btnProperties_Click(object sender, EventArgs e)
         {
@@ -119,6 +143,7 @@ namespace SkyImagesAnalyzer
             readDefaultProperties();
         }
 
+        #endregion PropertiesForm behaviour
 
 
         public MainAnalysisForm()
@@ -187,6 +212,8 @@ namespace SkyImagesAnalyzer
         {
             m_DelegateOpenFile = this.OpenFile;
 
+            #region // obsolete
+
             //ProcessingConditionsChanged = false;
 
 
@@ -208,20 +235,23 @@ namespace SkyImagesAnalyzer
             //ThreadSafeOperations.SetText(label9, "Изменять исходный размер: 1.0", false);
             //ThreadSafeOperations.MoveTrackBar(trackBar3, 7);
 
+            #endregion // obsolete
+
             button1.Text = "Обработка директории: ";
-
-            //reportingTextBox = textBox1;
         }
 
 
 
-        private void оПрограммеToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            aboutprog = new AboutBox1();
-            aboutprog.Show(this);
-        }
+        #region obsolete // оПрограммеToolStripMenuItem_Click
 
+        //private void оПрограммеToolStripMenuItem_Click(object sender, EventArgs e)
+        //{
+        //    aboutprog = new AboutBox1();
+        //    aboutprog.Show(this);
+        //}
 
+        #endregion obsolete // оПрограммеToolStripMenuItem_Click
+        #region obsolete // ExposureTimeHumanReadable
 
         private string ExposureTimeHumanReadable(int ETnumerator, int ETdenominator)
         {
@@ -244,6 +274,8 @@ namespace SkyImagesAnalyzer
                 return ((double)ETnumerator / (double)ETdenominator).ToString();
             }
         }
+
+        #endregion obsolete // ExposureTimeHumanReadable
 
 
         #region // устарело, пока больше не применяется
@@ -646,6 +678,12 @@ namespace SkyImagesAnalyzer
 
 
 
+
+
+
+
+        #region button2_Click_1 - кнопка OK
+
         private void button2_Click_1(object sender, EventArgs e)
         {
             if (imagetoadd == null)
@@ -661,6 +699,8 @@ namespace SkyImagesAnalyzer
 
             //CurrentPB2Source = pb2Source.SkyindexAnalyzer;
         }
+
+        #endregion button2_Click_1 - кнопка OK
 
 
 
@@ -690,6 +730,11 @@ namespace SkyImagesAnalyzer
             ThreadSafeOperations.SetText(label2, tunedSIMargin.ToString(), false);
             //ProcessingConditionsChanged = true;
         }
+
+
+
+
+        #region // obsolete
 
         //private void trackBar2_Scroll(object sender, EventArgs e)
         //{
@@ -1010,7 +1055,13 @@ namespace SkyImagesAnalyzer
         //    UpdateSIIFMlabels(2, CloudCover4);
         //}
 
+        #endregion // obsolete
 
+
+
+
+
+        #region Form behaviour
 
         private void Form1_DragEnter(object sender, DragEventArgs e)
         {
@@ -1023,6 +1074,8 @@ namespace SkyImagesAnalyzer
                 e.Effect = DragDropEffects.None;
             }
         }
+
+
 
         private void Form1_DragDrop(object sender, DragEventArgs e)
         {
@@ -1053,31 +1106,14 @@ namespace SkyImagesAnalyzer
         }
 
 
-
-        private void UpdateSIIFMlabels(int VarNumber, double CloudCoverValue)
-        {
-            if (VarNumber == 1)//SI variant
-            {
-                ThreadSafeOperations.SetText(label5, "Cl.cover: " + Math.Round(CloudCoverValue, 2).ToString(), false);
-                //this.label5.Text = "Cl.cover: " + Math.Round(CloudCoverValue, 2).ToString();
-            }
-            else if (VarNumber == 2)//IFM variant
-            {
-                //ThreadSafeOperations.SetText(label6, "Cl.cover: " + Math.Round(CloudCoverValue, 2).ToString(), false);
-                //this.label6.Text = "Cl.cover: " + Math.Round(CloudCoverValue, 2).ToString();
-            }
-        }
+        #endregion Form behaviour
 
 
-        private void Form1_Resize(object sender, EventArgs e)
-        {
-            if ((imagetoadd != null) && (!bgwProcessOneImage.IsBusy))
-            {
-                ThreadSafeOperations.UpdatePictureBox(pictureBox1, imagetoadd.Bitmap, true);
-                ThreadSafeOperations.UpdatePictureBox(pictureBox2, pictureBox2Bitmap, true);
-                this.Refresh();
-            }
-        }
+
+
+
+
+        #region // obsolete
 
         //private void getDataToolStripMenuItem_Click(object sender, EventArgs e)
         //{
@@ -1119,9 +1155,12 @@ namespace SkyImagesAnalyzer
         //    sp.Close();
         //}
 
+        #endregion // obsolete
 
 
-        // bgwProcessOneImage - DoWork
+
+        #region bgwProcessOneImage
+
         private void backgroundWorker1_DoWork(object sender, System.ComponentModel.DoWorkEventArgs e)
         {
             BackgroundWorker SelfWorker = sender as BackgroundWorker;
@@ -1174,8 +1213,13 @@ namespace SkyImagesAnalyzer
 
         }
 
+        #endregion bgwProcessOneImage
 
 
+
+
+
+        #region // obsolete
 
         //private void GetSensorsDataCycle_DoWork(object sender, System.ComponentModel.DoWorkEventArgs e)
         //{
@@ -1230,17 +1274,17 @@ namespace SkyImagesAnalyzer
 
 
 
-        private void Form1_Paint(object sender, PaintEventArgs e)
-        {
-            //if (GetSensorsDataCycle.IsBusy)
-            //{
-            //    ThreadSafeOperations.SetText(StatusLabel, "Идет сбор данных датчиков.", false);
-            //}
-            //else
-            //{
-            //    ThreadSafeOperations.SetText(StatusLabel, "Сбор данных датчиков не производится.", false);
-            //}
-        }
+        //private void Form1_Paint(object sender, PaintEventArgs e)
+        //{
+        //    //if (GetSensorsDataCycle.IsBusy)
+        //    //{
+        //    //    ThreadSafeOperations.SetText(StatusLabel, "Идет сбор данных датчиков.", false);
+        //    //}
+        //    //else
+        //    //{
+        //    //    ThreadSafeOperations.SetText(StatusLabel, "Сбор данных датчиков не производится.", false);
+        //    //}
+        //}
 
         //private void trackBar3_Scroll(object sender, EventArgs e)
         //{
@@ -1281,12 +1325,12 @@ namespace SkyImagesAnalyzer
         //    return (Image)b;
         //}
 
+        #endregion // obsolete
 
 
 
 
-
-
+        #region bgwProcessDirectoryOfImages
 
         private void button1_Click(object sender, EventArgs e)
         {
@@ -1324,13 +1368,13 @@ namespace SkyImagesAnalyzer
 
                 //object[] BGWorker2Args = new object[] { trackBar3.Value };
                 theLogWindow = ServiceTools.LogAText(theLogWindow, "Multiple images computing started with the following parameters:");
-                string strToDisplay = "";
+                string strToDisplay = CommonTools.DictionaryRepresentation(defaultProperties);
                 //var propertiesObj = Properties.Settings.Default.Properties;
-                foreach (KeyValuePair<string, object> settingsProperty in defaultProperties)
-                {
-                    //strToDisplay += Environment.NewLine + settingsProperty.Name + " = " + settingsProperty.DefaultValue;
-                    strToDisplay += Environment.NewLine + settingsProperty.Key + " = " + settingsProperty.Value;
-                }
+                //foreach (KeyValuePair<string, object> settingsProperty in defaultProperties)
+                //{
+                //    //strToDisplay += Environment.NewLine + settingsProperty.Name + " = " + settingsProperty.DefaultValue;
+                //    strToDisplay += Environment.NewLine + settingsProperty.Key + " = " + settingsProperty.Value;
+                //}
                 theLogWindow = ServiceTools.LogAText(theLogWindow, strToDisplay);
 
                 simpleMultipleImagesShow imagesRepresentingForm = new simpleMultipleImagesShow();
@@ -1370,8 +1414,8 @@ namespace SkyImagesAnalyzer
         {
             object[] arguments = e.Argument as object[];
             //double ProgressPerc;
-            int SIValueCounter = 5;
-            int SIValueRange = 25, SIValueRange_min = 5, SIValueRange_max = 30;
+            //int SIValueCounter = 5;
+            //int SIValueRange = 25, SIValueRange_min = 5, SIValueRange_max = 30;
             double defaultResizeFactor = Convert.ToDouble(defaultProperties["DefaultScalingFactor"]); ;
             int defaultMaxImageSize = Convert.ToInt32(defaultProperties["DefaultMaxImageSize"]); ;
             Bitmap bmJ = null, bmG = null, bmGrIx = null; //, bitmap2process = null;
@@ -1381,9 +1425,10 @@ namespace SkyImagesAnalyzer
 
             ThreadSafeOperations.UpdateProgressBar(pbUniversalProgressBar, 0);
 
-            SIValueRange_min = SIClScMarginRangeLowerValue;
-            SIValueRange_max = SIClScMarginRangeHigherValue;
-            SIValueRange = SIValueRange_max - SIValueRange_min;
+            //SIValueRange_min = SIClScMarginRangeLowerValue;
+            //SIValueRange_max = SIClScMarginRangeHigherValue;
+            //SIValueRange = SIValueRange_max - SIValueRange_min;
+
             FileCounter = 0; filecounter_prev = 0;
 
             string path2process = (string)arguments[0];
@@ -1394,7 +1439,8 @@ namespace SkyImagesAnalyzer
             MethodInfo thePicturePlacingMethodInfo = theType.GetMethod("PlaceAPicture");
 
 
-            ServiceTools.logToTextFile(outputStatsDirectory + "statsWithFNames.dat", "Full filename | date+time picture taken | SI US | SI Jap | SI GrIx | SB suppr | Sun disk condition " + Environment.NewLine, true);
+            //ServiceTools.logToTextFile(outputStatsDirectory + "statsWithFNames.dat", "Full filename | date+time picture taken | SI US | SI Jap | SI GrIx | SB suppr | Sun disk condition " + Environment.NewLine, true);
+            ServiceTools.logToTextFile(outputStatsDirectory + "statsWithFNames.dat", "Full filename | date+time picture taken | SI US | SI Jap | SI GrIx | SB suppr " + Environment.NewLine, true);
 
 
             DirectoryInfo dir = new DirectoryInfo(path2process);
@@ -1531,7 +1577,7 @@ namespace SkyImagesAnalyzer
                     ThreadSafeOperations.UpdatePictureBox(pictureBox2, bitmapSI, true);
                     pictureBox2Bitmap = new Bitmap(bitmapSI);
                     strToDisplay += " | " + Math.Round(classificator.CloudCover, 2).ToString();
-                    strToDisplay += " | " + classificator.currentSunDiskCondition.ToString();
+                    // strToDisplay += " | " + classificator.currentSunDiskCondition.ToString();
                     UpdateSIIFMlabels(1, classificator.CloudCover);
                     bmGrIx = new Bitmap(bitmapSI);
                 }
@@ -1634,9 +1680,14 @@ namespace SkyImagesAnalyzer
             ThreadSafeOperations.UpdateProgressBar(pbUniversalProgressBar, 0);
         }
 
+        #endregion bgwProcessDirectoryOfImages
 
 
-        #region obsolete trackBar4_Scroll(object sender, EventArgs e)
+
+
+
+
+        #region obsolete // trackBar4_Scroll(object sender, EventArgs e)
         //private void trackBar4_Scroll(object sender, EventArgs e)
         //{
         //    //double TrackBarLValue, TrackBarRValue;
@@ -1645,21 +1696,18 @@ namespace SkyImagesAnalyzer
         //    //ThreadSafeOperations.SetText(label10, (TrackBarLValue / 100.0).ToString() + " - " + (TrackBarRValue / 100.0).ToString(), false);
         //    //ProcessingConditionsChanged = true;
         //}
-        #endregion obsolete trackBar4_Scroll(object sender, EventArgs e)
+        #endregion obsolete // trackBar4_Scroll(object sender, EventArgs e)
+        #region obsolete // настройкиСбораДанныхToolStripMenuItem_Click
 
+        //private void настройкиСбораДанныхToolStripMenuItem_Click(object sender, EventArgs e)
+        //{
+        //    //SkyIndexAnalyzerDataCollector CollectorForm = new SkyIndexAnalyzerDataCollector();
+        //    //CollectorForm.Show();
+        //    //ShowImageForm ImgShow = new ShowImageForm(localPreviewBitmap, ParentForm, this);
+        //    //ImgShow.Show();
+        //}
 
-
-
-
-
-        private void настройкиСбораДанныхToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            //SkyIndexAnalyzerDataCollector CollectorForm = new SkyIndexAnalyzerDataCollector();
-            //CollectorForm.Show();
-            //ShowImageForm ImgShow = new ShowImageForm(localPreviewBitmap, ParentForm, this);
-            //ImgShow.Show();
-        }
-
+        #endregion obsolete // настройкиСбораДанныхToolStripMenuItem_Click
 
 
 
@@ -1673,23 +1721,155 @@ namespace SkyImagesAnalyzer
                 return;
             }
 
-            DetectImageEdgesCircled();
-        }
+            List<Tuple<string, string>> lImagesRoundMasksMappingFiles = null;
+            if (defaultProperties.ContainsKey("ImagesRoundMasksXMLfilesMappingList"))
+            {
+                string ImagesRoundMasksXMLfilesMappingList = (string)defaultProperties["ImagesRoundMasksXMLfilesMappingList"];
+                if (File.Exists(ImagesRoundMasksXMLfilesMappingList))
+                {
+                    List<List<string>> llImagesRoundMasksMappingFiles =
+                        ServiceTools.ReadDataFromCSV(ImagesRoundMasksXMLfilesMappingList, 0, true, ";", Environment.NewLine);
+                    lImagesRoundMasksMappingFiles =
+                        llImagesRoundMasksMappingFiles.ConvertAll(
+                            list => new Tuple<string, string>(list[0], list[1]));
+                    // item1: images filename pattern
+                    // item2: image rounded mask parameters XML file
+                }
+            }
+
+            RoundData predefinedRoundedMask = null;
+            if (lImagesRoundMasksMappingFiles != null)
+            {
+                #region debug report
+#if (MONO && DEBUG)
+                    string strReport = "lImagesRoundMasksMappingFiles = " + lImagesRoundMasksMappingFiles;
+                    if (logFileName == "")
+                    {
+                        Console.WriteLine(strReport);
+                    }
+                    else
+                    {
+                        ServiceTools.logToTextFile(logFileName, strReport + Environment.NewLine, true);
+                    }
+#endif
+                #endregion debug report
+
+                if (lImagesRoundMasksMappingFiles.Any())
+                {
+                    #region debug report
+#if (MONO && DEBUG)
+                        strReport = "lImagesRoundMasksMappingFiles count = " + lImagesRoundMasksMappingFiles.Count;
+                        if (logFileName == "")
+                        {
+                            Console.WriteLine(strReport);
+                        }
+                        else
+                        {
+                            ServiceTools.logToTextFile(logFileName, strReport + Environment.NewLine, true);
+                        }
+#endif
+                    #endregion debug report
+
+                    if (lImagesRoundMasksMappingFiles.Find(tpl => (new WildcardPattern(tpl.Item1)).IsMatch(ImageFileName)) != null)
+                    {
+                        #region debug report
+#if (MONO && DEBUG)
+                            strReport = "wildcard pattern to match: " + currentFullFileName;
+                            if (logFileName == "")
+                            {
+                                Console.WriteLine(strReport);
+                            }
+                            else
+                            {
+                                ServiceTools.logToTextFile(logFileName, strReport + Environment.NewLine, true);
+                            }
+#endif
+                        #endregion debug report
+
+                        string strFoundPredefinedRoundedMaskParametersXMLfile =
+                            lImagesRoundMasksMappingFiles.Find(
+                                tpl => (new WildcardPattern(tpl.Item1)).IsMatch(ImageFileName)).Item2;
+                        strFoundPredefinedRoundedMaskParametersXMLfile =
+                            strFoundPredefinedRoundedMaskParametersXMLfile.Substring(0, strFoundPredefinedRoundedMaskParametersXMLfile.IndexOf(".xml") + 4);
 
 
+                        #region debug report
+#if (MONO && DEBUG)
+                            strReport = "found strFoundPredefinedRoundedMaskParametersXMLfile? " +
+                                        strFoundPredefinedRoundedMaskParametersXMLfile + Environment.NewLine +
+                                        "strFoundPredefinedRoundedMaskParametersXMLfile exists? " +
+                                        File.Exists(strFoundPredefinedRoundedMaskParametersXMLfile);
+                            if (logFileName == "")
+                            {
+                                Console.WriteLine(strReport);
+                            }
+                            else
+                            {
+                                ServiceTools.logToTextFile(logFileName, strReport + Environment.NewLine, true);
+                            }
+#endif
+                        #endregion debug report
+
+                        predefinedRoundedMask =
+                            ServiceTools.ReadObjectFromXML(strFoundPredefinedRoundedMaskParametersXMLfile,
+                                typeof(RoundData)) as RoundData;
+
+                        #region debug report
+#if (MONO && DEBUG)
+                            strReport = "read predefinedRoundedMask? " + (predefinedRoundedMask != null);
+                            if (logFileName == "")
+                            {
+                                Console.WriteLine(strReport);
+                            }
+                            else
+                            {
+                                ServiceTools.logToTextFile(logFileName, strReport + Environment.NewLine, true);
+                            }
+#endif
+                        #endregion debug report
+                    }
+                }
+            }
 
 
-        private void DetectImageEdgesCircled()
-        {
-            ImageProcessing imp = new ImageProcessing(imagetoadd, true);
+            ImageProcessing imp = null;
+            if (predefinedRoundedMask == null)
+            {
+                imp = new ImageProcessing(imagetoadd, true);
+            }
+            else
+            {
+                imp = new ImageProcessing(imagetoadd, predefinedRoundedMask);
+            }
+            
             ServiceTools.FlushMemory(null, "");
             pictureBox2Bitmap = new Bitmap(imp.significantMaskImageOctLined.Bitmap);
             Image img2show = (Image)imp.significantMaskImageOctLined.Bitmap;
             ThreadSafeOperations.UpdatePictureBox(pictureBox2, img2show, true);
+
+
+            if (predefinedRoundedMask == null)
+            {
+                string strGeometryFilename = (string)defaultProperties["DefaultDataFilesLocation"];
+                strGeometryFilename = strGeometryFilename + ((strGeometryFilename.Last() == Path.DirectorySeparatorChar)
+                    ? ("")
+                    : (Path.DirectorySeparatorChar.ToString())) + Path.GetFileNameWithoutExtension(ImageFileName) + "-RoundImagemask.xml";
+                ServiceTools.WriteObjectToXML(imp.imageRD, strGeometryFilename);
+                theLogWindow = ServiceTools.LogAText(theLogWindow,
+                    "image geometry has been written to the file " + strGeometryFilename);
+            }
         }
 
 
 
+
+
+
+
+        #region Single sky-image analysis using bgwProcessOneImage !!!!!!!!!! Тут какая-то путаница с использованием разных воркеров. Разобраться и исправить.
+
+        /// TODO: Тут какая-то путаница с использованием разных воркеров. Разобраться и исправить.
+        /// 
 
         private void AnalyzeImage(object sender = null)
         {
@@ -1716,9 +1896,22 @@ namespace SkyImagesAnalyzer
 
             FileInfo finfoOriginalFile = new FileInfo(ImageFileName);
 
-            defaultProperties["DefaultDataFilesLocation"] = defaultProperties["DefaultDataFilesLocation"] +
-                                                            Path.GetFileNameWithoutExtension(finfoOriginalFile.Name) +
-                                                            "\\";
+            if (defaultProperties.ContainsKey("DefaultDataFilesLocationCurrentFile"))
+            {
+                defaultProperties["DefaultDataFilesLocationCurrentFile"] =
+                    defaultProperties["DefaultDataFilesLocation"] +
+                    Path.GetFileNameWithoutExtension(finfoOriginalFile.Name) +
+                    Path.DirectorySeparatorChar;
+            }
+            else
+            {
+                defaultProperties.Add("DefaultDataFilesLocationCurrentFile",
+                    defaultProperties["DefaultDataFilesLocation"] +
+                    Path.GetFileNameWithoutExtension(finfoOriginalFile.Name) +
+                    Path.DirectorySeparatorChar);
+            }
+
+
             classificator = new SkyCloudClassification(imagetoadd, defaultProperties);
             classificator.cloudSkySeparationValue = tunedSIMargin;
             if (rbtnClassMethodJapan.Checked)
@@ -1758,9 +1951,15 @@ namespace SkyImagesAnalyzer
 
             BackgroundWorker bgwClassifyWorker = new BackgroundWorker();
             classificator.SelfWorker = bgwClassifyWorker;
+
+
+
+            #region bgwClassifyWorker.DoWork
+
             bgwClassifyWorker.DoWork += new DoWorkEventHandler((obj, args) =>
             {
                 SkyCloudClassification bgwClassificator = (SkyCloudClassification)((object[])args.Argument)[0];
+
                 try
                 {
                     bgwClassificator.Classify();
@@ -1769,9 +1968,15 @@ namespace SkyImagesAnalyzer
                 {
                     theLogWindow = ServiceTools.LogAText(theLogWindow, ex.Message, true);
                 }
-                
+
                 args.Result = new object[] { bgwClassificator };
             });
+
+            #endregion
+
+
+
+            #region bgwClassifyWorker.RunWorkerCompleted
 
             bgwClassifyWorker.RunWorkerCompleted += new RunWorkerCompletedEventHandler((obj, args) =>
             {
@@ -1806,32 +2011,74 @@ namespace SkyImagesAnalyzer
 
                 ThreadSafeOperations.UpdateProgressBar(pbUniversalProgressBar, 0);
 
-                #region //OBSOLETE
-                //string strtowrite3 = "Cloud cover 1 = " + Math.Round(classificator.CloudCover, 2).ToString() + Environment.NewLine;
-                #endregion //OBSOLETE
-
-
-                #region // private void GetEXIFs() - устарело, пока больше не применяется
-                //GetEXIFs();
-                #endregion // private void GetEXIFs() - устарело, пока больше не применяется
-
-
-
                 timetotal = DateTime.Now - begintotal;
 
                 Note("Общее время выполнения: " + timetotal);
                 Note("Время обсчета по новому алгоритму: " + timeNew);
 
-                //tunedSIMargin_prev = tunedSIMargin;
 
                 UpdateSIIFMlabels(1, bgwClassificator.CloudCover);
                 ServiceTools.FlushMemory(null, "");
             });
 
+            #endregion
+
+
+
             object[] bgwArgs = new object[] { classificator };
 
             bgwClassifyWorker.RunWorkerAsync(bgwArgs);
         }
+
+        #endregion Single sky-image analysis
+
+
+
+        #region Form behaviour
+
+
+
+
+        private void UpdateSIIFMlabels(int VarNumber, double CloudCoverValue)
+        {
+            if (VarNumber == 1)//SI variant
+            {
+                ThreadSafeOperations.SetText(label5, "Cl.cover: " + Math.Round(CloudCoverValue, 2).ToString(), false);
+            }
+            else if (VarNumber == 2)//IFM variant
+            {
+                //ThreadSafeOperations.SetText(label6, "Cl.cover: " + Math.Round(CloudCoverValue, 2).ToString(), false);
+                //this.label6.Text = "Cl.cover: " + Math.Round(CloudCoverValue, 2).ToString();
+            }
+        }
+
+
+
+
+        private void Form1_Resize(object sender, EventArgs e)
+        {
+            if ((imagetoadd != null) && (!bgwProcessOneImage.IsBusy))
+            {
+                ThreadSafeOperations.UpdatePictureBox(pictureBox1, imagetoadd.Bitmap, true);
+                ThreadSafeOperations.UpdatePictureBox(pictureBox2, pictureBox2Bitmap, true);
+                this.Refresh();
+            }
+        }
+
+
+
+
+        private void SkyIndexAnalyzer_AnalysisForm_Shown(object sender, EventArgs e)
+        {
+            readDefaultProperties();
+        }
+
+        private void btnAbout_Click(object sender, EventArgs e)
+        {
+            aboutprog = new AboutBox1();
+            aboutprog.Show(this);
+        }
+
 
 
 
@@ -1909,12 +2156,12 @@ namespace SkyImagesAnalyzer
         }
 
 
+        #endregion Form behaviour
 
 
 
 
-
-
+        #region Compute and show GrIx histogram for the sky-image
 
         private void button3_Click_1(object sender, EventArgs e)
         {
@@ -1971,15 +2218,7 @@ namespace SkyImagesAnalyzer
             ServiceTools.FlushMemory();
         }
 
-
-
-
-
-
-
-
-
-
+        #endregion Compute and show GrIx histogram for the sky-image
 
 
 
@@ -2072,42 +2311,517 @@ namespace SkyImagesAnalyzer
 
 
 
+
+
+
+        #region read and save default properties
+
         private void readDefaultProperties()
         {
             defaultProperties = new Dictionary<string, object>();
+            //defaultPropertiesXMLfileName = Directory.GetCurrentDirectory() +
+            //                             "\\settings\\SkyImagesAnalyzerSettings.xml";
             defaultPropertiesXMLfileName = Directory.GetCurrentDirectory() +
-                                         "\\settings\\SkyImagesAnalyzerSettings.xml";
-            if (!File.Exists(defaultPropertiesXMLfileName)) return;
-            defaultProperties = ServiceTools.ReadDictionaryFromXML(defaultPropertiesXMLfileName);
+                                           Path.DirectorySeparatorChar + "settings" + Path.DirectorySeparatorChar +
+                                           Path.GetFileNameWithoutExtension(Assembly.GetEntryAssembly().Location) +
+                                           "-Settings.xml";
 
-
-            tunedSIMargin = Convert.ToDouble(defaultProperties["JapanCloudSkySeparationValue"]);
-            //tunedIFMMargin = Convert.ToDouble(defaultProperties["GermanCloudSkySeparationValue"]);
-            tunedSIMarginDefault = tunedSIMargin;
-            //tunedIFMMarginDefault = tunedIFMMargin;
-
-            string CurDir = Directory.GetCurrentDirectory();
-            string path2process = (string)defaultProperties["BatchProcessingDirectory"];
-            if (path2process == "")
+            if (File.Exists(defaultPropertiesXMLfileName))
             {
-                path2process = CurDir;
+                defaultProperties = ServiceTools.ReadDictionaryFromXML(defaultPropertiesXMLfileName);
+            }
+            else
+            {
+                defaultProperties = new Dictionary<string, object>();
             }
 
+            string CurDir = Directory.GetCurrentDirectory();
+            bool bDefaultPropertiesHasBeenUpdated = false;
+
+
+            #region tunedSIMargin = JapanCloudSkySeparationValue
+
+            if (defaultProperties.ContainsKey("JapanCloudSkySeparationValue"))
+            {
+                tunedSIMargin = Convert.ToDouble(defaultProperties["JapanCloudSkySeparationValue"]);
+            }
+            else
+            {
+                tunedSIMargin = 0.1d;
+                defaultProperties.Add("JapanCloudSkySeparationValue", tunedSIMargin);
+                bDefaultPropertiesHasBeenUpdated = true;
+            }
+            tunedSIMarginDefault = tunedSIMargin;
+
+            #endregion JapanCloudSkySeparationValue
+
+
+            //tunedIFMMargin = Convert.ToDouble(defaultProperties["GermanCloudSkySeparationValue"]);
+            //tunedIFMMarginDefault = tunedIFMMargin;
+
+
+            #region path2process = BatchProcessingDirectory
+
+            string path2process = CurDir;
+            if (defaultProperties.ContainsKey("BatchProcessingDirectory"))
+            {
+                path2process = (string)defaultProperties["BatchProcessingDirectory"];
+            }
+            else
+            {
+                defaultProperties.Add("BatchProcessingDirectory", path2process);
+                bDefaultPropertiesHasBeenUpdated = true;
+            }
             richTextBox1.Text = path2process;
+
+            #endregion path2process = BatchProcessingDirectory
+
+
+
+            #region ML_default_data_directory
+            if (defaultProperties.ContainsKey("ML_default_data_directory"))
+            {
+                strMLdefaultDataDirectory = (string)defaultProperties["ML_default_data_directory"];
+                if (!Directory.Exists(strMLdefaultDataDirectory))
+                {
+                    theLogWindow = ServiceTools.LogAText(theLogWindow,
+                        "Cant find base ML data directory. Some ML functions may be unavailable.", true);
+                }
+            }
+            else
+            {
+                strMLdefaultDataDirectory = CurDir;
+                defaultProperties.Add("ML_default_data_directory", strMLdefaultDataDirectory);
+                bDefaultPropertiesHasBeenUpdated = true;
+            }
+            #endregion
+
+
+
+            #region strConcurrentDataXMLfilesPath
+            if (defaultProperties.ContainsKey("strConcurrentDataXMLfilesPath"))
+            {
+                strConcurrentDataXMLfilesPath = (string)defaultProperties["strConcurrentDataXMLfilesPath"];
+                if (!Directory.Exists(strConcurrentDataXMLfilesPath))
+                {
+                    theLogWindow = ServiceTools.LogAText(theLogWindow,
+                        "Cant find concurrent XML data files directory. Some functions may fail or work incorrect.", true);
+                }
+            }
+            else
+            {
+                strConcurrentDataXMLfilesPath = CurDir;
+                strConcurrentDataXMLfilesPath = strConcurrentDataXMLfilesPath +
+                                                ((strConcurrentDataXMLfilesPath.Last() == Path.DirectorySeparatorChar)
+                                                    ? ("")
+                                                    : (Path.DirectorySeparatorChar.ToString())) + "results" +
+                                                Path.DirectorySeparatorChar.ToString();
+                defaultProperties.Add("strConcurrentDataXMLfilesPath", strConcurrentDataXMLfilesPath);
+
+                bDefaultPropertiesHasBeenUpdated = true;
+            }
+            #endregion
+
+
+
+            #region GrIxSunDetectionMaximalSunAreaPartial
+
+            if (!defaultProperties.ContainsKey("GrIxSunDetectionMaximalSunAreaPartial"))
+            {
+                defaultProperties.Add("GrIxSunDetectionMaximalSunAreaPartial", 0.05d);
+                bDefaultPropertiesHasBeenUpdated = true;
+            }
+
+            #endregion
+
+
+
+            #region GrIxStdDevMarginValueDefiningTrueSkyArea
+
+            if (!defaultProperties.ContainsKey("GrIxStdDevMarginValueDefiningTrueSkyArea"))
+            {
+                defaultProperties.Add("GrIxStdDevMarginValueDefiningTrueSkyArea", 0.65d);
+                bDefaultPropertiesHasBeenUpdated = true;
+            }
+
+            #endregion
+
+
+
+
+            #region GrIxMinimalSunburnYvalue
+
+            if (!defaultProperties.ContainsKey("GrIxMinimalSunburnYvalue"))
+            {
+                defaultProperties.Add("GrIxMinimalSunburnYvalue", 247.0d);
+                bDefaultPropertiesHasBeenUpdated = true;
+            }
+
+            #endregion
+
+
+
+            #region GrIxMinimalSunburnGrIxvalue
+
+            if (!defaultProperties.ContainsKey("GrIxMinimalSunburnGrIxvalue"))
+            {
+                defaultProperties.Add("GrIxMinimalSunburnGrIxvalue", 0.98d);
+                bDefaultPropertiesHasBeenUpdated = true;
+            }
+
+            #endregion
+
+
+
+            #region GrIxAnalysisImageCircledCropFactor
+
+            if (!defaultProperties.ContainsKey("GrIxAnalysisImageCircledCropFactor"))
+            {
+                defaultProperties.Add("GrIxAnalysisImageCircledCropFactor", 0.95d);
+                bDefaultPropertiesHasBeenUpdated = true;
+            }
+
+            #endregion
+
+
+
+            #region GrIxSunDetectorConcurrentThreadsLimit
+
+            if (!defaultProperties.ContainsKey("GrIxSunDetectorConcurrentThreadsLimit"))
+            {
+                defaultProperties.Add("GrIxSunDetectorConcurrentThreadsLimit", 4);
+                bDefaultPropertiesHasBeenUpdated = true;
+            }
+
+            #endregion
+
+
+
+
+            #region MaxConcurrentFilesProcessingCount
+
+            if (!defaultProperties.ContainsKey("MaxConcurrentFilesProcessingCount"))
+            {
+                defaultProperties.Add("MaxConcurrentFilesProcessingCount", 4);
+                bDefaultPropertiesHasBeenUpdated = true;
+            }
+
+            #endregion
+
+
+
+
+            #region GrIxSunDetectionDesiredSunAreaPartial
+
+            if (!defaultProperties.ContainsKey("GrIxSunDetectionDesiredSunAreaPartial"))
+            {
+                defaultProperties.Add("GrIxSunDetectionDesiredSunAreaPartial", 0.01d);
+                bDefaultPropertiesHasBeenUpdated = true;
+            }
+
+            #endregion
+
+
+
+
+            #region GrIxSunDetectorArcedCropFactor
+
+            if (!defaultProperties.ContainsKey("GrIxSunDetectorArcedCropFactor"))
+            {
+                defaultProperties.Add("GrIxSunDetectorArcedCropFactor", 0.95d);
+                bDefaultPropertiesHasBeenUpdated = true;
+            }
+
+            #endregion
+
+
+
+
+            #region GrIxDefaultSkyCloudMarginWithSun
+
+            if (!defaultProperties.ContainsKey("GrIxDefaultSkyCloudMarginWithSun"))
+            {
+                defaultProperties.Add("GrIxDefaultSkyCloudMarginWithSun", 0.1d);
+                bDefaultPropertiesHasBeenUpdated = true;
+            }
+
+            #endregion
+
+
+
+            #region GrIxProcessingVerbosityLevel
+
+            if (!defaultProperties.ContainsKey("GrIxProcessingVerbosityLevel"))
+            {
+                defaultProperties.Add("GrIxProcessingVerbosityLevel", 0);
+                bDefaultPropertiesHasBeenUpdated = true;
+            }
+
+            #endregion
+
+
+
+            #region DefaultMaxImageSize
+
+            if (!defaultProperties.ContainsKey("DefaultMaxImageSize"))
+            {
+                defaultProperties.Add("DefaultMaxImageSize", 1920);
+                bDefaultPropertiesHasBeenUpdated = true;
+            }
+
+            #endregion
+
+
+
+            #region DefaultScalingFactor
+
+            if (!defaultProperties.ContainsKey("DefaultScalingFactor"))
+            {
+                defaultProperties.Add("DefaultScalingFactor", 0.125d);
+                bDefaultPropertiesHasBeenUpdated = true;
+            }
+
+            #endregion
+
+
+
+            #region DefaultDataFilesLocation
+
+            if (!defaultProperties.ContainsKey("DefaultDataFilesLocation"))
+            {
+                defaultProperties.Add("DefaultDataFilesLocation",
+                    path2process +
+                    ((path2process.Last() == Path.DirectorySeparatorChar)
+                        ? ("")
+                        : (Path.DirectorySeparatorChar.ToString())) + "output" + Path.DirectorySeparatorChar.ToString());
+                bDefaultPropertiesHasBeenUpdated = true;
+            }
+
+            #endregion
+
+
+
+            #region GrIxDefaultSkyCloudMarginWithoutSun
+
+            if (!defaultProperties.ContainsKey("GrIxDefaultSkyCloudMarginWithoutSun"))
+            {
+                defaultProperties.Add("GrIxDefaultSkyCloudMarginWithoutSun", 0.8d);
+                bDefaultPropertiesHasBeenUpdated = true;
+            }
+
+            #endregion
+
+
+
+
+            #region DefaultMedianPerc5StatsXMLFile
+
+            if (!defaultProperties.ContainsKey("DefaultMedianPerc5StatsXMLFile"))
+            {
+                defaultProperties.Add("DefaultMedianPerc5StatsXMLFile",
+                    "D:\\_gulevlab\\SkyImagesAnalysis_appData\\AI45-total\\ID1\\stats\\statsWithFNames.xml");
+                bDefaultPropertiesHasBeenUpdated = true;
+            }
+
+            #endregion
+
+
+
+            #region PrecomputedAzimuthDeviationsXMLFile
+
+            if (!defaultProperties.ContainsKey("PrecomputedAzimuthDeviationsXMLFile"))
+            {
+                defaultProperties.Add("PrecomputedAzimuthDeviationsXMLFile",
+                    "D:\\_gulevlab\\SkyImagesAnalysis_appData\\AI45-total\\ID1\\stats\\PreComputedAzimuthDeviationsData.xml");
+                bDefaultPropertiesHasBeenUpdated = true;
+            }
+
+            #endregion
+
+
+
+
+            #region IoffeMeteoNavFilesDirectory
+
+            if (!defaultProperties.ContainsKey("IoffeMeteoNavFilesDirectory"))
+            {
+                defaultProperties.Add("IoffeMeteoNavFilesDirectory",
+                    "D:\\_gulevlab\\SkyImagesAnalysis_appData\\AI45-with-concurrent-data\\input\\meteo-nav-data\\");
+                bDefaultPropertiesHasBeenUpdated = true;
+            }
+
+            #endregion
+
+
+
+
+
+            #region ClusteringXMLDataFilesLocation
+
+            if (!defaultProperties.ContainsKey("ClusteringXMLDataFilesLocation"))
+            {
+                defaultProperties.Add("ClusteringXMLDataFilesLocation",
+                    "D:\\_gulevlab\\SkyImagesAnalysis_appData\\clustering-tests\\AI45-ID1\\");
+                bDefaultPropertiesHasBeenUpdated = true;
+            }
+
+            #endregion
+
+
+
+
+            #region ImagesRoundMasksXMLfilesMappingList
+
+            if (!defaultProperties.ContainsKey("ImagesRoundMasksXMLfilesMappingList"))
+            {
+                defaultProperties.Add("ImagesRoundMasksXMLfilesMappingList",
+                    Directory.GetCurrentDirectory() + Path.DirectorySeparatorChar + "settings" +
+                    Path.DirectorySeparatorChar + "ImagesRoundMasksXMLfilesMappingList.csv");
+                bDefaultPropertiesHasBeenUpdated = true;
+            }
+
+            #endregion
+
+
+
+
+            #region FilesAndConcurrentDataListToProcessForCloudCover
+
+            if (defaultProperties.ContainsKey("FilesAndConcurrentDataListToProcessForCloudCover"))
+            {
+                FilesAndConcurrentDataListToProcessForCloudCover =
+                    (string)defaultProperties["FilesAndConcurrentDataListToProcessForCloudCover"];
+            }
+            else
+            {
+                FilesAndConcurrentDataListToProcessForCloudCover =
+                    (string)defaultProperties["DefaultDataFilesLocation"];
+                FilesAndConcurrentDataListToProcessForCloudCover +=
+                    (FilesAndConcurrentDataListToProcessForCloudCover.Last() == Path.DirectorySeparatorChar)
+                        ? ("")
+                        : (Path.DirectorySeparatorChar.ToString()) + "FilesListToDetectCloudCover.xml";
+                defaultProperties.Add("FilesAndConcurrentDataListToProcessForCloudCover",
+                    FilesAndConcurrentDataListToProcessForCloudCover);
+                bDefaultPropertiesHasBeenUpdated = true;
+            }
+
+            #endregion
+
+
+
+
+            #region imageYRGBstatsXMLdataFilesDirectory
+
+            if (!defaultProperties.ContainsKey("imageYRGBstatsXMLdataFilesDirectory"))
+            {
+                defaultProperties.Add("imageYRGBstatsXMLdataFilesDirectory", CurDir);
+                bDefaultPropertiesHasBeenUpdated = true;
+            }
+
+            #endregion
+
+
+
+
+            #region NN data files for SDC detection
+
+            // NNconfigFile
+            if (!defaultProperties.ContainsKey("NNconfigFile"))
+            {
+                defaultProperties.Add("NNconfigFile", CurDir + Path.DirectorySeparatorChar + "settings" + Path.DirectorySeparatorChar + "NNconfig.csv");
+                bDefaultPropertiesHasBeenUpdated = true;
+            }
+
+
+            //NNtrainedParametersFile
+            if (!defaultProperties.ContainsKey("NNtrainedParametersFile"))
+            {
+                string NNtrainedParametersFile = CurDir + Path.DirectorySeparatorChar + "settings" + Path.DirectorySeparatorChar + "NNtrainedParameters.csv";
+                defaultProperties.Add("NNtrainedParametersFile", NNtrainedParametersFile);
+                bDefaultPropertiesHasBeenUpdated = true;
+            }
+
+            // NormMeansFile
+            if (!defaultProperties.ContainsKey("NormMeansFile"))
+            {
+                string NormMeansFile = CurDir + Path.DirectorySeparatorChar + "settings" + Path.DirectorySeparatorChar + "NormMeans.csv";
+                defaultProperties.Add("NormMeansFile", NormMeansFile);
+                bDefaultPropertiesHasBeenUpdated = true;
+            }
+
+
+            // NormRangeFile
+            if (!defaultProperties.ContainsKey("NormRangeFile"))
+            {
+                string NormRangeFile = CurDir + Path.DirectorySeparatorChar + "settings" + Path.DirectorySeparatorChar + "NormRange.csv";
+                defaultProperties.Add("NormRangeFile", NormRangeFile);
+                bDefaultPropertiesHasBeenUpdated = true;
+            }
+
+            #endregion NN data files for SDC detection
+
+
+
+            #region TimeSpanForConcurrentDataMappingTolerance
+
+            if (!defaultProperties.ContainsKey("TimeSpanForConcurrentDataMappingTolerance"))
+            {
+                TimeSpan TimeSpanForConcurrentDataMappingTolerance = new TimeSpan(0, 0, 30);
+                defaultProperties.Add("TimeSpanForConcurrentDataMappingTolerance", TimeSpanForConcurrentDataMappingTolerance.ToString());
+                bDefaultPropertiesHasBeenUpdated = true;
+            }
+
+            #endregion
+
+
+
+            #region ConcurrentDataXMLfilesDirectory
+
+            if (!defaultProperties.ContainsKey("ConcurrentDataXMLfilesDirectory"))
+            {
+                string ConcurrentDataXMLfilesDirectory = CurDir;
+                defaultProperties.Add("ConcurrentDataXMLfilesDirectory", ConcurrentDataXMLfilesDirectory);
+                bDefaultPropertiesHasBeenUpdated = true;
+                //saveDefaultProperties();
+            }
+
+            #endregion
+
+
+
+
+            #region IncludeGPSandSunAltitudeData (while predict SDC)
+
+            if (!defaultProperties.ContainsKey("IncludeGPSandSunAltitudeData"))
+            {
+                defaultProperties.Add("IncludeGPSandSunAltitudeData", true);
+                bDefaultPropertiesHasBeenUpdated = true;
+            }
+
+            #endregion
+
+
+
+            theLogWindow = ServiceTools.LogAText(theLogWindow,
+                    CommonTools.DictionaryRepresentation(defaultProperties, "Effective settings"));
+
+
+
+
+            if (bDefaultPropertiesHasBeenUpdated)
+            {
+                saveDefaultProperties();
+            }
         }
 
 
 
-        private void SkyIndexAnalyzer_AnalysisForm_Shown(object sender, EventArgs e)
+        private void saveDefaultProperties()
         {
-            readDefaultProperties();
+            ServiceTools.WriteDictionaryToXml(defaultProperties, defaultPropertiesXMLfileName, false);
         }
 
-        private void btnAbout_Click(object sender, EventArgs e)
-        {
-            aboutprog = new AboutBox1();
-            aboutprog.Show(this);
-        }
+        #endregion read and save default properties
 
 
 
@@ -2115,6 +2829,10 @@ namespace SkyImagesAnalyzer
 
 
 
+
+
+
+        #region obsolete // private delegate DoWorkEventHandler OneQuantileProcessing
 
         //private delegate DoWorkEventHandler OneQuantileProcessing(object currBGWsender, DoWorkEventArgs args);
 
@@ -2388,228 +3106,229 @@ namespace SkyImagesAnalyzer
         //    theLogWindow = ServiceTools.LogAText(theLogWindow, "sun location: " + sunRD);
         //}
 
+        #endregion obsolete
 
 
 
 
 
+        #region // пакетный рассчет статистических характеристик изображений перенесено в отдельное приложение
+
+        //private void btnTest1_Click(object sender, EventArgs e)
+        //{
+        //    string path2process = (string)defaultProperties["BatchProcessingDirectory"];
+        //    if (path2process == "")
+        //    {
+        //        path2process = Directory.GetCurrentDirectory();
+        //    }
+
+        //    DirectoryInfo dir = new DirectoryInfo(path2process);
+
+        //    if (!dir.Exists)
+        //    {
+        //        theLogWindow = ServiceTools.LogAText(theLogWindow,
+        //            "Операция не выполнена. Не найдена директория:" + Environment.NewLine + path2process +
+        //            Environment.NewLine, true);
+        //        //ThreadSafeOperations.SetTextTB(textBox1, textBox1.Text + "Операция не выполнена. Не найдена директория:" + Environment.NewLine + path2process + Environment.NewLine, true);
+        //        return;
+        //    }
 
 
-        private void btnTest1_Click(object sender, EventArgs e)
-        {
-            string path2process = (string)defaultProperties["BatchProcessingDirectory"];
-            if (path2process == "")
-            {
-                path2process = Directory.GetCurrentDirectory();
-            }
+        //    string xmlStatsFileName = (string)defaultProperties["DefaultDataFilesLocation"] + "median-perc5-stats.xml";
 
-            DirectoryInfo dir = new DirectoryInfo(path2process);
-
-            if (!dir.Exists)
-            {
-                theLogWindow = ServiceTools.LogAText(theLogWindow,
-                    "Операция не выполнена. Не найдена директория:" + Environment.NewLine + path2process +
-                    Environment.NewLine, true);
-                //ThreadSafeOperations.SetTextTB(textBox1, textBox1.Text + "Операция не выполнена. Не найдена директория:" + Environment.NewLine + path2process + Environment.NewLine, true);
-                return;
-            }
+        //    FileInfo[] fileList2Process = dir.GetFiles("*.jpg", SearchOption.AllDirectories);
+        //    if (fileList2Process.Length == 0)
+        //    {
+        //        Note("Coudn't find any *.jpg file in processing directiory or its subdirectories: \"" + path2process + "\" ");
+        //        return;
+        //    }
 
 
-            string xmlStatsFileName = (string)defaultProperties["DefaultDataFilesLocation"] + "median-perc5-stats.xml";
+        //    List<bool> bgwFinished = new List<bool>();
+        //    List<BackgroundWorker> bgwList = new List<BackgroundWorker>();
+        //    for (int i = 0; i < 8; i++)
+        //    {
+        //        bgwFinished.Add(true);
+        //        bgwList.Add(null);
+        //    }
 
-            FileInfo[] fileList2Process = dir.GetFiles("*.jpg", SearchOption.AllDirectories);
-            if (fileList2Process.Length == 0)
-            {
-                Note("Coudn't find any *.jpg file in processing directiory or its subdirectories: \"" + path2process + "\" ");
-                return;
-            }
-
-
-            List<bool> bgwFinished = new List<bool>();
-            List<BackgroundWorker> bgwList = new List<BackgroundWorker>();
-            for (int i = 0; i < 8; i++)
-            {
-                bgwFinished.Add(true);
-                bgwList.Add(null);
-            }
-
-            List<SkyImageMedianPerc5Data> lMedianPerc5Data = new List<SkyImageMedianPerc5Data>();
+        //    List<SkyImageMedianPerc5Data> lMedianPerc5Data = new List<SkyImageMedianPerc5Data>();
 
 
-            DoWorkEventHandler thisWorkerDoWorkHandler = delegate(object currBGWsender, DoWorkEventArgs args)
-            {
-                object[] currBGWarguments = (object[])args.Argument;
-                string currentFullFileName = (string)currBGWarguments[0];
-                Dictionary<string, object> defaultProps = (Dictionary<string, object>)currBGWarguments[1];
-                int currentBgwID = (int)currBGWarguments[2];
+        //    DoWorkEventHandler thisWorkerDoWorkHandler = delegate(object currBGWsender, DoWorkEventArgs args)
+        //    {
+        //        object[] currBGWarguments = (object[])args.Argument;
+        //        string currentFullFileName = (string)currBGWarguments[0];
+        //        Dictionary<string, object> defaultProps = (Dictionary<string, object>)currBGWarguments[1];
+        //        int currentBgwID = (int)currBGWarguments[2];
 
-                #region // obsolete
-                //FileInfo fInfo = new FileInfo(currentFullFileName);
+        //        #region // obsolete
+        //        //FileInfo fInfo = new FileInfo(currentFullFileName);
 
-                //int maxImageSize = Convert.ToInt32(defaultProps["DefaultMaxImageSize"]); ;
+        //        //int maxImageSize = Convert.ToInt32(defaultProps["DefaultMaxImageSize"]); ;
 
-                //BackgroundWorker SelfWorker = currBGWsender as System.ComponentModel.BackgroundWorker;
+        //        //BackgroundWorker SelfWorker = currBGWsender as System.ComponentModel.BackgroundWorker;
 
-                //string outputStatsDirectory = (string)defaultProps["DefaultDataFilesLocation"];
+        //        //string outputStatsDirectory = (string)defaultProps["DefaultDataFilesLocation"];
 
-                ////ServiceTools.logToTextFile(outputStatsDirectory + "statsWithFNames.dat", "Full filename | 5prc | median" + Environment.NewLine, true);
+        //        ////ServiceTools.logToTextFile(outputStatsDirectory + "statsWithFNames.dat", "Full filename | 5prc | median" + Environment.NewLine, true);
 
-                ////Image img = Image.FromFile(fInfo.FullName);
-                ////img = ImageProcessing.ImageResizer(img, maxImageSize);
+        //        ////Image img = Image.FromFile(fInfo.FullName);
+        //        ////img = ImageProcessing.ImageResizer(img, maxImageSize);
 
-                ////Bitmap bitmap2process = ServiceTools.ReadBitmapFromFile(fInfo.FullName);
-                ////bitmap2process = ImageProcessing.BitmapResizer(bitmap2process, maxImageSize);
-                //Image<Bgr, byte> img2process = new Image<Bgr, byte>(fInfo.FullName);
-                //img2process = ImageProcessing.ImageResizer(img2process, maxImageSize);
+        //        ////Bitmap bitmap2process = ServiceTools.ReadBitmapFromFile(fInfo.FullName);
+        //        ////bitmap2process = ImageProcessing.BitmapResizer(bitmap2process, maxImageSize);
+        //        //Image<Bgr, byte> img2process = new Image<Bgr, byte>(fInfo.FullName);
+        //        //img2process = ImageProcessing.ImageResizer(img2process, maxImageSize);
 
-                //while (img2process.CountNonzero().Sum() == 0)
-                //{
-                //    img2process = new Image<Bgr, byte>(fInfo.FullName);
-                //    img2process = ImageProcessing.ImageResizer(img2process, maxImageSize);
-                //}
+        //        //while (img2process.CountNonzero().Sum() == 0)
+        //        //{
+        //        //    img2process = new Image<Bgr, byte>(fInfo.FullName);
+        //        //    img2process = ImageProcessing.ImageResizer(img2process, maxImageSize);
+        //        //}
 
-                //ImageProcessing imgP = new ImageProcessing(img2process, true);
+        //        //ImageProcessing imgP = new ImageProcessing(img2process, true);
 
-                //Image<Gray, Byte> maskImageCircled = imgP.imageSignificantMaskCircled(100.0d);
-                //Image<Gray, Byte> maskImageCircled85 = imgP.imageSignificantMaskCircled(85.0d);
+        //        //Image<Gray, Byte> maskImageCircled = imgP.imageSignificantMaskCircled(100.0d);
+        //        //Image<Gray, Byte> maskImageCircled85 = imgP.imageSignificantMaskCircled(85.0d);
 
-                //DenseMatrix dmMaskCircled100 = ImageProcessing.DenseMatrixFromImage(maskImageCircled);
-                //ServiceTools.FlushMemory();
+        //        //DenseMatrix dmMaskCircled100 = ImageProcessing.DenseMatrixFromImage(maskImageCircled);
+        //        //ServiceTools.FlushMemory();
 
-                //DenseMatrix dmGrixData = imgP.eval("grix", null);
-                //dmGrixData = (DenseMatrix)dmGrixData.PointwiseMultiply(dmMaskCircled100);
-                //DenseVector dvGrixData = DataAnalysis.DataVectorizedWithCondition(dmGrixData, dval => ((dval > 0.0d) && (dval < 1.0d)));
-                //DescriptiveStatistics stats = new DescriptiveStatistics(dvGrixData, true);
-                //double median = dvGrixData.Median();
-                ////double median = stats.Median;
-                //double perc5 = dvGrixData.Percentile(5);
-                //SkyImageMedianPerc5Data mp5dt = new SkyImageMedianPerc5Data(currentFullFileName, median, perc5);
-                #endregion // obsolete
+        //        //DenseMatrix dmGrixData = imgP.eval("grix", null);
+        //        //dmGrixData = (DenseMatrix)dmGrixData.PointwiseMultiply(dmMaskCircled100);
+        //        //DenseVector dvGrixData = DataAnalysis.DataVectorizedWithCondition(dmGrixData, dval => ((dval > 0.0d) && (dval < 1.0d)));
+        //        //DescriptiveStatistics stats = new DescriptiveStatistics(dvGrixData, true);
+        //        //double median = dvGrixData.Median();
+        //        ////double median = stats.Median;
+        //        //double perc5 = dvGrixData.Percentile(5);
+        //        //SkyImageMedianPerc5Data mp5dt = new SkyImageMedianPerc5Data(currentFullFileName, median, perc5);
+        //        #endregion // obsolete
 
-                int maxImageSize = Convert.ToInt32(defaultProps["DefaultMaxImageSize"]); ;
-                Tuple<double, double> tplMedianPerc5Data = ImageProcessing.CalculateMedianPerc5Values(currentFullFileName, maxImageSize);
-                SkyImageMedianPerc5Data mp5dt = new SkyImageMedianPerc5Data(currentFullFileName, tplMedianPerc5Data.Item1, tplMedianPerc5Data.Item2);
+        //        int maxImageSize = Convert.ToInt32(defaultProps["DefaultMaxImageSize"]); ;
+        //        Tuple<double, double, ImageProcessing> tplMedianPerc5Data = ImageProcessing.CalculateMedianPerc5Values(currentFullFileName, maxImageSize);
+        //        SkyImageMedianPerc5Data mp5dt = new SkyImageMedianPerc5Data(currentFullFileName, tplMedianPerc5Data.Item1, tplMedianPerc5Data.Item2);
 
-                #region // obsolete
-                //bool success = false;
-                //while (!success)
-                //{
-                //    try
-                //    {
-                //        ServiceTools.logToTextFile(outputStatsDirectory + "statsWithFNames.dat",
-                //            fInfo.FullName + ";" + median.ToString("e").Replace(",", ".") + ";" +
-                //            perc5.ToString("e").Replace(",", ".") + Environment.NewLine, true);
-                //        success = true;
-                //    }
-                //    catch (Exception)
-                //    {
-                //        Thread.Sleep(100);
-                //    }
-                //}
+        //        #region // obsolete
+        //        //bool success = false;
+        //        //while (!success)
+        //        //{
+        //        //    try
+        //        //    {
+        //        //        ServiceTools.logToTextFile(outputStatsDirectory + "statsWithFNames.dat",
+        //        //            fInfo.FullName + ";" + median.ToString("e").Replace(",", ".") + ";" +
+        //        //            perc5.ToString("e").Replace(",", ".") + Environment.NewLine, true);
+        //        //        success = true;
+        //        //    }
+        //        //    catch (Exception)
+        //        //    {
+        //        //        Thread.Sleep(100);
+        //        //    }
+        //        //}
 
-                //SimpleShowImageForm SimpleShowImageForm1 = new SimpleShowImageForm(imgP.processingBitmap(), "");
-                //SimpleShowImageForm1.DesktopLocation =
-                //    new Point(
-                //        Convert.ToInt32(10.0d +
-                //                        (double) currentBgwID*System.Windows.SystemParameters.PrimaryScreenWidth/
-                //                        (double) bgwFinished.Count), 10);
+        //        //SimpleShowImageForm SimpleShowImageForm1 = new SimpleShowImageForm(imgP.processingBitmap(), "");
+        //        //SimpleShowImageForm1.DesktopLocation =
+        //        //    new Point(
+        //        //        Convert.ToInt32(10.0d +
+        //        //                        (double) currentBgwID*System.Windows.SystemParameters.PrimaryScreenWidth/
+        //        //                        (double) bgwFinished.Count), 10);
 
-                //SimpleShowImageForm1.Show();
-                //System.Windows.Forms.Application.DoEvents();
-                //Thread.Sleep(500);
-                //SimpleShowImageForm1.Close();
-                //SimpleShowImageForm1.Dispose();
-                #endregion // obsolete
+        //        //SimpleShowImageForm1.Show();
+        //        //System.Windows.Forms.Application.DoEvents();
+        //        //Thread.Sleep(500);
+        //        //SimpleShowImageForm1.Close();
+        //        //SimpleShowImageForm1.Dispose();
+        //        #endregion // obsolete
 
-                args.Result = new object[]
-                {
-                    currentBgwID, mp5dt
-                };
-            };
-
-
-            RunWorkerCompletedEventHandler currWorkCompletedHandler =
-                delegate(object currBGWCompletedSender, RunWorkerCompletedEventArgs args)
-                {
-                    object[] currentBGWResults = (object[])args.Result;
-                    int returningBGWthreadID = (int)currentBGWResults[0];
-                    SkyImageMedianPerc5Data res = (SkyImageMedianPerc5Data)currentBGWResults[1];
-
-                    lMedianPerc5Data.Add(res);
-
-                    BackgroundWorker currBGW = currBGWCompletedSender as BackgroundWorker;
-                    currBGW.Dispose();
-
-                    bgwFinished[returningBGWthreadID] = true;
-                    bgwList[returningBGWthreadID].Dispose();
-                    bgwList[returningBGWthreadID] = null;
-
-                    theLogWindow = ServiceTools.LogAText(theLogWindow, "finished processing: " + res.FileName);
-                };
+        //        args.Result = new object[]
+        //        {
+        //            currentBgwID, mp5dt
+        //        };
+        //    };
 
 
+        //    RunWorkerCompletedEventHandler currWorkCompletedHandler =
+        //        delegate(object currBGWCompletedSender, RunWorkerCompletedEventArgs args)
+        //        {
+        //            object[] currentBGWResults = (object[])args.Result;
+        //            int returningBGWthreadID = (int)currentBGWResults[0];
+        //            SkyImageMedianPerc5Data res = (SkyImageMedianPerc5Data)currentBGWResults[1];
 
-            foreach (FileInfo info in fileList2Process)
-            {
-                int currentBgwID = -1;
-                while (bgwFinished.Sum(boolVal => (boolVal) ? ((int)0) : ((int)1)) == bgwFinished.Count)
-                {
-                    System.Windows.Forms.Application.DoEvents();
-                    Thread.Sleep(100);
-                }
-                for (int i = 0; i < bgwFinished.Count; i++)
-                {
-                    if (bgwFinished[i])
-                    {
-                        currentBgwID = i;
-                        bgwFinished[i] = false;
-                        break;
-                    }
-                }
+        //            lMedianPerc5Data.Add(res);
 
+        //            BackgroundWorker currBGW = currBGWCompletedSender as BackgroundWorker;
+        //            currBGW.Dispose();
 
-                theLogWindow = ServiceTools.LogAText(theLogWindow, Environment.NewLine + "starting: " + info.FullName);
+        //            bgwFinished[returningBGWthreadID] = true;
+        //            bgwList[returningBGWthreadID].Dispose();
+        //            bgwList[returningBGWthreadID] = null;
+
+        //            theLogWindow = ServiceTools.LogAText(theLogWindow, "finished processing: " + res.FileName);
+        //        };
 
 
 
-                object[] BGWorker2Args = new object[] { info.FullName, defaultProperties, currentBgwID };
-
-                BackgroundWorker currBgw = new BackgroundWorker();
-                bgwList[currentBgwID] = currBgw;
-                currBgw.DoWork += thisWorkerDoWorkHandler;
-                currBgw.RunWorkerCompleted += currWorkCompletedHandler;
-                currBgw.WorkerReportsProgress = true;
-                currBgw.RunWorkerAsync(BGWorker2Args);
-            }
-
-
-            while (bgwFinished.Sum(boolVal => (boolVal) ? ((int)0) : ((int)1)) > 0)
-            {
-                System.Windows.Forms.Application.DoEvents();
-                Thread.Sleep(100);
-            }
-
-
-
-            try
-            {
-                ServiceTools.WriteObjectToXML(lMedianPerc5Data, xmlStatsFileName);
-            }
-            catch (Exception exc)
-            {
-                theLogWindow = ServiceTools.LogAText(theLogWindow,
-                    Environment.NewLine +
-                    "couldn`t write stats data to a file:" + Environment.NewLine + xmlStatsFileName +
-                    Environment.NewLine);
-                theLogWindow = ServiceTools.LogAText(theLogWindow, Environment.NewLine + "cause: " + exc.Message + Environment.NewLine);
-            }
+        //    foreach (FileInfo info in fileList2Process)
+        //    {
+        //        int currentBgwID = -1;
+        //        while (bgwFinished.Sum(boolVal => (boolVal) ? ((int)0) : ((int)1)) == bgwFinished.Count)
+        //        {
+        //            System.Windows.Forms.Application.DoEvents();
+        //            Thread.Sleep(100);
+        //        }
+        //        for (int i = 0; i < bgwFinished.Count; i++)
+        //        {
+        //            if (bgwFinished[i])
+        //            {
+        //                currentBgwID = i;
+        //                bgwFinished[i] = false;
+        //                break;
+        //            }
+        //        }
 
 
-            theLogWindow = ServiceTools.LogAText(theLogWindow,
-                Environment.NewLine + "==========FINISHED==========" + Environment.NewLine);
-        }
+        //        theLogWindow = ServiceTools.LogAText(theLogWindow, Environment.NewLine + "starting: " + info.FullName);
 
 
+
+        //        object[] BGWorker2Args = new object[] { info.FullName, defaultProperties, currentBgwID };
+
+        //        BackgroundWorker currBgw = new BackgroundWorker();
+        //        bgwList[currentBgwID] = currBgw;
+        //        currBgw.DoWork += thisWorkerDoWorkHandler;
+        //        currBgw.RunWorkerCompleted += currWorkCompletedHandler;
+        //        currBgw.WorkerReportsProgress = true;
+        //        currBgw.RunWorkerAsync(BGWorker2Args);
+        //    }
+
+
+        //    while (bgwFinished.Sum(boolVal => (boolVal) ? ((int)0) : ((int)1)) > 0)
+        //    {
+        //        System.Windows.Forms.Application.DoEvents();
+        //        Thread.Sleep(100);
+        //    }
+
+
+
+        //    try
+        //    {
+        //        ServiceTools.WriteObjectToXML(lMedianPerc5Data, xmlStatsFileName);
+        //    }
+        //    catch (Exception exc)
+        //    {
+        //        theLogWindow = ServiceTools.LogAText(theLogWindow,
+        //            Environment.NewLine +
+        //            "couldn`t write stats data to a file:" + Environment.NewLine + xmlStatsFileName +
+        //            Environment.NewLine);
+        //        theLogWindow = ServiceTools.LogAText(theLogWindow, Environment.NewLine + "cause: " + exc.Message + Environment.NewLine);
+        //    }
+
+
+        //    theLogWindow = ServiceTools.LogAText(theLogWindow,
+        //        Environment.NewLine + "==========FINISHED==========" + Environment.NewLine);
+        //}
+
+        #endregion пакетный рассчет статистических характеристик изображений перенесено в отдельное приложение
 
 
 
@@ -2849,12 +3568,6 @@ namespace SkyImagesAnalyzer
         }
 
 
-
-
-
-
-
-
         private void btnDensityProcessing_Click(object sender, EventArgs e)
         {
             string strStatsDataFilename = ((string)defaultProperties["DefaultDataFilesLocation"]) + "statsWithFNames.xml";
@@ -2892,10 +3605,6 @@ namespace SkyImagesAnalyzer
                 Form1.SaveClusteringData(((string)defaultProperties["ClusteringXMLDataFilesLocation"]) + "clustering");
             }
         }
-
-
-
-
 
 
         private void btnSortImagesByClasses_Click(object sender, EventArgs e)
@@ -3038,7 +3747,7 @@ namespace SkyImagesAnalyzer
 
 
 
-            DoWorkEventHandler thisWorkerDoWorkHandler = delegate(object currBGWsender, DoWorkEventArgs args)
+            DoWorkEventHandler thisWorkerDoWorkHandler = delegate (object currBGWsender, DoWorkEventArgs args)
             {
                 object[] currBGWarguments = (object[])args.Argument;
                 SkyImageMedianPerc5Data medianPerc5Data = (SkyImageMedianPerc5Data)currBGWarguments[0];
@@ -3103,7 +3812,7 @@ namespace SkyImagesAnalyzer
 
 
             RunWorkerCompletedEventHandler currWorkCompletedHandler =
-                delegate(object currBGWCompletedSender, RunWorkerCompletedEventArgs args)
+                delegate (object currBGWCompletedSender, RunWorkerCompletedEventArgs args)
                 {
                     object[] currentBGWResults = (object[])args.Result;
                     int returningBGWthreadID = (int)currentBGWResults[0];
@@ -3169,6 +3878,12 @@ namespace SkyImagesAnalyzer
 
 
 
+        #region Оценка положения диска Солнца "оптимизацией формы поля GrIx одним махом"
+
+        private List<Tuple<string, DateTimeSpan>> NVdataFilesAlreadyReadDateTimeSpans =
+            new List<Tuple<string, DateTimeSpan>>();
+        private List<Tuple<string, List<IoffeVesselDualNavDataConverted>>> NVdataFilesAlreadyReadData =
+            new List<Tuple<string, List<IoffeVesselDualNavDataConverted>>>();
 
         private void btnTestSunDetection2015_Click(object sender, EventArgs e)
         {
@@ -3186,7 +3901,8 @@ namespace SkyImagesAnalyzer
             }
 
             //FileInfo finfoOriginalFile = new FileInfo(ImageFileName);
-            GPSdata gps = ServiceTools.FindProperGPSdataForImage(ImageFileName, theLogWindow, defaultProperties);
+            GPSdata gps = ServiceTools.FindProperGPSdataForImage(ImageFileName, theLogWindow, defaultProperties,
+                ref NVdataFilesAlreadyReadDateTimeSpans, ref NVdataFilesAlreadyReadData);
             if (gps == null)
             {
                 theLogWindow = ServiceTools.LogAText(theLogWindow, "Couldn`t find GPS data for this image.");
@@ -3198,8 +3914,12 @@ namespace SkyImagesAnalyzer
 
 
             FileInfo fInfo1 = new FileInfo(ImageFileName);
-            string sunDiskInfoFileName = fInfo1.DirectoryName + "\\" + Path.GetFileNameWithoutExtension(ImageFileName) +
-                                         "-SunDiskInfo.xml";
+            //string sunDiskInfoFileName = fInfo1.DirectoryName + "\\" + Path.GetFileNameWithoutExtension(ImageFileName) +
+            //                             "-SunDiskInfo.xml";
+            string sunDiskInfoFileName = ConventionalTransitions.SunDiskInfoFileName(ImageFileName,
+                (string)defaultProperties["DefaultDataFilesLocation"]);
+
+
 
             RoundData existingRoundData = RoundData.nullRoundData();
             Size imgSizeUnderExistingRoundData = imagetoadd.Bitmap.Size;
@@ -3235,6 +3955,9 @@ namespace SkyImagesAnalyzer
             ServiceTools.WriteObjectToXML(tplSunDiskPositionData, sunDiskInfoFileName);
         }
 
+        #endregion Оценка положения диска Солнца "оптимизацией формы поля GrIx одним махом"
+
+
 
 
 
@@ -3264,7 +3987,8 @@ namespace SkyImagesAnalyzer
                 "processing file " + ImageFileName + Environment.NewLine);
             //int minute = 0;
 
-            GPSdata neededGPSdata = ServiceTools.FindProperGPSdataForImage(ImageFileName, theLogWindow, defaultProperties);
+            GPSdata neededGPSdata = ServiceTools.FindProperGPSdataForImage(ImageFileName, theLogWindow,
+                defaultProperties, ref NVdataFilesAlreadyReadDateTimeSpans, ref NVdataFilesAlreadyReadData);
             if (neededGPSdata == null)
             {
                 theLogWindow = ServiceTools.LogAText(theLogWindow, "Couldn`t find GPS data for this image.");
@@ -3422,13 +4146,6 @@ namespace SkyImagesAnalyzer
 
 
 
-        
-
-
-
-
-
-
         private void button5_Click(object sender, EventArgs e)
         {
             SunElevationTest sunElTestForm = new SunElevationTest();
@@ -3448,8 +4165,11 @@ namespace SkyImagesAnalyzer
         /// расположения солнца.
         /// Отклонение должно оказаться относительно узко распределенным и в среднем дать угол поворота оси снимков камеры относительно оси судна,
         /// определяющей heading.
+        /// 
         /// Для этого следует предварительно кластеризовать снимки в пространстве median-perc5 и использовать те,
         /// которые попадают в кластер максимально открытого неба - нижний левый
+        /// Как вариант - применить классификацию на основе обучающей выборки. Но в любом случае следует выбрать набор случаев, когда наблюдается
+        /// солнце в квадрате.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
@@ -3482,13 +4202,164 @@ namespace SkyImagesAnalyzer
 
 
 
+
+        private void btnCheckSunDiskCondition_Click(object sender, EventArgs e)
+        {
+            if (imagetoadd == null)
+            {
+                theLogWindow = ServiceTools.LogAText(theLogWindow, "Не загружено изображение для обработки!", true);
+                return;
+            }
+
+            FileInfo finfoOriginalFile = new FileInfo(ImageFileName);
+
+            Dictionary<string, object> defaultProperties_SunDiskConditionApp = new Dictionary<string, object>();
+            string defaultProperties_SunDiskMarks_XMLfileName = Directory.GetCurrentDirectory() +
+                                         "\\settings\\SunPresenceCollectingApp-Settings.xml";
+            if (!File.Exists(defaultProperties_SunDiskMarks_XMLfileName))
+            {
+                theLogWindow = ServiceTools.LogAText(theLogWindow,
+                    "coundn`t find sun presence app properties XML file SunPresenceCollectingApp-Settings.xml");
+                return;
+            }
+
+            string CurDir = Directory.GetCurrentDirectory();
+            CurDir = CurDir + ((CurDir.Last() == '\\') ? ("") : ("\\"));
+            string SunDiskConditionXMLdataFilesDirectory = CurDir;
+            string imageYRGBstatsXMLdataFilesDirectory = CurDir;
+            string imageMP5statsXMLdataFilesDirectory = CurDir;
+            string SerializedDecisionTreePath = CurDir;
+            defaultProperties_SunDiskConditionApp = ServiceTools.ReadDictionaryFromXML(defaultProperties_SunDiskMarks_XMLfileName);
+
+            if (defaultProperties_SunDiskConditionApp.ContainsKey("SunDiskConditionXMLdataFilesDirectory"))
+            {
+                SunDiskConditionXMLdataFilesDirectory = (string)defaultProperties_SunDiskConditionApp["SunDiskConditionXMLdataFilesDirectory"];
+            }
+            if (defaultProperties_SunDiskConditionApp.ContainsKey("imageYRGBstatsXMLdataFilesDirectory"))
+            {
+                imageYRGBstatsXMLdataFilesDirectory = (string)defaultProperties_SunDiskConditionApp["imageYRGBstatsXMLdataFilesDirectory"];
+            }
+            if (defaultProperties_SunDiskConditionApp.ContainsKey("imageMP5statsXMLdataFilesDirectory"))
+            {
+                imageMP5statsXMLdataFilesDirectory = (string)defaultProperties_SunDiskConditionApp["imageMP5statsXMLdataFilesDirectory"];
+            }
+            if (defaultProperties_SunDiskConditionApp.ContainsKey("SerializedDecisionTreePath"))
+            {
+                SerializedDecisionTreePath = ((string)defaultProperties_SunDiskConditionApp["SerializedDecisionTreePath"]);
+            }
+
+            if (!Directory.Exists(SerializedDecisionTreePath))
+            {
+                theLogWindow = ServiceTools.LogAText(theLogWindow, "ERROR: cant find SerializedDecisionTreePath path. Will not continue.");
+                return;
+            }
+
+            string treeFileName = "";
+            IEnumerable<string> filenames = Directory.EnumerateFiles(SerializedDecisionTreePath, "*.dtr",
+                SearchOption.TopDirectoryOnly);
+            if (filenames.Any())
+            {
+                treeFileName = filenames.ElementAt(0);
+                theLogWindow = ServiceTools.LogAText(theLogWindow,
+                    "found precalculated decision tree in file " + treeFileName);
+            }
+            else
+            {
+                theLogWindow = ServiceTools.LogAText(theLogWindow,
+                    "couldn`t find any decision tree data file. Will not proceed.");
+                return;
+            }
+
+            string imageYRGBstatsXMLdataFileName = ConventionalTransitions.ImageGrIxYRGBstatsDataFileName(
+                ImageFileName, imageYRGBstatsXMLdataFilesDirectory);
+            if (File.Exists(imageYRGBstatsXMLdataFileName))
+            {
+                SkyImageIndexesStatsData grixyrgbStatsData =
+                    ServiceTools.ReadObjectFromXML(imageYRGBstatsXMLdataFileName, typeof(SkyImageIndexesStatsData)) as
+                        SkyImageIndexesStatsData;
+                DecisionTree tree = DecisionTree.Load(treeFileName);
+
+                //double[][] modelInputs = null;
+                double[] modelInputs = grixyrgbStatsData.ToRawDoubleValuesEnumerable().ToArray<double>();
+                int intPredictedOutput = tree.Compute(modelInputs);
+                SunDiskCondition sdcPredictedOutput = (SunDiskCondition)intPredictedOutput;
+                theLogWindow = ServiceTools.LogAText(theLogWindow,
+                    "this image has been detected as " + sdcPredictedOutput.ToString());
+            }
+            else
+            {
+                BackgroundWorker bgwCurrImageProcessing = new BackgroundWorker();
+                bgwCurrImageProcessing.DoWork += ImageProcessing.CalculateImageStatsData_BGWdoWork;
+                bgwCurrImageProcessing.RunWorkerCompleted += ((sndr, eventArgs) =>
+                {
+                    ThreadSafeOperations.SetLoadingCircleState(wcCalculatingImageStats, false, false,
+                        wcCalculatingImageStats.Color);
+                    object[] objOutputValues = eventArgs.Result as object[];
+                    if (!((bool)objOutputValues[2]))
+                    {
+                        theLogWindow = ServiceTools.LogAText(theLogWindow,
+                            "Failed to calculate image statistics. Will not proceed.");
+                        Exception ex = objOutputValues[4] as Exception;
+
+                        #region report
+
+#if DEBUG
+                        ServiceTools.ExecMethodInSeparateThread(this, () =>
+                        {
+                            theLogWindow = ServiceTools.LogAText(theLogWindow,
+                                "exception has been thrown: " + ex.Message + Environment.NewLine +
+                                ServiceTools.CurrentCodeLineDescription());
+                        });
+#else
+                ServiceTools.ExecMethodInSeparateThread(this, () =>
+                {
+                    ServiceTools.logToTextFile(errorLogFilename,
+                        "exception has been thrown: " + ex.Message + Environment.NewLine +
+                        ServiceTools.CurrentCodeLineDescription(), true, true);
+                });
+#endif
+
+                        #endregion report
+                    }
+
+                    string currFileName = objOutputValues[0] as string;
+                    SkyImageIndexesStatsData grixyrgbStatsData = objOutputValues[3] as SkyImageIndexesStatsData;
+                    ServiceTools.WriteObjectToXML(grixyrgbStatsData,
+                        ConventionalTransitions.ImageGrIxYRGBstatsDataFileName(currFileName,
+                            imageYRGBstatsXMLdataFilesDirectory));
+                    SkyImageMedianPerc5Data mp5dt = objOutputValues[1] as SkyImageMedianPerc5Data;
+                    ServiceTools.WriteObjectToXML(mp5dt,
+                        ConventionalTransitions.ImageGrIxMedianP5DataFileName(currFileName,
+                            imageMP5statsXMLdataFilesDirectory));
+
+                    DecisionTree tree = DecisionTree.Load(treeFileName);
+
+                    //double[][] modelInputs = null;
+                    double[] modelInputs = grixyrgbStatsData.ToRawDoubleValuesEnumerable().ToArray<double>();
+                    int intPredictedOutput = tree.Compute(modelInputs);
+                    SunDiskCondition sdcPredictedOutput = (SunDiskCondition)intPredictedOutput;
+                    theLogWindow = ServiceTools.LogAText(theLogWindow,
+                        "this image has been detected as " + sdcPredictedOutput.ToString());
+
+                });
+                object[] BGWorker2Args = new object[] { ImageFileName };
+                bgwCurrImageProcessing.RunWorkerAsync(BGWorker2Args);
+                ThreadSafeOperations.SetLoadingCircleState(wcCalculatingImageStats, true, true,
+                    wcCalculatingImageStats.Color);
+            }
+        }
+
+
+
+
+
         private void btnPrevImgInDirectory_Click(object sender, EventArgs e)
         {
             if (ImageFileName == "") return;
             if (!File.Exists(ImageFileName)) return;
 
             FileInfo currFileInfo = new FileInfo(ImageFileName);
-            string path = currFileInfo.DirectoryName + ((currFileInfo.DirectoryName.Last() == '\\')?(""):("\\"));
+            string path = currFileInfo.DirectoryName + ((currFileInfo.DirectoryName.Last() == '\\') ? ("") : ("\\"));
 
             List<string> lImagesFilenames =
                 new List<string>(Directory.GetFiles(path, "*.jpg", SearchOption.TopDirectoryOnly));
@@ -3504,6 +4375,8 @@ namespace SkyImagesAnalyzer
             OpenFile(newFileName);
         }
 
+
+
         private void btnNextImgInDirectory_Click(object sender, EventArgs e)
         {
             if (ImageFileName == "") return;
@@ -3518,7 +4391,7 @@ namespace SkyImagesAnalyzer
 
             if (!lImagesFilenames.Contains(currFileInfo.FullName)) return;
             int idx = lImagesFilenames.IndexOf(currFileInfo.FullName);
-            if (idx == lImagesFilenames.Count-1) return;
+            if (idx == lImagesFilenames.Count - 1) return;
 
             idx++;
             string newFileName = lImagesFilenames[idx];
@@ -3536,5 +4409,591 @@ namespace SkyImagesAnalyzer
                                                                "Если файл с этими данными не будет найден, - значит, солнечный диск на изображении считается не представленным." + Environment.NewLine +
                                                                "Это, например, будет означать, что форсированно не будет использоваться схема подавления солнечной засветки.");
         }
+
+
+
+
+
+        #region bgwBatchProcessingUsingXMLListOfFiles
+
+
+        private BackgroundWorker bgwBatchProcessingUsingXMLListOfFiles = null;
+        private CancellationTokenSource cts;
+
+        private void FINISH()
+        {
+            theLogWindow = ServiceTools.LogAText(theLogWindow, "====  FINISH ====");
+        }
+
+
+        private void btnProcessFilesUsingXMLListFile_Click(object sender, EventArgs e)
+        {
+            if (bgwBatchProcessingUsingXMLListOfFiles == null)
+            {
+                StartBatchProcessingUsingXMLListOfFiles();
+            }
+            else if (!bgwBatchProcessingUsingXMLListOfFiles.IsBusy)
+            {
+                StartBatchProcessingUsingXMLListOfFiles();
+            }
+            else
+            {
+                // bgwBatchProcessingUsingXMLListOfFiles.CancelAsync();
+                cts.Cancel();
+            }
+        }
+
+
+
+        private void StartBatchProcessingUsingXMLListOfFiles()
+        {
+            bgwBatchProcessingUsingXMLListOfFiles = new BackgroundWorker();
+            bgwBatchProcessingUsingXMLListOfFiles.WorkerSupportsCancellation = true;
+            bgwBatchProcessingUsingXMLListOfFiles.WorkerReportsProgress = true;
+            bgwBatchProcessingUsingXMLListOfFiles.DoWork += BgwBatchProcessingUsingXMLListOfFiles_DoWork;
+            bgwBatchProcessingUsingXMLListOfFiles.ProgressChanged += BgwBatchProcessingUsingXMLListOfFiles_ProgressChanged;
+            bgwBatchProcessingUsingXMLListOfFiles.RunWorkerCompleted += BgwBatchProcessingUsingXMLListOfFiles_RunWorkerCompleted;
+
+
+            // Найти и прочитать XML-файл - список файлов на обработку со всеми сопровождающими данными
+            if (!File.Exists(FilesAndConcurrentDataListToProcessForCloudCover))
+            {
+                theLogWindow = ServiceTools.LogAText(theLogWindow,
+                    "Unable to find or read XML file containing list of images to process: " +
+                    FilesAndConcurrentDataListToProcessForCloudCover);
+                FINISH();
+                return;
+            }
+
+
+            theLogWindow = ServiceTools.LogAText(theLogWindow, "Multiple images computing starting with the following parameters:");
+            string strToDisplay = CommonTools.DictionaryRepresentation(defaultProperties);
+            theLogWindow = ServiceTools.LogAText(theLogWindow, strToDisplay);
+
+            simpleMultipleImagesShow imagesRepresentingForm = new simpleMultipleImagesShow();
+            imagesRepresentingForm.Show();
+
+            List<ClassificationMethods> schemesToUse = new List<ClassificationMethods>();
+            schemesToUse.Add(ClassificationMethods.Japan);
+            schemesToUse.Add(ClassificationMethods.US);
+            schemesToUse.Add(ClassificationMethods.GrIx);
+
+            object[] bgwArgs = new object[]
+                {
+                    FilesAndConcurrentDataListToProcessForCloudCover,
+                    theLogWindow,
+                    imagesRepresentingForm,
+                    schemesToUse
+                };
+
+            ThreadSafeOperations.ToggleButtonState(btnProcessFilesUsingXMLListFile, true, "Прекратить обработку", true);
+
+            bgwBatchProcessingUsingXMLListOfFiles.RunWorkerAsync(bgwArgs);
+        }
+
+
+
+
+        private void BgwBatchProcessingUsingXMLListOfFiles_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
+        {
+            ThreadSafeOperations.ToggleButtonState(btnProcessFilesUsingXMLListFile, true,
+                "Обработка файлов по списку из XML-файла с сопровождающими данными и статистиками (FilesAndConcurrentDataListToProcessForCloudCover)",
+                false);
+            FINISH();
+        }
+
+
+
+
+        private void BgwBatchProcessingUsingXMLListOfFiles_ProgressChanged(object sender, ProgressChangedEventArgs e)
+        {
+            ThreadSafeOperations.UpdateProgressBar(pbUniversalProgressBar, e.ProgressPercentage);
+        }
+
+
+
+
+        private void BgwBatchProcessingUsingXMLListOfFiles_DoWork(object sender, DoWorkEventArgs e)
+        {
+            BackgroundWorker selfWorker = sender as BackgroundWorker;
+
+            object[] bgwArgs = e.Argument as object[];
+            string FilesAndConcurrentDataListToProcessForCloudCover = (string)bgwArgs[0];
+            LogWindow theLogWindow = (LogWindow)bgwArgs[1];
+            simpleMultipleImagesShow imagesRepresentingForm = (simpleMultipleImagesShow)bgwArgs[2];
+            List<ClassificationMethods> schemesToUse = (List<ClassificationMethods>)bgwArgs[3];
+
+            int maxConcurrentImagesProcessing = 4;
+            if (defaultProperties.ContainsKey("MaxConcurrentFilesProcessingCount"))
+            {
+                maxConcurrentImagesProcessing = Convert.ToInt32(defaultProperties["MaxConcurrentFilesProcessingCount"]);
+            }
+
+            List<SkyImagesDataWith_Concurrent_Stats_CloudCover> lImagesFilteredByAnyAvailableData =
+                    new List<SkyImagesDataWith_Concurrent_Stats_CloudCover>();
+
+            #region Прочитать список файлов на обработку
+
+            try
+            {
+                lImagesFilteredByAnyAvailableData =
+                    (List<SkyImagesDataWith_Concurrent_Stats_CloudCover>)
+                        ServiceTools.ReadObjectFromXML(FilesAndConcurrentDataListToProcessForCloudCover,
+                            typeof(List<SkyImagesDataWith_Concurrent_Stats_CloudCover>));
+            }
+            catch (Exception ex)
+            {
+                theLogWindow = ServiceTools.LogAText(theLogWindow,
+                    "Unable to find or read XML file containing list of images to process: " +
+                    FilesAndConcurrentDataListToProcessForCloudCover);
+                e.Result = false;
+                return;
+            }
+
+            #endregion
+
+
+            int defaultMaxImageSize = Convert.ToInt32(defaultProperties["DefaultMaxImageSize"]);
+
+            string outputStatsDirectory = (string)defaultProperties["DefaultDataFilesLocation"];
+
+            ThreadSafeOperations.UpdateProgressBar(pbUniversalProgressBar, 0);
+
+            Type imagesRepresentingFormType = imagesRepresentingForm.GetType();
+            MethodInfo thePicturePlacingMethodInfo = imagesRepresentingFormType.GetMethod("PlaceAPicture");
+
+
+            string strOutputWithFnamesFileName = outputStatsDirectory + "statsWithFNames.dat";
+            string strOutputWOfnamesFileName = outputStatsDirectory + "stats.dat";
+
+            if (!File.Exists(strOutputWOfnamesFileName))
+            {
+                ServiceTools.logToTextFile(strOutputWOfnamesFileName,
+                    "datetime;SI_US;SI_Jap;SI_GrIx;SB_suppr;SDC;TrueClCov" +
+                    Environment.NewLine, true);
+            }
+
+            if (!File.Exists(strOutputWithFnamesFileName))
+            {
+                ServiceTools.logToTextFile(strOutputWithFnamesFileName,
+                    "filename;datetime;SI_US;SI_Jap;SI_GrIx;SB_suppr;SDC;TrueClCov" +
+                    Environment.NewLine, true);
+            }
+            
+
+
+
+            #region Estimate SDC and filter list for if NoSun or Sun0
+
+            // SunDiskCondition detectedSDC = SunDiskCondition.Defect;
+
+            List<string> lCalculatedData = lImagesFilteredByAnyAvailableData.ConvertAll(inp =>
+            {
+                ConcurrentData nearestConcurrentData = inp.concurrentData;
+                SkyImageIndexesStatsData currImageStatsData = inp.grixyrgbStats;
+                return currImageStatsData.ToCSV() + "," +
+                    nearestConcurrentData.gps.SunZenithAzimuth().ElevationAngle.ToString().Replace(",", ".") + "," +
+                    nearestConcurrentData.gps.SunZenithAzimuth().Azimuth.ToString().Replace(",", ".");
+            });
+
+            string csvHeader = lImagesFilteredByAnyAvailableData[0].grixyrgbStats.CSVHeader() +
+                               ",SunElevationDeg,SunAzimuthDeg,sunDiskCondition";
+            
+
+            #region predict using LIST of data
+
+            List<List<string>> csvFileContentStrings =
+                lCalculatedData.ConvertAll(str => str.Split(',').ToList()).ToList();
+            List<string> lCSVheader = csvHeader.Split(',').ToList();
+
+            List<int> columnsToDelete =
+                lCSVheader.Select((str, idx) => new Tuple<int, string>(idx, str))
+                    .Where(tpl => tpl.Item2.ToLower().Contains("filename")).ToList().ConvertAll(tpl => tpl.Item1);
+            List<List<string>> csvFileContentStringsFiltered = new List<List<string>>();
+            foreach (List<string> listDataStrings in csvFileContentStrings)
+            {
+                csvFileContentStringsFiltered.Add(
+                    listDataStrings.Where((str, idx) => !columnsToDelete.Contains(idx)).ToList());
+            }
+            
+
+            List<List<string>> csvFileContentStringsFiltered_wo_sdc = csvFileContentStringsFiltered;
+
+            List<DenseVector> lDV_objects_features =
+                csvFileContentStringsFiltered_wo_sdc.ConvertAll(
+                    list =>
+                        DenseVector.OfEnumerable(list.ConvertAll<double>(str => Convert.ToDouble(str.Replace(".", ",")))));
+
+
+            DenseVector dvMeans = (DenseVector)((DenseMatrix)ServiceTools.ReadDataFromCSV((string)defaultProperties["NormMeansFile"], 0, ",")).Row(0);
+            DenseVector dvRanges = (DenseVector)((DenseMatrix)ServiceTools.ReadDataFromCSV((string)defaultProperties["NormRangeFile"], 0, ", ")).Row(0);
+
+            lDV_objects_features = lDV_objects_features.ConvertAll(dv =>
+            {
+                DenseVector dvShifted = dv - dvMeans;
+                DenseVector dvNormed = (DenseVector)dvShifted.PointwiseDivide(dvRanges);
+                return dvNormed;
+            });
+
+            DenseMatrix dmObjectsFeatures = DenseMatrix.OfRowVectors(lDV_objects_features);
+
+            DenseVector dvThetaValues = (DenseVector)ServiceTools.ReadDataFromCSV((string)defaultProperties["NNtrainedParametersFile"], 0, ", ");
+            List<int> NNlayersConfig =
+                new List<double>(((DenseMatrix)ServiceTools.ReadDataFromCSV((string)defaultProperties["NNconfigFile"], 0, ", ")).Row(0)).ConvertAll
+                    (dVal => Convert.ToInt32(dVal));
+
+
+            List<List<double>> lDecisionProbabilities = null;
+
+            List<int> predictedSDC =
+                NNclassificatorPredictor.NNpredict(dmObjectsFeatures, dvThetaValues, NNlayersConfig,
+                    out lDecisionProbabilities).ToList();
+
+            List<SunDiskCondition> predictedSDClist = predictedSDC.ConvertAll(sdcInt =>
+            {
+                switch (sdcInt)
+                {
+                    case 4:
+                        return SunDiskCondition.NoSun;
+                        break;
+                    case 1:
+                        return SunDiskCondition.Sun0;
+                        break;
+                    case 2:
+                        return SunDiskCondition.Sun1;
+                        break;
+                    case 3:
+                        return SunDiskCondition.Sun2;
+                        break;
+                    default:
+                        return SunDiskCondition.Defect;
+                }
+            });
+
+            #endregion predict using LIST of data
+
+
+            //lImagesFilteredByAnyAvailableData =
+            //    lImagesFilteredByAnyAvailableData.Where(
+            //        (val, idx) =>
+            //            ((predictedSDClist[idx] == SunDiskCondition.NoSun) ||
+            //             (predictedSDClist[idx] == SunDiskCondition.Sun0))).ToList();
+            lImagesFilteredByAnyAvailableData =
+                lImagesFilteredByAnyAvailableData.Where(
+                    (val, idx) =>
+                        ((predictedSDClist[idx] == SunDiskCondition.Sun1) ||
+                         (predictedSDClist[idx] == SunDiskCondition.Sun2))).ToList();
+
+
+            #endregion Estimate SDC and filter list for if NoSun or Sun0
+
+
+
+
+            if (File.Exists(strOutputWithFnamesFileName))
+            {
+                #region read already processed list and exclude it from the calculation list
+
+                int count_before_filtering = lImagesFilteredByAnyAvailableData.Count;
+
+                List<List<string>> lAlreadyCalculatedStatsWithFNames =
+                    ServiceTools.ReadDataFromCSV(strOutputWithFnamesFileName, 1, true);
+                List<string> lFilenamesAlreadyProcessed =
+                    lAlreadyCalculatedStatsWithFNames.ConvertAll(lstr => Path.GetFileName(lstr[0]));
+
+                lImagesFilteredByAnyAvailableData =
+                    lImagesFilteredByAnyAvailableData.Where(
+                        ipd => !lFilenamesAlreadyProcessed.Contains(ipd.skyImageFileName)).ToList();
+
+                int count_after_filtering = lImagesFilteredByAnyAvailableData.Count;
+
+                theLogWindow = ServiceTools.LogAText(theLogWindow,
+                    "Excluded " + (count_before_filtering - count_after_filtering) +
+                    " files already processed. Remains " + count_after_filtering);
+
+                #endregion read already processed list and exclude it from the calculation list
+            }
+
+
+
+
+            int filecount = 0;
+            int totalFilesToProcess = lImagesFilteredByAnyAvailableData.Count;
+            int currPerc = 0;
+            theLogWindow = ServiceTools.LogAText(theLogWindow, "TOTAL files to process: " + totalFilesToProcess);
+
+            cts = new CancellationTokenSource();
+            ParallelOptions parOpts = new ParallelOptions()
+            {
+                MaxDegreeOfParallelism = maxConcurrentImagesProcessing,
+                CancellationToken = cts.Token
+            };
+
+
+
+            try
+            {
+                Parallel.ForEach<SkyImagesDataWith_Concurrent_Stats_CloudCover>(lImagesFilteredByAnyAvailableData, parOpts, (imgInfoToProcess) =>
+                {
+
+                    //foreach (SkyImagesDataWith_Concurrent_Stats_CloudCover imgInfoToProcess in lImagesFilteredByAnyAvailableData)
+                    //{
+                    Bitmap bmJ = null, bmG = null, bmGrIx = null;
+
+
+                    #region calculate and represent progress
+
+                    Interlocked.Increment(ref filecount);
+                    int currentFileProcessingCounter = filecount;
+                    int progressPercentage = Convert.ToInt32(((double)currentFileProcessingCounter / (double)totalFilesToProcess));
+                    if (progressPercentage > currPerc)
+                    {
+                        currPerc = progressPercentage;
+                        selfWorker.ReportProgress(progressPercentage);
+                    }
+
+                    #endregion calculate and represent progress
+
+                    theLogWindow = ServiceTools.LogAText(theLogWindow,
+                        imgInfoToProcess.skyImageFileName + "   (" + currentFileProcessingCounter + "//" + totalFilesToProcess + ")");
+
+                    string strToDisplay = "";
+
+                    string strDateTime = imgInfoToProcess.currImageDateTime.ToString("s");
+
+                    strToDisplay += strDateTime;
+
+                    Image<Bgr, Byte> img2process = new Image<Bgr, byte>(imgInfoToProcess.skyImageFullFileName);
+
+                    ThreadSafeOperations.UpdatePictureBox(pictureBox1, img2process.Bitmap, true);
+
+                    #region Japan
+
+                    if (schemesToUse.Contains(ClassificationMethods.Japan))
+                    {
+                        img2process = ImageProcessing.ImageResizer(img2process, defaultMaxImageSize);
+
+                        SkyCloudClassification currClassificator = new SkyCloudClassification(img2process, defaultProperties)
+                        {
+                            LogWindow = theLogWindow,
+                            ParentForm = this,
+                            ClassificationMethod = ClassificationMethods.Japan,
+                            isCalculatingUsingBgWorker = true,
+                            SelfWorker = selfWorker,
+                            defaultOutputDataDirectory = (string)defaultProperties["DefaultDataFilesLocation"],
+                            cloudSkySeparationValue = Convert.ToDouble(defaultProperties["JapanCloudSkySeparationValue"]),
+                            sourceImageFileName = imgInfoToProcess.skyImageFullFileName,
+                            imgConcurrentDataAndStats = imgInfoToProcess
+                        };
+
+                        try
+                        {
+                            currClassificator.Classify();
+                        }
+                        catch (Exception ex)
+                        {
+                            theLogWindow = ServiceTools.LogAText(theLogWindow,
+                                Environment.NewLine + Environment.NewLine + "=== === ERROR classifying with method: " +
+                                currClassificator.ClassificationMethod + Environment.NewLine + ex.Message + Environment.NewLine +
+                                " === === " + Environment.NewLine + Environment.NewLine);
+                        }
+
+                        currClassificator.resultingStatusMessages = "";
+                        Bitmap currBitmapSI = new Bitmap(currClassificator.PreviewBitmap);
+
+                        ServiceTools.FlushMemory();
+
+                        // ThreadSafeOperations.UpdatePictureBox(pictureBox2, bitmapSI, true);
+                        // pictureBox2Bitmap = new Bitmap(currBitmapSI);
+                        strToDisplay += ";" + Math.Round(currClassificator.CloudCover, 2).ToString();
+                        // UpdateSIIFMlabels(1, currClassificator.CloudCover);
+                        bmJ = new Bitmap(currBitmapSI);
+                    }
+
+                    #endregion Japan
+
+                    if (selfWorker.CancellationPending)
+                    {
+                        // break;
+                        return;
+                    }
+
+
+                    #region US
+
+                    if (schemesToUse.Contains(ClassificationMethods.US))
+                    {
+                        SkyCloudClassification currClassificator = new SkyCloudClassification(img2process, defaultProperties)
+                        {
+                            LogWindow = theLogWindow,
+                            ParentForm = this,
+                            ClassificationMethod = ClassificationMethods.US,
+                            isCalculatingUsingBgWorker = true,
+                            SelfWorker = sender as BackgroundWorker,
+                            defaultOutputDataDirectory = (string)defaultProperties["DefaultDataFilesLocation"],
+                            cloudSkySeparationValue = Convert.ToDouble(defaultProperties["GermanCloudSkySeparationValue"]),
+                            sourceImageFileName = imgInfoToProcess.skyImageFullFileName,
+                            imgConcurrentDataAndStats = imgInfoToProcess
+                        };
+
+                        try
+                        {
+                            currClassificator.Classify();
+                        }
+                        catch (Exception ex)
+                        {
+                            theLogWindow = ServiceTools.LogAText(theLogWindow,
+                                Environment.NewLine + Environment.NewLine + "=== === ERROR classifying with method: " +
+                                currClassificator.ClassificationMethod + Environment.NewLine + ex.Message + Environment.NewLine +
+                                " === === " + Environment.NewLine + Environment.NewLine);
+                        }
+                        currClassificator.resultingStatusMessages = "";
+                        Bitmap currBitmapSI = new Bitmap(currClassificator.PreviewBitmap);
+                        ServiceTools.FlushMemory();
+                        // ThreadSafeOperations.UpdatePictureBox(pictureBox2, bitmapSI, true);
+                        // pictureBox2Bitmap = new Bitmap(bitmapSI);
+                        strToDisplay += ";" + Math.Round(currClassificator.CloudCover, 2).ToString();
+                        // UpdateSIIFMlabels(1, currClassificator.CloudCover);
+
+                        bmG = new Bitmap(currBitmapSI);
+                    }
+
+                    #endregion US
+
+                    if (selfWorker.CancellationPending)
+                    {
+                        // break;
+                        return;
+                    }
+
+
+                    #region GrIx
+
+                    SkyCloudClassification currClassificatorGrIx = null;
+                    if (schemesToUse.Contains(ClassificationMethods.GrIx))
+                    {
+                        currClassificatorGrIx = new SkyCloudClassification(img2process, defaultProperties)
+                        {
+                            LogWindow = theLogWindow,
+                            ParentForm = this,
+                            ClassificationMethod = ClassificationMethods.GrIx,
+                            forceExistingSunInformation = cbxForceExistingSunInformation.Checked,
+                            isCalculatingUsingBgWorker = true,
+                            SelfWorker = sender as BackgroundWorker,
+                            defaultOutputDataDirectory = (string)defaultProperties["DefaultDataFilesLocation"],
+                            cloudSkySeparationValue = Convert.ToDouble(defaultProperties["GermanCloudSkySeparationValue"]),
+                            theStdDevMarginValueDefiningSkyCloudSeparation =
+                                Convert.ToDouble(defaultProperties["GrIxDefaultSkyCloudMarginWithoutSun"]),
+                            sourceImageFileName = imgInfoToProcess.skyImageFullFileName,
+                            imgConcurrentDataAndStats = imgInfoToProcess
+                        };
+
+                        try
+                        {
+                            currClassificatorGrIx.Classify();
+                        }
+                        catch (Exception ex)
+                        {
+                            theLogWindow = ServiceTools.LogAText(theLogWindow,
+                                Environment.NewLine + Environment.NewLine + "=== === ERROR classifying with method: " +
+                                currClassificatorGrIx.ClassificationMethod + Environment.NewLine + ex.Message + Environment.NewLine +
+                                " === === " + Environment.NewLine + Environment.NewLine);
+                        }
+                        currClassificatorGrIx.resultingStatusMessages = "";
+                        Bitmap currBitmapSI = new Bitmap(currClassificatorGrIx.PreviewBitmap);
+                        ServiceTools.FlushMemory();
+                        //ThreadSafeOperations.UpdatePictureBox(pictureBox2, bitmapSI, true);
+                        //pictureBox2Bitmap = new Bitmap(bitmapSI);
+                        strToDisplay += ";" + Math.Round(currClassificatorGrIx.CloudCover, 2).ToString();
+                        // UpdateSIIFMlabels(1, currClassificator.CloudCover);
+                        bmGrIx = new Bitmap(currBitmapSI);
+                    }
+
+                    #endregion GrIx
+
+
+                    strToDisplay += ";" + imgInfoToProcess.observedCloudCoverData.CloudCoverTotal;
+
+
+
+                    int verbosityLevel = Convert.ToInt32(defaultProperties["GrIxProcessingVerbosityLevel"]);
+                    string randomFileName = currClassificatorGrIx.randomFileName;
+                    string outputDataDirectory = (string)defaultProperties["DefaultDataFilesLocation"];
+                    if (verbosityLevel > 1)
+                    {
+                        //сохраним картинки
+                        string sourceFName = outputDataDirectory + randomFileName + "_SourceImage.jpg";
+                        string japanFName = outputDataDirectory + randomFileName + "_si_jap.jpg";
+                        string germanFName = outputDataDirectory + randomFileName + "_si_US.jpg";
+                        string GrIxFName = outputDataDirectory + randomFileName + "_si_GrIx.jpg";
+
+                        img2process.Save(sourceFName);
+                        bmJ.Save(japanFName, ImageFormat.Jpeg);
+                        bmG.Save(germanFName, ImageFormat.Jpeg);
+                        bmGrIx.Save(GrIxFName, ImageFormat.Jpeg);
+
+                    }
+
+                    #region // obsolete
+
+                    //object[] parametersArray = new object[] { img2process.Bitmap, imgInfoToProcess.skyImageFileName, 1 };
+                    //thePicturePlacingMethodInfo.Invoke(imagesRepresentingForm, parametersArray);
+
+                    //if (schemesToUse.Contains(ClassificationMethods.Japan))
+                    //{
+                    //    parametersArray = new object[] { bmJ, "Japan", 2 };
+                    //    thePicturePlacingMethodInfo.Invoke(imagesRepresentingForm, parametersArray);
+                    //}
+
+                    //if (schemesToUse.Contains(ClassificationMethods.US))
+                    //{
+                    //    parametersArray = new object[] { bmG, "US", 3 };
+                    //    thePicturePlacingMethodInfo.Invoke(imagesRepresentingForm, parametersArray);
+                    //}
+
+                    //if (schemesToUse.Contains(ClassificationMethods.GrIx))
+                    //{
+                    //    parametersArray = new object[] { bmGrIx, "GrIx", 4 };
+                    //    thePicturePlacingMethodInfo.Invoke(imagesRepresentingForm, parametersArray);
+                    //}
+
+                    #endregion // obsolete
+
+
+
+                    theLogWindow = ServiceTools.LogAText(theLogWindow, strToDisplay);
+                    ServiceTools.logToTextFile(strOutputWithFnamesFileName,
+                        imgInfoToProcess.skyImageFullFileName + ";" + strToDisplay + ";" +
+                        currClassificatorGrIx.theSunSuppressionSchemeApplicable.ToString() + Environment.NewLine, true);
+                    ServiceTools.logToTextFile(strOutputWOfnamesFileName, strToDisplay + Environment.NewLine, true);
+
+
+                    if (selfWorker.CancellationPending)
+                    {
+                        // break;
+                        parOpts.CancellationToken.ThrowIfCancellationRequested();
+                        return;
+                    }
+                    //}
+                });
+            }
+            catch (OperationCanceledException ex)
+            {
+                Console.WriteLine(ex.Message);
+                FINISH();
+                return;
+            }
+            finally
+            {
+                cts.Dispose();
+                FINISH();
+            }
+            
+
+            theLogWindow = ServiceTools.LogAText(theLogWindow, "TOTAL files processed: " + totalFilesToProcess);
+        }
+
+
+        #endregion bgwBatchProcessingUsingXMLListOfFiles
     }
 }

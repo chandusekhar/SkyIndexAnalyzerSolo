@@ -9,6 +9,7 @@ using System.Drawing;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Media;
 using System.Net;
 using System.Net.Sockets;
 using System.Reflection;
@@ -185,6 +186,10 @@ namespace DataCollectorAutomator
         private string errorLogFilename = Directory.GetCurrentDirectory() + "\\logs\\DataCollectorAutomator2G-error.log";
 
         public event EventHandler NeedToShootCameraSnapshots;
+        private bool restrictDataRegistrationWhenSunElevationLowerThanZero = true;
+        private bool MakeBeepsSilentWhenSunElevationLowerThanZero = true;
+        private bool ForceBeepsSilent = false;
+        private bool IsNowSilent = false;
 
 
 
@@ -405,6 +410,10 @@ namespace DataCollectorAutomator
 
 
                 theLogWindow = ServiceTools.LogAText(theLogWindow, latestGPSdata.dateTimeUTC.ToString() +
+                                                                   Environment.NewLine + "azimuth: " +
+                                                                   sunPositionSPAext.Azimuth.ToString("F2") + "deg." +
+                                                                   Environment.NewLine + "elevation: " +
+                                                                   sunPositionSPAext.ElevationAngle.ToString("F2") + "deg." +
                                                                    Environment.NewLine + "sunrise: " +
                                                                    (new TimeOfDay(spaCalc.spa.sunrise)) +
                                                                    Environment.NewLine + "sunset: " +
@@ -470,6 +479,19 @@ namespace DataCollectorAutomator
             VivotekCameraPassword2 = defaultProperties["VivotekCameraID2Password"] as string;
             BroadcastLogHistorySizeLines = Convert.ToInt32(defaultProperties["BroadcastLogHistorySizeLines"]);
 
+            if (defaultProperties.ContainsKey("RestrictDataRegistrationWhenSunElevationLowerThanZero"))
+            {
+                String tmpstr = defaultProperties["RestrictDataRegistrationWhenSunElevationLowerThanZero"] as string;
+                tmpstr = tmpstr.ToLower();
+                restrictDataRegistrationWhenSunElevationLowerThanZero = (tmpstr == "true") ? (true) : (false);
+            }
+            else
+            {
+                defaultProperties.Add("RestrictDataRegistrationWhenSunElevationLowerThanZero", true);
+                saveDefaultProperties();
+            }
+
+
             try
             {
                 angleCamDeclinationThresholdDeg = Convert.ToDouble(defaultProperties["CamDeclinationThresholdDegToShoot"]);
@@ -480,6 +502,29 @@ namespace DataCollectorAutomator
                     "couldn`t read critical camera declination angle. Using default value = " +
                     angleCamDeclinationThresholdDeg.ToString("F2") + Environment.NewLine +
                     "exception was thrown: \"" + ex.Message + "\"");
+            }
+
+
+            if (defaultProperties.ContainsKey("MakeBeepsSilentWhenSunElevationLowerThanZero"))
+            {
+                MakeBeepsSilentWhenSunElevationLowerThanZero =
+                    (((string) defaultProperties["MakeBeepsSilentWhenSunElevationLowerThanZero"]).ToLower() == "true");
+            }
+            else
+            {
+                defaultProperties.Add("MakeBeepsSilentWhenSunElevationLowerThanZero", true);
+                saveDefaultProperties();
+            }
+
+
+            if (defaultProperties.ContainsKey("ForceBeepsSilent"))
+            {
+                ForceBeepsSilent = (((string)defaultProperties["ForceBeepsSilent"]).ToLower() == "true");
+            }
+            else
+            {
+                defaultProperties.Add("ForceBeepsSilent", true);
+                saveDefaultProperties();
             }
 
 
@@ -498,8 +543,16 @@ namespace DataCollectorAutomator
                 accCalibrationDataID2 = new AccelerometerData(0.0, 0.0, -256.0);
             }
 
-            dctCalibrationAccDataByDevID.Add("devID1", accCalibrationDataID1);
-            dctCalibrationAccDataByDevID.Add("devID2", accCalibrationDataID2);
+            if (!dctCalibrationAccDataByDevID.ContainsKey("devID1"))
+            {
+                dctCalibrationAccDataByDevID.Add("devID1", accCalibrationDataID1);
+            }
+            if (!dctCalibrationAccDataByDevID.ContainsKey("devID2"))
+            {
+                dctCalibrationAccDataByDevID.Add("devID2", accCalibrationDataID2);
+            }
+
+            
 
             ThreadSafeOperations.SetText(lblAccelCalibrationXID1, Math.Round(accCalibrationDataID1.AccDoubleX, 2).ToString(), false);
             ThreadSafeOperations.SetText(lblAccelCalibrationYID1, Math.Round(accCalibrationDataID1.AccDoubleY, 2).ToString(), false);
@@ -509,6 +562,18 @@ namespace DataCollectorAutomator
             ThreadSafeOperations.SetText(lblAccelCalibrationZID2, Math.Round(accCalibrationDataID2.AccDoubleZ, 2).ToString(), false);
 
             angleCamDeclinationThresholdRad = Math.PI * angleCamDeclinationThresholdDeg / 180.0d;
+
+            dataToPassToSensorsDataPresentation[1] = accCalibrationDataID1;
+            dataToPassToSensorsDataPresentation[3] = accCalibrationDataID2;
+        }
+
+
+
+
+
+        private void saveDefaultProperties()
+        {
+            ServiceTools.WriteDictionaryToXml(defaultProperties, defaultPropertiesXMLfileName, false);
         }
 
 
@@ -988,7 +1053,14 @@ namespace DataCollectorAutomator
         private FixedTimeQueue<GyroData> gyroID2tail = new FixedTimeQueue<GyroData>(tailLength);
         private DenseVector dvKernelFixedWidth = Extensions.ConvKernelAsymmetric(StandardConvolutionKernels.gauss,
             tailLength, false);
-        private List<AccelerometerData> dataToPassToSensorsDataPresentation = new List<AccelerometerData>();
+
+        private List<AccelerometerData> dataToPassToSensorsDataPresentation = new List<AccelerometerData>()
+        {
+            new AccelerometerData(),
+            new AccelerometerData(),
+            new AccelerometerData(),
+            new AccelerometerData()
+        };
         private double accDevAngle = 0.0d;
 
         private TimeSeries<AccelerometerData> tsCollectedAccData = new TimeSeries<AccelerometerData>();
@@ -1781,6 +1853,8 @@ namespace DataCollectorAutomator
                 {
                     updateTimersLabels(stwCamshotTimer, datetimeCamshotTimerBegin, CamShotPeriod);
                     stwCamshotTimersUpdating.Restart();
+                    //List<double> l = new List<double>();
+                    //double a = l[1];
                 }
 
 
@@ -1834,7 +1908,7 @@ namespace DataCollectorAutomator
                 int pressure = tplPressureDT.Item2;
                 DateTime dtPressureDataRecieved = tplPressureDT.Item1;
 
-                ThreadSafeOperations.SetText(lblPressureValue, dtPressureDataRecieved.ToString(), false);
+                ThreadSafeOperations.SetText(lblPressureValue, pressure.ToString(), false);
 
                 while (!Monitor.TryEnter(tsCollectedPressureData))
                 {
@@ -2178,11 +2252,6 @@ namespace DataCollectorAutomator
 
         private void DumpCollectedGyroData()
         {
-            if (tsCollectedGyroData.Count == 0)
-            {
-                return;
-            }
-
             Dictionary<string, object> dataToSave = new Dictionary<string, object>();
 
             #region unload shared collections data to dataToSave
@@ -2190,6 +2259,12 @@ namespace DataCollectorAutomator
             while (!Monitor.TryEnter(tsCollectedGyroData))
             {
                 Thread.Sleep(0);
+            }
+
+            if (tsCollectedGyroData.Count == 0)
+            {
+                Monitor.Exit(tsCollectedGyroData);
+                return;
             }
 
             try
@@ -2245,6 +2320,11 @@ namespace DataCollectorAutomator
         private Dictionary<string, AccelerometerData> dctCalibrationAccDataByDevID =
             new Dictionary<string, AccelerometerData>();
 
+        /// <summary>
+        /// Handles the CollectionChanged event of the accDataAndDTObservableConcurrentQueue control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="System.Collections.Specialized.NotifyCollectionChangedEventArgs"/> instance containing the event data.</param>
         async void accDataAndDTObservableConcurrentQueue_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
         {
             AccelerometerData latestAccDataID1 = new AccelerometerData();
@@ -2288,6 +2368,8 @@ namespace DataCollectorAutomator
                     // или 1 - если идет разделение.
                 {
                     List<AccelerometerData> accDataTail = new List<AccelerometerData>(accID1tail.DataValues);
+                    accDataTail.RemoveAll(accDt => accDt == null);
+
                     DenseVector dvAccXvaluesTail =
                         DenseVector.OfEnumerable(accDataTail.ConvertAll(accDt => accDt.AccDoubleX));
                     DenseVector dvAccYvaluesTail =
@@ -2302,12 +2384,50 @@ namespace DataCollectorAutomator
                         dvAccZvaluesTail = DenseVector.OfEnumerable(dvAccZvaluesTail.Concat(DenseVector.Create(tailLength - accDataTail.Count, 0.0d)));
                     }
 
-
-                    latestAccDataID1 = new AccelerometerData(dvKernelFixedWidth*dvAccXvaluesTail,
-                        dvKernelFixedWidth*dvAccYvaluesTail, dvKernelFixedWidth*dvAccZvaluesTail)
+                    bool success = false;
+                    while (!success)
                     {
-                        devID = accData.devID
-                    };
+                        if (dvKernelFixedWidth.Count != dvAccXvaluesTail.Count)
+                        {
+                            dvKernelFixedWidth = Extensions.ConvKernelAsymmetric(StandardConvolutionKernels.gauss,
+                                dvAccXvaluesTail.Count, false);
+                        }
+
+                        try
+                        {
+                            latestAccDataID1 = new AccelerometerData(dvKernelFixedWidth*dvAccXvaluesTail,
+                                dvKernelFixedWidth*dvAccYvaluesTail, dvKernelFixedWidth*dvAccZvaluesTail)
+                            {
+                                devID = accData.devID
+                            };
+                            success = true;
+                        }
+                        catch (Exception ex)
+                        {
+                            #region report
+#if DEBUG
+                            ServiceTools.ExecMethodInSeparateThread(this, () =>
+                            {
+                                theLogWindow = ServiceTools.LogAText(theLogWindow,
+                                    "exception has been thrown: " + ex.Message + Environment.NewLine +
+                                    ServiceTools.CurrentCodeLineDescription());
+                            });
+#else
+                ServiceTools.ExecMethodInSeparateThread(this, () =>
+                {
+                    ServiceTools.logToTextFile(errorLogFilename,
+                        "exception has been thrown: " + ex.Message + Environment.NewLine +
+                        ServiceTools.CurrentCodeLineDescription(), true, true);
+                });
+#endif
+                            #endregion report
+
+                            success = false;
+                        }
+                    }
+                    
+
+                    
 
                     //accDevAngle = (latestAccDataID1 * accCalibrationData) / (latestAccDataID1.AccMagnitude * accCalibrationData.AccMagnitude);
                     //accDevAngle = Math.Acos(accDevAngle);
@@ -2315,6 +2435,8 @@ namespace DataCollectorAutomator
                 else
                 {
                     List<AccelerometerData> accDataTail = new List<AccelerometerData>(accID2tail.DataValues);
+                    accDataTail.RemoveAll(accDt => accDt == null);
+
                     DenseVector dvAccXvaluesTail =
                         DenseVector.OfEnumerable(accDataTail.ConvertAll(accDt => accDt.AccDoubleX));
                     DenseVector dvAccYvaluesTail =
@@ -2329,11 +2451,49 @@ namespace DataCollectorAutomator
                         dvAccZvaluesTail = DenseVector.OfEnumerable(dvAccZvaluesTail.Concat(DenseVector.Create(tailLength - accDataTail.Count, 0.0d)));
                     }
 
-                    latestAccDataID2 = new AccelerometerData(dvKernelFixedWidth*dvAccXvaluesTail,
-                        dvKernelFixedWidth*dvAccYvaluesTail, dvKernelFixedWidth*dvAccZvaluesTail)
+                    bool success = false;
+                    while (!success)
                     {
-                        devID = accData.devID
-                    };
+                        if (dvKernelFixedWidth.Count != dvAccXvaluesTail.Count)
+                        {
+                            dvKernelFixedWidth = Extensions.ConvKernelAsymmetric(StandardConvolutionKernels.gauss,
+                                dvAccXvaluesTail.Count, false);
+                        }
+
+                        try
+                        {
+                            latestAccDataID2 = new AccelerometerData(dvKernelFixedWidth * dvAccXvaluesTail,
+                            dvKernelFixedWidth * dvAccYvaluesTail, dvKernelFixedWidth * dvAccZvaluesTail)
+                            {
+                                devID = accData.devID
+                            };
+                            success = true;
+                        }
+                        catch (Exception ex)
+                        {
+                            #region report
+#if DEBUG
+                            ServiceTools.ExecMethodInSeparateThread(this, () =>
+                            {
+                                theLogWindow = ServiceTools.LogAText(theLogWindow,
+                                    "exception has been thrown: " + ex.Message + Environment.NewLine +
+                                    ServiceTools.CurrentCodeLineDescription());
+                            });
+#else
+                ServiceTools.ExecMethodInSeparateThread(this, () =>
+                {
+                    ServiceTools.logToTextFile(errorLogFilename,
+                        "exception has been thrown: " + ex.Message + Environment.NewLine +
+                        ServiceTools.CurrentCodeLineDescription(), true, true);
+                });
+#endif
+                            #endregion report
+
+                            success = false;
+                        }
+                        
+                    }
+                    
 
                     //accDevAngle = (latestAccDataID2 * accCalibrationData) / (latestAccDataID2.AccMagnitude * accCalibrationData.AccMagnitude);
                     //accDevAngle = Math.Acos(accDevAngle);
@@ -2362,8 +2522,44 @@ namespace DataCollectorAutomator
 
                 bool camshotInclinedProperly = !(accDevAngle > angleCamDeclinationThresholdRad);
 
+
+                #region проверка на высоту солнца
+                bool sunElevationMoreThanZero = true;
+                if (latestGPSdata.validGPSdata && restrictDataRegistrationWhenSunElevationLowerThanZero)
+                {
+                    SPA spaCalc = new SPA(latestGPSdata.dateTimeUTC.Year, latestGPSdata.dateTimeUTC.Month, latestGPSdata.dateTimeUTC.Day, latestGPSdata.dateTimeUTC.Hour,
+                            latestGPSdata.dateTimeUTC.Minute, latestGPSdata.dateTimeUTC.Second, (float)latestGPSdata.LonDec, (float)latestGPSdata.LatDec,
+                            (float)SPAConst.DeltaT(latestGPSdata.dateTimeUTC));
+                    int res = spaCalc.spa_calculate();
+                    AzimuthZenithAngle sunPositionSPAext = new AzimuthZenithAngle(spaCalc.spa.azimuth,
+                        spaCalc.spa.zenith);
+
+                    if (sunPositionSPAext.ElevationAngle <= 0.0d)
+                    {
+                        sunElevationMoreThanZero = false;
+                    }
+                }
+
+                if (restrictDataRegistrationWhenSunElevationLowerThanZero)
+                {
+                    if (sunElevationMoreThanZero)
+                    {
+                        ThreadSafeOperations.SetText(lblWhetherRestrictsObtainingDataDueSunElevation, "Functioning normally.", false);
+                    }
+                    else
+                    {
+                        ThreadSafeOperations.SetText(lblWhetherRestrictsObtainingDataDueSunElevation, "PAUSED", false);
+                    }
+                }
+                else
+                {
+                    ThreadSafeOperations.SetText(lblWhetherRestrictsObtainingDataDueSunElevation, "not restricted by sun elevation", false);
+                }
+                #endregion проверка на высоту солнца
+
+
                 //if ((camshotInclinedProperly && camshotTimeToGetIt) || operatorCommandsToGetCamShotImmediately)
-                if (camshotInclinedProperly && camshotTimeToGetIt)
+                if (camshotInclinedProperly && camshotTimeToGetIt && sunElevationMoreThanZero)
                 {
                     EventHandler onNeedToShootCameraSnapshots = this.NeedToShootCameraSnapshots;
                     if (onNeedToShootCameraSnapshots != null) onNeedToShootCameraSnapshots(null, null);
@@ -2532,9 +2728,22 @@ namespace DataCollectorAutomator
 
                 #endregion adding latest recieved smoothed acc data to backuping timeseries
 
+                if (latestAccDataID1.AccMagnitude > 0.0d)
+                {
+                    //dataToPassToSensorsDataPresentation.Clear();
+                    dataToPassToSensorsDataPresentation[0] = latestAccDataID1;
+                    //dataToPassToSensorsDataPresentation.AddRange(new[] { latestAccDataID1, accCalibrationDataID1, latestAccDataID2, accCalibrationDataID2 });
+                }
+                
 
-                dataToPassToSensorsDataPresentation.Clear();
-                dataToPassToSensorsDataPresentation.AddRange(new[] { latestAccDataID1, accCalibrationDataID1, latestAccDataID2, accCalibrationDataID2 });
+                if (latestAccDataID2.AccMagnitude > 0.0d)
+                {
+                    //dataToPassToSensorsDataPresentation.Clear();
+                    dataToPassToSensorsDataPresentation[2] = latestAccDataID2;
+                    //dataToPassToSensorsDataPresentation.AddRange(new[] { latestAccDataID1, accCalibrationDataID1, latestAccDataID2, accCalibrationDataID2 });
+                }
+
+                
 
 
                 #region swap acc data to hdd
@@ -2711,11 +2920,6 @@ namespace DataCollectorAutomator
 
         private void DumpCollectedAccelerometersSmoothedDataDevID1()
         {
-            if (tsCollectedAccSmoothedDataID1.Count == 0)
-            {
-                return;
-            }
-
             Dictionary<string, object> dataToSave = new Dictionary<string, object>();
 
             #region unload shared collections data to dataToSave
@@ -2723,6 +2927,12 @@ namespace DataCollectorAutomator
             while (!Monitor.TryEnter(tsCollectedAccSmoothedDataID1))
             {
                 Thread.Sleep(0);
+            }
+
+            if (tsCollectedAccSmoothedDataID1.Count == 0)
+            {
+                Monitor.Exit(tsCollectedAccSmoothedDataID1);
+                return;
             }
 
             try
@@ -2772,11 +2982,6 @@ namespace DataCollectorAutomator
 
         private void DumpCollectedAccelerometersSmoothedDataDevID2()
         {
-            if (tsCollectedAccSmoothedDataID2.Count == 0)
-            {
-                return;
-            }
-
             Dictionary<string, object> dataToSave = new Dictionary<string, object>();
 
             #region unload shared collections data to dataToSave
@@ -2784,6 +2989,12 @@ namespace DataCollectorAutomator
             while (!Monitor.TryEnter(tsCollectedAccSmoothedDataID2))
             {
                 Thread.Sleep(0);
+            }
+
+            if (tsCollectedAccSmoothedDataID2.Count == 0)
+            {
+                Monitor.Exit(tsCollectedAccSmoothedDataID2);
+                return;
             }
 
             try
@@ -2909,6 +3120,35 @@ namespace DataCollectorAutomator
                     ButtonBackgroundStateWatchingProcess.alarm);
                 ChangeIndicatingButtonBackgroundColor(lblAccDevAngleTitleID2,
                     ButtonBackgroundStateWatchingProcess.alarm);
+
+
+
+
+                #region beep if permitted
+                bool sunElevationMoreThanZero = true;
+                if (latestGPSdata.validGPSdata)
+                {
+                    SPA spaCalc = new SPA(latestGPSdata.dateTimeUTC.Year, latestGPSdata.dateTimeUTC.Month, latestGPSdata.dateTimeUTC.Day, latestGPSdata.dateTimeUTC.Hour,
+                            latestGPSdata.dateTimeUTC.Minute, latestGPSdata.dateTimeUTC.Second, (float)latestGPSdata.LonDec, (float)latestGPSdata.LatDec,
+                            (float)SPAConst.DeltaT(latestGPSdata.dateTimeUTC));
+                    int res = spaCalc.spa_calculate();
+                    AzimuthZenithAngle sunPositionSPAext = new AzimuthZenithAngle(spaCalc.spa.azimuth,
+                        spaCalc.spa.zenith);
+
+                    if (sunPositionSPAext.ElevationAngle <= 0.0d)
+                    {
+                        sunElevationMoreThanZero = false;
+                    }
+                }
+
+                IsNowSilent = ForceBeepsSilent ||
+                              (!sunElevationMoreThanZero && MakeBeepsSilentWhenSunElevationLowerThanZero);
+                
+                if (!IsNowSilent)
+                {
+                    SystemSounds.Beep.Play();
+                }
+                #endregion beep if permitted
             }
             else
             {
@@ -3519,8 +3759,9 @@ namespace DataCollectorAutomator
                 switch (dataSign)
                 {
                     case "gps":
-                        {
-                            GPSdata catchedGPSdata = new GPSdata(dataValuesString, GPSdatasources.CloudCamArduinoGPS);
+                    {
+                        GPSdata catchedGPSdata = new GPSdata(dataValuesString, GPSdatasources.CloudCamArduinoGPS,
+                            DateTime.UtcNow);
                             if (catchedGPSdata.validGPSdata)
                             {
                                 latestGPSdata = catchedGPSdata;

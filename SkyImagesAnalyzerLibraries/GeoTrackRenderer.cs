@@ -71,6 +71,9 @@ namespace SkyImagesAnalyzerLibraries
         private Size defaultImgSize = new Size(720, 360);
         private Size imgSize = new Size(720, 360);
 
+        public RectangleF rctZoomedArea;
+        public int trackLineWidth = 4;
+
 
 
         public GeoTrackRenderer(string shorelinesDirectoryName)
@@ -89,6 +92,9 @@ namespace SkyImagesAnalyzerLibraries
                             new Tuple<int, string>(
                                 Convert.ToInt32(fInfo.Name.Replace(".gen", "").Replace("shoreline_", "")),
                                 fInfo.FullName));
+
+
+            rctZoomedArea = new RectangleF(new PointF(0.0f, 0.0f), defaultImgSize);
         }
 
 
@@ -150,6 +156,53 @@ namespace SkyImagesAnalyzerLibraries
         //}
 
         #endregion obsolete
+        
+        
+        
+        
+        
+        
+        public PointD getDataPositionByClickEvent(PictureBox sender, MouseEventArgs e)
+        {
+            int mouseClickX = e.X;
+            int mouseClickY = e.Y;
+            //dmSourceData
+            if (sender.Image == null)
+            {
+                return new PointD(0.0d, 0.0d);
+            }
+            double imageDataX = (double)mouseClickX * ((double)rctZoomedArea.Width/(double)imgSize.Width);
+
+            double imageDataY = (double)mouseClickY * ((double)rctZoomedArea.Height/(double)imgSize.Height);
+
+
+            return new PointD(imageDataX, imageDataY);
+        }
+
+
+
+
+        public GPSdata GetValueByClickEvent(PictureBox sender, MouseEventArgs e, out PointD origDataPointPosition)
+        {
+            if (sender.Image == null)
+            {
+                origDataPointPosition = PointD.nullPointD();
+                return new GPSdata();
+            }
+            PointD theDataPoint = getDataPositionByClickEvent(sender, e);
+            origDataPointPosition = theDataPoint;
+
+            //int dataY = Convert.ToInt32(theDataPoint.Y);
+            //dataY = (dataY > dmSourceData.RowCount - 1) ? (dmSourceData.RowCount - 1) : (dataY);
+            //dataY = (dataY < 0) ? (0) : (dataY);
+            //int dataX = Convert.ToInt32(theDataPoint.X);
+            //dataX = (dataX > dmSourceData.ColumnCount - 1) ? (dmSourceData.ColumnCount - 1) : (dataX);
+            //dataX = (dataX < 0) ? (0) : (dataX);
+
+            //return dmSourceData[dataY, dataX];
+            return new GPSdata();
+        }
+
 
 
 
@@ -475,7 +528,12 @@ namespace SkyImagesAnalyzerLibraries
             {
                 Point[] PointsSequence = currTrackDatum.TrackPointsSequenceToDraw(imgRetImg.Size, ptdLeftTopGPS,
                     ptdRightBottomGPS);
-                int lineWidth = 4; //Convert.ToInt32(Math.Min(imgSizeToGenerate.Width, imgSizeToGenerate.Height)/180.0d);
+                //int lineWidth = 4; //Convert.ToInt32(Math.Min(imgSizeToGenerate.Width, imgSizeToGenerate.Height)/180.0d);
+                int lineWidth = Convert.ToInt32(Math.Min(imgSizeToGenerate.Width, imgSizeToGenerate.Height)/180.0d);
+                if (trackLineWidth > 0)
+                {
+                    lineWidth = trackLineWidth;
+                }
                 imgRetImg.DrawPolyline(PointsSequence, false, currTrackDatum.lineColor, lineWidth);
             }
 
@@ -560,28 +618,28 @@ namespace SkyImagesAnalyzerLibraries
 
 
 
-        private DenseMatrix ConvertTopoToLog10(DenseMatrix dmMatrixToConvert, double maxDepth, double maxHeight)
-        {
-            double maxHeightLog10 = Math.Log10(1.0d + maxHeight);
-            double maxDepthLog10 = Math.Log10(1.0d - maxDepth);
+        //private DenseMatrix ConvertTopoToLog10(DenseMatrix dmMatrixToConvert, double maxDepth, double maxHeight)
+        //{
+        //    double maxHeightLog10 = Math.Log10(1.0d + maxHeight);
+        //    double maxDepthLog10 = Math.Log10(1.0d - maxDepth);
 
-            dmMatrixToConvert.MapInplace(dVal =>
-            {
-                if (dVal > 0.0d)
-                {
-                    return Math.Log10(1.0d + dVal) / maxHeightLog10;
-                }
-                else if (dVal == 0.0d)
-                {
-                    return 0.0d;
-                }
-                else
-                {
-                    return -Math.Log10(1.0d - dVal) / maxDepthLog10;
-                }
-            });
-            return dmMatrixToConvert;
-        }
+        //    dmMatrixToConvert.MapInplace(dVal =>
+        //    {
+        //        if (dVal > 0.0d)
+        //        {
+        //            return Math.Log10(1.0d + dVal) / maxHeightLog10;
+        //        }
+        //        else if (dVal == 0.0d)
+        //        {
+        //            return 0.0d;
+        //        }
+        //        else
+        //        {
+        //            return -Math.Log10(1.0d - dVal) / maxDepthLog10;
+        //        }
+        //    });
+        //    return dmMatrixToConvert;
+        //}
 
 
 

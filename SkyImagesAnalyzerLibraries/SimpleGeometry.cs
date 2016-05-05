@@ -482,7 +482,6 @@ namespace SkyImagesAnalyzerLibraries
         }
 
 
-
         //public IEnumerator<double> GetEnumerator()
         //{
         //    return (IEnumerator<double>)(new double[2] { x, y }.GetEnumerator());

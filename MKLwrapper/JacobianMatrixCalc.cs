@@ -13,8 +13,8 @@ namespace MKLwrapper
         private IntPtr jacSolverHandle;
         // public IEnumerable<double> mSpaceVector = null;
         // public IEnumerable<double> mFittingValuesVector = null;
-        public int mPointsSetLength = 0;
-        public IEnumerable<double> nXspacePoint = null;
+        public int mEventsPointsSetLength = 0;
+        public IEnumerable<double> nParametersSpacePoint = null;
         public Func<double[], double[]> objectiveFunction = null;
         public string resultStatus = "";
 
@@ -47,15 +47,15 @@ namespace MKLwrapper
         {
             // int m = mSpaceVector.Count();
             // int m = mFittingValuesVector.Count();
-            int m = mPointsSetLength;
-            int n = nXspacePoint.Count();
+            int m = mEventsPointsSetLength;
+            int n = nParametersSpacePoint.Count();
             double eps = prec;
             int RCI_Request = 0;
             double rs = 0.0d;
             bool successful = false;
-            double[] x = nXspacePoint.ToArray();
-            double[] f1Vec = objectiveFunction(x).ToArray();
-            double[] f2Vec = objectiveFunction(x).ToArray();
+            double[] theta = nParametersSpacePoint.ToArray();
+            double[] f1Vec = objectiveFunction(theta).ToArray();
+            double[] f2Vec = objectiveFunction(theta).ToArray();
             double[,] fJacobi = new double[m, n];
             for (int i = 0; i < m; i++)
             {
@@ -67,7 +67,7 @@ namespace MKLwrapper
 
             unsafe
             {
-                fixed (double* xPtr = &x[0], f1VecPtr = &f1Vec[0], f2VecPtr = &f2Vec[0], fJacPtr = &fJacobi[0, 0])
+                fixed (double* xPtr = &theta[0], f1VecPtr = &f1Vec[0], f2VecPtr = &f2Vec[0], fJacPtr = &fJacobi[0, 0])
                 {
                     int init_res = JacobianMatrixCalcNative.djacobi_init(ref jacSolverHandle, ref n, ref m,
                         (IntPtr)xPtr, (IntPtr)fJacPtr, ref eps);
@@ -94,7 +94,7 @@ namespace MKLwrapper
 
                         if (RCI_Request == 1)
                         {
-                            double[] newFVecValues = objectiveFunction(x).ToArray();
+                            double[] newFVecValues = objectiveFunction(theta).ToArray();
                             for (int i = 0; i < m; i++)
                             {
                                 f1Vec[i] = newFVecValues[i];
@@ -104,7 +104,7 @@ namespace MKLwrapper
 
                         if (RCI_Request == 2)
                         {
-                            double[] newFVecValues = objectiveFunction(x).ToArray();
+                            double[] newFVecValues = objectiveFunction(theta).ToArray();
                             for (int i = 0; i < m; i++)
                             {
                                 f2Vec[i] = newFVecValues[i];

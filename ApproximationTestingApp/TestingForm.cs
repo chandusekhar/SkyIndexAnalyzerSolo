@@ -38,8 +38,10 @@ namespace ApproximationTestingApp
         public static LogWindow theLogWindow;
         public static FunctionRepresentationForm theForm = null;
         private int stepsCount = 0;
-        private string CurrentDir;
+        private string ImagesBasePath;
         private string dataFilePrefix = "";
+
+        private string defaultPropertiesXMLfileName = "";
         private Dictionary<string, object> defaultProperties = null;
 
         private Assembly CompiledAssembly = null;
@@ -59,12 +61,12 @@ namespace ApproximationTestingApp
             dataFilePrefix = tbDataFilePrefix.Text + "_";
 
 
-            string[] csvFilesInfo = Directory.GetFiles(CurrentDir, "*_dataMinimumPhi.csv");
+            string[] csvFilesInfo = Directory.GetFiles(ImagesBasePath, "*_dataMinimumPhi.csv");
             if (csvFilesInfo.Count() == 0)
             {
                 ThreadSafeOperations.SetTextTB(tbLog,
                     Environment.NewLine + "Couldn`t find any proper csv file in directory:" + Environment.NewLine +
-                    CurrentDir + Environment.NewLine, true);
+                    ImagesBasePath + Environment.NewLine, true);
                 return;
             }
             else
@@ -80,13 +82,14 @@ namespace ApproximationTestingApp
 
 
             #region аппроксимация для определения зависимости положения минимума по радиальному направлению от угла
-            xData = (DenseVector)ServiceTools.ReadDataFromCSV(CurrentDir + dataFilePrefix + "dataMinimumPhi.csv");
-            funcData = (DenseVector)ServiceTools.ReadDataFromCSV(CurrentDir + dataFilePrefix + "dataMinimumR.csv");
-            dvFuncWeights = (DenseVector)ServiceTools.ReadDataFromCSV(CurrentDir + dataFilePrefix + "dataWeights.csv");
+
+            xData = (DenseVector)ServiceTools.ReadDataFromCSV(ImagesBasePath + dataFilePrefix + "dataMinimumPhi.csv", 0, ";");
+            funcData = (DenseVector)ServiceTools.ReadDataFromCSV(ImagesBasePath + dataFilePrefix + "dataMinimumR.csv", 0, ";");
+            dvFuncWeights = (DenseVector)ServiceTools.ReadDataFromCSV(ImagesBasePath + dataFilePrefix + "dataWeights.csv", 0, ";");
 
             dvCurrentParameters =
                 (DenseVector)
-                    ServiceTools.ReadDataFromCSV(CurrentDir + dataFilePrefix + "approximationInitialParameters.csv");
+                    ServiceTools.ReadDataFromCSV(ImagesBasePath + dataFilePrefix + "approximationInitialParameters.csv", 0, ";");
 
 
 
@@ -282,7 +285,7 @@ namespace ApproximationTestingApp
                 dvCurrentParameters = (DenseVector)userState.Item1;
                 double statsKurtosis = (double)userState.Item2;
 
-                ServiceTools.logToTextFile(CurrentDir + dataFilePrefix + "approximationProgress.log",
+                ServiceTools.logToTextFile(ImagesBasePath + dataFilePrefix + "approximationProgress.log",
                     Environment.NewLine + ServiceTools.densevectorToString(dvCurrentParameters) + ";" + statsKurtosis.ToString("e").Replace(",", "."), true);
 
                 theForm.theRepresentingFunctions[theForm.theRepresentingFunctions.Count - 1] = theApproximationFunction;
@@ -319,80 +322,16 @@ namespace ApproximationTestingApp
 
 
 
-
-        #region // private void tb_TextChanged(object sender, EventArgs e)
-        private void tb_TextChanged(object sender, EventArgs e)
-        {
-            //    if (theForm == null)
-            //    {
-            //        return;
-            //    }
-            //
-            //    if (sender == tbXMin)
-            //    {
-            //        theForm.xSpaceMin = Convert.ToDouble(tbXMin.Text);
-            //        theForm.Represent();
-            //    }
-            //
-            //    if (sender == tbXMax)
-            //    {
-            //        theForm.xSpaceMax = Convert.ToDouble(tbXMax.Text);
-            //        theForm.Represent();
-            //    }
-            //
-            //    if (sender == tbYMin)
-            //    {
-            //        theForm.overallFuncMin = Convert.ToDouble(tbYMin.Text);
-            //        theForm.Represent();
-            //    }
-            //
-            //
-            //    if (sender == tbYMax)
-            //    {
-            //        theForm.overallFuncMax = Convert.ToDouble(tbYMax.Text);
-            //        theForm.Represent();
-            //    }
-        }
-        #endregion // private void tb_TextChanged(object sender, EventArgs e)
+        
 
 
-
-
-
-        private void btnProperties_Click(object sender, EventArgs e)
-        {
-            object propertiesObj = Properties.Settings.Default;
-            PropertiesEditor propForm = new PropertiesEditor(propertiesObj);
-            propForm.FormClosed += new FormClosedEventHandler(PropertiesFormClosed);
-            propForm.ShowDialog();
-        }
-
-
-
-
+        
         public void PropertiesFormClosed(object sender, FormClosedEventArgs e)
         {
             readDefaultProperties();
         }
 
-
-        private void readDefaultProperties()
-        {
-            defaultProperties = new Dictionary<string, object>();
-            var settings = Properties.Settings.Default;
-            foreach (SettingsProperty property in settings.Properties)
-            {
-                defaultProperties.Add(property.Name, settings[property.Name]);
-            }
-
-            string CurDir = Directory.GetCurrentDirectory();
-            CurrentDir = (string)defaultProperties["CurrentWorkingDirectory"];
-            if (CurrentDir == "")
-            {
-                CurrentDir = CurDir;
-            }
-            lblCurrWorkingDir.Text = CurrentDir;
-        }
+        
 
 
         private void TestingForm_Shown(object sender, EventArgs e)
@@ -411,11 +350,11 @@ namespace ApproximationTestingApp
             theForm.Show();
 
 
-            string filePath = CurrentDir + dataFilePrefix + "dataDistribution.csv";
+            string filePath = ImagesBasePath + dataFilePrefix + "dataDistribution.csv";
             if (!File.Exists(filePath))
             {
                 // попробуем найти первый попавшийся
-                List<string> fileNames = new List<string>(Directory.GetFiles(CurrentDir, "*dataDistribution.csv"));
+                List<string> fileNames = new List<string>(Directory.GetFiles(ImagesBasePath, "*dataDistribution.csv"));
                 if (fileNames.Count == 0)
                 {
                     MessageBox.Show("Не найдено подходящих файлов в директории. Проверьте настройки.", ":(", MessageBoxButtons.OK);
@@ -428,11 +367,11 @@ namespace ApproximationTestingApp
 
 
 
-            string funcFilePath = CurrentDir + dataFilePrefix + "func.cs";
+            string funcFilePath = ImagesBasePath + dataFilePrefix + "func.cs";
             if (!File.Exists(funcFilePath))
             {
                 // попробуем найти первый попавшийся
-                List<string> fileNames = new List<string>(Directory.GetFiles(CurrentDir, "*func.cs"));
+                List<string> fileNames = new List<string>(Directory.GetFiles(ImagesBasePath, "*func.cs"));
                 if (fileNames.Count == 0)
                 {
                     MessageBox.Show("Не найдено подходящих файлов в директории. Проверьте настройки.", ":(", MessageBoxButtons.OK);
@@ -475,7 +414,7 @@ namespace ApproximationTestingApp
 
 
             DenseMatrix dmDataRaw =
-                (DenseMatrix)ServiceTools.ReadDataFromCSV(filePath);
+                (DenseMatrix)ServiceTools.ReadDataFromCSV(filePath, 0, ";");
 
 
             xData = (DenseVector)dmDataRaw.Column(0);
@@ -723,13 +662,13 @@ namespace ApproximationTestingApp
             };
 
 
-            if (!File.Exists(CurrentDir + lDataFilePrefixes[0] + "dataMinimumPhi.csv"))
+            if (!File.Exists(ImagesBasePath + lDataFilePrefixes[0] + "dataMinimumPhi.csv"))
             {
-                string[] csvFilesInfo = Directory.GetFiles(CurrentDir, "*_dataMinimumPhi.csv");
+                string[] csvFilesInfo = Directory.GetFiles(ImagesBasePath, "*_dataMinimumPhi.csv");
                 if (csvFilesInfo.Count() == 0)
                 {
                     ThreadSafeOperations.SetTextTB(tbLog, Environment.NewLine +
-                        "Couldn`t find any proper csv file in directory:" + Environment.NewLine + CurrentDir + Environment.NewLine, true);
+                        "Couldn`t find any proper csv file in directory:" + Environment.NewLine + ImagesBasePath + Environment.NewLine, true);
                     return;
                 }
                 else
@@ -744,12 +683,12 @@ namespace ApproximationTestingApp
 
             foreach (string prefix in lDataFilePrefixes)
             {
-                xData = (DenseVector)ServiceTools.ReadDataFromCSV(CurrentDir + prefix + "dataMinimumPhi.csv");
-                funcData = (DenseVector)ServiceTools.ReadDataFromCSV(CurrentDir + prefix + "dataMinimumR.csv");
-                dvFuncWeights = (DenseVector)ServiceTools.ReadDataFromCSV(CurrentDir + prefix + "dataWeights.csv");
+                xData = (DenseVector)ServiceTools.ReadDataFromCSV(ImagesBasePath + prefix + "dataMinimumPhi.csv", 0, ";");
+                funcData = (DenseVector)ServiceTools.ReadDataFromCSV(ImagesBasePath + prefix + "dataMinimumR.csv", 0, ";");
+                dvFuncWeights = (DenseVector)ServiceTools.ReadDataFromCSV(ImagesBasePath + prefix + "dataWeights.csv", 0, ";");
                 dvCurrentParameters =
                     (DenseVector)
-                        ServiceTools.ReadDataFromCSV(CurrentDir + prefix + "approximationInitialParameters.csv");
+                        ServiceTools.ReadDataFromCSV(ImagesBasePath + prefix + "approximationInitialParameters.csv", 0, ";");
 
                 #region Добавим интерполированные данные, чтобы решение не разносило
 
@@ -789,12 +728,7 @@ namespace ApproximationTestingApp
 
                 #endregion Добавим интерполированные данные, чтобы решение не разносило
 
-
-
-
-
-
-
+                
 
                 FunctionRepresentationForm MKLform = new FunctionRepresentationForm("test function");
                 MKLform.Show();
@@ -827,12 +761,7 @@ namespace ApproximationTestingApp
                 string str2show = "" + MKLform.theRepresentingFunctions[0].ToString() + Environment.NewLine;
                 str2show += MKLform.parameters[0].ToString();
                 ThreadSafeOperations.SetTextTB(tbLog, Environment.NewLine + str2show + Environment.NewLine, true);
-
-
-
-
-
-
+                
 
                 stepsCount = 0;
                 //if (bgwMKLapproximationWorker != null)
@@ -885,9 +814,9 @@ namespace ApproximationTestingApp
             });
 
             NonLinLeastSqProbWithBC<double> solver = new NonLinLeastSqProbWithBC<double>();
-            solver.mSpaceVector = xData.Copy();
+            solver.mEventsSpaceVector = xData.Copy();
             solver.mFittingValuesVector = funcData.Copy();
-            solver.nXspacePoint = dvParameters.Copy();
+            solver.nParametersSpacePoint = dvParameters.Copy();
             solver.lowerBoundConstraints = dvLowerBounds;
             solver.upperBoundConstraints = dvUpperBounds;
             solver.fittingFunction =
@@ -926,6 +855,7 @@ namespace ApproximationTestingApp
 
 
         #region // MathNet optimization test
+
         //private BackgroundWorker bgwMathNetApproximationWorker;
         //private void btnInitDataForintelMathNet_Click(object sender, EventArgs e)
         //{
@@ -1202,8 +1132,8 @@ namespace ApproximationTestingApp
             };
 
 
-            funcData = (DenseVector)ServiceTools.ReadDataFromCSV(dataFileName);
-            xData = (DenseVector)ServiceTools.ReadDataFromCSV(dataFileName + ".xdata");
+            funcData = (DenseVector)ServiceTools.ReadDataFromCSV(dataFileName, 0, ";");
+            xData = (DenseVector)ServiceTools.ReadDataFromCSV(dataFileName + ".xdata", 0, ";");
             dvCurrentParameters = DenseVector.OfEnumerable(new double[] {1.5d, 1.5d, 1.5d});
 
 
@@ -1266,9 +1196,9 @@ namespace ApproximationTestingApp
             DenseVector dvUpperBounds = (DenseVector) args[3];
             
             NonLinLeastSqProbWithBC<double> solver = new NonLinLeastSqProbWithBC<double>();
-            solver.mSpaceVector = xData.Copy();
+            solver.mEventsSpaceVector = xData.Copy();
             solver.mFittingValuesVector = funcData.Copy();
-            solver.nXspacePoint = dvParameters.Copy();
+            solver.nParametersSpacePoint = dvParameters.Copy();
             solver.lowerBoundConstraints = dvLowerBounds;
             solver.upperBoundConstraints = dvUpperBounds;
             solver.fittingFunction =
@@ -1303,8 +1233,61 @@ namespace ApproximationTestingApp
 
 
 
+
         #endregion Weibull approximation
 
 
+
+
+
+        private void btnProperties_Click_1(object sender, EventArgs e)
+        {
+            SkyImagesAnalyzer.PropertiesEditor propForm = new SkyImagesAnalyzer.PropertiesEditor(defaultProperties, defaultPropertiesXMLfileName);
+            propForm.FormClosed += PropertiesFormClosed;
+            propForm.ShowDialog();
+        }
+
+
+
+
+        private void readDefaultProperties()
+        {
+            defaultProperties = new Dictionary<string, object>();
+            defaultPropertiesXMLfileName = Directory.GetCurrentDirectory() +
+                                           Path.DirectorySeparatorChar + "settings" + Path.DirectorySeparatorChar +
+                                           Path.GetFileNameWithoutExtension(Assembly.GetEntryAssembly().Location) +
+                                           "-Settings.xml";
+            if (File.Exists(defaultPropertiesXMLfileName))
+            {
+                defaultProperties = ServiceTools.ReadDictionaryFromXML(defaultPropertiesXMLfileName);
+            }
+
+            bool bDefaultPropertiesHasBeenUpdated = false;
+
+            ImagesBasePath = "";
+            if (defaultProperties.ContainsKey("ImagesBasePath"))
+            {
+                ImagesBasePath = (string)defaultProperties["ImagesBasePath"];
+            }
+            else
+            {
+                ImagesBasePath = Directory.GetCurrentDirectory();
+                defaultProperties.Add("ImagesBasePath", ImagesBasePath);
+                bDefaultPropertiesHasBeenUpdated = true;
+            }
+            
+            if (bDefaultPropertiesHasBeenUpdated)
+            {
+                saveDefaultProperties();
+            }
+        }
+
+
+
+
+        private void saveDefaultProperties()
+        {
+            ServiceTools.WriteDictionaryToXml(defaultProperties, defaultPropertiesXMLfileName, false);
+        }
     }
 }

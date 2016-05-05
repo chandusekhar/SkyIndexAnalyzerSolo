@@ -153,6 +153,7 @@ namespace SkyImagesAnalyzerLibraries
             }
 
 
+            /// TODO: The 'then' statement is equivalent to the 'else' statement 
             if (isPartOfMessage)
             {
                 if ((udpMessage.Length >= 6) && (udpMessage.IndexOf("<repl>") >= 0))

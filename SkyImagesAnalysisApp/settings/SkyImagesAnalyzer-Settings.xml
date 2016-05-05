@@ -58,7 +58,7 @@
   </table>
   <table>
     <key>DefaultMaxImageSize</key>
-    <value>1024</value>
+    <value>1920</value>
   </table>
   <table>
     <key>DefaultScalingFactor</key>
@@ -91,5 +91,25 @@
   <table>
     <key>ClusteringXMLDataFilesLocation</key>
     <value>D:\_gulevlab\SkyImagesAnalysis_appData\clustering-tests\AI45-ID1\</value>
+  </table>
+  <table>
+    <key>imageYRGBstatsXMLdataFilesDirectory</key>
+    <value>D:\_gulevlab\SkyImagesAnalysis_appData\Sun-Condition-data-collection\RV-ANS-31-total\stats\GrIxYRGB\</value>
+  </table>
+  <table>
+    <key>NNconfigFile</key>
+    <value>D:\_gulevlab\SkyImagesAnalysis\_DBGbin\settings\NNconfig.csv</value>
+  </table>
+  <table>
+    <key>NNtrainedParametersFile</key>
+    <value>D:\_gulevlab\SkyImagesAnalysis\_DBGbin\settings\NNtrainedParameters.csv</value>
+  </table>
+  <table>
+    <key>NormMeansFile</key>
+    <value>D:\_gulevlab\SkyImagesAnalysis\_DBGbin\settings\NormMeans.csv</value>
+  </table>
+  <table>
+    <key>NormRangeFile</key>
+    <value>D:\_gulevlab\SkyImagesAnalysis\_DBGbin\settings\NormRange.csv</value>
   </table>
 </DataSet>

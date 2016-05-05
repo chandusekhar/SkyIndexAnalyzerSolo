@@ -74,7 +74,7 @@
       <Private>False</Private>
     </Reference>
     <Reference Include="MRG.Controls.UI">
-      <HintPath>..\..\MRG.Controls.UI\bin\MRG.Controls.UI.dll</HintPath>
+      <HintPath>..\..\components\MRG.Controls.UI\bin\MRG.Controls.UI.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="System" />
@@ -131,6 +131,11 @@
       <Name>SkyImagesAnalyzerLibraries</Name>
       <Private>False</Private>
     </ProjectReference>
+    <ProjectReference Include="..\SolarPositioning\SolarPositioning.csproj">
+      <Project>{3499be05-5c5b-49f0-9655-05cb2e5e6b3d}</Project>
+      <Name>SolarPositioning</Name>
+      <Private>False</Private>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\zoom_in.png" />
@@ -147,6 +152,7 @@
   <ItemGroup />
   <ItemGroup>
     <None Include="Resources\target.png" />
+    <None Include="gearIcon.png" />
     <Content Include="settings\CloudCamsDataAnalysisAppSettings.xml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <SubType>Designer</SubType>

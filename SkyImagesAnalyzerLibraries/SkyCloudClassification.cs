@@ -13,7 +13,10 @@ using MathNet.Numerics.LinearAlgebra.Double;
 //using MathNet.Numerics.LinearAlgebra.Generic;
 using MathNet.Numerics.Statistics;
 using System.Collections.Generic;
+using System.Management.Automation;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using ANN;
 using MathNet.Numerics.LinearAlgebra;
 using MKLwrapper;
 
@@ -114,7 +117,7 @@ namespace SkyImagesAnalyzerLibraries
         public string sourceImageFileName = "";
         public int concurrentThreadsLimit = 2;
 
-        public SunDiskConditions currentSunDiskCondition;
+        //public SunDiskConditions currentSunDiskCondition;
 
 
         private Image<Bgr, byte> tmpSunDetectionimage = null;
@@ -122,6 +125,9 @@ namespace SkyImagesAnalyzerLibraries
         public bool theSunSuppressionSchemeApplicable = false;
         public bool forceExistingSunInformation = false;
 
+        List<Tuple<string, string>> lImagesRoundMasksMappingFiles = null;
+        private TimeSpan TimeSpanForConcurrentDataMappingTolerance;
+        private string ConcurrentDataXMLfilesDirectory = "";
 
 
         public Bitmap PreviewBitmap { get { return localPreviewBitmap; } }
@@ -158,6 +164,10 @@ namespace SkyImagesAnalyzerLibraries
         }
 
 
+        public SkyImagesDataWith_Concurrent_Stats_CloudCover imgConcurrentDataAndStats { get; set; }
+
+
+
         //public SkyCloudClassification(Image OrigImage, PictureBox DisplayControl, ProgressBar ProgressBarControl, Form inParentForm)
         //public SkyCloudClassification(Image OrigImage, PictureBox DisplayControl, ProgressBar ProgressBarControl, TextBox inReportingTextBox)
         //public SkyCloudClassification(Image OrigImage, Dictionary<string, object> settings)
@@ -166,7 +176,8 @@ namespace SkyImagesAnalyzerLibraries
             //LocalProcessingBitmap = new Bitmap(ImageProcessing.SquareImageDimensions(OrigImage));
             LocalProcessingImage = ImageProcessing.SquareImageDimensions(OrigImage);
 
-            localPreviewBitmap = new Bitmap(LocalProcessingImage.Bitmap, LocalProcessingImage.Width, LocalProcessingImage.Height);
+            localPreviewBitmap = new Bitmap(LocalProcessingImage.Bitmap, LocalProcessingImage.Width,
+                LocalProcessingImage.Height);
             DimX = LocalProcessingImage.Width;
             DimY = LocalProcessingImage.Height;
 
@@ -185,14 +196,42 @@ namespace SkyImagesAnalyzerLibraries
             minSunAreaPart = Convert.ToDouble(defaultProperties["GrIxSunDetectionMinimalSunAreaPartial"]);
             maxSunAreaPart = Convert.ToDouble(defaultProperties["GrIxSunDetectionMaximalSunAreaPartial"]);
             aveSunAreaPart = Convert.ToDouble(defaultProperties["GrIxSunDetectionDesiredSunAreaPartial"]);
-            theStdDevMarginValueDefiningTrueSkyArea = Convert.ToDouble(defaultProperties["GrIxStdDevMarginValueDefiningTrueSkyArea"]);
-            theStdDevMarginValueDefiningSkyCloudSeparation = Convert.ToDouble(defaultProperties["GrIxDefaultSkyCloudMarginWithoutSun"]);
-            theStdDevMarginValueDefiningSkyCloudSeparation_SunSuppressed = Convert.ToDouble(defaultProperties["GrIxDefaultSkyCloudMarginWithSun"]);
+            theStdDevMarginValueDefiningTrueSkyArea =
+                Convert.ToDouble(defaultProperties["GrIxStdDevMarginValueDefiningTrueSkyArea"]);
+            theStdDevMarginValueDefiningSkyCloudSeparation =
+                Convert.ToDouble(defaultProperties["GrIxDefaultSkyCloudMarginWithoutSun"]);
+            theStdDevMarginValueDefiningSkyCloudSeparation_SunSuppressed =
+                Convert.ToDouble(defaultProperties["GrIxDefaultSkyCloudMarginWithSun"]);
             theImageCircleCropFactor = Convert.ToDouble(defaultProperties["GrIxAnalysisImageCircledCropFactor"]);
             minSunburnYValue = Convert.ToDouble(defaultProperties["GrIxMinimalSunburnYvalue"]);
             minSunburnGrIxValue = Convert.ToDouble(defaultProperties["GrIxMinimalSunburnGrIxvalue"]);
             dSunDetectorArcedCropFactor = Convert.ToDouble(defaultProperties["GrIxSunDetectorArcedCropFactor"]);
             concurrentThreadsLimit = Convert.ToInt32(defaultProperties["GrIxSunDetectorConcurrentThreadsLimit"]);
+
+            if (defaultProperties.ContainsKey("ImagesRoundMasksXMLfilesMappingList"))
+            {
+
+                string ImagesRoundMasksXMLfilesMappingList =
+                    (string)defaultProperties["ImagesRoundMasksXMLfilesMappingList"];
+                if (File.Exists(ImagesRoundMasksXMLfilesMappingList))
+                {
+                    List<List<string>> llImagesRoundMasksMappingFiles =
+                        ServiceTools.ReadDataFromCSV(ImagesRoundMasksXMLfilesMappingList, 0, true, ";",
+                            Environment.NewLine);
+                    lImagesRoundMasksMappingFiles =
+                        llImagesRoundMasksMappingFiles.ConvertAll(
+                            list => new Tuple<string, string>(list[0], list[1]));
+                    // item1: images filename pattern
+                    // item2: image rounded mask parameters XML file
+                }
+            }
+
+            TimeSpanForConcurrentDataMappingTolerance = TimeSpan.Parse((string)defaultProperties["TimeSpanForConcurrentDataMappingTolerance"]);
+            if (defaultProperties.ContainsKey("ConcurrentDataXMLfilesDirectory"))
+            {
+                ConcurrentDataXMLfilesDirectory = (string)defaultProperties["ConcurrentDataXMLfilesDirectory"];
+            }
+
         }
 
 
@@ -360,12 +399,37 @@ namespace SkyImagesAnalyzerLibraries
             BGWorkerReport("Начало обработки изображения");
 
             //Image<Gray, Byte> maskImage = ImageProcessing.getImageSignificantMask(LocalProcessingBitmap);
-            ImageProcessing imgP = new ImageProcessing(LocalProcessingImage, true);
 
 
+            RoundData predefinedRoundedMask = null;
+            if (lImagesRoundMasksMappingFiles != null)
+            {
+                if (lImagesRoundMasksMappingFiles.Any())
+                {
+                    if (lImagesRoundMasksMappingFiles.Find(tpl => (new WildcardPattern(tpl.Item1)).IsMatch(sourceImageFileName)) != null)
+                    {
+                        string strFoundPredefinedRoundedMaskParametersXMLfile =
+                            lImagesRoundMasksMappingFiles.Find(
+                                tpl => (new WildcardPattern(tpl.Item1)).IsMatch(sourceImageFileName)).Item2;
+                        predefinedRoundedMask =
+                            ServiceTools.ReadObjectFromXML(strFoundPredefinedRoundedMaskParametersXMLfile,
+                                typeof(RoundData)) as RoundData;
+                    }
+                }
+            }
 
-            /// todo: в процессе выделения полезной области изображения используется аппроксимация к окружности
-            /// ее тоже надо переписать под MKL - DONE
+
+            ImageProcessing imgP = null;
+            if (predefinedRoundedMask != null)
+            {
+                imgP = new ImageProcessing(LocalProcessingImage, predefinedRoundedMask);
+            }
+            else
+            {
+                imgP = new ImageProcessing(LocalProcessingImage, true);
+            }
+
+
 
 
 
@@ -414,12 +478,6 @@ namespace SkyImagesAnalyzerLibraries
 
 
 
-            #region надо отобразить положение снимка в пространстве 5perc-median. Исходную картинку с распределением - брать готовую или генерировать?..
-
-            #endregion
-
-
-
             #region определим CloudCover без подавления солнца - для сравнения
             //ColorScheme skyCloudColorSchemeWithoutSunSuppression = ColorScheme.InversedBinaryCloudSkyColorScheme(theStdDevMarginValueDefiningSkyCloudSeparation, 0.0d, 1.0d);
             ColorScheme skyCloudColorSchemeWithoutSunSuppression = ColorScheme.InversedBinaryCloudSkyColorScheme(theStdDevMarginValueDefiningSkyCloudSeparation, 0.0d, 1.0d);
@@ -434,7 +492,7 @@ namespace SkyImagesAnalyzerLibraries
             {
                 theLogWindow = ServiceTools.LogAText(theLogWindow, ex.Message);
             }
-            
+
             int skyCounterWithoutSunSuppression = maskImage.CountNonzero()[0] - cloudCounterWithoutSunSuppression;
             double CloudCoverWithoutSunSuppression = (double)cloudCounterWithoutSunSuppression / (double)(skyCounterWithoutSunSuppression + cloudCounterWithoutSunSuppression);
             //сохраним результат без подавления засветки
@@ -447,6 +505,286 @@ namespace SkyImagesAnalyzerLibraries
 
 
             ServiceTools.FlushMemory();
+
+
+
+            #region Detect Sun disk condition using precalculated image stats and NN on that predictors
+
+            BGWorkerReport("Оценка состояния солнечного диска на снимке.");
+
+            SunDiskCondition detectedSDC = SunDiskCondition.Defect;
+
+            ConcurrentData nearestConcurrentData = null;
+            #region 1. find concurrent data and determine sun elevation
+
+            if (imgConcurrentDataAndStats != null)
+            {
+                nearestConcurrentData = imgConcurrentDataAndStats.concurrentData;
+            }
+            else
+            {
+                bool IncludeGPSandSunAltitudeData =
+                    (((string)defaultProperties["IncludeGPSandSunAltitudeData"]).ToLower() == "true");
+                string strConcurrentDataXMLfilesDirectory = "";
+                if (IncludeGPSandSunAltitudeData)
+                {
+                    strConcurrentDataXMLfilesDirectory = (string)defaultProperties["ConcurrentDataXMLfilesDirectory"];
+                    if (!Directory.Exists(strConcurrentDataXMLfilesDirectory))
+                    {
+                        theLogWindow = ServiceTools.LogAText(theLogWindow,
+                                    "concurrent data directory is not specified or does not exist." + Environment.NewLine +
+                                    "\tSo while checkbox \"include GPS and sun altitude data\" it has been specified and exist." + Environment.NewLine + "" +
+                                    "\tPlease make sure you really want to include GPS and sun altitude data or check if the directory path specified and it does exist.");
+                        return;
+                    }
+
+                }
+
+                List<string> filesListConcurrentData = new List<string>();
+                if (IncludeGPSandSunAltitudeData)
+                {
+                    filesListConcurrentData =
+                        new List<string>(Directory.EnumerateFiles(strConcurrentDataXMLfilesDirectory,
+                            ConventionalTransitions.ImageConcurrentDataFilesNamesPattern(), SearchOption.AllDirectories));
+                }
+
+
+                #region read concurrent data from XML files
+
+                theLogWindow = ServiceTools.LogAText(theLogWindow, "started concurrent data reading");
+
+                if (IncludeGPSandSunAltitudeData)
+                {
+                    List<Dictionary<string, object>> lDictionariesConcurrentData = filesListConcurrentData.ConvertAll(
+                        strConcDataXMLFile =>
+                        {
+                            Dictionary<string, object> currDict = ServiceTools.ReadDictionaryFromXML(strConcDataXMLFile);
+                            if (currDict != null)
+                            {
+                                currDict.Add("XMLfileName", Path.GetFileName(strConcDataXMLFile));
+                            }
+                            return currDict;
+                        });
+
+                    lDictionariesConcurrentData.RemoveAll(dict => dict == null);
+
+                    List<ConcurrentData> lConcurrentData =
+                        lDictionariesConcurrentData.ConvertAll<ConcurrentData>(dict =>
+                        {
+                            ConcurrentData retVal = null;
+                            try
+                            {
+                                retVal = new ConcurrentData(dict);
+                            }
+                            catch (Exception ex)
+                            {
+                                retVal = null;
+                            }
+                            return retVal;
+                        });
+                    lConcurrentData.RemoveAll(val => val == null);
+
+
+                    // map obtained concurrent data to image by its datetime
+                    theLogWindow = ServiceTools.LogAText(theLogWindow, "started concurrent data mapping");
+
+                    string currImgFilename = sourceImageFileName;
+                    currImgFilename = Path.GetFileNameWithoutExtension(currImgFilename);
+                    string ptrn = @"(devID\d)";
+                    Regex rgxp = new Regex(ptrn, RegexOptions.IgnoreCase);
+                    string strCurrImgDT = rgxp.Replace(currImgFilename.Substring(4), "");
+                    //2015-12-16T06-01-38
+                    strCurrImgDT = strCurrImgDT.Substring(0, 11) + strCurrImgDT.Substring(11).Replace("-", ":");
+
+                    DateTime currImgDT = DateTime.Parse(strCurrImgDT, null,
+                        System.Globalization.DateTimeStyles.AdjustToUniversal);
+
+                    nearestConcurrentData = lConcurrentData.Aggregate((cDt1, cDt2) =>
+                    {
+                        TimeSpan tspan1 = new TimeSpan(Math.Abs((cDt1.datetimeUTC - currImgDT).Ticks));
+                        TimeSpan tspan2 = new TimeSpan(Math.Abs((cDt2.datetimeUTC - currImgDT).Ticks));
+                        return ((tspan1 <= tspan2) ? (cDt1) : (cDt2));
+                    });
+                }
+                #endregion read concurrent data from XML files
+            }
+
+
+            #endregion
+
+
+
+            SkyImageIndexesStatsData currImageStatsData = null;
+            #region 2. find precalculated stats data
+
+            if (imgConcurrentDataAndStats != null)
+            {
+                currImageStatsData = imgConcurrentDataAndStats.grixyrgbStats;
+            }
+            else
+            {
+                theLogWindow = ServiceTools.LogAText(theLogWindow, "started GrIxYRGB stats data reading");
+
+                if (defaultProperties.ContainsKey("imageYRGBstatsXMLdataFilesDirectory"))
+                {
+                    string imageYRGBstatsXMLdataFilesDirectory =
+                        (string)defaultProperties["imageYRGBstatsXMLdataFilesDirectory"];
+
+                    if (Directory.Exists(imageYRGBstatsXMLdataFilesDirectory))
+                    {
+                        if (Directory.Exists(imageYRGBstatsXMLdataFilesDirectory))
+                        {
+                            List<string> foundXMLfiles = Directory.EnumerateFiles(imageYRGBstatsXMLdataFilesDirectory,
+                                ConventionalTransitions.ImageGrIxYRGBstatsDataFileName(sourceImageFileName, "", false),
+                                SearchOption.AllDirectories).ToList();
+                            if (foundXMLfiles.Any())
+                            {
+                                // возьмем первый попавшийся
+                                currImageStatsData =
+                                    (SkyImageIndexesStatsData)
+                                        ServiceTools.ReadObjectFromXML(foundXMLfiles[0], typeof(SkyImageIndexesStatsData));
+                            }
+                        }
+                    }
+                }
+
+                #region calculate stats if needed
+
+                if (currImageStatsData == null)
+                {
+                    theLogWindow = ServiceTools.LogAText(theLogWindow, "obtaining stats data for image...");
+
+                    Dictionary<string, object> optionalParameters = new Dictionary<string, object>();
+                    optionalParameters.Add("ImagesRoundMasksXMLfilesMappingList",
+                        (string)defaultProperties["ImagesRoundMasksXMLfilesMappingList"]);
+
+                    ImageStatsDataCalculationResult currImageProcessingResult =
+                        ImageProcessing.CalculateImageStatsData(sourceImageFileName, optionalParameters);
+
+                    if (currImageProcessingResult.calcResult)
+                    {
+                        string currentFullFileName = currImageProcessingResult.imgFilename;
+
+                        if (defaultProperties.ContainsKey("imageYRGBstatsXMLdataFilesDirectory"))
+                        {
+                            string imageYRGBstatsXMLdataFilesDirectory =
+                                (string)defaultProperties["imageYRGBstatsXMLdataFilesDirectory"];
+
+                            if (Directory.Exists(imageYRGBstatsXMLdataFilesDirectory))
+                            {
+                                string strImageGrIxYRGBDataFileName =
+                                    ConventionalTransitions.ImageGrIxYRGBstatsDataFileName(currentFullFileName,
+                                        imageYRGBstatsXMLdataFilesDirectory);
+                                ServiceTools.WriteObjectToXML(currImageProcessingResult.grixyrgbStatsData,
+                                    strImageGrIxYRGBDataFileName);
+                            }
+                        }
+
+                        currImageStatsData = currImageProcessingResult.grixyrgbStatsData;
+                    }
+                }
+
+                #endregion calculate stats if needed
+            }
+            #endregion
+
+
+            #region combine found data to get predictors vector
+            string currImageALLstatsDataCSVWithConcurrentData = currImageStatsData.ToCSV() + "," +
+                nearestConcurrentData.gps.SunZenithAzimuth().ElevationAngle.ToString().Replace(",", ".") + "," +
+                nearestConcurrentData.gps.SunZenithAzimuth().Azimuth.ToString().Replace(",", ".");
+            string csvHeader = currImageStatsData.CSVHeader() + ",SunElevationDeg,SunAzimuthDeg,sunDiskCondition";
+            #endregion
+
+
+            #region PREDICT SDC
+
+            List<string> lCalculatedData = new List<string>();
+            lCalculatedData.Add(currImageALLstatsDataCSVWithConcurrentData);
+
+
+            #region predict using LIST of data
+
+            List<List<string>> csvFileContentStrings =
+                lCalculatedData.ConvertAll(str => str.Split(',').ToList()).ToList();
+            List<string> lCSVheader = csvHeader.Split(',').ToList();
+
+            List<int> columnsToDelete =
+                lCSVheader.Select((str, idx) => new Tuple<int, string>(idx, str))
+                    .Where(tpl => tpl.Item2.ToLower().Contains("filename")).ToList().ConvertAll(tpl => tpl.Item1);
+            List<List<string>> csvFileContentStringsFiltered = new List<List<string>>();
+            foreach (List<string> listDataStrings in csvFileContentStrings)
+            {
+                csvFileContentStringsFiltered.Add(
+                    listDataStrings.Where((str, idx) => !columnsToDelete.Contains(idx)).ToList());
+            }
+
+
+
+            List<List<string>> csvFileContentStringsFiltered_wo_sdc = csvFileContentStringsFiltered;
+
+            List<DenseVector> lDV_objects_features =
+                csvFileContentStringsFiltered_wo_sdc.ConvertAll(
+                    list =>
+                        DenseVector.OfEnumerable(list.ConvertAll<double>(str => Convert.ToDouble(str.Replace(".", ",")))));
+
+
+            DenseVector dvMeans = (DenseVector)((DenseMatrix)ServiceTools.ReadDataFromCSV((string)defaultProperties["NormMeansFile"], 0, ",")).Row(0);
+            DenseVector dvRanges = (DenseVector)((DenseMatrix)ServiceTools.ReadDataFromCSV((string)defaultProperties["NormRangeFile"], 0, ", ")).Row(0);
+
+            lDV_objects_features = lDV_objects_features.ConvertAll(dv =>
+            {
+                DenseVector dvShifted = dv - dvMeans;
+                DenseVector dvNormed = (DenseVector)dvShifted.PointwiseDivide(dvRanges);
+                return dvNormed;
+            });
+
+            DenseMatrix dmObjectsFeatures = DenseMatrix.OfRowVectors(lDV_objects_features);
+
+            DenseVector dvThetaValues = (DenseVector)ServiceTools.ReadDataFromCSV((string)defaultProperties["NNtrainedParametersFile"], 0, ", ");
+            List<int> NNlayersConfig =
+                new List<double>(((DenseMatrix)ServiceTools.ReadDataFromCSV((string)defaultProperties["NNconfigFile"], 0, ", ")).Row(0)).ConvertAll
+                    (dVal => Convert.ToInt32(dVal));
+
+
+            List<List<double>> lDecisionProbabilities = null;
+
+            List<int> predictedSDC =
+                NNclassificatorPredictor.NNpredict(dmObjectsFeatures, dvThetaValues, NNlayersConfig,
+                    out lDecisionProbabilities).ToList();
+
+            List<SunDiskCondition> predictedSDClist = predictedSDC.ConvertAll(sdcInt =>
+            {
+                switch (sdcInt)
+                {
+                    case 4:
+                        return SunDiskCondition.NoSun;
+                        break;
+                    case 1:
+                        return SunDiskCondition.Sun0;
+                        break;
+                    case 2:
+                        return SunDiskCondition.Sun1;
+                        break;
+                    case 3:
+                        return SunDiskCondition.Sun2;
+                        break;
+                    default:
+                        return SunDiskCondition.Defect;
+                }
+            });
+
+            detectedSDC = predictedSDClist[0];
+
+            #endregion
+
+            #endregion
+
+            #endregion Detect Sun disk condition using precalculated image stats and NN on that predictors
+
+
+
+            #region detect Sun disk location
 
             BGWorkerReport("поиск солнечного диска, оценка применимости подавления солнечной засветки");
 
@@ -461,61 +799,75 @@ namespace SkyImagesAnalyzerLibraries
                 }
             }
 
+
+
             RoundData sunRoundData = RoundData.nullRoundData();
-            bool predefinedSunDiskLocationWasUsed = false;
-            if (sourceImageFileName != "")
+
+            if ((detectedSDC == SunDiskCondition.NoSun) || (detectedSDC == SunDiskCondition.Sun0))
             {
-                //посмотрим, нет ли уже имеющихся данных о положении и размере солнечного диска на изображении
-                FileInfo fInfo1 = new FileInfo(sourceImageFileName);
-                string sunDiskInfoFileName = fInfo1.DirectoryName + "\\" + Path.GetFileNameWithoutExtension(sourceImageFileName) +
-                                             "-SunDiskInfo.xml";
-
-                RoundData existingRoundData = RoundData.nullRoundData();
-                Size imgSizeUnderExistingRoundData = LocalProcessingImage.Bitmap.Size;
-                object existingRoundDataObj = ServiceTools.ReadObjectFromXML(sunDiskInfoFileName, typeof(RoundDataWithUnderlyingImgSize));
-
-                if (existingRoundDataObj != null)
+                sunRoundData = RoundData.nullRoundData();
+            }
+            else
+            {
+                bool predefinedSunDiskLocationWasUsed = false;
+                if (sourceImageFileName != "")
                 {
-                    existingRoundData = ((RoundDataWithUnderlyingImgSize)existingRoundDataObj).circle;
-                    imgSizeUnderExistingRoundData = ((RoundDataWithUnderlyingImgSize)existingRoundDataObj).imgSize;
-                    predefinedSunDiskLocationWasUsed = true;
+                    //посмотрим, нет ли уже имеющихся данных о положении и размере солнечного диска на изображении
+                    // FileInfo fInfo1 = new FileInfo(sourceImageFileName);
+                    //string sunDiskInfoFileName = fInfo1.DirectoryName + "\\" + Path.GetFileNameWithoutExtension(sourceImageFileName) +
+                    //                             "-SunDiskInfo.xml";
+
+                    string sunDiskInfoFileName = ConventionalTransitions.SunDiskInfoFileName(sourceImageFileName,
+                        defaultOutputDataDirectory);
+
+                    RoundData existingRoundData = RoundData.nullRoundData();
+                    Size imgSizeUnderExistingRoundData = LocalProcessingImage.Bitmap.Size;
+                    object existingRoundDataObj = ServiceTools.ReadObjectFromXML(sunDiskInfoFileName, typeof(RoundDataWithUnderlyingImgSize));
+
+                    if (existingRoundDataObj != null)
+                    {
+                        existingRoundData = ((RoundDataWithUnderlyingImgSize)existingRoundDataObj).circle;
+                        imgSizeUnderExistingRoundData = ((RoundDataWithUnderlyingImgSize)existingRoundDataObj).imgSize;
+                        predefinedSunDiskLocationWasUsed = true;
+                    }
+
+                    double currScale = (double)LocalProcessingImage.Width / (double)imgSizeUnderExistingRoundData.Width;
+                    if (currScale != 1.0d)
+                    {
+                        existingRoundData.DCenterX *= currScale;
+                        existingRoundData.DCenterY *= currScale;
+                        existingRoundData.DRadius *= currScale;
+                    }
+                    if (!existingRoundData.IsNull)
+                    {
+                        sunRoundData = existingRoundData;
+                    }
                 }
 
-                double currScale = (double)LocalProcessingImage.Width / (double)imgSizeUnderExistingRoundData.Width;
-                if (currScale != 1.0d)
+
+                if (sunRoundData.IsNull)
                 {
-                    existingRoundData.DCenterX *= currScale;
-                    existingRoundData.DCenterY *= currScale;
-                    existingRoundData.DRadius *= currScale;
-                }
-                if (!existingRoundData.IsNull)
-                {
-                    sunRoundData = existingRoundData;
+                    if (!forceExistingSunInformation)
+                    {
+                        sunRoundData = DetectSunWithSerieOfArcs(imgP, dmProcessingData, currentDirectory, randomFileName);
+                    }
+                    else
+                    {
+                        sunRoundData = RoundData.nullRoundData();
+                    }
+
                 }
             }
-
-
-            if (sunRoundData.IsNull)
-            {
-                if (!forceExistingSunInformation)
-                {
-                    sunRoundData = DetectSunWithSerieOfArcs(imgP, dmProcessingData, currentDirectory, randomFileName);
-                }
-                else
-                {
-                    sunRoundData = RoundData.nullRoundData();
-                }
-                
-            }
-            
 
             theSunSuppressionSchemeApplicable = (!sunRoundData.IsNull);
+
 
             BGWorkerReport("закончен поиск солнечного диска. применимость подавления засветки: " + theSunSuppressionSchemeApplicable.ToString());
 
 
 
             #region сохраним данные положения солнечного диска
+
             if (!sunRoundData.IsNull)
             {
                 BGWorkerReport("расположение солнечного диска: " + Environment.NewLine + sunRoundData.ToString());
@@ -555,10 +907,12 @@ namespace SkyImagesAnalyzerLibraries
                 {
                     // посмотрим, нет ли уже имеющихся данных о положении и размере солнечного диска на изображении
                     // если есть - не будем перезаписывать
-                    FileInfo fInfo1 = new FileInfo(sourceImageFileName);
-                    string sunDiskInfoFileName = fInfo1.DirectoryName + "\\" +
-                                                 Path.GetFileNameWithoutExtension(sourceImageFileName) +
-                                                 "-SunDiskInfo.xml";
+                    // FileInfo fInfo1 = new FileInfo(sourceImageFileName);
+                    string sunDiskInfoFileName = ConventionalTransitions.SunDiskInfoFileName(sourceImageFileName,
+                        defaultOutputDataDirectory);
+                    //string sunDiskInfoFileName = fInfo1.DirectoryName + "\\" +
+                    //                             Path.GetFileNameWithoutExtension(sourceImageFileName) +
+                    //                             "-SunDiskInfo.xml";
                     if (!File.Exists(sunDiskInfoFileName))
                     {
                         RoundDataWithUnderlyingImgSize foundSunLocation = new RoundDataWithUnderlyingImgSize();
@@ -569,6 +923,9 @@ namespace SkyImagesAnalyzerLibraries
                 }
             }
             #endregion сохраним данные положения солнечного диска
+
+
+            #endregion detect Sun disk location
 
 
 
@@ -1014,7 +1371,7 @@ namespace SkyImagesAnalyzerLibraries
                 weightAndDataPlot.Represent();
                 if ((verbosityLevel > 1) && (!isCalculatingUsingBgWorker))
                 {
-                    ServiceTools.ExecMethodInSeparateThread(ParentForm, delegate()
+                    ServiceTools.ExecMethodInSeparateThread(ParentForm, delegate ()
                     {
                         ServiceTools.ShowPicture(weightAndDataPlot.TheImage.Bitmap, "Overall GrIx values envelop vs r");
                     });
@@ -1043,7 +1400,7 @@ namespace SkyImagesAnalyzerLibraries
                 envelopPlottingForm.Represent();
                 if ((verbosityLevel > 1) && (!isCalculatingUsingBgWorker))
                 {
-                    ServiceTools.ExecMethodInSeparateThread(ParentForm, delegate()
+                    ServiceTools.ExecMethodInSeparateThread(ParentForm, delegate ()
                     {
                         ServiceTools.ShowPicture(envelopPlottingForm.TheImage.Bitmap, "Overall GrIx values envelop vs r");
                     });
@@ -1591,9 +1948,9 @@ namespace SkyImagesAnalyzerLibraries
                 #region Создание и заполнение свойств самого объекта - интерфейса к решателю задач оптимизации MKL
 
                 NonLinLeastSqProbWithBC<double> approximator = new NonLinLeastSqProbWithBC<double>();
-                approximator.mSpaceVector = dvTmpXdataShifted.Copy();
+                approximator.mEventsSpaceVector = dvTmpXdataShifted.Copy();
                 approximator.mFittingValuesVector = dvFuncData.Copy();
-                approximator.nXspacePoint = dvInitialParameters.Copy();
+                approximator.nParametersSpacePoint = dvInitialParameters.Copy();
                 approximator.upperBoundConstraints = dvUpperBounds.Copy();
                 approximator.lowerBoundConstraints = dvLowerBounds.Copy();
                 approximator.fittingFunction =
@@ -1695,7 +2052,7 @@ namespace SkyImagesAnalyzerLibraries
 
                 if ((verbosityLevel > 1) && (!isCalculatingUsingBgWorker))
                 {
-                    ServiceTools.ExecMethodInSeparateThread(ParentForm, delegate()
+                    ServiceTools.ExecMethodInSeparateThread(ParentForm, delegate ()
                     {
                         ServiceTools.ShowPicture(plotter.TheImage.Bitmap,
                             "r(phi) distribution data, initial approximation and the approximation result");
@@ -1819,9 +2176,9 @@ namespace SkyImagesAnalyzerLibraries
                 dvParametersForPlane.Add(planeN.Z);
 
                 NonLinLeastSqProbWithBC<Point3D> planeApproximator = new NonLinLeastSqProbWithBC<Point3D>();
-                planeApproximator.mSpaceVector = lLocalMinimumsCartesian;
+                planeApproximator.mEventsSpaceVector = lLocalMinimumsCartesian;
                 planeApproximator.mFittingValuesVector = DenseVector.Create(lLocalMinimumsCartesian.Count, 0.0d);
-                planeApproximator.nXspacePoint = dvParametersForPlane;
+                planeApproximator.nParametersSpacePoint = dvParametersForPlane;
                 planeApproximator.fittingFunction = (parameters, point) =>
                 {
                     Point3D planePt3D0 = new Point3D(parameters.ElementAt(0), parameters.ElementAt(1), parameters.ElementAt(2));
@@ -2573,6 +2930,8 @@ namespace SkyImagesAnalyzerLibraries
                 break;
             }
 
+
+
             if (!theSunSuppressionSchemeApplicable)
             {
                 // исследуем вопрос минимальных значений GrIx c усреднением по крупным ячейкам
@@ -2594,10 +2953,8 @@ namespace SkyImagesAnalyzerLibraries
 
                 dmSkyIndexData = dmReversed;
                 localPreviewBitmap = previewImage.Bitmap;
-                currentSunDiskCondition = SunDiskConditions.Cloudy;
+                //currentSunDiskCondition = SunDiskConditions.Cloudy;
             }
-
-
         }
 
 
@@ -2609,7 +2966,203 @@ namespace SkyImagesAnalyzerLibraries
 
 
 
+        public RoundData DetectSunWithSerieOfArcsUsingGPSdatum(ImageProcessing imgP, DenseMatrix dmGrIx, string currentDirectory = "",
+            string randomFileName = "")
+        {
+            DenseMatrix dmSunburnData = imgP.eval("Y", null);
 
+            DenseVector dvGrIxDataEqualsOne = DataAnalysis.DataVectorizedWithCondition(dmSunburnData, dval => dval >= minSunburnYValue);
+            if (dvGrIxDataEqualsOne == null) return RoundData.nullRoundData();
+            if (dvGrIxDataEqualsOne.Values.Sum() < imgP.significantMaskImageBinary.CountNonzero()[0] * minSunAreaPart) return RoundData.nullRoundData();
+
+            Image<Gray, Byte> maskImageCircled85 = imgP.imageSignificantMaskCircled(dSunDetectorArcedCropFactor * 100.0d);
+            DenseMatrix dmGrIxData =
+                (DenseMatrix)dmGrIx.PointwiseMultiply(ImageProcessing.DenseMatrixFromImage(maskImageCircled85));
+            DenseVector dvGrIxDataToStat = DataAnalysis.DataVectorizedExcludingValues(dmGrIxData, 0.0d);
+            
+            dvGrIxDataToStat = DataAnalysis.DataVectorizedWithCondition(dvGrIxDataToStat, dval => (dval <= minSunburnGrIxValue));
+
+
+            DenseMatrix dmSunDetectionDataByAnsamble = DenseMatrix.Create(dmGrIx.RowCount, dmGrIx.ColumnCount,
+                (r, c) => 0.0d);
+            List<RoundData> CenterPoints = new List<RoundData>();
+            int startedBGworkers = 0;
+            List<bool> finishedBGworkers = new List<bool>();
+            List<double> quantilesBy10 = new List<double>();
+
+
+
+            for (int i = 10; i <= 82; i += 3)
+            {
+                quantilesBy10.Add(Statistics.Percentile(dvGrIxDataToStat, i));
+                //startedBGworkers.Add(false);
+                finishedBGworkers.Add(false);
+            }
+
+            DenseVector quantileWeights = DenseVector.Create(quantilesBy10.Count, i =>
+            {
+                double currWeight = ((quantilesBy10[i] - dvGrIxDataToStat.Values.Min()) /
+                                     (dvGrIxDataToStat.Values.Max() - dvGrIxDataToStat.Values.Min()));
+                currWeight = 1.0d / currWeight;
+                return currWeight;
+            });
+            double weightsSum = quantileWeights.Values.Sum();
+            quantileWeights = (DenseVector)quantileWeights.Divide(weightsSum);
+
+
+
+            RunWorkerCompletedEventHandler currWorkCompletedHandler =
+                delegate (object currBGWCompletedSender, RunWorkerCompletedEventArgs args)
+                {
+                    object[] currentBGWResults = (object[])args.Result;
+                    DenseMatrix dmResSunDetectionPartial = (DenseMatrix)currentBGWResults[0];
+                    RoundData retRD = (RoundData)currentBGWResults[1];
+                    int returningBGWthreadID = (int)currentBGWResults[2];
+
+                    if (verbosityLevel > 1)
+                    {
+                        //NetCDFoperations.SaveDataToFile(dmResSunDetectionPartial,
+                        //    currentDirectory + randomFileName + "_SunDetectionPartialData-" + returningBGWthreadID + ".nc", null, true);
+                        dmResSunDetectionPartial.SaveNetCDFdataMatrix(currentDirectory + randomFileName +
+                                                                      "_SunDetectionPartialData-" + returningBGWthreadID +
+                                                                      ".nc");
+                    }
+
+                    dmSunDetectionDataByAnsamble = dmSunDetectionDataByAnsamble + dmResSunDetectionPartial;
+                    if (!retRD.IsNull) CenterPoints.Add(retRD);
+                    finishedBGworkers[returningBGWthreadID] = true;
+                    startedBGworkers--;
+                    theLogWindow = ServiceTools.LogAText(theLogWindow, "finished sun detection thread " + (returningBGWthreadID + 1) + " of " + quantilesBy10.Count);
+                };
+
+
+            DoWorkEventHandler currDoWorkHandler = delegate (object currBGWsender, DoWorkEventArgs args)
+            {
+                object[] currBGWarguments = (object[])args.Argument;
+                string fileFullName = (string)currBGWarguments[0];
+                //Image currImageToAdd = Image.FromFile(fileFullName);
+                //currImageToAdd = ImageResizer(currImageToAdd, defaultMaxImageSize);
+                double currQtle = (double)currBGWarguments[1];
+                Dictionary<string, object> properties = (Dictionary<string, object>)currBGWarguments[2];
+                Form parentForm = (Form)currBGWarguments[3];
+                int currBGWthreadID = (int)currBGWarguments[4];
+                ImageProcessing imgPrObj = (ImageProcessing)currBGWarguments[5];
+                DenseMatrix dmSrcGrIxData = (DenseMatrix)currBGWarguments[6];
+
+                RoundData rd = DetectSunArced(imgPrObj, dmSrcGrIxData, currentDirectory, randomFileName, currQtle * 0.99d,
+                    currQtle * 1.01d);
+
+
+
+                Image<Gray, byte> tmpImg = new Image<Gray, byte>(dmGrIx.ColumnCount, dmGrIx.RowCount, new Gray(0));
+                if (!rd.IsNull)
+                {
+                    tmpImg.Draw(new CircleF(rd.pointDCircleCenter().PointF(), (float)rd.DRadius), new Gray(255), 0);
+                }
+                DenseMatrix tmpDM = ImageProcessing.DenseMatrixFromImage(tmpImg);
+                tmpDM = (DenseMatrix)tmpDM.Multiply(quantileWeights[currBGWthreadID]);
+
+                args.Result = new object[] { tmpDM, rd, currBGWthreadID };
+            };
+
+
+            
+            for (int i = 0; i < quantilesBy10.Count; i++)
+            {
+                while (startedBGworkers >= concurrentThreadsLimit)
+                {
+                    Application.DoEvents();
+                    Thread.Sleep(0);
+                }
+
+
+                double qtle = quantilesBy10[i];
+                BackgroundWorker currBgw = new BackgroundWorker();
+                currBgw.DoWork += currDoWorkHandler;
+                currBgw.RunWorkerCompleted += currWorkCompletedHandler;
+                object[] BGWargs = new object[] { "", qtle, defaultProperties, ParentForm, i, imgP, dmGrIxData };
+                currBgw.RunWorkerAsync(BGWargs);
+                theLogWindow = ServiceTools.LogAText(theLogWindow, "started sun detection thread " + (i + 1) + " of " + quantilesBy10.Count);
+                startedBGworkers++;
+            }
+
+
+
+            while (finishedBGworkers.Sum(boolVal => (boolVal) ? ((int)1) : ((int)0)) < finishedBGworkers.Count)
+            {
+                System.Windows.Forms.Application.DoEvents();
+                Thread.Sleep(100);
+            }
+            
+
+
+            if ((!isCalculatingUsingBgWorker) && (verbosityLevel > 0))
+            {
+                ServiceTools.RepresentDataFromDenseMatrix(dmSunDetectionDataByAnsamble, "dmSunDetectionDataByAnsamble",
+                    true, false, 0.0d, dmSunDetectionDataByAnsamble.Values.Max());
+            }
+            if (verbosityLevel > 1)
+            {
+                ImageConditionAndDataRepresentingForm f1 =
+                    ServiceTools.RepresentDataFromDenseMatrix(dmSunDetectionDataByAnsamble,
+                        "dmSunDetectionDataByAnsamble", true, false, 0.0d, dmSunDetectionDataByAnsamble.Values.Max(), false);
+                Image<Bgr, byte> sunDetectionImage = new Image<Bgr, byte>(f1.imgData.dataRepresentingImageColored());
+                sunDetectionImage.Save(currentDirectory + randomFileName + "_SunDetectionDataByAnsamble.jpg");
+                sunDetectionImage = sunDetectionImage.AddWeighted(new Image<Bgr, byte>(imgP.processingBitmap()), 0.6d,
+                    0.4d, 0.0d);
+                sunDetectionImage.Save(currentDirectory + randomFileName + "_SunDetectionByAnsamble.jpg");
+                sunDetectionImage.Dispose();
+                f1.Dispose();
+                dmSunDetectionDataByAnsamble.SaveNetCDFdataMatrix(currentDirectory + randomFileName +
+                                                                  "_SunDetectionDataByAnsamble.nc");
+            }
+            
+
+            dmSunDetectionDataByAnsamble =
+                (DenseMatrix)dmSunDetectionDataByAnsamble.Multiply(1.0d / dmSunDetectionDataByAnsamble.Values.Max());
+            double sunArea = dmSunDetectionDataByAnsamble.Values.Sum();
+            double sunRadius = Math.Sqrt(sunArea / Math.PI);
+
+            DenseMatrix dmSunDetectionDataByAnsambleW = (DenseMatrix)dmSunDetectionDataByAnsamble.Clone();
+            dmSunDetectionDataByAnsambleW =
+                (DenseMatrix)dmSunDetectionDataByAnsambleW.Divide(dmSunDetectionDataByAnsamble.Values.Sum());
+
+            DenseMatrix dmSunDetectionDataByAnsambleX = DenseMatrix.Create(dmSunDetectionDataByAnsamble.RowCount,
+                dmSunDetectionDataByAnsamble.ColumnCount, (r, c) => (double)c);
+            double sunCenterX =
+                ((DenseMatrix)(dmSunDetectionDataByAnsambleX.PointwiseMultiply(dmSunDetectionDataByAnsambleW))).Values
+                    .Sum();
+            DenseMatrix dmSunDetectionDataByAnsambleY = DenseMatrix.Create(dmSunDetectionDataByAnsamble.RowCount,
+                dmSunDetectionDataByAnsamble.ColumnCount, (r, c) => (double)r);
+            double sunCenterY =
+                ((DenseMatrix)(dmSunDetectionDataByAnsambleY.PointwiseMultiply(dmSunDetectionDataByAnsambleW))).Values
+                    .Sum();
+
+            RoundData sunRD = new RoundData(sunCenterX, sunCenterY, sunRadius);
+
+            if (sunRD.RoundArea / imgP.imageRD.RoundArea < minSunAreaPart / 3.0d)
+            {
+                return RoundData.nullRoundData();
+            }
+
+            if (sunRD.RoundArea / imgP.imageRD.RoundArea > maxSunAreaPart)
+            {
+                sunRD.DRadius = Math.Sqrt((maxSunAreaPart * imgP.imageRD.RoundArea) / Math.PI);
+            }
+
+            if (verbosityLevel > 1)
+            {
+                Image<Bgr, byte> sunDetectionImage = new Image<Bgr, byte>(imgP.processingBitmap());
+                Image<Bgr, byte> sunLocationImage = sunDetectionImage.CopyBlank();
+                sunLocationImage.Draw(new CircleF(sunRD.pointfCircleCenter(), (float)sunRD.DRadius), new Bgr(255, 255, 255), 0);
+                sunDetectionImage = sunDetectionImage.AddWeighted(sunLocationImage, 0.6d, 0.4d, 0.0d);
+                sunDetectionImage.Save(currentDirectory + randomFileName + "_SunDetectionByAnsambleResult.jpg");
+                sunDetectionImage.Dispose();
+                sunLocationImage.Dispose();
+            }
+
+            return sunRD;
+        }
 
 
 
@@ -2644,31 +3197,68 @@ namespace SkyImagesAnalyzerLibraries
             List<RoundData> CenterPoints = new List<RoundData>();
             int startedBGworkers = 0;
             List<bool> finishedBGworkers = new List<bool>();
-            List<double> quantilesBy10 = new List<double>();
+
+
+            #region // obsolete - replaced by abs values split
+
+            //List<double> quantilesBy10 = new List<double>();
 
 
 
-            for (int i = 10; i <= 82; i += 3)
+            //for (int i = 10; i <= 82; i += 3)
+            //{
+            //    quantilesBy10.Add(Statistics.Percentile(dvGrIxDataToStat, i));
+            //    //startedBGworkers.Add(false);
+            //    finishedBGworkers.Add(false);
+            //}
+
+            //DenseVector quantileWeights = DenseVector.Create(quantilesBy10.Count, i =>
+            //{
+            //    double currWeight = ((quantilesBy10[i] - dvGrIxDataToStat.Values.Min()) /
+            //                         (dvGrIxDataToStat.Values.Max() - dvGrIxDataToStat.Values.Min()));
+            //    currWeight = 1.0d / currWeight;
+            //    return currWeight;
+            //});
+            //double weightsSum = quantileWeights.Values.Sum();
+            //quantileWeights = (DenseVector)quantileWeights.Divide(weightsSum);
+
+            #endregion // obsolete - replaced by abs values split
+
+
+
+
+            #region calculate bins
+
+            double minValue = Statistics.Percentile(dvGrIxDataToStat, 5);
+            double maxValue = Statistics.Percentile(dvGrIxDataToStat, 95);
+            double valuesRange = maxValue - minValue;
+
+            List<Tuple<double, double>> binsBy5perc = new List<Tuple<double, double>>();
+            
+            for (int i = 10; i <= 90; i += 5)
             {
-                quantilesBy10.Add(Statistics.Percentile(dvGrIxDataToStat, i));
+                binsBy5perc.Add(new Tuple<double, double>(minValue + valuesRange*(i/100.0d),
+                    minValue + valuesRange*((i + 5)/100.0d)));
+                //binsBy5perc.Add(minValue + valuesRange*(i/100.0d));
+                //binsBy10perc.Add(Statistics.Percentile(dvGrIxDataToStat, i));
                 //startedBGworkers.Add(false);
                 finishedBGworkers.Add(false);
             }
 
-            DenseVector quantileWeights = DenseVector.Create(quantilesBy10.Count, i =>
-            {
-                double currWeight = ((quantilesBy10[i] - dvGrIxDataToStat.Values.Min()) /
-                                     (dvGrIxDataToStat.Values.Max() - dvGrIxDataToStat.Values.Min()));
-                currWeight = 1.0d / currWeight;
-                return currWeight;
-            });
-            double weightsSum = quantileWeights.Values.Sum();
-            quantileWeights = (DenseVector)quantileWeights.Divide(weightsSum);
-
-
+            DenseVector binsWeights = DenseVector.Create(binsBy5perc.Count,
+                i => 1.0d/((binsBy5perc[i].Item1 - minValue)/(valuesRange)));
             
+            double weightsSum = binsWeights.Values.Sum();
+            binsWeights = (DenseVector)binsWeights.Divide(weightsSum);
+
+            #endregion calculate bins
+
+
+
+
+
             RunWorkerCompletedEventHandler currWorkCompletedHandler =
-                delegate(object currBGWCompletedSender, RunWorkerCompletedEventArgs args)
+                delegate (object currBGWCompletedSender, RunWorkerCompletedEventArgs args)
                 {
                     object[] currentBGWResults = (object[])args.Result;
                     DenseMatrix dmResSunDetectionPartial = (DenseMatrix)currentBGWResults[0];
@@ -2688,25 +3278,26 @@ namespace SkyImagesAnalyzerLibraries
                     if (!retRD.IsNull) CenterPoints.Add(retRD);
                     finishedBGworkers[returningBGWthreadID] = true;
                     startedBGworkers--;
-                    theLogWindow = ServiceTools.LogAText(theLogWindow, "finished sun detection thread " + (returningBGWthreadID + 1) + " of " + quantilesBy10.Count);
+                    theLogWindow = ServiceTools.LogAText(theLogWindow, "finished sun detection thread " + (returningBGWthreadID + 1) + " of " + binsBy5perc.Count);
                 };
 
 
-            DoWorkEventHandler currDoWorkHandler = delegate(object currBGWsender, DoWorkEventArgs args)
+            DoWorkEventHandler currDoWorkHandler = delegate (object currBGWsender, DoWorkEventArgs args)
             {
                 object[] currBGWarguments = (object[])args.Argument;
                 string fileFullName = (string)currBGWarguments[0];
                 //Image currImageToAdd = Image.FromFile(fileFullName);
                 //currImageToAdd = ImageResizer(currImageToAdd, defaultMaxImageSize);
-                double currQtle = (double)currBGWarguments[1];
+                //double currQtle = (double)currBGWarguments[1];
+                Tuple<double, double> currRange = (Tuple<double, double>)currBGWarguments[1];
                 Dictionary<string, object> properties = (Dictionary<string, object>)currBGWarguments[2];
                 Form parentForm = (Form)currBGWarguments[3];
                 int currBGWthreadID = (int)currBGWarguments[4];
                 ImageProcessing imgPrObj = (ImageProcessing)currBGWarguments[5];
                 DenseMatrix dmSrcGrIxData = (DenseMatrix)currBGWarguments[6];
 
-                RoundData rd = DetectSunArced(imgPrObj, dmSrcGrIxData, currentDirectory, randomFileName, currQtle * 0.99d,
-                    currQtle * 1.01d);
+                RoundData rd = DetectSunArced(imgPrObj, dmSrcGrIxData, currentDirectory, randomFileName, currRange.Item1,
+                    currRange.Item2);
 
 
 
@@ -2716,14 +3307,14 @@ namespace SkyImagesAnalyzerLibraries
                     tmpImg.Draw(new CircleF(rd.pointDCircleCenter().PointF(), (float)rd.DRadius), new Gray(255), 0);
                 }
                 DenseMatrix tmpDM = ImageProcessing.DenseMatrixFromImage(tmpImg);
-                tmpDM = (DenseMatrix)tmpDM.Multiply(quantileWeights[currBGWthreadID]);
+                tmpDM = (DenseMatrix)tmpDM.Multiply(binsWeights[currBGWthreadID]);
 
                 args.Result = new object[] { tmpDM, rd, currBGWthreadID };
             };
-            
 
 
-            #region не подходит
+
+            #region // не подходит
             //try
             //{
             //    int parallelismDegree = Convert.ToInt32(System.Environment.ProcessorCount / 2);
@@ -2798,11 +3389,11 @@ namespace SkyImagesAnalyzerLibraries
             //        ServiceTools.LogAText(theLogWindow,
             //            "ERROR. Failed some DetectSunArced processing. Exception messages: " + Environment.NewLine + messages);
             //}
-            #endregion не подходит
+            #endregion // не подходит
 
 
-            
-            for (int i = 0; i < quantilesBy10.Count; i++)
+
+            for (int i = 0; i < binsBy5perc.Count; i++)
             {
                 while (startedBGworkers >= concurrentThreadsLimit)
                 {
@@ -2811,13 +3402,14 @@ namespace SkyImagesAnalyzerLibraries
                 }
 
 
-                double qtle = quantilesBy10[i];
+                //double qtle = binsBy5perc[i];
                 BackgroundWorker currBgw = new BackgroundWorker();
                 currBgw.DoWork += currDoWorkHandler;
                 currBgw.RunWorkerCompleted += currWorkCompletedHandler;
-                object[] BGWargs = new object[] { "", qtle, defaultProperties, ParentForm, i, imgP, dmGrIxData };
+                //object[] BGWargs = new object[] { "", qtle, defaultProperties, ParentForm, i, imgP, dmGrIxData };
+                object[] BGWargs = new object[] { "", binsBy5perc[i], defaultProperties, ParentForm, i, imgP, dmGrIxData };
                 currBgw.RunWorkerAsync(BGWargs);
-                theLogWindow = ServiceTools.LogAText(theLogWindow, "started sun detection thread " + (i + 1) + " of " + quantilesBy10.Count);
+                theLogWindow = ServiceTools.LogAText(theLogWindow, "started sun detection thread " + (i + 1) + " of " + binsBy5perc.Count);
                 startedBGworkers++;
             }
 
@@ -2828,7 +3420,7 @@ namespace SkyImagesAnalyzerLibraries
                 System.Windows.Forms.Application.DoEvents();
                 Thread.Sleep(100);
             }
-            
+
 
 
 
@@ -2882,6 +3474,39 @@ namespace SkyImagesAnalyzerLibraries
                     .Sum();
 
             RoundData sunRD = new RoundData(sunCenterX, sunCenterY, sunRadius);
+
+
+            #region Подкорректируем, если вылезли за пределы засветки
+
+            DenseMatrix dmSourceDataInsideSunDisk = (DenseMatrix)dmGrIx.Clone();
+            dmSourceDataInsideSunDisk.MapIndexedInplace((r, c, dVal) =>
+            {
+                PointD currPtd = new PointD(c, r);
+                Vector2D currVecFromSunCenter = new Vector2D(sunRD.pointDCircleCenter(), currPtd);
+                return (currVecFromSunCenter.VectorLength >= sunRD.DRadius) ? (0.0d) : (dVal);
+            });
+            DenseVector dvValuesInside = DataAnalysis.DataVectorizedExcludingValues(dmSourceDataInsideSunDisk, 0.0d);
+            if (Statistics.Percentile(dvValuesInside, 95) <= minSunburnGrIxValue)
+            {
+                // отфильтруем по значениям, получим центр масс и массу
+                dmSourceDataInsideSunDisk.MapInplace(dVal => (dVal <= minSunburnGrIxValue) ? 0.0d : 1.0d);
+                DenseMatrix dmXvalues = DenseMatrix.Create(dmGrIx.RowCount, dmGrIx.ColumnCount, 0.0d);
+                DenseMatrix dmYvalues = (DenseMatrix)dmXvalues.Clone();
+                dmGrIx.MapIndexedConvert<double>((r, c, dVal) => (double) c, dmXvalues, Zeros.Include);
+                dmGrIx.MapIndexedConvert<double>((r, c, dVal) => (double) r, dmYvalues, Zeros.Include);
+                DenseMatrix dmXvaluesFilteredForMassCenterSearching = (DenseMatrix)dmXvalues.PointwiseMultiply(dmSourceDataInsideSunDisk);
+                DenseMatrix dmYvaluesFilteredForMassCenterSearching = (DenseMatrix)dmYvalues.PointwiseMultiply(dmSourceDataInsideSunDisk);
+
+                double intNonZeroValues = dmSourceDataInsideSunDisk.Values.Sum();
+                double massCenterX = dmXvaluesFilteredForMassCenterSearching.Values.Sum() / intNonZeroValues;
+                double massCenterY = dmYvaluesFilteredForMassCenterSearching.Values.Sum() / intNonZeroValues;
+                sunRD = new RoundData(massCenterX, massCenterY, Math.Sqrt(intNonZeroValues/Math.PI));
+            }
+
+            #endregion Подкорректируем, если вылезли за пределы засветки
+
+
+
 
             if (sunRD.RoundArea / imgP.imageRD.RoundArea < minSunAreaPart / 3.0d)
             {
@@ -2937,7 +3562,9 @@ namespace SkyImagesAnalyzerLibraries
             aoi.Dispose();
 
             dmProcessingData = (DenseMatrix)dmProcessingData.PointwiseMultiply(dmMaskCircled);
+
             dmGradData = (DenseMatrix)dmGradData.PointwiseMultiply(dmMaskCircled);
+            dmGradData.MapInplace(x => (double.IsNaN(x)) ? (0.0d) : (x));
 
             DenseMatrix dmFilteredData = (DenseMatrix)dmProcessingData.Clone();
             dmFilteredData.MapInplace(new Func<double, double>(d =>
@@ -2946,20 +3573,24 @@ namespace SkyImagesAnalyzerLibraries
                 return 0.0d;
             }));
 
-            dmGradData.MapInplace(x => (double.IsNaN(x)) ? (0.0d) : (x));
+            
 
             double curMedian = 0.0d;
             DescriptiveStatistics stats = DataAnalysis.StatsOfDataExcludingValues(dmGradData, 0.0d, out curMedian);
             if (stats == null) return RoundData.nullRoundData();
 
-            double gradMean = stats.Mean;
+            //double gradMean = stats.Mean;
             double gradMedian = curMedian;
 
-            dmFilteredData.MapIndexedInplace(new Func<int, int, double, double>((row, col, x) =>
-            {
-                if (dmGradData[row, col] > gradMedian) return 0.0d;
-                return x;
-            }));
+            DenseMatrix dmGradCondition = (DenseMatrix)dmGradData.Map(dGradVal => (dGradVal > gradMedian) ? (0.0d) : (1.0d));
+
+            dmFilteredData = (DenseMatrix)dmFilteredData.PointwiseMultiply(dmGradCondition);
+
+            //dmFilteredData.MapIndexedInplace(new Func<int, int, double, double>((row, col, x) =>
+            //{
+            //    if (dmGradData[row, col] > gradMedian) return 0.0d;
+            //    return x;
+            //}));
 
 
 
@@ -2975,21 +3606,10 @@ namespace SkyImagesAnalyzerLibraries
                 arcPointsList.Add(new PointD((double)curCol, (double)curRow));
             }
 
-            #region obsolete - using deviation squared only
-            //Func<DenseVector, PointD, double> inputApproxFunc = new Func<DenseVector, PointD, double>(
-            //    (dvParameters, curPoint) =>
-            //    {
-            //        double centerX = dvParameters[0];
-            //        double centerY = dvParameters[1];
-            //        double r = dvParameters[2];
-            //        double diffX = curPoint.X - centerX;
-            //        double diffY = curPoint.Y - centerY;
-            //        double diff = r - Math.Sqrt(diffX * diffX + diffY * diffY);
-            //        return diff;
-            //    });
-            #endregion obsolete - using deviation squared only
+            if (arcPointsList.Count < 5) return RoundData.nullRoundData();
 
-            Func<DenseVector, PointD, double> approxFuncDevSqred = new Func<DenseVector, PointD, double>(
+            //Func<DenseVector, PointD, double> approxFuncDevSqred = new Func<DenseVector, PointD, double>(
+            Func<DenseVector, PointD, double> approxFuncDevAbs = new Func<DenseVector, PointD, double>(
                 (dvParameters, curPoint) =>
                 {
                     double centerX = dvParameters[0];
@@ -2998,25 +3618,36 @@ namespace SkyImagesAnalyzerLibraries
                     double diffX = curPoint.X - centerX;
                     double diffY = curPoint.Y - centerY;
                     double diff = r - Math.Sqrt(diffX * diffX + diffY * diffY);
-                    return diff * diff;
+                    // return diff * diff;
+                    return Math.Abs(diff);
                 });
 
             //if (arcPointsList.Count < 5) return PointD.nullPointD();
-            if (arcPointsList.Count < 5) return RoundData.nullRoundData();
+            
             //if (arcPointsList.Count < 5) continue;
 
 
+            #region start estimation of Sun disk position
 
+            DenseMatrix dmXvalues = DenseMatrix.Create(dmSourceProcessingData.RowCount,
+                dmSourceProcessingData.ColumnCount, 0.0d);
+            DenseMatrix dmYvalues = (DenseMatrix)dmXvalues.Clone();
+            dmSourceProcessingData.MapIndexedConvert<double>((r, c, dVal) => (double)c, dmXvalues, Zeros.Include);
+            dmSourceProcessingData.MapIndexedConvert<double>((r, c, dVal) => (double)r, dmYvalues, Zeros.Include);
 
-            #region to be replaced with MKL wrapped optimizer
-            //GradientDescentApproximator approximator1st = new GradientDescentApproximator(arcPointsList,
-            //    inputApproxFunc);
-            //
-            //DenseMatrix dmSunburnMassSenterSearching = (DenseMatrix)dmSourceProcessingData.Clone();
-            ////dmSunburnMassSenterSearching.MapInplace(x => (x >= 0.99d) ? (1.0d) : (0.0d));
-            //dmSunburnMassSenterSearching.MapInplace(x => (x >= minSunburnGrIxValue) ? (1.0d) : (0.0d));
-            //double massCenterX = 0.0d;
-            //double massCenterY = 0.0d;
+            DenseMatrix dmSunburnMassSenterSearching = (DenseMatrix)dmSourceProcessingData.Clone();
+            dmSunburnMassSenterSearching.MapInplace(x => (x >= minSunburnGrIxValue) ? (1.0d) : (0.0d));
+
+            DenseMatrix dmXvaluesFilteredForMassCenterSearching =
+                (DenseMatrix) dmXvalues.PointwiseMultiply(dmSunburnMassSenterSearching);
+            DenseMatrix dmYvaluesFilteredForMassCenterSearching =
+                (DenseMatrix)dmYvalues.PointwiseMultiply(dmSunburnMassSenterSearching);
+
+            double intNonZeroValues = dmSunburnMassSenterSearching.Values.Sum();
+            double massCenterX = dmXvaluesFilteredForMassCenterSearching.Values.Sum()/intNonZeroValues;
+            double massCenterY = dmYvaluesFilteredForMassCenterSearching.Values.Sum()/intNonZeroValues;
+
+            #region // obsolete
             //foreach (Tuple<int, int, double> theElement in dmSunburnMassSenterSearching.EnumerateIndexed())
             //{
             //    if (theElement.Item3 < 1.0d) continue;
@@ -3025,28 +3656,13 @@ namespace SkyImagesAnalyzerLibraries
             //}
             //massCenterX = massCenterX / dmSunburnMassSenterSearching.Values.Sum();
             //massCenterY = massCenterY / dmSunburnMassSenterSearching.Values.Sum();
-            //double rInit = imgP.imageRD.DRadius / 2.0d;
-            //DenseVector dvInitialParametersValues =
-            //    DenseVector.OfEnumerable(new double[] { massCenterX, massCenterY, rInit });
-            //DenseVector dvInitialParametersIncrement = DenseVector.OfEnumerable(new double[] { 1.0d, 1.0d, 1.0d });
-            //approximator1st.SelfWorker = selfWorker;
-            //DenseVector dvApproximatedParameters =
-            //    approximator1st.ApproximationGradientDescent2DPt(dvInitialParametersValues,
-            //        dvInitialParametersIncrement, 0.0001d);
-            #endregion to be replaced with MKL wrapped optimizer
-            // replaced with MKL wrapped optimizer
-            DenseMatrix dmSunburnMassSenterSearching = (DenseMatrix)dmSourceProcessingData.Clone();
-            dmSunburnMassSenterSearching.MapInplace(x => (x >= minSunburnGrIxValue) ? (1.0d) : (0.0d));
-            double massCenterX = 0.0d;
-            double massCenterY = 0.0d;
-            foreach (Tuple<int, int, double> theElement in dmSunburnMassSenterSearching.EnumerateIndexed())
-            {
-                if (theElement.Item3 < 1.0d) continue;
-                massCenterX += (double)theElement.Item2;
-                massCenterY += (double)theElement.Item1;
-            }
-            massCenterX = massCenterX / dmSunburnMassSenterSearching.Values.Sum();
-            massCenterY = massCenterY / dmSunburnMassSenterSearching.Values.Sum();
+            #endregion // obsolete
+
+            #endregion start estimation of Sun disk position
+
+
+            #region 1st optimization pass
+
             double rInit = imgP.imageRD.DRadius / 2.0d;
             DenseVector dvInitialParametersValues =
                 DenseVector.OfEnumerable(new double[] { massCenterX, massCenterY, rInit });
@@ -3055,57 +3671,44 @@ namespace SkyImagesAnalyzerLibraries
             double[] dvUpperBoundsConstraints = { maskImageCircled.Width, maskImageCircled.Height, maskImageCircled.Width / 2.0d };
 
             NonLinLeastSqProbWithBC<PointD> approximator1st = new NonLinLeastSqProbWithBC<PointD>();
-            approximator1st.nXspacePoint = dvInitialParametersValues.Copy();
+            approximator1st.nParametersSpacePoint = dvInitialParametersValues.Copy();
             approximator1st.mFittingValuesVector = DenseVector.Create(arcPointsList.Count, 0.0d);
-            approximator1st.mSpaceVector = arcPointsList;
-            approximator1st.fittingFunction = (iEnumVec, ptD) => approxFuncDevSqred(DenseVector.OfEnumerable(iEnumVec), ptD);
+            approximator1st.mEventsSpaceVector = arcPointsList;
+            approximator1st.fittingFunction = (iEnumVec, ptD) => approxFuncDevAbs(DenseVector.OfEnumerable(iEnumVec), ptD);
             approximator1st.lowerBoundConstraints = dvLowerBoundsConstraints;
             approximator1st.upperBoundConstraints = dvUpperBoundsConstraints;
 
             DenseVector dvApproximatedParameters = DenseVector.OfEnumerable(approximator1st.SolveOptimizationProblem());
             //// replaced with MKL wrapped optimizer
 
+            #endregion 1st optimization pass
 
 
-            #region 2nd pass - to be replaced with MKL wrapped optimizer
-            //DenseVector dvDeviationsSqrd = DenseVector.Create(arcPointsList.Count,
-            //    i => approxFuncDevSqred(dvApproximatedParameters, arcPointsList[i]));
-            //DescriptiveStatistics stats1 = new DescriptiveStatistics(dvDeviationsSqrd.Values);
-            //double meanDevSqred = stats1.Mean;
-
-            //List<PointD> arcPointsListFiltered1st =
-            //    arcPointsList.FindAll(
-            //        new Predicate<PointD>(x => approxFuncDevSqred(dvApproximatedParameters, x) <= meanDevSqred));
-
-            //GradientDescentApproximator approximator2nd = new GradientDescentApproximator(arcPointsListFiltered1st,
-            //    inputApproxFunc);
-            //DenseVector dvApproximatedParameters2nd =
-            //    approximator2nd.ApproximationGradientDescent2DPt(dvApproximatedParameters,
-            //        dvInitialParametersIncrement, 0.00001d);
-
-            //RoundData circle2ndPass = new RoundData(dvApproximatedParameters2nd[0], dvApproximatedParameters2nd[1],
-            //    dvApproximatedParameters2nd[2]);
-            #endregion 2nd pass - to be replaced with MKL wrapped optimizer
+            #region 2nd optimization pass
 
             // replaced with MKL wrapped optimizer
-            DenseVector dvDeviationsSqrd = DenseVector.Create(arcPointsList.Count,
-                i => approxFuncDevSqred(dvApproximatedParameters, arcPointsList[i]));
-            DescriptiveStatistics stats1 = new DescriptiveStatistics(dvDeviationsSqrd.Values);
-            double meanDevSqred = stats1.Mean;
+            DenseVector dvDeviationsAbs = DenseVector.Create(arcPointsList.Count,
+                i => approxFuncDevAbs(dvApproximatedParameters, arcPointsList[i]));
+            // DescriptiveStatistics stats1 = new DescriptiveStatistics(dvDeviationsAbs.Values);
+            //double meanDevAbsed = stats1.Mean;
+            double medianDevAbsed = Statistics.Median(dvDeviationsAbs.Values);
 
             List<PointD> arcPointsListFiltered1st =
                 arcPointsList.FindAll(
-                    new Predicate<PointD>(x => approxFuncDevSqred(dvApproximatedParameters, x) <= meanDevSqred));
+                    new Predicate<PointD>(x => approxFuncDevAbs(dvApproximatedParameters, x) <= medianDevAbsed));
 
             NonLinLeastSqProbWithBC<PointD> approximator2nd = new NonLinLeastSqProbWithBC<PointD>();
-            approximator2nd.nXspacePoint = dvApproximatedParameters.Copy();
+            approximator2nd.nParametersSpacePoint = dvApproximatedParameters.Copy();
             approximator2nd.mFittingValuesVector = DenseVector.Create(arcPointsListFiltered1st.Count, 0.0d);
-            approximator2nd.mSpaceVector = arcPointsListFiltered1st;
-            approximator2nd.fittingFunction = (iEnumVec, ptD) => approxFuncDevSqred(DenseVector.OfEnumerable(iEnumVec), ptD);
+            approximator2nd.mEventsSpaceVector = arcPointsListFiltered1st;
+            approximator2nd.fittingFunction = (iEnumVec, ptD) => approxFuncDevAbs(DenseVector.OfEnumerable(iEnumVec), ptD);
             approximator2nd.lowerBoundConstraints = dvLowerBoundsConstraints;
             approximator2nd.upperBoundConstraints = dvUpperBoundsConstraints;
 
             DenseVector dvApproximatedParameters2nd = DenseVector.OfEnumerable(approximator2nd.SolveOptimizationProblem());
+
+            #endregion 2nd optimization pass
+
             RoundData circle2ndPass = new RoundData(dvApproximatedParameters2nd[0], dvApproximatedParameters2nd[1],
                 dvApproximatedParameters2nd[2]);
             // replaced with MKL wrapped optimizer
@@ -3114,34 +3717,85 @@ namespace SkyImagesAnalyzerLibraries
 
 
 
-            PointD tmpZeroAnglePoint = PointD.Sum(arcPointsListFiltered1st) / (double)arcPointsListFiltered1st.Count;
+            PointD ptdZeroAnglePoint1stPass = PointD.Sum(arcPointsListFiltered1st) / (double)arcPointsListFiltered1st.Count;
+            Vector2D vct2dZeroAngleDirection_1stPass = new Vector2D(circle2ndPass.pointDCircleCenter(), ptdZeroAnglePoint1stPass);
+            vct2dZeroAngleDirection_1stPass = vct2dZeroAngleDirection_1stPass* (1.0d/vct2dZeroAngleDirection_1stPass.VectorLength);
             double zeroAngleValue = 0.0d;
-            List<PointPolar> arcPointsListFilteredPolar = DataAnalysis.ListDecartToPolar(arcPointsListFiltered1st,
-                circle2ndPass.pointDCircleCenter(), tmpZeroAnglePoint, out zeroAngleValue);
+            //List<PointPolar> arcPointsListFilteredPolar = DataAnalysis.ListDecartToPolar(arcPointsListFiltered1st,
+            //    circle2ndPass.pointDCircleCenter(), ptdZeroAnglePoint1stPass, out zeroAngleValue);
 
-            DenseVector dvAnglesData = DenseVector.Create(arcPointsListFilteredPolar.Count,
-                i => arcPointsListFilteredPolar[i].Phi);
-            DescriptiveStatistics anglesStats = new DescriptiveStatistics(dvAnglesData);
+            #region Фильтр точек по значениям Cos
+
+            List<double> arcPointsListFiltered1st_CosValues = arcPointsListFiltered1st.ConvertAll(ptd =>
+            {
+                Vector2D currPtdVec2d = new Vector2D(circle2ndPass.pointDCircleCenter(), ptd);
+                return (currPtdVec2d.VectorLength == 0.0d)
+                    ? 0.0d
+                    : (currPtdVec2d*vct2dZeroAngleDirection_1stPass)/currPtdVec2d.VectorLength;
+            });
+
+            double cosValuesMedian = Statistics.Median(arcPointsListFiltered1st_CosValues);
+            double cosValuesStd = arcPointsListFiltered1st_CosValues.StandardDeviation();
+            
+            // возьмем значения cos меньше медианы
+            // по ним отфильтруем точки
+
+            List<int> indexesFilteredByCosValues =
+                arcPointsListFiltered1st_CosValues.Select(
+                    (cosVal, idx) => new Tuple<int, double>(idx, cosVal))
+                    .Where(tpl => (tpl.Item2 <= cosValuesMedian + cosValuesStd))
+                    .Select(tpl => tpl.Item1).ToList();
+
+            List<PointD> arcPointsListFiltered2nd =
+                arcPointsListFiltered1st.Where((ptd, idx) => indexesFilteredByCosValues.Contains(idx)).ToList();
+
+            // найдем новое значение центра масс дуги
+            PointD ptdZeroAnglePoint2ndPass = PointD.Sum(arcPointsListFiltered2nd) / (double)arcPointsListFiltered2nd.Count;
+
+            #endregion Фильтр точек по значениям Cos
+
+            Vector2D vctZeroAngleOfTheArc_2ndPass = new Vector2D(circle2ndPass.pointDCircleCenter(), ptdZeroAnglePoint2ndPass);
+            vctZeroAngleOfTheArc_2ndPass = vctZeroAngleOfTheArc_2ndPass*(1.0d/vctZeroAngleOfTheArc_2ndPass.VectorLength);
+
+            PointD meanArcPoint_2ndPass =
+                (circle2ndPass.pointDCircleCenter() + (circle2ndPass.DRadius*vctZeroAngleOfTheArc_2ndPass)).ToPointD();
+            PointD meanArcPoint2_2ndPass =
+                (circle2ndPass.pointDCircleCenter() + (-circle2ndPass.DRadius*vctZeroAngleOfTheArc_2ndPass)).ToPointD();
+
+            PointD meanArcPoint_1stPass =
+                (circle2ndPass.pointDCircleCenter() + (circle2ndPass.DRadius*vct2dZeroAngleDirection_1stPass)).ToPointD();
+
+            #region // replaced - see above
+
+            //DenseVector dvAnglesData = DenseVector.Create(arcPointsListFilteredPolar.Count,
+            //    i => arcPointsListFilteredPolar[i].Phi);
+            //DescriptiveStatistics anglesStats = new DescriptiveStatistics(dvAnglesData);
 
 
-            DenseVector dvAnglesDataFiltered = DataAnalysis.DataVectorizedWithCondition(dvAnglesData,
-                d => (Math.Abs(d - anglesStats.Mean) <= anglesStats.StandardDeviation * 3.0d));
-            double minAngleValue = dvAnglesDataFiltered.Values.Min();
-            double maxAngleValue = dvAnglesDataFiltered.Values.Max();
-            double meanAngle = (minAngleValue + maxAngleValue) / 2.0d;
 
-            PointD meanArcPoint = new PointD();
-            meanArcPoint.X = circle2ndPass.DRadius * Math.Cos(meanAngle + zeroAngleValue) + circle2ndPass.DCenterX;
-            meanArcPoint.Y = -circle2ndPass.DRadius * Math.Sin(meanAngle + zeroAngleValue) + circle2ndPass.DCenterY;
-            PointD meanArcPoint2 = new PointD();
-            meanArcPoint2.X = circle2ndPass.DRadius * Math.Cos(meanAngle + zeroAngleValue + Math.PI) +
-                              circle2ndPass.DCenterX;
-            meanArcPoint2.Y = -circle2ndPass.DRadius * Math.Sin(meanAngle + zeroAngleValue + Math.PI) +
-                              circle2ndPass.DCenterY;
+            //DenseVector dvAnglesDataFiltered = DataAnalysis.DataVectorizedWithCondition(dvAnglesData,
+            //    d => (Math.Abs(d - anglesStats.Mean) <= anglesStats.StandardDeviation * 2.0d));
+            //double minAngleValue = dvAnglesDataFiltered.Values.Min();
+            //double maxAngleValue = dvAnglesDataFiltered.Values.Max();
+            //double meanAngle = (minAngleValue + maxAngleValue) / 2.0d;
 
-            PointD zeroPointonCircle =
-                new PointD(circle2ndPass.DRadius * Math.Cos(zeroAngleValue) + circle2ndPass.DCenterX,
-                    -circle2ndPass.DRadius * Math.Sin(zeroAngleValue) + circle2ndPass.DCenterY);
+            //PointD meanArcPoint = new PointD();
+            //meanArcPoint.X = circle2ndPass.DRadius * Math.Cos(meanAngle + zeroAngleValue) + circle2ndPass.DCenterX;
+            //meanArcPoint.Y = -circle2ndPass.DRadius * Math.Sin(meanAngle + zeroAngleValue) + circle2ndPass.DCenterY;
+
+            //PointD meanArcPoint2 = new PointD();
+            //meanArcPoint2.X = circle2ndPass.DRadius * Math.Cos(meanAngle + zeroAngleValue + Math.PI) +
+            //                  circle2ndPass.DCenterX;
+            //meanArcPoint2.Y = -circle2ndPass.DRadius * Math.Sin(meanAngle + zeroAngleValue + Math.PI) +
+            //                  circle2ndPass.DCenterY;
+
+
+
+            //PointD zeroPointOnCircle =
+            //    new PointD(circle2ndPass.DRadius * Math.Cos(zeroAngleValue) + circle2ndPass.DCenterX,
+            //        -circle2ndPass.DRadius * Math.Sin(zeroAngleValue) + circle2ndPass.DCenterY);
+
+            #endregion // replaced - see above
 
 
             #region отображение результата исследований изображения
@@ -3150,9 +3804,9 @@ namespace SkyImagesAnalyzerLibraries
             imgPoints.Draw(new CircleF(circle2ndPass.pointfCircleCenter(), (float)circle2ndPass.DRadius),
                 new Bgr(Color.White), 2);
             foreach (PointD pointFiltered in arcPointsListFiltered1st) imgPoints.Draw(new CircleF(pointFiltered.PointF(), 2.0f), new Bgr(Color.Yellow), 1);
-            imgPoints.Draw(new LineSegment2DF(meanArcPoint.PointF(), meanArcPoint2.PointF()), new Bgr(Color.Magenta),
+            imgPoints.Draw(new LineSegment2DF(meanArcPoint_2ndPass.PointF(), meanArcPoint2_2ndPass.PointF()), new Bgr(Color.Magenta),
                 2);
-            imgPoints.Draw(new LineSegment2DF(zeroPointonCircle.PointF(), circle2ndPass.pointfCircleCenter()),
+            imgPoints.Draw(new LineSegment2DF(meanArcPoint_1stPass.PointF(), circle2ndPass.pointfCircleCenter()),
                 new Bgr(Color.White), 2);
             //imgPoints.Draw(new CircleF(tmpZeroAnglePoint.PointF(), 2.0f), new Bgr(Color.White), 2);
             Image<Bgr, byte> sourceDataImage = LocalProcessingImage.Copy(); // new Image<Bgr, byte>(LocalProcessingBitmap);
@@ -3168,77 +3822,105 @@ namespace SkyImagesAnalyzerLibraries
             #endregion отображение результата исследований изображения
 
 
-
-            DenseMatrix dmProcessingDataXrotated = DenseMatrix.Create(dmProcessingData.RowCount, dmProcessingData.ColumnCount,
-                (r, c) => (double)c);
-            dmProcessingDataXrotated = (DenseMatrix)dmProcessingDataXrotated.PointwiseMultiply(dmMaskCircled);
-            DenseMatrix dmProcessingDataXsrc = (DenseMatrix)dmProcessingDataXrotated.Clone();
-            DenseMatrix dmProcessingDataYrotated = DenseMatrix.Create(dmProcessingData.RowCount, dmProcessingData.ColumnCount,
-                (r, c) => (double)r);
-            dmProcessingDataYrotated = (DenseMatrix)dmProcessingDataYrotated.PointwiseMultiply(dmMaskCircled);
-            DenseMatrix dmProcessingDataYsrc = (DenseMatrix)dmProcessingDataYrotated.Clone();
-            PointD rotationCenterPtD = new PointD(meanArcPoint);
-            double rotationAngle = DataAnalysis.PtdDecartToPolar(circle2ndPass.pointDCircleCenter(), rotationCenterPtD,
-                0.0d).Phi;
-            dmProcessingDataXrotated.MapIndexedInplace((row, col, xVal) =>
-            {
-                double yVal = dmProcessingDataYsrc[row, col];
-                PointD curPointD = new PointD(xVal, yVal);
-                PointPolar ptPolarRotated = DataAnalysis.PtdDecartToPolar(curPointD, rotationCenterPtD, rotationAngle);
-                PointD retPtD = DataAnalysis.PtdPolarToCartesian(ptPolarRotated, new PointD(0.0d, 0.0d), 0.0d);
-                return retPtD.X;
-            });
-
-
-            dmProcessingDataYrotated.MapIndexedInplace((row, col, yVal) =>
-            {
-                double xVal = dmProcessingDataXsrc[row, col];
-                PointD curPointD = new PointD(xVal, yVal);
-                PointPolar ptPolarRotated = DataAnalysis.PtdDecartToPolar(curPointD, rotationCenterPtD, rotationAngle);
-                PointD retPtD = DataAnalysis.PtdPolarToCartesian(ptPolarRotated, new PointD(0.0d, 0.0d), 0.0d);
-                return retPtD.Y;
-            });
-
-
-
-            double minRotatedXdouble = dmProcessingDataXrotated.Values.Min();
-            int minRotatedX = Convert.ToInt32((Math.Round(minRotatedXdouble, 0) == minRotatedXdouble) ? (minRotatedXdouble) : (Math.Round(minRotatedXdouble, MidpointRounding.ToEven)));
-            minRotatedX = (minRotatedX > minRotatedXdouble) ? (minRotatedX - 1) : (minRotatedX);
-            double maxRotatedXdouble = dmProcessingDataXrotated.Values.Max();
-            int maxRotatedX = Convert.ToInt32((Math.Round(maxRotatedXdouble, 0) == maxRotatedXdouble) ? (maxRotatedXdouble) : (Math.Round(maxRotatedXdouble, MidpointRounding.ToEven)));
-            maxRotatedX = (maxRotatedX < maxRotatedXdouble) ? (maxRotatedX + 1) : (maxRotatedX);
+            #region filter points along the arc bisectrix obtained above
 
             DenseMatrix dmSourceProcessingDataFilteredAlongBisectrix = (DenseMatrix)dmSourceProcessingData.Clone();
 
             double dHalfWidthY = imgP.imageRD.DRadius / 70.0d;
-            dmSourceProcessingDataFilteredAlongBisectrix.MapIndexedInplace((row, col, dVal) =>
+            double dHalfWidthYsqr = dHalfWidthY* dHalfWidthY;
+
+            DenseMatrix dmFilterByDistanceToBisectrix = (DenseMatrix)dmSourceProcessingData.MapIndexed((r, c, dVal) =>
             {
-                //if ((dmProcessingDataYrotated[row, col] <= -10.0d) ||
-                //        (dmProcessingDataYrotated[row, col] >= 10.0d)) return 0.0d;
-                if ((dmProcessingDataYrotated[row, col] <= -dHalfWidthY) ||
-                        (dmProcessingDataYrotated[row, col] >= dHalfWidthY)) return 0.0d;
-                return dVal;
+                PointD currPtd = new PointD(c, r);
+                Vector2D currVec = new Vector2D(circle2ndPass.pointDCircleCenter(), currPtd);
+                double distSqr = currVec.VectorLength*currVec.VectorLength -
+                                 (currVec*vctZeroAngleOfTheArc_2ndPass)*(currVec*vctZeroAngleOfTheArc_2ndPass);
+                return ((distSqr <= dHalfWidthYsqr) ? (1.0d):(0.0d));
             });
+
             dmSourceProcessingDataFilteredAlongBisectrix =
-                (DenseMatrix)dmSourceProcessingDataFilteredAlongBisectrix.PointwiseMultiply(dmMaskCircled);
+                (DenseMatrix)
+                    dmSourceProcessingDataFilteredAlongBisectrix.PointwiseMultiply(dmFilterByDistanceToBisectrix);
+
+            #endregion filter points along the arc bisectrix obtained above
+
+
+
+            #region // replaced by faster filtering - see above
+
+            //DenseMatrix dmProcessingDataXrotated = DenseMatrix.Create(dmProcessingData.RowCount, dmProcessingData.ColumnCount,
+            //    (r, c) => (double)c);
+            //dmProcessingDataXrotated = (DenseMatrix)dmProcessingDataXrotated.PointwiseMultiply(dmMaskCircled);
+            //DenseMatrix dmProcessingDataXsrc = (DenseMatrix)dmProcessingDataXrotated.Clone();
+            //DenseMatrix dmProcessingDataYrotated = DenseMatrix.Create(dmProcessingData.RowCount, dmProcessingData.ColumnCount,
+            //    (r, c) => (double)r);
+            //dmProcessingDataYrotated = (DenseMatrix)dmProcessingDataYrotated.PointwiseMultiply(dmMaskCircled);
+            //DenseMatrix dmProcessingDataYsrc = (DenseMatrix)dmProcessingDataYrotated.Clone();
+            //PointD rotationCenterPtD = new PointD(meanArcPoint_2ndPass);
+            //double rotationAngle = DataAnalysis.PtdDecartToPolar(circle2ndPass.pointDCircleCenter(), rotationCenterPtD,
+            //    0.0d).Phi;
+            //dmProcessingDataXrotated.MapIndexedInplace((row, col, xVal) =>
+            //{
+            //    double yVal = dmProcessingDataYsrc[row, col];
+            //    PointD curPointD = new PointD(xVal, yVal);
+            //    PointPolar ptPolarRotated = DataAnalysis.PtdDecartToPolar(curPointD, rotationCenterPtD, rotationAngle);
+            //    PointD retPtD = DataAnalysis.PtdPolarToCartesian(ptPolarRotated, new PointD(0.0d, 0.0d), 0.0d);
+            //    return retPtD.X;
+            //});
+
+
+            //dmProcessingDataYrotated.MapIndexedInplace((row, col, yVal) =>
+            //{
+            //    double xVal = dmProcessingDataXsrc[row, col];
+            //    PointD curPointD = new PointD(xVal, yVal);
+            //    PointPolar ptPolarRotated = DataAnalysis.PtdDecartToPolar(curPointD, rotationCenterPtD, rotationAngle);
+            //    PointD retPtD = DataAnalysis.PtdPolarToCartesian(ptPolarRotated, new PointD(0.0d, 0.0d), 0.0d);
+            //    return retPtD.Y;
+            //});
+
+
+
+            //double minRotatedXdouble = dmProcessingDataXrotated.Values.Min();
+            //int minRotatedX = Convert.ToInt32((Math.Round(minRotatedXdouble, 0) == minRotatedXdouble) ? (minRotatedXdouble) : (Math.Round(minRotatedXdouble, MidpointRounding.ToEven)));
+            //minRotatedX = (minRotatedX > minRotatedXdouble) ? (minRotatedX - 1) : (minRotatedX);
+            //double maxRotatedXdouble = dmProcessingDataXrotated.Values.Max();
+            //int maxRotatedX = Convert.ToInt32((Math.Round(maxRotatedXdouble, 0) == maxRotatedXdouble) ? (maxRotatedXdouble) : (Math.Round(maxRotatedXdouble, MidpointRounding.ToEven)));
+            //maxRotatedX = (maxRotatedX < maxRotatedXdouble) ? (maxRotatedX + 1) : (maxRotatedX);
+
+            //DenseMatrix dmSourceProcessingDataFilteredAlongBisectrix = (DenseMatrix)dmSourceProcessingData.Clone();
+
+            //double dHalfWidthY = imgP.imageRD.DRadius / 70.0d;
+            //dmSourceProcessingDataFilteredAlongBisectrix.MapIndexedInplace((row, col, dVal) =>
+            //{
+            //    //if ((dmProcessingDataYrotated[row, col] <= -10.0d) ||
+            //    //        (dmProcessingDataYrotated[row, col] >= 10.0d)) return 0.0d;
+            //    if ((dmProcessingDataYrotated[row, col] <= -dHalfWidthY) ||
+            //            (dmProcessingDataYrotated[row, col] >= dHalfWidthY)) return 0.0d;
+            //    return dVal;
+            //});
+            //dmSourceProcessingDataFilteredAlongBisectrix =
+            //    (DenseMatrix)dmSourceProcessingDataFilteredAlongBisectrix.PointwiseMultiply(dmMaskCircled);
+
+            #endregion replaced by faster filtering - see above
 
             DenseMatrix dmSunburnDataAlongBisectrix = (DenseMatrix)dmSourceProcessingDataFilteredAlongBisectrix.Clone();
             //dmSunburnDataAlongBisectrix.MapInplace(d => (d == 1.0d) ? (d) : (0.0d));
             dmSunburnDataAlongBisectrix.MapInplace(d => (d >= minSunburnGrIxValue) ? (d) : (0.0d));
-            dmProcessingDataXsrc = (DenseMatrix)dmProcessingDataXsrc.PointwiseMultiply(dmSunburnDataAlongBisectrix);
-            dmProcessingDataYsrc = (DenseMatrix)dmProcessingDataYsrc.PointwiseMultiply(dmSunburnDataAlongBisectrix);
+
+            DenseMatrix dmProcessingDataX = (DenseMatrix)dmXvalues.PointwiseMultiply(dmSunburnDataAlongBisectrix);
+            DenseMatrix dmProcessingDataY = (DenseMatrix)dmYvalues.PointwiseMultiply(dmSunburnDataAlongBisectrix);
 
             if (dmSunburnDataAlongBisectrix.Values.Sum() == 0.0d) return RoundData.nullRoundData();
-            if (dmProcessingDataXsrc.Values.Sum() == 0.0d) return RoundData.nullRoundData();
+            if (dmProcessingDataX.Values.Sum() == 0.0d) return RoundData.nullRoundData();
 
-            double testSunCenterX = dmProcessingDataXsrc.Values.Sum() / dmSunburnDataAlongBisectrix.Values.Sum();
-            double testSunCenterY = dmProcessingDataYsrc.Values.Sum() / dmSunburnDataAlongBisectrix.Values.Sum();
+            double testSunCenterX = dmProcessingDataX.Values.Sum() / dmSunburnDataAlongBisectrix.Values.Sum();
+            double testSunCenterY = dmProcessingDataY.Values.Sum() / dmSunburnDataAlongBisectrix.Values.Sum();
             PointD testSunCenter = new PointD(testSunCenterX, testSunCenterY);
             //double testSunRadius = (dmSunburnDataAlongBisectrix.Values.Sum() / 20.0d) / 2.0d;
             double testSunRadius = (dmSunburnDataAlongBisectrix.Values.Sum() / (2.0d * dHalfWidthY)) / 2.0d;
 
             RoundData rd = new RoundData(testSunCenterX, testSunCenterY, testSunRadius);
-
+            
             ServiceTools.FlushMemory();
 
             return rd;
@@ -3781,7 +4463,7 @@ namespace SkyImagesAnalyzerLibraries
             //Image<Gray, Byte> image3rdConditionGTZ;
             DenseMatrix dmRed, dmGreen, dmBlue, dm1stCondition, dm2ndCondition, dm3rdCondition, dm60, dm20, dmMask;
 
-            ImageProcessing imp = new ImageProcessing(LocalProcessingImage);
+            ImageProcessing imp = new ImageProcessing(LocalProcessingImage, false);
             imp.getImageSignificantMask();
             maskImage = imp.significantMaskImage;
 
@@ -3943,7 +4625,8 @@ namespace SkyImagesAnalyzerLibraries
             RoundData sunRoundData = RoundData.nullRoundData();
 
             //посмотрим, нет ли уже имеющихся данных о положении и размере солнечного диска на изображении
-            string sunDiskInfoFileName = currFileInfo.DirectoryName + "\\" +
+            #region trying to search existing sun disk info
+            string sunDiskInfoFileName = currFileInfo.DirectoryName + Path.DirectorySeparatorChar +
                                          Path.GetFileNameWithoutExtension(currFileInfo.FullName) + "-SunDiskInfo.xml";
 
             RoundData existingRoundData = RoundData.nullRoundData();
@@ -3968,50 +4651,211 @@ namespace SkyImagesAnalyzerLibraries
                 sunRoundData = existingRoundData;
             }
 
+            #endregion trying to search existing sun disk info
+
+
             ImageProcessing imgP = new ImageProcessing(LocalProcessingImage, true);
 
             if (sunRoundData.IsNull)
             {
-                SkyCloudClassification classificator = new SkyCloudClassification(img2process, defaultProps);
-                classificator.verbosityLevel = 0;
-                classificator.ParentForm = currParentForm;
-                classificator.theLogWindow = currImageLogWindow;
-                classificator.ClassificationMethod = ClassificationMethods.GrIx;
-                classificator.isCalculatingUsingBgWorker = false;
-                // classificator.SelfWorker = currBGWsender as BackgroundWorker;
-                classificator.defaultOutputDataDirectory = (string)defaultProps["DefaultDataFilesLocation"];
-                classificator.theStdDevMarginValueDefiningSkyCloudSeparation =
-                    Convert.ToDouble(defaultProps["GrIxDefaultSkyCloudMarginWithoutSun"]);
-                classificator.sourceImageFileName = currFileInfo.FullName;
-
-                //retRes.imageEdgesDetected = new RoundDataWithUnderlyingImgSize()
-                //{
-                //    circle = imgP.imageRD,
-                //    imgSize = LocalProcessingImage.Size,
-                //};
-                DenseMatrix dmProcessingData = (DenseMatrix)imgP.eval("grix").Clone();
-                try
+                List<Tuple<string, string>> lImagesRoundMasksMapping = null;
+                if (defaultProps.ContainsKey("ImagesRoundMasksXMLfilesMappingList"))
                 {
-                    sunRoundData = classificator.DetectSunWithSerieOfArcs(imgP, dmProcessingData);
-                    if (!sunRoundData.IsNull)
+
+                    string ImagesRoundMasksXMLfilesMappingList =
+                        (string)defaultProps["ImagesRoundMasksXMLfilesMappingList"];
+                    if (File.Exists(ImagesRoundMasksXMLfilesMappingList))
                     {
-                        RoundDataWithUnderlyingImgSize infoToSave = new RoundDataWithUnderlyingImgSize()
-                        {
-                            circle = sunRoundData,
-                            imgSize = LocalProcessingImage.Size,
-                        };
-                        ServiceTools.WriteObjectToXML(infoToSave, sunDiskInfoFileName);
-                        return sunRoundData;
+                        List<List<string>> llImagesRoundMasksMappingFiles =
+                            ServiceTools.ReadDataFromCSV(ImagesRoundMasksXMLfilesMappingList, 0, true, ";",
+                                Environment.NewLine);
+                        lImagesRoundMasksMapping =
+                            llImagesRoundMasksMappingFiles.ConvertAll(
+                                list => new Tuple<string, string>(list[0], list[1]));
+                        // item1: images filename pattern
+                        // item2: image rounded mask parameters XML file
                     }
                 }
-                catch (Exception ex)
+                RoundData predefinedRoundedMask = null;
+                if (lImagesRoundMasksMapping != null)
                 {
-                    currImageLogWindow = ServiceTools.LogAText(currImageLogWindow, "exception caught: " + ex.Message);
-                    return null;
+                    if (lImagesRoundMasksMapping.Any())
+                    {
+                        if (lImagesRoundMasksMapping.Find(tpl => (new WildcardPattern(tpl.Item1)).IsMatch(currImgFilename)) != null)
+                        {
+                            string strFoundPredefinedRoundedMaskParametersXMLfile =
+                                lImagesRoundMasksMapping.Find(
+                                    tpl => (new WildcardPattern(tpl.Item1)).IsMatch(currImgFilename)).Item2;
+                            predefinedRoundedMask =
+                                ServiceTools.ReadObjectFromXML(strFoundPredefinedRoundedMaskParametersXMLfile,
+                                    typeof(RoundData)) as RoundData;
+                        }
+                    }
                 }
-                ServiceTools.FlushMemory();
+
+                if (predefinedRoundedMask != null)
+                {
+                    imgP = new ImageProcessing(LocalProcessingImage, predefinedRoundedMask);
+                }
+                else
+                {
+                    imgP = new ImageProcessing(LocalProcessingImage, true);
+                }
+
+
+
+
+
+                SkyCloudClassification classificator = new SkyCloudClassification(img2process, defaultProps)
+                {
+                    verbosityLevel = 0,
+                    ParentForm = currParentForm,
+                    theLogWindow = currImageLogWindow,
+                    ClassificationMethod = ClassificationMethods.GrIx,
+                    isCalculatingUsingBgWorker = false,
+                    defaultOutputDataDirectory = (string) defaultProps["DefaultDataFilesLocation"],
+                    theStdDevMarginValueDefiningSkyCloudSeparation =
+                        Convert.ToDouble(defaultProps["GrIxDefaultSkyCloudMarginWithoutSun"]),
+                    sourceImageFileName = currFileInfo.FullName
+                };
+
+                
+                #region try to filter data and detect sun disk position
+
+                DenseMatrix dmGrIxValues = (DenseMatrix)imgP.eval("grix").Clone();
+                DenseMatrix dmGrIxGradValues = (DenseMatrix)imgP.eval("grad(grix)").Clone();
+
+
+                //filter by GrIx values itself
+                // dmGrIxValues.MapInplace(dVal => ((dVal >= 0.75d) || (dVal <= 0.2d)) ? (double.NaN) : (dVal));
+
+                //filter by grad(GrIx) values
+
+                // dmGrIxValues.MapIndexedInplace((r, c, dVal) => (dmGrIxGradValues[r,c] >= 0.05d) ?(0.0d):(dVal));
+
+                string outputFilenameGrIx = @"D:\_gulevlab\SkyImagesAnalysis_appData\003\testFilteredGrIxField.nc";
+                string outputFilenameGrIxGrad = @"D:\_gulevlab\SkyImagesAnalysis_appData\003\testFilteredGrIxGrad.nc";
+                NetCDFoperations.SaveDataToFile(dmGrIxValues, outputFilenameGrIx, null, true);
+                NetCDFoperations.SaveDataToFile(dmGrIxGradValues, outputFilenameGrIxGrad, null, true);
+
+                #endregion try to filter data and detect sun disk position
+
+
+                //try
+                //{
+                //    sunRoundData = classificator.DetectSunWithSerieOfArcs(imgP, dmGrIxValues);
+                //    if (!sunRoundData.IsNull)
+                //    {
+                //        RoundDataWithUnderlyingImgSize infoToSave = new RoundDataWithUnderlyingImgSize()
+                //        {
+                //            circle = sunRoundData,
+                //            imgSize = LocalProcessingImage.Size,
+                //        };
+                //        ServiceTools.WriteObjectToXML(infoToSave, sunDiskInfoFileName);
+                //        return sunRoundData;
+                //    }
+                //}
+                //catch (Exception ex)
+                //{
+                //    currImageLogWindow = ServiceTools.LogAText(currImageLogWindow, "exception caught: " + ex.Message);
+                //    return null;
+                //}
+                //ServiceTools.FlushMemory();
             }
             return null;
         }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        #region // obsolete - moved to separate .cs file
+
+        //private class ConcurrentData
+        //{
+        //    public string filename { get; set; }
+        //    public DateTime datetimeUTC { get; set; }
+        //    public double AccCalibrationValueX { get; set; }
+        //    public double AccCalibrationValueY { get; set; }
+        //    public double AccCalibrationValueZ { get; set; }
+        //    public double AccShiftDoubleX { get; set; }
+        //    public double AccShiftDoubleY { get; set; }
+        //    public double AccShiftDoubleZ { get; set; }
+
+        //    public double GyroValueX { get; set; }
+        //    public double GyroValueY { get; set; }
+        //    public double GyroValueZ { get; set; }
+
+        //    public string GPSdata { get; set; }
+        //    public double GPSLat { get; set; }
+        //    public double GPSLon { get; set; }
+        //    public DateTime GPSDateTimeUTC { get; set; }
+        //    public double PressurePa { get; set; }
+
+        //    public GPSdata gps;
+
+
+        //    public ConcurrentData() { }
+
+        //    public ConcurrentData(Dictionary<string, object> XMLfileContentDictionary)
+        //    {
+        //        filename = (string)XMLfileContentDictionary["XMLfileName"];
+        //        datetimeUTC = DateTime.Parse((string)XMLfileContentDictionary["DateTime"], null,
+        //            System.Globalization.DateTimeStyles.AdjustToUniversal);
+        //        AccCalibrationValueX = Convert.ToDouble(((string)XMLfileContentDictionary["AccCalibrationValueX"]).Replace(".", ","));
+        //        AccCalibrationValueY = Convert.ToDouble(((string)XMLfileContentDictionary["AccCalibrationValueY"]).Replace(".", ","));
+        //        AccCalibrationValueZ = Convert.ToDouble(((string)XMLfileContentDictionary["AccCalibrationValueZ"]).Replace(".", ","));
+        //        AccShiftDoubleX = Convert.ToDouble(((string)XMLfileContentDictionary["AccShiftDoubleX"]).Replace(".", ","));
+        //        AccShiftDoubleY = Convert.ToDouble(((string)XMLfileContentDictionary["AccShiftDoubleY"]).Replace(".", ","));
+        //        AccShiftDoubleZ = Convert.ToDouble(((string)XMLfileContentDictionary["AccShiftDoubleZ"]).Replace(".", ","));
+
+        //        GyroValueX = Convert.ToDouble(((string)XMLfileContentDictionary["GyroValueX"]).Replace(".", ","));
+        //        GyroValueY = Convert.ToDouble(((string)XMLfileContentDictionary["GyroValueY"]).Replace(".", ","));
+        //        GyroValueZ = Convert.ToDouble(((string)XMLfileContentDictionary["GyroValueZ"]).Replace(".", ","));
+
+        //        if (XMLfileContentDictionary["GPSdata"] is DBNull)
+        //        {
+        //            throw new Exception("GPSdata string of the XML file dictionary is empty");
+        //        }
+
+        //        GPSdata = (string)XMLfileContentDictionary["GPSdata"];
+        //        GPSLat = Convert.ToDouble(((string)XMLfileContentDictionary["GPSLat"]).Replace(".", ","));
+        //        GPSLon = Convert.ToDouble(((string)XMLfileContentDictionary["GPSLon"]).Replace(".", ","));
+        //        GPSDateTimeUTC = DateTime.Parse((string)XMLfileContentDictionary["GPSDateTimeUTC"], null,
+        //            System.Globalization.DateTimeStyles.AdjustToUniversal);
+        //        PressurePa = Convert.ToDouble(((string)XMLfileContentDictionary["PressurePa"]).Replace(".", ","));
+
+        //        gps = new GPSdata()
+        //        {
+        //            GPSstring = GPSdata,
+        //            lat = Math.Abs(GPSLat),
+        //            latHemisphere = ((GPSLat >= 0.0d) ? ("N") : ("S")),
+        //            lon = Math.Abs(GPSLon),
+        //            lonHemisphere = ((GPSLon >= 0) ? ("E") : ("W")),
+        //            dateTimeUTC = GPSDateTimeUTC,
+        //            validGPSdata = true,
+        //            dataSource = GPSdatasources.CloudCamArduinoGPS
+        //        };
+        //    }
+        //}
+
+
+        #endregion
+
     }
 }

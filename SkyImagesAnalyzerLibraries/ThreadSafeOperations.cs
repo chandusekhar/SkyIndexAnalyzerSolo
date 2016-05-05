@@ -25,7 +25,7 @@ namespace SkyImagesAnalyzerLibraries
         delegate void ToggleLabelTextColorCallback(Label lblTarget, Color color);
         delegate void SetLoadingCircleStateCallback(LoadingCircle lcControl, bool bActive, bool bVisible, Color controlColor, int rotationSpeed = 100);
         delegate int[] UpdateImagePanelCallback(ImagePanel imagePanelControl, Image Image2Show, bool NormalizeImage = false);
-
+        delegate void SetTextFormatCallback(System.Windows.Forms.Label textbox, Color textColor, bool bold = false);
 
 
         public ThreadSafeOperations()
@@ -74,6 +74,23 @@ namespace SkyImagesAnalyzerLibraries
                 {
                     textbox.Text = text;
                 }
+            }
+        }
+
+
+
+
+        public static void SetTextFormat(System.Windows.Forms.Label textbox, Color textColor, bool bold = false)
+        {
+            if (textbox.InvokeRequired)
+            {
+                SetTextFormatCallback d = SetTextFormat;
+                textbox.Invoke(d, new object[] { textbox, textColor, bold });
+            }
+            else
+            {
+                textbox.ForeColor = textColor;
+                textbox.Font = new Font(textbox.Font, (bold)?(FontStyle.Bold):(FontStyle.Regular));
             }
         }
 

@@ -51,6 +51,19 @@ namespace SkyImagesAnalyzerLibraries
 
     public class IoffeVesselNavDataReader
     {
+        public static DateTimeSpan GetNavFileDateTimeMarginsDTS(string InputFilename)
+        {
+            Tuple<DateTime, DateTime> currFileTpl = GetNavFileDateTimeMargins(InputFilename);
+            if (currFileTpl == null)
+            {
+                return new DateTimeSpan();
+            }
+            return new DateTimeSpan(currFileTpl.Item1, currFileTpl.Item2);
+        }
+
+
+
+
         public static Tuple<DateTime, DateTime> GetNavFileDateTimeMargins(string InputFilename)
         {
             int bytesCountPerObj = Marshal.SizeOf(typeof(IoffeVesselDualNavData));
@@ -148,17 +161,24 @@ namespace SkyImagesAnalyzerLibraries
             while (true)
             {
                 //Stream stream = reader.BaseStream;
-                //long currPosition = stream.Position;
-                char[] possibleDualModeSign = reader.ReadChars(4);
-                if (new string(possibleDualModeSign) != "Dual")
+                long currPosition = reader.BaseStream.Position;
+                try
                 {
-                    // вернуть позицию на 4 назад
-                    reader.BaseStream.Seek(-4, SeekOrigin.Current);
+                    //char[] possibleDualModeSign = reader.ReadChars(4);
+                    byte[] read4bytes = reader.ReadBytes(4);
+                    string possibleDualModeSign = System.Text.Encoding.Default.GetString(read4bytes);
+                    if (possibleDualModeSign.ToLower() != "dual")
+                    {
+                        // вернуть позицию на 4 назад
+                        //reader.BaseStream.Seek(-4, SeekOrigin.Current);
+                        reader.BaseStream.Seek(currPosition, SeekOrigin.Begin);
+                    }
                 }
-                else
+                catch (Exception ex)
                 {
                     ;
                 }
+                
 
 
                 byte[] readBuffer = new byte[bytesCountPerObj];
@@ -258,7 +278,7 @@ namespace SkyImagesAnalyzerLibraries
 
 
             List<IoffeVesselDualNavDataConverted> lAllNavData = new List<IoffeVesselDualNavDataConverted>();
-            string[] sNavFilenames = Directory.GetFiles(navDataFilesPath, "*.nv2", SearchOption.AllDirectories);
+            string[] sNavFilenames = Directory.GetFiles(navDataFilesPath, "*.nv2, *.nav", SearchOption.AllDirectories);
             if (!sNavFilenames.Any())
             {
                 return null;
@@ -437,6 +457,17 @@ namespace SkyImagesAnalyzerLibraries
 
     public class IoffeVesselMeteoDataReader
     {
+        public static DateTimeSpan GetMetFileDateTimeMarginsDTS(string InputFilename)
+        {
+            Tuple<DateTime, DateTime> currFileTpl = GetMetFileDateTimeMargins(InputFilename);
+            if (currFileTpl == null)
+            {
+                return new DateTimeSpan();
+            }
+            return new DateTimeSpan(currFileTpl.Item1, currFileTpl.Item2);
+        }
+
+
         public static Tuple<DateTime, DateTime> GetMetFileDateTimeMargins(string InputFilename)
         {
             int bytesCountPerObj = Marshal.SizeOf(typeof(IoffeVesselMetData));

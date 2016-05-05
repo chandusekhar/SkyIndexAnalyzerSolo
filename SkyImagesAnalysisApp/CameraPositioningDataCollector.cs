@@ -386,6 +386,12 @@ namespace SkyImagesAnalyzer
         // 2. корректировке по хедингу судна по данным корабельной навигации
         // вычислять азимутальное отклонение расположения солнечного диска на снимке
         // от ожидаемого положения
+
+        private List<Tuple<string, DateTimeSpan>> NVdataFilesAlreadyReadDateTimeSpans =
+            new List<Tuple<string, DateTimeSpan>>();
+        private List<Tuple<string, List<IoffeVesselDualNavDataConverted>>> NVdataFilesAlreadyReadData =
+            new List<Tuple<string, List<IoffeVesselDualNavDataConverted>>>();
+
         private AngleSunDeviationCalcResult CalculateDevDataForImage(FileInfo finfo, Dictionary<string, object> defaultProperties, LogWindow currImageLogWindow, bool showOnlyErrors = false)
         {
             FileInfo currFileInfo = finfo;
@@ -397,7 +403,8 @@ namespace SkyImagesAnalyzer
                 fileName = currFileInfo.FullName,
             };
 
-            GPSdata gps = ServiceTools.FindProperGPSdataForImage(currFileInfo.FullName, theLogWindow, defaultProperties);
+            GPSdata gps = ServiceTools.FindProperGPSdataForImage(currFileInfo.FullName, theLogWindow, defaultProperties,
+                ref NVdataFilesAlreadyReadDateTimeSpans, ref NVdataFilesAlreadyReadData);
             if (gps == null)
             {
                 theLogWindow = ServiceTools.LogAText(theLogWindow, "Couldn`t find GPS data for this image.");
@@ -519,8 +526,9 @@ namespace SkyImagesAnalyzer
             RoundData sunRoundData = RoundData.nullRoundData();
 
             //посмотрим, нет ли уже имеющихся данных о положении и размере солнечного диска на изображении
-            string sunDiskInfoFileName = currFileInfo.DirectoryName + "\\" +
-                                         Path.GetFileNameWithoutExtension(currFileInfo.FullName) + "-SunDiskInfo.xml";
+            string sunDiskInfoFileName = ConventionalTransitions.SunDiskInfoFileName(currFileInfo.FullName);
+            //string sunDiskInfoFileName = currFileInfo.DirectoryName + "\\" +
+            //                             Path.GetFileNameWithoutExtension(currFileInfo.FullName) + "-SunDiskInfo.xml";
 
             RoundData existingRoundData = RoundData.nullRoundData();
             Size imgSizeUnderExistingRoundData = LocalProcessingImage.Bitmap.Size;
