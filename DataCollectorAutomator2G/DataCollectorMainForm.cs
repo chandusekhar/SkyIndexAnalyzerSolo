@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.Specialized;
@@ -13,6 +14,7 @@ using System.Media;
 using System.Net;
 using System.Net.Sockets;
 using System.Reflection;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -26,6 +28,8 @@ using SkyImagesAnalyzer;
 using SkyImagesAnalyzerLibraries;
 using SolarPositioning;
 using Timer = System.Threading.Timer;
+using nsoftware.IPWorks;
+
 
 
 namespace DataCollectorAutomator
@@ -183,13 +187,18 @@ namespace DataCollectorAutomator
 
         private double angleCamDeclinationThresholdRad = Math.PI * 3.0d / 180.0d;
 
-        private string errorLogFilename = Directory.GetCurrentDirectory() + "\\logs\\DataCollectorAutomator2G-error.log";
+        private string errorLogFilename = Directory.GetCurrentDirectory() + Path.DirectorySeparatorChar + "logs" +
+                                          Path.DirectorySeparatorChar + "DataCollectorAutomator2G-error.log";
 
         public event EventHandler NeedToShootCameraSnapshots;
         private bool restrictDataRegistrationWhenSunElevationLowerThanZero = true;
         private bool MakeBeepsSilentWhenSunElevationLowerThanZero = true;
         private bool ForceBeepsSilent = false;
         private bool IsNowSilent = false;
+
+        private bool AllowOperationWhileArduinoIsOffline = false;
+
+        private bool bOrganizeAndArchiveCollectedDataAtLocalMidnight = false;
 
 
 
@@ -200,7 +209,7 @@ namespace DataCollectorAutomator
         {
             InitializeComponent();
         }
-        
+
 
 
         private void NoteLog(string text)
@@ -221,13 +230,13 @@ namespace DataCollectorAutomator
         {
             ThreadSafeOperations.SetTextTB(tbMainLog, text + Environment.NewLine, true);
         }
-        
+
 
         private void textBox2_TextChanged(object sender, EventArgs e)
         {
             ip2ListenID1 = tbIP2ListenDevID1.Text;
         }
-        
+
 
         private void btnSwapBcstLog_Click(object sender, EventArgs e)
         {
@@ -445,7 +454,7 @@ namespace DataCollectorAutomator
             if (!File.Exists(defaultPropertiesXMLfileName)) return;
             defaultProperties = ServiceTools.ReadDictionaryFromXML(defaultPropertiesXMLfileName);
 
-
+            bool bDefaultPropertiesHasBeenUpdated = false;
 
             accCalibrationDataFilename = Directory.GetCurrentDirectory() +
                                          "\\settings\\AccelerometerCalibrationData2G.xml";
@@ -479,6 +488,7 @@ namespace DataCollectorAutomator
             VivotekCameraPassword2 = defaultProperties["VivotekCameraID2Password"] as string;
             BroadcastLogHistorySizeLines = Convert.ToInt32(defaultProperties["BroadcastLogHistorySizeLines"]);
 
+
             if (defaultProperties.ContainsKey("RestrictDataRegistrationWhenSunElevationLowerThanZero"))
             {
                 String tmpstr = defaultProperties["RestrictDataRegistrationWhenSunElevationLowerThanZero"] as string;
@@ -488,7 +498,7 @@ namespace DataCollectorAutomator
             else
             {
                 defaultProperties.Add("RestrictDataRegistrationWhenSunElevationLowerThanZero", true);
-                saveDefaultProperties();
+                bDefaultPropertiesHasBeenUpdated = true;
             }
 
 
@@ -508,12 +518,12 @@ namespace DataCollectorAutomator
             if (defaultProperties.ContainsKey("MakeBeepsSilentWhenSunElevationLowerThanZero"))
             {
                 MakeBeepsSilentWhenSunElevationLowerThanZero =
-                    (((string) defaultProperties["MakeBeepsSilentWhenSunElevationLowerThanZero"]).ToLower() == "true");
+                    (((string)defaultProperties["MakeBeepsSilentWhenSunElevationLowerThanZero"]).ToLower() == "true");
             }
             else
             {
                 defaultProperties.Add("MakeBeepsSilentWhenSunElevationLowerThanZero", true);
-                saveDefaultProperties();
+                bDefaultPropertiesHasBeenUpdated = true;
             }
 
 
@@ -524,6 +534,47 @@ namespace DataCollectorAutomator
             else
             {
                 defaultProperties.Add("ForceBeepsSilent", true);
+                bDefaultPropertiesHasBeenUpdated = true;
+            }
+
+
+
+
+            if (defaultProperties.ContainsKey("AllowOperationWhileArduinoIsOffline"))
+            {
+                AllowOperationWhileArduinoIsOffline = (((string)defaultProperties["AllowOperationWhileArduinoIsOffline"]).ToLower() == "true");
+            }
+            else
+            {
+                defaultProperties.Add("AllowOperationWhileArduinoIsOffline", false);
+                AllowOperationWhileArduinoIsOffline = false;
+                bDefaultPropertiesHasBeenUpdated = true;
+            }
+
+
+
+            #region bOrganizeAndArchiveCollectedDataAtLocalMidnight
+            // bOrganizeAndArchiveCollectedDataAtLocalMidnight
+
+            if (defaultProperties.ContainsKey("bOrganizeAndArchiveCollectedDataAtLocalMidnight"))
+            {
+                bOrganizeAndArchiveCollectedDataAtLocalMidnight = (((string)defaultProperties["bOrganizeAndArchiveCollectedDataAtLocalMidnight"]).ToLower() == "true");
+            }
+            else
+            {
+                defaultProperties.Add("bOrganizeAndArchiveCollectedDataAtLocalMidnight", false);
+                bOrganizeAndArchiveCollectedDataAtLocalMidnight = false;
+                bDefaultPropertiesHasBeenUpdated = true;
+            }
+
+
+            #endregion
+
+
+
+
+            if (bDefaultPropertiesHasBeenUpdated)
+            {
                 saveDefaultProperties();
             }
 
@@ -552,7 +603,7 @@ namespace DataCollectorAutomator
                 dctCalibrationAccDataByDevID.Add("devID2", accCalibrationDataID2);
             }
 
-            
+
 
             ThreadSafeOperations.SetText(lblAccelCalibrationXID1, Math.Round(accCalibrationDataID1.AccDoubleX, 2).ToString(), false);
             ThreadSafeOperations.SetText(lblAccelCalibrationYID1, Math.Round(accCalibrationDataID1.AccDoubleY, 2).ToString(), false);
@@ -806,11 +857,30 @@ namespace DataCollectorAutomator
 
         private void udpCatchingJob_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
         {
-            ThreadSafeOperations.ToggleButtonState(btnStartStopBdcstListening, true, "Start listening", false);
+            udpCatchingJobResultObject workerResult = null;
+            try
+            {
+                workerResult = ((object[])e.Result)[0] as udpCatchingJobResultObject;
+            }
+            catch (Exception ex)
+            {
+                ;
+            }
+
+            if (workerResult == null)
+            {
+                ServiceTools.ExecMethodInSeparateThread(this, () =>
+                {
+                    theLogWindow = ServiceTools.LogAText(theLogWindow,
+                        "UDP packets catching job quit unexpectedly." + Environment.NewLine +
+                        ServiceTools.CurrentCodeLineDescription());
+                });
+            }
+
+
+            ThreadSafeOperations.ToggleButtonState(btnStartStopBdcstListening, true, "Start listening boards stream", false);
             ChangeIndicatingButtonBackgroundColor(btnStartStopBdcstListening,
                 ButtonBackgroundStateWatchingProcess.notWatching);
-
-            //bgwUDPmessagesParser.CancelAsync();
         }
 
 
@@ -848,10 +918,31 @@ namespace DataCollectorAutomator
             }
 
             bcstUDPreader.Close();
+
+            e.Result = new object[] {new udpCatchingJobResultObject()
+            {
+                properlyFinished = true
+            } };
         }
 
 
-        
+
+
+
+        private class udpCatchingJobResultObject
+        {
+            public bool properlyFinished { get; set; }
+
+            public udpCatchingJobResultObject()
+            {
+                properlyFinished = true;
+            }
+        }
+
+
+
+
+
         private void BcstReceiveCallback(IAsyncResult ar)
         {
             string bcstMessage = "";
@@ -943,7 +1034,7 @@ namespace DataCollectorAutomator
             Skt.Close();
         }
 
-        
+
 
 
 
@@ -1016,6 +1107,8 @@ namespace DataCollectorAutomator
 
 
 
+
+
         private void btnStartStopCollecting_Click(object sender, EventArgs e)
         {
             if (!dataCollector.IsBusy)
@@ -1028,14 +1121,16 @@ namespace DataCollectorAutomator
                 }
 
                 dataCollector.RunWorkerAsync();
+                udpCatchingJobShouldBeWorking = true;
             }
             else
             {
                 dataCollector.CancelAsync();
+                udpCatchingJobShouldBeWorking = false;
             }
         }
 
-        
+
 
 
 
@@ -1083,13 +1178,20 @@ namespace DataCollectorAutomator
 
         TimeSeries<int> tsCollectedPressureData = new TimeSeries<int>();
 
+        private bool udpCatchingJobShouldBeWorking = false;
+
+
+
+
+
+
         private void dataCollector_DoWork(object sender, DoWorkEventArgs e)
         {
             DateTime datetimeCamshotTimerBegin = DateTime.Now;
 
             stwCamshotTimer.Start();
 
-            
+
             TimeSpan labelsUpdatingPeriod = new TimeSpan(0, 0, 1);
             Stopwatch stwCamshotTimersUpdating = new Stopwatch();
             stwCamshotTimersUpdating.Start();
@@ -1098,14 +1200,9 @@ namespace DataCollectorAutomator
             BackgroundWorker SelfWorker = sender as BackgroundWorker;
             ThreadSafeOperations.ToggleButtonState(btnStartStopCollecting, true, "stop collecting data", true);
             dataCollectingState = DataCollectingStates.working;
-            
 
-            
 
-            // DenseMatrix dmGPSDataMatrix = null;
-            //List<long> gpsDateTimeValuesList = new List<long>();
-            //List<int> pressureValuesList = new List<int>();
-            //List<long> pressureDateTimeValuesList = new List<long>();
+
 
             Stopwatch stwToEstimateUDPpacketsRecieving = new Stopwatch();
             stwToEstimateUDPpacketsRecieving.Start();
@@ -1131,6 +1228,35 @@ namespace DataCollectorAutomator
                 dataToPassToSensorsDataPresentation, 0, 500);
 
             #endregion timer for periodical sensors values presentation updating
+
+
+
+
+            #region timer for periodical udpCatchingJob working check
+
+            TimerCallback udpCatchingJobIsWorkingCheckCallback =
+                new TimerCallback(CheckIfUDPcatchingJobIsWorking);
+            Timer tmrUDPcatchingJobIsWorkingCheck = new Timer(udpCatchingJobIsWorkingCheckCallback,
+                null, 0, 25000);
+            // each 25sec
+
+            #endregion timer for periodical udpCatchingJob working check
+
+
+
+
+
+
+            #region timer for periodical check if its time to organize and archive collectied data
+
+            TimerCallback OrganizeAndArchiveCollectedDataCheckerCallback =
+                new TimerCallback(OrganizeAndArchiveCollectedDataCheck);
+            Timer tmrOrganizeAndArchiveCollectedDataCheck = new Timer(OrganizeAndArchiveCollectedDataCheckerCallback,
+                null, 0, 600000);
+
+            // each 10 minutes
+
+            #endregion timer for periodical check if its time to organize and archive collectied data
 
 
 
@@ -1165,7 +1291,7 @@ namespace DataCollectorAutomator
                         DumpCollectedAccelerometersData();
                     }
                     #endregion dump the rest accelerometers data to nc-file
-                    
+
                     #region dump the rest smoothed accelerometers data to nc-file
 
                     if (tsCollectedAccSmoothedDataID1.Count > 0)
@@ -1209,7 +1335,7 @@ namespace DataCollectorAutomator
                     #endregion // obsolete
 
                     #endregion dump the rest smoothed accelerometers data to nc-file
-                    
+
                     #region dump the rest gyro data to nc-file
 
                     if (tsCollectedGyroData.Count > 0)
@@ -1234,7 +1360,7 @@ namespace DataCollectorAutomator
                     #endregion // obsolete
 
                     #endregion dump the rest gyro data to nc-file
-                    
+
                     #region dump the rest GPS data to nc-file
 
                     if (tsCollectedGPSdata.Count > 0)
@@ -1259,7 +1385,7 @@ namespace DataCollectorAutomator
                     #endregion // obsolete
                     #endregion dump the rest GPS data to nc-file
 
-                    
+
                     #region dump the rest pressure data to nc-file
                     if (tsCollectedPressureData.Count > 0)
                     {
@@ -1293,568 +1419,10 @@ namespace DataCollectorAutomator
                 #endregion CancellationPending
 
 
-
-                #region // обработка очередей разобранных данных - разнесено по событиям CollectionChanged соответствующих коллекций
-
-
-                #region // accelerometers - вынесено в CollectionChanged событие коллекции accDataAndDTObservableConcurrentQueue
-                //if (accDataAndDTObservableConcurrentQueue.Count > 0)
-                //{
-                //    //accDatahasBeenChanged = false;
-
-                //    Tuple<DateTime, accelerometerData> tplAccDT = accDataAndDTObservableConcurrentQueue.Dequeue();
-
-                //    if (tplAccDT == null) continue;
-
-                //    //accelerometerData accData = accDataQueue.Dequeue();
-                //    accelerometerData accData = tplAccDT.Item2;
-                //    DateTime dtAccDataRecieved = tplAccDT.Item1;
-
-                //    if (accData.devID <= 1) accID1tail.Enqueue(accData, dtAccDataRecieved);
-                //    else accID2tail.Enqueue(accData, dtAccDataRecieved);
-
-
-                //    accelerometerData accCalibrationData = (accData.devID <= 1)
-                //        ? (accCalibrationDataID1)
-                //        : (accCalibrationDataID2);
-
-
-                //    // пересчитать хвост
-                //    if (accData.devID <= 1)
-                //    {
-                //        List<accelerometerData> accDataTail = new List<accelerometerData>(accID1tail.DataValues);
-                //        DenseVector dvAccXvaluesTail =
-                //            DenseVector.OfEnumerable(accDataTail.ConvertAll(accDt => accDt.AccDoubleX));
-                //        DenseVector dvAccYvaluesTail =
-                //            DenseVector.OfEnumerable(accDataTail.ConvertAll(accDt => accDt.AccDoubleY));
-                //        DenseVector dvAccZvaluesTail =
-                //            DenseVector.OfEnumerable(accDataTail.ConvertAll(accDt => accDt.AccDoubleZ));
-
-                //        if (accDataTail.Count < tailLength)
-                //        {
-                //            dvAccXvaluesTail = DenseVector.OfEnumerable(dvAccXvaluesTail.Concat(DenseVector.Create(tailLength - accDataTail.Count, 0.0d)));
-                //            dvAccYvaluesTail = DenseVector.OfEnumerable(dvAccYvaluesTail.Concat(DenseVector.Create(tailLength - accDataTail.Count, 0.0d)));
-                //            dvAccZvaluesTail = DenseVector.OfEnumerable(dvAccZvaluesTail.Concat(DenseVector.Create(tailLength - accDataTail.Count, 0.0d)));
-                //        }
-
-
-                //        latestAccDataID1 = new accelerometerData(dvKernelFixedWidth * dvAccXvaluesTail,
-                //            dvKernelFixedWidth * dvAccYvaluesTail, dvKernelFixedWidth * dvAccZvaluesTail);
-                //        latestAccDataID1.devID = accData.devID;
-
-                //        accDevAngle = (latestAccDataID1 * accCalibrationData) / (latestAccDataID1.AccMagnitude * accCalibrationData.AccMagnitude);
-                //        accDevAngle = Math.Acos(accDevAngle);
-                //    }
-                //    else
-                //    {
-                //        List<accelerometerData> accDataTail = new List<accelerometerData>(accID2tail.DataValues);
-                //        DenseVector dvAccXvaluesTail =
-                //            DenseVector.OfEnumerable(accDataTail.ConvertAll(accDt => accDt.AccDoubleX));
-                //        DenseVector dvAccYvaluesTail =
-                //            DenseVector.OfEnumerable(accDataTail.ConvertAll(accDt => accDt.AccDoubleY));
-                //        DenseVector dvAccZvaluesTail =
-                //            DenseVector.OfEnumerable(accDataTail.ConvertAll(accDt => accDt.AccDoubleZ));
-
-                //        if (accDataTail.Count < tailLength)
-                //        {
-                //            dvAccXvaluesTail = DenseVector.OfEnumerable(dvAccXvaluesTail.Concat(DenseVector.Create(tailLength - accDataTail.Count, 0.0d)));
-                //            dvAccYvaluesTail = DenseVector.OfEnumerable(dvAccYvaluesTail.Concat(DenseVector.Create(tailLength - accDataTail.Count, 0.0d)));
-                //            dvAccZvaluesTail = DenseVector.OfEnumerable(dvAccZvaluesTail.Concat(DenseVector.Create(tailLength - accDataTail.Count, 0.0d)));
-                //        }
-
-                //        latestAccDataID2 = new accelerometerData(dvKernelFixedWidth * dvAccXvaluesTail,
-                //            dvKernelFixedWidth * dvAccYvaluesTail, dvKernelFixedWidth * dvAccZvaluesTail);
-                //        latestAccDataID2.devID = accData.devID;
-
-                //        accDevAngle = (latestAccDataID2 * accCalibrationData) / (latestAccDataID2.AccMagnitude * accCalibrationData.AccMagnitude);
-                //        accDevAngle = Math.Acos(accDevAngle);
-                //    }
-
-                //    #region // obsolete
-                //    // сформировано наиболее актуальное значение accData для соответствующего устройства
-                //    //if (accData.devID <= 1)
-                //    //{
-                //    //    latestAccDataID1 = accData.Copy();
-                //    //}
-                //    //else if (accData.devID == 2)
-                //    //{
-                //    //    latestAccDataID2 = accData.Copy();
-                //    //}
-
-
-                //    // accDateTimeValuesList.Add(DateTime.UtcNow.Ticks);
-                //    #endregion // obsolete
-
-                //    accDateTimeValuesList.Add(dtAccDataRecieved.Ticks);
-
-
-
-
-                //    #region adding latest recieved acc data to backuping datamatrix
-                //    if (dmAccDataMatrix == null)
-                //    {
-                //        dmAccDataMatrix = DenseMatrix.Create(1, 8, 0.0d);
-                //        DenseVector dvInitialData = (DenseVector)accData.ToDenseVector().SubVector(0, 3); // x,y,z
-                //        DenseVector dvCalibratedData = (DenseVector)accCalibrationData.ToDenseVector().SubVector(0, 3); // x,y,z calibration data
-                //        dvInitialData =
-                //            DenseVector.OfEnumerable(
-                //                dvInitialData.Concat(dvCalibratedData)
-                //                    .Concat(new double[] { accDevAngle, accData.devID }));
-                //        dmAccDataMatrix.InsertRow(0, dvInitialData);
-
-                //        #region // obsolete
-                //        //dmAccDataMatrix = DenseMatrix.Create(1, 8, (r, c) =>
-                //        //{
-                //        //    switch (c)
-                //        //    {
-                //        //        case 0:
-                //        //            return accData.AccDoubleX;
-                //        //            break;
-                //        //        case 1:
-                //        //            return accData.AccDoubleY;
-                //        //            break;
-                //        //        case 2:
-                //        //            return accData.AccDoubleZ;
-                //        //            break;
-                //        //        case 3:
-                //        //            return accCalibrationData.AccDoubleX;
-                //        //            break;
-                //        //        case 4:
-                //        //            return accCalibrationData.AccDoubleY;
-                //        //            break;
-                //        //        case 5:
-                //        //            return accCalibrationData.AccDoubleZ;
-                //        //            break;
-                //        //        case 6:
-                //        //            {
-                //        //                //угол отклонения от калибровочного вектора
-                //        //                // В РАДИАНАХ
-                //        //                return accDevAngle;
-                //        //                break;
-                //        //            }
-                //        //        case 7:
-                //        //            {
-                //        //                // devID
-                //        //                return accData.devID;
-                //        //                break;
-                //        //            }
-                //        //        default:
-                //        //            break;
-                //        //    }
-                //        //    return 0;
-                //        //});
-                //        #endregion // obsolete
-                //    }
-                //    else
-                //    {
-                //        DenseVector dvRowToAdd = (DenseVector)accData.ToDenseVector().SubVector(0, 3); // x,y,z
-                //        DenseVector dvCalibratedData = (DenseVector)accCalibrationData.ToDenseVector().SubVector(0, 3); // x,y,z calibration data
-                //        dvRowToAdd =
-                //            DenseVector.OfEnumerable(
-                //                dvRowToAdd.Concat(dvCalibratedData)
-                //                    .Concat(new double[] { accDevAngle, accData.devID }));
-
-                //        #region // obsolete
-                //        //DenseVector dvAccDataVectorToAdd = DenseVector.Create(8, c =>
-                //        //{
-                //        //    switch (c)
-                //        //    {
-                //        //        case 0:
-                //        //            return accData.AccDoubleX;
-                //        //            break;
-                //        //        case 1:
-                //        //            return accData.AccDoubleY;
-                //        //            break;
-                //        //        case 2:
-                //        //            return accData.AccDoubleZ;
-                //        //            break;
-                //        //        case 3:
-                //        //            return accCalibrationData.AccDoubleX;
-                //        //            break;
-                //        //        case 4:
-                //        //            return accCalibrationData.AccDoubleY;
-                //        //            break;
-                //        //        case 5:
-                //        //            return accCalibrationData.AccDoubleZ;
-                //        //            break;
-                //        //        case 6:
-                //        //            {
-                //        //                //угол отклонения от калибровочного вектора
-                //        //                // В РАДИАНАХ
-                //        //                return accDevAngle;
-                //        //                break;
-                //        //            }
-                //        //        case 7:
-                //        //            {
-                //        //                // devID
-                //        //                return accData.devID;
-                //        //                break;
-                //        //            }
-                //        //        default:
-                //        //            break;
-                //        //    }
-                //        //    return 0;
-                //        //});
-                //        #endregion // obsolete
-
-                //        dmAccDataMatrix =
-                //            (DenseMatrix)dmAccDataMatrix.InsertRow(dmAccDataMatrix.RowCount, dvRowToAdd);
-                //    }
-                //    #endregion adding latest recieved acc data to backuping datamatrix
-
-
-                //    #region adding latest recieved smoothed acc data to backuping datamatrix
-
-                //    //accelerometerData latestAccDataIDx = null;
-                //    if (accData.devID <= 1)
-                //    {
-                //        accSmoothedDateTimeValuesListID1.Add(dtAccDataRecieved.Ticks);
-
-                //        if (dmAccSmoothedDataMatrixID1 == null)
-                //        {
-                //            dmAccSmoothedDataMatrixID1 = DenseMatrix.Create(1, 8, 0.0d);
-                //            DenseVector dvInitialData = (DenseVector)latestAccDataID1.ToDenseVector().SubVector(0, 3); // x,y,z
-                //            DenseVector dvCalibratedData = (DenseVector)accCalibrationData.ToDenseVector().SubVector(0, 3); // x,y,z calibration data
-                //            dvInitialData =
-                //                DenseVector.OfEnumerable(
-                //                    dvInitialData.Concat(dvCalibratedData)
-                //                        .Concat(new double[] { accDevAngle, latestAccDataID1.devID }));
-                //            dmAccSmoothedDataMatrixID1.InsertRow(0, dvInitialData);
-                //        }
-                //        else
-                //        {
-                //            DenseVector dvRowToAdd = (DenseVector)latestAccDataID1.ToDenseVector().SubVector(0, 3); // x,y,z
-                //            DenseVector dvCalibratedData = (DenseVector)accCalibrationData.ToDenseVector().SubVector(0, 3); // x,y,z calibration data
-                //            dvRowToAdd =
-                //                DenseVector.OfEnumerable(
-                //                    dvRowToAdd.Concat(dvCalibratedData)
-                //                        .Concat(new double[] { accDevAngle, latestAccDataID1.devID }));
-
-                //            dmAccSmoothedDataMatrixID1 =
-                //                (DenseMatrix)dmAccSmoothedDataMatrixID1.InsertRow(dmAccSmoothedDataMatrixID1.RowCount, dvRowToAdd);
-                //        }
-                //    }
-                //    else
-                //    {
-                //        accSmoothedDateTimeValuesListID2.Add(dtAccDataRecieved.Ticks);
-                //        if (dmAccSmoothedDataMatrixID2 == null)
-                //        {
-                //            dmAccSmoothedDataMatrixID2 = DenseMatrix.Create(1, 8, 0.0d);
-                //            DenseVector dvInitialData = (DenseVector)latestAccDataID2.ToDenseVector().SubVector(0, 3); // x,y,z
-                //            DenseVector dvCalibratedData = (DenseVector)accCalibrationData.ToDenseVector().SubVector(0, 3); // x,y,z calibration data
-                //            dvInitialData =
-                //                DenseVector.OfEnumerable(
-                //                    dvInitialData.Concat(dvCalibratedData)
-                //                        .Concat(new double[] { accDevAngle, latestAccDataID2.devID }));
-                //            dmAccSmoothedDataMatrixID2.InsertRow(0, dvInitialData);
-                //        }
-                //        else
-                //        {
-                //            DenseVector dvRowToAdd = (DenseVector)latestAccDataID2.ToDenseVector().SubVector(0, 3); // x,y,z
-                //            DenseVector dvCalibratedData = (DenseVector)accCalibrationData.ToDenseVector().SubVector(0, 3); // x,y,z calibration data
-                //            dvRowToAdd =
-                //                DenseVector.OfEnumerable(
-                //                    dvRowToAdd.Concat(dvCalibratedData)
-                //                        .Concat(new double[] { accDevAngle, latestAccDataID2.devID }));
-
-                //            dmAccSmoothedDataMatrixID2 =
-                //                (DenseMatrix)dmAccSmoothedDataMatrixID2.InsertRow(dmAccSmoothedDataMatrixID2.RowCount, dvRowToAdd);
-                //        }
-                //    }
-
-                //    #endregion adding latest recieved smoothed acc data to backuping datamatrix
-
-                //    dataToPassToSensorsDataPresentation.Clear();
-                //    dataToPassToSensorsDataPresentation.AddRange(new accelerometerData[] { latestAccDataID1, accCalibrationDataID1, latestAccDataID2, accCalibrationDataID2 });
-
-                //    #region // obsolete - moved to timer callback mech
-                //    //ThreadSafeOperations.SetText(lblGotAccDataPackCounterValue, accDateTimeValuesList.Count.ToString(), false);
-
-                //    //if (stwShowActualAccData.ElapsedMilliseconds >= 500)
-                //    //{
-                //    //    stwShowActualAccData.Restart();
-                //    //    #region // magnetometer - obsolete
-                //    //    //DenseVector dvMagnDev = DenseVector.Create(dmAccDataMatrix.RowCount, i =>
-                //    //    //{
-                //    //    //    accelerometerData accCurrentData = new accelerometerData(dmAccDataMatrix[0, 0],
-                //    //    //        dmAccDataMatrix[0, 1], dmAccDataMatrix[0, 2]);
-                //    //    //    return (accCurrentData.AccMagnitude - accCalibrationData.AccMagnitude) *
-                //    //    //           (accCurrentData.AccMagnitude - accCalibrationData.AccMagnitude);
-                //    //    //});
-                //    //    //ThreadSafeOperations.SetText(lblAccDevMeanMagnValueID1,
-                //    //    //    Math.Sqrt(dvMagnDev.Sum() / dvMagnDev.Count).ToString("0.###e-00"), false);
-
-
-                //    //    //DescriptiveStatistics stats1 = new DescriptiveStatistics(dmAccDataMatrix.Column(6));
-                //    //    //ThreadSafeOperations.SetText(lblAccDevMeanAngleValueID1, stats1.Mean.ToString("0.###e-00"), false);
-                //    //    #endregion #region // magnetometer - obsolete
-
-                //    //    // =======================
-                //    //    //вывести мгновенные значения, но раздельно по устройствам
-                //    //    // =======================
-                //    //    double accDevAngleID1 = (latestAccDataID1 * accCalibrationDataID1) / (latestAccDataID1.AccMagnitude * accCalibrationDataID1.AccMagnitude);
-                //    //    accDevAngleID1 = Math.Acos(accDevAngleID1) * 180.0d / Math.PI;
-                //    //    double accDevAngleID2 = (latestAccDataID2 * accCalibrationDataID2) / (latestAccDataID2.AccMagnitude * accCalibrationDataID2.AccMagnitude);
-                //    //    accDevAngleID2 = Math.Acos(accDevAngleID2) * 180.0d / Math.PI;
-                //    //    ThreadSafeOperations.SetText(lblAccMagnValueID1, (latestAccDataID1.AccMagnitude / accCalibrationDataID1.AccMagnitude).ToString("F2"), false);
-                //    //    ThreadSafeOperations.SetText(lblAccDevAngleValueID1, accDevAngleID1.ToString("F3"), false);
-                //    //    ThreadSafeOperations.SetText(lblAccMagnValueID2, (latestAccDataID2.AccMagnitude / accCalibrationDataID2.AccMagnitude).ToString("F2"), false);
-                //    //    ThreadSafeOperations.SetText(lblAccDevAngleValueID2, accDevAngleID2.ToString("F3"), false);
-                //    //}
-                //    #endregion // obsolete - moved to timer callback mech
-
-
-                //    #region swap acc data to hdd
-                //    if (accDateTimeValuesList.Count >= 1000)
-                //    {
-                //        Dictionary<string, object> dataToSave = new Dictionary<string, object>();
-                //        dataToSave.Add("DateTime", accDateTimeValuesList.ToArray());
-                //        dataToSave.Add("AccelerometerData", dmAccDataMatrix);
-
-                //        NetCDFoperations.AddVariousDataToFile(dataToSave,
-                //            Directory.GetCurrentDirectory() + "\\logs\\AccelerometerDataLog-" +
-                //            DateTime.UtcNow.Date.ToString("yyyy-MM-dd") + ".nc");
-
-
-
-
-                //        dmAccDataMatrix = null;
-                //        accDateTimeValuesList.Clear();
-                //    }
-
-
-                //    if (accSmoothedDateTimeValuesListID1.Count >= 500)
-                //    {
-                //        Dictionary<string, object> dataToSave = new Dictionary<string, object>();
-                //        dataToSave.Add("DateTime", accSmoothedDateTimeValuesListID1.ToArray());
-                //        dataToSave.Add("AccelerometerData", dmAccSmoothedDataMatrixID1);
-
-                //        NetCDFoperations.AddVariousDataToFile(dataToSave,
-                //            Directory.GetCurrentDirectory() + "\\logs\\AccelerometerID1-Smoothed-DataLog-" +
-                //            DateTime.UtcNow.Date.ToString("yyyy-MM-dd") + ".nc");
-
-
-                //        dmAccSmoothedDataMatrixID1 = null;
-                //        accSmoothedDateTimeValuesListID1.Clear();
-                //    }
-
-
-                //    if (accSmoothedDateTimeValuesListID2.Count >= 500)
-                //    {
-                //        Dictionary<string, object> dataToSave = new Dictionary<string, object>();
-                //        dataToSave.Add("DateTime", accSmoothedDateTimeValuesListID2.ToArray());
-                //        dataToSave.Add("AccelerometerData", dmAccSmoothedDataMatrixID2);
-
-                //        NetCDFoperations.AddVariousDataToFile(dataToSave,
-                //            Directory.GetCurrentDirectory() + "\\logs\\AccelerometerID2-Smoothed-DataLog-" +
-                //            DateTime.UtcNow.Date.ToString("yyyy-MM-dd") + ".nc");
-
-
-                //        dmAccSmoothedDataMatrixID2 = null;
-                //        accSmoothedDateTimeValuesListID2.Clear();
-                //    }
-                //    #endregion swap acc data to hdd
-
-                //    processedUDPPacketsCounter++;
-                //}
-                #endregion accelerometers
-
-                #region // gyroscope - вынесено в CollectionChanged событие коллекции gyroDataAndDTObservableConcurrentQueue
-                //if (gyroDataQueue.Count > 0)
-                //if (gyroDataAndDTObservableConcurrentQueue.Count > 0)
-                //{
-                //    //gyroDatahasBeenChanged = false;
-
-                //    Tuple<DateTime, GyroData> tplGyroDT = gyroDataAndDTObservableConcurrentQueue.Dequeue();
-
-                //    if (tplGyroDT == null) continue;
-
-                //    //accelerometerData accData = accDataQueue.Dequeue();
-                //    GyroData gyroData = tplGyroDT.Item2;
-                //    DateTime dtGyroDataRecieved = tplGyroDT.Item1;
-
-                //    //GyroData gyroData = gyroDataQueue.Dequeue();
-                //    //if (gyroData == null)
-                //    //    continue;
-
-                //    gyroDateTimeValuesList.Add(dtGyroDataRecieved.Ticks);
-
-                //    if (dmGyroDataMatrix == null)
-                //    {
-                //        dmGyroDataMatrix = gyroData.ToOneRowDenseMatrix();
-                //    }
-                //    else
-                //    {
-                //        DenseVector dvGyroDataVectorToAdd = gyroData.ToDenseVector();
-
-                //        dmGyroDataMatrix =
-                //            (DenseMatrix)dmGyroDataMatrix.InsertRow(dmGyroDataMatrix.RowCount, dvGyroDataVectorToAdd);
-                //    }
-
-                //    if (gyroDateTimeValuesList.Count >= 500)
-                //    {
-                //        Dictionary<string, object> dataToSave = new Dictionary<string, object>();
-                //        dataToSave.Add("DateTime", gyroDateTimeValuesList.ToArray());
-                //        dataToSave.Add("GyroscopeData", dmGyroDataMatrix);
-
-                //        NetCDFoperations.AddVariousDataToFile(dataToSave,
-                //            Directory.GetCurrentDirectory() + "\\logs\\GyroscopeDataLog-" +
-                //            DateTime.UtcNow.Date.ToString("yyyy-MM-dd") + ".nc");
-
-
-                //        dmGyroDataMatrix = null;
-                //        gyroDateTimeValuesList.Clear();
-                //    }
-
-                //    processedUDPPacketsCounter++;
-                //}
-                #endregion // gyroscope - вынесено в CollectionChanged событие коллекции gyroDataAndDTObservableConcurrentQueue
-
-                #region // GPS from Arduino stream - перенесено в CollectionChanged событие коллекции gpsDataAndDTObservableConcurrentQueue
-                //if (gpsDataHasBeenChanged)
-                //{
-                //    #region //obsolete
-                //    //SPA spaCalc = new SPA(gpsData.dateTimeUTC.Year, gpsData.dateTimeUTC.Month, gpsData.dateTimeUTC.Day, gpsData.dateTimeUTC.Hour,
-                //    //    gpsData.dateTimeUTC.Minute, gpsData.dateTimeUTC.Second, (float)gpsData.LonDec, (float)gpsData.LatDec,
-                //    //    (float)SPAConst.DeltaT(gpsData.dateTimeUTC));
-                //    //int res = spaCalc.spa_calculate();
-                //    #endregion //obsolete
-                //    AzimuthZenithAngle sunPositionSPAext = gpsData.SunZenithAzimuth();
-                //    double sunElevCalc = sunPositionSPAext.ElevationAngle;
-                //    double sunAzimuth = sunPositionSPAext.Azimuth;
-
-
-                //    ThreadSafeOperations.SetText(lblLatValue, gpsData.lat.ToString("F2") + gpsData.latHemisphere, false);
-                //    ThreadSafeOperations.SetText(lblLonValue, gpsData.lon.ToString("F2") + gpsData.lonHemisphere, false);
-                //    ThreadSafeOperations.SetText(lblUTCTimeValue, gpsData.dateTimeUTC.ToString("u").Replace(" ", Environment.NewLine).Replace("Z", ""), false);
-                //    ThreadSafeOperations.SetText(lblSunElev, sunElevCalc.ToString("F2"), false);
-                //    ThreadSafeOperations.SetText(lblSunAzimuth, sunAzimuth.ToString("F2"), false);
-
-                //    gpsDataHasBeenChanged = false;
-
-                //    gpsDateTimeValuesList.Add(DateTime.UtcNow.Ticks);
-                //    if (dmGPSDataMatrix == null)
-                //    {
-                //        dmGPSDataMatrix = gpsData.ToOneRowDenseMatrix();
-                //    }
-                //    else
-                //    {
-                //        DenseVector dvGPSDataVectorToAdd = gpsData.ToDenseVector();
-
-                //        dmGPSDataMatrix =
-                //            (DenseMatrix)dmGPSDataMatrix.InsertRow(dmGPSDataMatrix.RowCount, dvGPSDataVectorToAdd);
-                //    }
-
-                //    if (gpsDateTimeValuesList.Count >= 50)
-                //    {
-                //        Dictionary<string, object> dataToSave = new Dictionary<string, object>();
-                //        dataToSave.Add("DateTime", gpsDateTimeValuesList.ToArray());
-                //        dataToSave.Add("GPSdata", dmGPSDataMatrix);
-
-                //        NetCDFoperations.AddVariousDataToFile(dataToSave,
-                //            Directory.GetCurrentDirectory() + "\\logs\\GPSDataLog-" +
-                //            DateTime.UtcNow.Date.ToString("yyyy-MM-dd") + ".nc");
-
-                //        dmGPSDataMatrix = null;
-                //        gpsDateTimeValuesList.Clear();
-                //    }
-
-                //    processedUDPPacketsCounter++;
-                //}
-                #endregion // GPS from Arduino stream - перенесено в CollectionChanged событие коллекции gpsDataAndDTObservableConcurrentQueue
-
-                #region // pressure data from Arduino stream - перенесено в CollectionChanged событие коллекции pressureDataAndDTObservableConcurrentQueue
-                //if (pressureHasBeenChanged)
-                //{
-                //    pressureDateTimeValuesList.Add(DateTime.UtcNow.Ticks);
-                //    pressureValuesList.Add(pressure);
-
-                //    if (pressureDateTimeValuesList.Count >= 10)
-                //    {
-                //        ThreadSafeOperations.SetText(lblPressureValue, pressure.ToString(), false);
-
-                //        Dictionary<string, object> dataToSave = new Dictionary<string, object>();
-
-                //        long[] datetimeDataArray = pressureDateTimeValuesList.ToArray();
-                //        dataToSave.Add("DateTime", datetimeDataArray);
-
-                //        int[] pressureArray = pressureValuesList.ToArray();
-                //        dataToSave.Add("PressureData", pressureArray);
-
-                //        NetCDFoperations.AddVariousDataToFile(dataToSave, Directory.GetCurrentDirectory() +
-                //            "\\logs\\PressureDataLog-" + DateTime.UtcNow.Date.ToString("yyyy-MM-dd") + ".nc");
-
-                //        pressureValuesList.Clear();
-                //        pressureDateTimeValuesList.Clear();
-                //    }
-                //    pressureHasBeenChanged = false;
-
-                //    processedUDPPacketsCounter++;
-                //}
-                #endregion  // pressure data from Arduino stream - перенесено в CollectionChanged событие коллекции pressureDataAndDTObservableConcurrentQueue
-
-                #endregion // обработка очередей разобранных данных - разнесено по событиям CollectionChanged соответствующих коллекций
-
-
-
-                #region // if it is time to shoot - then shoot - перенесено в обработку данных по акселерометрам
-
-                //bool camshotTimeToGetIt = false;
-                //bool camshotHasBeenTaken = false;
-
-                //if (stwCamshotTimer.Elapsed >= CamShotPeriod)
-                //{
-                //    camshotTimeToGetIt = true;
-                //    ThreadSafeOperations.ToggleLabelTextColor(lblNextShotIn, SystemColors.Highlight);
-                //    stwCamshotTimer.Restart();
-                //}
-                //if (operatorCommandsToGetCamShot)
-                //{
-                //    camshotTimeToGetIt = true;
-                //    ThreadSafeOperations.ToggleLabelTextColor(lblNextShotIn, SystemColors.Highlight);
-                //}
-
-
-                //bool camshotInclinedProperly = !(accDevAngle > angleCamDeclinationThresholdRad);
-
-                ////if ((camshotInclinedProperly && camshotTimeToGetIt) || operatorCommandsToGetCamShotImmediately)
-                //if (camshotInclinedProperly && camshotTimeToGetIt)
-                //{
-                //    EventHandler onNeedToShootCameraSnapshots = this.NeedToShootCameraSnapshots;
-                //    if (onNeedToShootCameraSnapshots != null) onNeedToShootCameraSnapshots(null, null);
-
-                //    //catchCameraImages();
-                //    camshotHasBeenTaken = true;
-                //}
-
-
-
-                //if (camshotHasBeenTaken)
-                //{
-                //    Note("Got a shot " + DateTime.Now);
-                //    //camshotInclinedProperly = false;
-                //    //camshotHasBeenTaken = false;
-                //    //camshotTimeToGetIt = false;
-                //    ThreadSafeOperations.ToggleLabelTextColor(lblNextShotIn, SystemColors.ControlText);
-                //    operatorCommandsToGetCamShot = false;
-                //    //operatorCommandsToGetCamShotImmediately = false;
-
-
-                //    // ПОМЕНЯТЬ ТУТ
-                //    logCurrentSensorsData();
-                //}
-
-
-                #endregion // if it is time to shoot - then shoot - перенесено в обработку данных по акселерометрам
-
-
-
                 if (stwCamshotTimersUpdating.Elapsed >= labelsUpdatingPeriod)
                 {
                     updateTimersLabels(stwCamshotTimer, datetimeCamshotTimerBegin, CamShotPeriod);
                     stwCamshotTimersUpdating.Restart();
-                    //List<double> l = new List<double>();
-                    //double a = l[1];
                 }
 
 
@@ -1865,6 +1433,10 @@ namespace DataCollectorAutomator
             tmrUDPpacketsRecievingSpeedEstimation.Dispose();
             tmrUpdateSensorsDataPresentation.Change(Timeout.Infinite, Timeout.Infinite);
             tmrUpdateSensorsDataPresentation.Dispose();
+            tmrUDPcatchingJobIsWorkingCheck.Change(Timeout.Infinite, Timeout.Infinite);
+            tmrUDPcatchingJobIsWorkingCheck.Dispose();
+            tmrOrganizeAndArchiveCollectedDataCheck.Change(Timeout.Infinite, Timeout.Infinite);
+            tmrOrganizeAndArchiveCollectedDataCheck.Dispose();
             stwCamshotTimer.Stop();
         }
 
@@ -2013,7 +1585,7 @@ namespace DataCollectorAutomator
 
 
         #region GPS data processing
-        
+
 
         async void gpsDataAndDTObservableConcurrentQueue_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
@@ -2094,7 +1666,7 @@ namespace DataCollectorAutomator
                 #endregion // obsolete
 
                 #region swap GPS data to hdd
-                
+
                 Task tskDumpCollectedGPSdata = null;
 
                 if (tsCollectedGPSdata.Count >= 50)
@@ -2204,8 +1776,8 @@ namespace DataCollectorAutomator
                 }
 
                 if (tplGyroDT == null) continue;
-                
-                
+
+
                 GyroData gyroData = tplGyroDT.Item2;
                 DateTime dtGyroDataRecieved = tplGyroDT.Item1;
 
@@ -2225,11 +1797,11 @@ namespace DataCollectorAutomator
 
 
                 #region swap gyro data to hdd
-                
+
                 //Task tskUpdateAccDataOnForm = Task.Factory.StartNew(UpdateActualAccDataOnForm);
 
                 Task tskDumpCollectedGyroData = null;
-                
+
                 if (tsCollectedGyroData.Count >= 1000)
                 {
                     tskDumpCollectedGyroData = Task.Factory.StartNew(DumpCollectedGyroData);
@@ -2357,15 +1929,10 @@ namespace DataCollectorAutomator
                 else accID2tail.Enqueue(accData, dtAccDataRecieved);
 
 
-                //AccelerometerData accCalibrationData = (accData.devID <= 1)
-                //    ? (accCalibrationDataID1)
-                //    : (accCalibrationDataID2);
-
-
                 // пересчитать хвост
                 if (accData.devID <= 1)
-                    // 0 - если без разделения по DevID. например, когда установка только одна.
-                    // или 1 - если идет разделение.
+                // 0 - если без разделения по DevID. например, когда установка только одна.
+                // или 1 - если идет разделение.
                 {
                     List<AccelerometerData> accDataTail = new List<AccelerometerData>(accID1tail.DataValues);
                     accDataTail.RemoveAll(accDt => accDt == null);
@@ -2395,8 +1962,8 @@ namespace DataCollectorAutomator
 
                         try
                         {
-                            latestAccDataID1 = new AccelerometerData(dvKernelFixedWidth*dvAccXvaluesTail,
-                                dvKernelFixedWidth*dvAccYvaluesTail, dvKernelFixedWidth*dvAccZvaluesTail)
+                            latestAccDataID1 = new AccelerometerData(dvKernelFixedWidth * dvAccXvaluesTail,
+                                dvKernelFixedWidth * dvAccYvaluesTail, dvKernelFixedWidth * dvAccZvaluesTail)
                             {
                                 devID = accData.devID
                             };
@@ -2425,12 +1992,6 @@ namespace DataCollectorAutomator
                             success = false;
                         }
                     }
-                    
-
-                    
-
-                    //accDevAngle = (latestAccDataID1 * accCalibrationData) / (latestAccDataID1.AccMagnitude * accCalibrationData.AccMagnitude);
-                    //accDevAngle = Math.Acos(accDevAngle);
                 }
                 else
                 {
@@ -2491,9 +2052,9 @@ namespace DataCollectorAutomator
 
                             success = false;
                         }
-                        
+
                     }
-                    
+
 
                     //accDevAngle = (latestAccDataID2 * accCalibrationData) / (latestAccDataID2.AccMagnitude * accCalibrationData.AccMagnitude);
                     //accDevAngle = Math.Acos(accDevAngle);
@@ -2653,7 +2214,7 @@ namespace DataCollectorAutomator
                     {
                         Monitor.Exit(tsCollectedAccSmoothedDataID1);
                     }
-                    
+
 
                     #region //obsolete
                     //accSmoothedDateTimeValuesListID1.Add(dtAccDataRecieved.Ticks);
@@ -2734,7 +2295,7 @@ namespace DataCollectorAutomator
                     dataToPassToSensorsDataPresentation[0] = latestAccDataID1;
                     //dataToPassToSensorsDataPresentation.AddRange(new[] { latestAccDataID1, accCalibrationDataID1, latestAccDataID2, accCalibrationDataID2 });
                 }
-                
+
 
                 if (latestAccDataID2.AccMagnitude > 0.0d)
                 {
@@ -2743,7 +2304,7 @@ namespace DataCollectorAutomator
                     //dataToPassToSensorsDataPresentation.AddRange(new[] { latestAccDataID1, accCalibrationDataID1, latestAccDataID2, accCalibrationDataID2 });
                 }
 
-                
+
 
 
                 #region swap acc data to hdd
@@ -2773,7 +2334,7 @@ namespace DataCollectorAutomator
                 }
 
 
-                
+
 
                 #region // obsolete
                 //if (accDateTimeValuesList.Count >= 1000)
@@ -2792,7 +2353,7 @@ namespace DataCollectorAutomator
                 //    dmAccDataMatrix = null;
                 //    accDateTimeValuesList.Clear();
                 //}
-                
+
 
 
                 //if (accSmoothedDateTimeValuesListID1.Count >= 500)
@@ -3143,7 +2704,7 @@ namespace DataCollectorAutomator
 
                 IsNowSilent = ForceBeepsSilent ||
                               (!sunElevationMoreThanZero && MakeBeepsSilentWhenSunElevationLowerThanZero);
-                
+
                 if (!IsNowSilent)
                 {
                     SystemSounds.Beep.Play();
@@ -3226,6 +2787,80 @@ namespace DataCollectorAutomator
             }
         }
 
+
+
+
+
+
+        private void CheckIfUDPcatchingJobIsWorking(object state)
+        {
+            if (udpCatchingJob != null)
+            {
+                if (udpCatchingJobShouldBeWorking && !udpCatchingJob.IsBusy)
+                {
+                    btnStartStopBdcstListening_Click(null, null);
+                }
+            }
+        }
+
+
+
+
+
+        private void OrganizeAndArchiveCollectedDataCheck(object state)
+        {
+            // check if current Sun altitude is less than zero and time is between sunset and sunrise
+            if (latestGPSdata.validGPSdata)
+            {
+                SPA spaCalc = new SPA(latestGPSdata.dateTimeUTC.Year, latestGPSdata.dateTimeUTC.Month, latestGPSdata.dateTimeUTC.Day, latestGPSdata.dateTimeUTC.Hour,
+                        latestGPSdata.dateTimeUTC.Minute, latestGPSdata.dateTimeUTC.Second, (float)latestGPSdata.LonDec, (float)latestGPSdata.LatDec,
+                        (float)SPAConst.DeltaT(latestGPSdata.dateTimeUTC));
+                int res = spaCalc.spa_calculate();
+                AzimuthZenithAngle sunPositionSPAext = new AzimuthZenithAngle(spaCalc.spa.azimuth,
+                    spaCalc.spa.zenith);
+                spaCalc.spa.function = SPAFunctionType.SPA_ZA_RTS;
+                spaCalc.spa_calculate();
+
+
+                // spaCalc.spa.sunset
+                // spaCalc.spa.sunrise
+                // sunPositionSPAext.ElevationAngle
+
+                if (restrictDataRegistrationWhenSunElevationLowerThanZero && bOrganizeAndArchiveCollectedDataAtLocalMidnight)
+                {
+                    //calculate local midnight time
+                    double timeMidnight = spaCalc.spa.sunrise - spaCalc.spa.sunset;
+                    if (timeMidnight <= 0.0d) timeMidnight += 24.0d;
+                    timeMidnight /= 2.0d;
+                    timeMidnight += spaCalc.spa.sunset;
+                    if (timeMidnight >= 24.0d)
+                    {
+                        timeMidnight -= 24.0d;
+                    }
+                    TimeOfDay midnightTOD = new TimeOfDay(timeMidnight);
+                    DateTime dtMidnight = DateTime.UtcNow.Date +
+                                          new TimeSpan(midnightTOD.hour, midnightTOD.minute, midnightTOD.second);
+
+                    if (Math.Abs((DateTime.UtcNow - dtMidnight).TotalMinutes) <= 30)
+                    {
+                        //Process pProcess = new Process();
+                        //pProcess.StartInfo.FileName = @"C:\Users\Vitor\ConsoleApplication1.exe";
+                        //pProcess.StartInfo.Arguments = "olaa";
+                        //pProcess.StartInfo.UseShellExecute = false;
+                        //pProcess.StartInfo.RedirectStandardOutput = true;
+                        //pProcess.StartInfo.WindowStyle = System.Diagnostics.ProcessWindowStyle.Hidden;
+                        //pProcess.StartInfo.CreateNoWindow = true; //not diplay a windows
+                        //pProcess.Start();
+                        //string output = pProcess.StandardOutput.ReadToEnd(); //The output result
+
+                        theLogWindow = ServiceTools.LogAText(theLogWindow,
+                            "Local time: " + DateTime.Now.ToString("u") + Environment.NewLine +
+                            "It could be the time to organize and archive collected data.");
+                    }
+
+                }
+            }
+        }
 
 
 
@@ -3317,7 +2952,7 @@ namespace DataCollectorAutomator
 
 
 
-        
+
 
 
         private void catchCameraImages()
@@ -3331,7 +2966,7 @@ namespace DataCollectorAutomator
 
 
             // Надо взять сразу оба снимка - берем в backgroundworker-ах
-            DoWorkEventHandler currDoWorkHandler = delegate(object currBGWsender, DoWorkEventArgs args)
+            DoWorkEventHandler currDoWorkHandler = delegate (object currBGWsender, DoWorkEventArgs args)
             {
                 BackgroundWorker selfworker = currBGWsender as BackgroundWorker;
                 object[] currBGWarguments = (object[])args.Argument;
@@ -3391,7 +3026,7 @@ namespace DataCollectorAutomator
                 args.Result = new object[] { gotImage, devID, gotimageFileName };
             };
 
-            RunWorkerCompletedEventHandler currWorkCompletedHandler = delegate(object currBGWCompletedSender, RunWorkerCompletedEventArgs args)
+            RunWorkerCompletedEventHandler currWorkCompletedHandler = delegate (object currBGWCompletedSender, RunWorkerCompletedEventArgs args)
             {
                 object[] currentBGWResults = (object[])args.Result;
                 Image gotimage = currentBGWResults[0] as Image;
@@ -3558,7 +3193,7 @@ namespace DataCollectorAutomator
             ThreadSafeOperations.ToggleButtonState(btnCalibrateAccelerometerID1, true, "Calibrate accelerometer", false);
             dataCollectingState = DataCollectingStates.idle;
         }
-        
+
 
         #endregion accelerometer calibration
 
@@ -3568,6 +3203,8 @@ namespace DataCollectorAutomator
 
 
         #region process catched UDP messages from cquArduinoUDPCatchedMessages
+
+
 
         void cquArduinoUDPCatchedMessages_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
         {
@@ -3734,7 +3371,7 @@ namespace DataCollectorAutomator
                 }
             }
         }
-        
+
 
 
 
@@ -3759,9 +3396,9 @@ namespace DataCollectorAutomator
                 switch (dataSign)
                 {
                     case "gps":
-                    {
-                        GPSdata catchedGPSdata = new GPSdata(dataValuesString, GPSdatasources.CloudCamArduinoGPS,
-                            DateTime.UtcNow);
+                        {
+                            GPSdata catchedGPSdata = new GPSdata(dataValuesString, GPSdatasources.CloudCamArduinoGPS,
+                                DateTime.UtcNow);
                             if (catchedGPSdata.validGPSdata)
                             {
                                 latestGPSdata = catchedGPSdata;
@@ -3769,7 +3406,7 @@ namespace DataCollectorAutomator
                                 gpsDataAndDTObservableConcurrentQueue.Enqueue(
                                     new Tuple<DateTime, GPSdata>(DateTime.UtcNow, latestGPSdata));
                             }
-                            
+
                             break;
                         }
                     case "dta":
@@ -3833,187 +3470,563 @@ namespace DataCollectorAutomator
             }
         }
 
+
+
+
         #endregion process catched UDP messages from cquArduinoUDPCatchedMessages
 
 
 
 
 
-        #region // bgwUDPmessagesParser is obsolete
+        
 
-        //private void bgwUDPmessagesParser_DoWork(object sender, DoWorkEventArgs e)
+
+
+
+
+        private int bytesToSendFileSize = 0;
+        private Ipport ipclient = null;
+        private Communication_ClientChecklist dctCommunicationChecklist = null;
+        private async void btnTestSSH_Click(object sender, EventArgs e)
+        {
+            string filenameToSend =
+                @"D:\_gulevlab\SkyImagesAnalysis_appData\_AI49-total\images\ai49-snapshots-2015-06-12\img-2015-06-12T17-09-18devID1.jpg";
+            FileInfo f = new FileInfo(filenameToSend);
+            bytesToSendFileSize = Convert.ToInt32(f.Length);
+            string fileMD5hashString = ServiceTools.CalculateMD5hashString(filenameToSend);
+            theLogWindow = ServiceTools.LogAText(theLogWindow, "file MD5 hash (UTF8-encoded): " + Environment.NewLine + fileMD5hashString);
+
+            ipclient = new Ipport()
+            {
+                RemoteHost = "192.168.192.200",
+                RemotePort = 24,
+                Timeout = 180
+            };
+            ipclient.Config("OutBufferSize=4096");
+            ipclient.OnConnected += Ipclient_OnConnected;
+            ipclient.OnConnectionStatus += Ipclient_OnConnectionStatus;
+            ipclient.OnDisconnected += Ipclient_OnDisconnected;
+            ipclient.OnError += Ipclient_OnError;
+            ipclient.OnDataIn += Ipclient_OnDataIn;
+
+            ipclient.Connect("192.168.192.200", 24);
+
+
+
+            dctCommunicationChecklist = new Communication_ClientChecklist();
+            
+            ipclient.SendLine("<SendingFile>");
+            Thread.Sleep(200);
+            
+            IPWorksFileSenderReceiver imageFileSender = new IPWorksFileSenderReceiver(ipclient,
+                FileSenderReceiverRole.sender);
+            imageFileSender.theLogWindow = theLogWindow;
+            imageFileSender.fileSenderConnection = new FileSendingConnectionDescription()
+            {
+                ConnectionID = "",
+                FileSenderCommunicationChecklist = new FileTransfer_SenderChecklist()
+            };
+            imageFileSender.FileSendingFinished += ImageFileSender_FileSendingFinished;
+            imageFileSender.SendFile(filenameToSend, Path.GetFileName(filenameToSend));
+
+
+            #region // image file transfer
+
+            //#region sending file
+
+            //ipclient.SendLine("<SendingImageFile=" + bytesToSendFileSize.ToString() + ">");
+            //dctCommunicationChecklist.SendingImageFileMarkerSent = true; // 1000...
+            //Task<bool> taskSendingFileMarker = Task.Run(WaitForServerResponce);
+            //// dctCommunicationChecklist.ServerReadyToReceiveImageFile = true
+            //if (!(await taskSendingFileMarker))
+            //{
+            //    theLogWindow = ServiceTools.LogAText(theLogWindow, "Server ready-to-receive-file responce timeout");
+            //    return;
+            //}
+
+
+
+            //ipclient.SendFile(filenameToSend);
+            //dctCommunicationChecklist.SendingImageFile = true;
+            //Task<bool> taskSentFileReceivedResponce = Task.Run(WaitForServerResponce);
+            //dctCommunicationChecklist.ImageFileSent = true;
+            //if (!(await taskSentFileReceivedResponce))
+            //{
+            //    theLogWindow = ServiceTools.LogAText(theLogWindow, "Server file-received-ready responce timeout");
+            //    return;
+            //}
+
+            //ipclient.SendLine("<ImageFileSendingFinished>");
+            //dctCommunicationChecklist.ImageFileSendingFinishedMarkerSent = true;
+            //Task<bool> taskSendingFileFinishedMarker = Task.Run(WaitForServerResponce);
+            //if (!(await taskSendingFileFinishedMarker))
+            //{
+            //    theLogWindow = ServiceTools.LogAText(theLogWindow, "Server ready responce timeout");
+            //    return;
+            //}
+
+            //#endregion sending file
+
+
+
+
+            //#region sending filename
+
+            //ipclient.SendLine("<SendingFilename>");
+            //dctCommunicationChecklist.ImageFilenameSendingMarkerSent = true;
+            //Task<bool> taskSendingFilenameMarker = Task.Run(WaitForServerResponce);
+            //if (!(await taskSendingFilenameMarker))
+            //{
+            //    theLogWindow = ServiceTools.LogAText(theLogWindow, "Server ready-to-receive-filename responce timeout");
+            //    return;
+            //}
+
+
+            //ipclient.SendLine("img-2015-06-12T17-09-18devID1.jpg");
+            //dctCommunicationChecklist.ImageFilenameSent = true;
+            //Task<bool> taskSendingFilename = Task.Run(WaitForServerResponce);
+            //if (!(await taskSendingFilename))
+            //{
+            //    theLogWindow = ServiceTools.LogAText(theLogWindow, "Server filename-received responce timeout");
+            //    return;
+            //}
+
+            //#endregion sending filename
+
+
+
+            //#region sending MD5
+
+            //ipclient.SendLine("<SendingFileMD5Hash>");
+            //dctCommunicationChecklist.ImageMD5hashSendingMarkerSent = true;
+            //Task<bool> taskSendingMD5marker = Task.Run(WaitForServerResponce);
+            //if (!(await taskSendingMD5marker))
+            //{
+            //    theLogWindow = ServiceTools.LogAText(theLogWindow, "Server ready-to-receive-MD5 responce timeout");
+            //    return;
+            //}
+
+
+
+            //ipclient.SendLine(fileMD5hashString);
+            //dctCommunicationChecklist.ImageMD5hashSent = true;
+            //Task<bool> taskSendingMD5string = Task.Run(WaitForServerResponce);
+            //if (!(await taskSendingMD5string))
+            //{
+            //    theLogWindow = ServiceTools.LogAText(theLogWindow, "Server MD5-received responce timeout");
+            //    return;
+            //}
+
+            //#endregion sending MD5
+
+
+
+            //#region check if MD5 hash equality confirmed
+
+            //ipclient.SendLine("<ImageMD5EqualityConfirmationRequest>");
+            //dctCommunicationChecklist.imageMD5EqualityConfirmationRequestSent = true;
+            //Task<bool> taskimageMD5EqualityConfirmationRequestWaiting = Task.Run(WaitForServerResponce);
+            //if (!(await taskimageMD5EqualityConfirmationRequestWaiting))
+            //{
+            //    theLogWindow = ServiceTools.LogAText(theLogWindow, "Server Image MD5 Equality Confirmation responce timeout");
+            //    return;
+            //}
+
+            //if (!dctCommunicationChecklist.imageMD5EqualityOK)
+            //{
+            //    theLogWindow = ServiceTools.LogAText(theLogWindow, "Image file transferred MD5 checksum doesnt match. Will not proceed.");
+            //    return;
+            //}
+
+            //#endregion check if MD5 hash equality confirmed
+
+            #endregion image file transfer
+        }
+
+
+
+        private async void ImageFileSender_FileSendingFinished(object sender, FileTransferFinishedEventArgs e)
+        {
+            theLogWindow = ServiceTools.LogAText(theLogWindow,
+                "All data has been sent. Waiting for GrIx,Y,R,G,B stats XML file returned");
+
+            dctCommunicationChecklist.WaitingForStatsFile = true;
+            Task<bool> taskWaitingForServerResponceStatsCalculation = Task.Run(WaitForServerResponceStatsCalculation);
+            if (!(await taskWaitingForServerResponceStatsCalculation))
+            {
+                theLogWindow = ServiceTools.LogAText(theLogWindow, "Server stats XML file returning timeout");
+                return;
+            }
+        }
+
+
+
+        private MemoryStream incomingdataMemoryStream = null;
+        private void Ipclient_OnDataIn(object sender, IpportDataInEventArgs e)
+        {
+            string TextReceived = e.Text;
+            string FirstLine = TextReceived.Split(new string[] { Environment.NewLine },
+                StringSplitOptions.RemoveEmptyEntries).First();
+            FirstLine = FirstLine.Replace(Environment.NewLine, "");
+            if (!dctCommunicationChecklist.WaitingForStatsFile)
+            {
+                theLogWindow = ServiceTools.LogAText(theLogWindow, FirstLine);
+            }
+
+
+            #region // server responses processing
+
+            //#region image sending
+
+            //if (dctCommunicationChecklist.SendingImageFileMarkerSent && !dctCommunicationChecklist.SendingImageFileMarkerSentConfirmed)
+            //{
+            //    if (FirstLine == "OK")
+            //    {
+            //        Thread.Sleep(100);
+            //        dctCommunicationChecklist.SendingImageFileMarkerSentConfirmed = true;
+            //        return;
+            //    }
+            //}
+
+
+            //if (dctCommunicationChecklist.SendingImageFile && dctCommunicationChecklist.ImageFileSent && !dctCommunicationChecklist.ImageFileReceivedBytesConfirmed)
+            //{
+            //    if (FirstLine.Contains("<BytesReceived="))
+            //    {
+            //        string ReceivedBytesReportedStr = FirstLine.Replace("<BytesReceived=", "").Replace(">", "");
+            //        int ReceivedBytesReported = Convert.ToInt32(ReceivedBytesReportedStr);
+            //        if (ReceivedBytesReported == bytesToSendFileSize)
+            //        {
+            //            dctCommunicationChecklist.ImageFileReceivedBytesConfirmed = true;
+            //        }
+            //    }
+            //    return;
+            //}
+
+
+            //if (dctCommunicationChecklist.ImageFileSendingFinishedMarkerSent && !dctCommunicationChecklist.ImageFileSendingFinishedMarkerSentConfirmed)
+            //{
+            //    if (FirstLine == "OK")
+            //    {
+            //        Thread.Sleep(100);
+            //        dctCommunicationChecklist.ImageFileSendingFinishedMarkerSentConfirmed = true;
+            //        return;
+            //    }
+            //}
+
+            //#endregion image sending
+
+
+
+            //#region image filename sending
+
+            //if (dctCommunicationChecklist.ImageFilenameSendingMarkerSent && !dctCommunicationChecklist.ImageFilenameSendingMarkerSentConfirmed)
+            //{
+            //    if (FirstLine == "OK")
+            //    {
+            //        Thread.Sleep(100);
+            //        dctCommunicationChecklist.ImageFilenameSendingMarkerSentConfirmed = true;
+            //        return;
+            //    }
+            //}
+
+
+
+            //if (dctCommunicationChecklist.ImageFilenameSent && !dctCommunicationChecklist.ImageFilenameSentConfirmed)
+            //{
+            //    if (FirstLine == "OK")
+            //    {
+            //        Thread.Sleep(100);
+            //        dctCommunicationChecklist.ImageFilenameSentConfirmed = true;
+            //        return;
+            //    }
+            //}
+
+            //#endregion image filename sending
+
+
+
+            //#region image MD5 hash sending
+
+            //if (dctCommunicationChecklist.ImageMD5hashSendingMarkerSent && !dctCommunicationChecklist.ImageMD5hashSendingMarkerSentConfirmed)
+            //{
+            //    if (FirstLine == "OK")
+            //    {
+            //        Thread.Sleep(100);
+            //        dctCommunicationChecklist.ImageMD5hashSendingMarkerSentConfirmed = true;
+            //        return;
+            //    }
+            //}
+
+
+
+            //if (dctCommunicationChecklist.ImageMD5hashSent && !dctCommunicationChecklist.ImageMD5hashSentConfirmed)
+            //{
+            //    if (FirstLine == "OK")
+            //    {
+            //        Thread.Sleep(100);
+            //        dctCommunicationChecklist.ImageMD5hashSentConfirmed = true;
+            //        return;
+            //    }
+            //}
+
+            //#endregion image MD5 hash sending
+
+
+
+            //#region  check if MD5 hash equality confirmed
+
+            //if (dctCommunicationChecklist.imageMD5EqualityConfirmationRequestSent && !dctCommunicationChecklist.imageMD5EqualityReplied)
+            //{
+            //    if (FirstLine == "MD5OK")
+            //    {
+            //        Thread.Sleep(100);
+            //        dctCommunicationChecklist.imageMD5EqualityReplied = true;
+            //        dctCommunicationChecklist.imageMD5EqualityOK = true;
+            //        return;
+            //    }
+            //    else if (FirstLine == "MD5failed")
+            //    {
+            //        Thread.Sleep(100);
+            //        dctCommunicationChecklist.imageMD5EqualityReplied = true;
+            //        dctCommunicationChecklist.imageMD5EqualityOK = false;
+            //        return;
+            //    }
+            //}
+
+            //#endregion  check if MD5 hash equality confirmed
+
+            #endregion server responses processing
+
+
+            if (dctCommunicationChecklist.WaitingForStatsFile)
+            {
+                if (incomingdataMemoryStream == null)
+                {
+                    incomingdataMemoryStream = new MemoryStream();
+                    incomingdataMemoryStream.Write(e.TextB, 0, e.TextB.Length);
+                    ipclient.SendLine("<BytesReceived=" + incomingdataMemoryStream.Length + ">");
+                }
+                else
+                {
+                    incomingdataMemoryStream.Write(e.TextB, 0, e.TextB.Length);
+                    ipclient.SendLine("<BytesReceived=" + incomingdataMemoryStream.Length + ">");
+                }
+            }
+        }
+
+
+        #region // WaitForServerResponce
+
+        //private async Task<bool> WaitForServerResponce()
         //{
-        //    BackgroundWorker selfWorker = sender as BackgroundWorker;
+        //    Stopwatch sw = new Stopwatch();
+        //    sw.Start();
 
-
-        //    while (true)
+        //    if (dctCommunicationChecklist.SendingImageFileMarkerSent && !dctCommunicationChecklist.SendingImageFileMarkerSentConfirmed)
         //    {
-        //        if (selfWorker.CancellationPending && cquArduinoUDPCatchedMessages.Count == 0)
+        //        while (!dctCommunicationChecklist.SendingImageFileMarkerSentConfirmed)
         //        {
-        //            break;
-        //        }
-
-        //        if (cquArduinoUDPCatchedMessages.Count == 0)
-        //        {
-        //            //Application.DoEvents();
-        //            //Thread.Sleep(0);
-        //            continue;
-        //        }
-
-
-        //        if (cquArduinoUDPCatchedMessages.Count > 0)
-        //        {
-
-        //            try
+        //            if (sw.Elapsed.TotalSeconds > 60)
         //            {
-        //                ProcessUDPmessagesFromQueue(selfWorker);
+        //                return false;
         //            }
-        //            catch (Exception ex)
-        //            {
-        //                theLogWindow = ServiceTools.LogAText(theLogWindow, ex.Message);
-        //                //ServiceTools.logToTextFile(Directory.GetCurrentDirectory() + "\\error.log",
-        //                //    Environment.NewLine + ex.Message + Environment.NewLine, true);
-        //                continue;
-        //            }
-
+        //            Thread.Sleep(100);
         //        }
-        //        else
-        //        {
-        //            //Application.DoEvents();
-        //            //Thread.Sleep(0);
-        //            continue;
-        //        }
-
+        //        return true;
         //    }
+
+
+        //    if (dctCommunicationChecklist.SendingImageFile && dctCommunicationChecklist.ImageFileSent && !dctCommunicationChecklist.ImageFileReceivedBytesConfirmed)
+        //    {
+        //        while (!dctCommunicationChecklist.ImageFileReceivedBytesConfirmed)
+        //        {
+        //            if (sw.Elapsed.TotalSeconds > 60)
+        //            {
+        //                return false;
+        //            }
+        //            Thread.Sleep(100);
+        //        }
+        //        return true;
+        //    }
+
+
+
+        //    if (dctCommunicationChecklist.ImageFileSendingFinishedMarkerSent && !dctCommunicationChecklist.ImageFileSendingFinishedMarkerSentConfirmed)
+        //    {
+        //        while (!dctCommunicationChecklist.ImageFileSendingFinishedMarkerSentConfirmed)
+        //        {
+        //            if (sw.Elapsed.TotalSeconds > 60)
+        //            {
+        //                return false;
+        //            }
+        //            Thread.Sleep(100);
+        //        }
+        //        return true;
+        //    }
+
+
+
+
+        //    if (dctCommunicationChecklist.ImageFilenameSendingMarkerSent && !dctCommunicationChecklist.ImageFilenameSendingMarkerSentConfirmed)
+        //    {
+        //        while (!dctCommunicationChecklist.ImageFilenameSendingMarkerSentConfirmed)
+        //        {
+        //            if (sw.Elapsed.TotalSeconds > 60)
+        //            {
+        //                return false;
+        //            }
+        //            Thread.Sleep(100);
+        //        }
+        //        return true;
+        //    }
+
+
+
+        //    if (dctCommunicationChecklist.ImageFilenameSent && !dctCommunicationChecklist.ImageFilenameSentConfirmed)
+        //    {
+        //        while (!dctCommunicationChecklist.ImageFilenameSentConfirmed)
+        //        {
+        //            if (sw.Elapsed.TotalSeconds > 60)
+        //            {
+        //                return false;
+        //            }
+        //            Thread.Sleep(100);
+        //        }
+        //        return true;
+        //    }
+
+
+
+        //    if (dctCommunicationChecklist.ImageMD5hashSendingMarkerSent && !dctCommunicationChecklist.ImageMD5hashSendingMarkerSentConfirmed)
+        //    {
+        //        while (!dctCommunicationChecklist.ImageMD5hashSendingMarkerSentConfirmed)
+        //        {
+        //            if (sw.Elapsed.TotalSeconds > 60)
+        //            {
+        //                return false;
+        //            }
+        //            Thread.Sleep(100);
+        //        }
+        //        return true;
+        //    }
+
+
+
+        //    if (dctCommunicationChecklist.ImageMD5hashSent && !dctCommunicationChecklist.ImageMD5hashSentConfirmed)
+        //    {
+        //        while (!dctCommunicationChecklist.ImageMD5hashSentConfirmed)
+        //        {
+        //            if (sw.Elapsed.TotalSeconds > 60)
+        //            {
+        //                return false;
+        //            }
+        //            Thread.Sleep(100);
+        //        }
+        //        return true;
+        //    }
+
+
+
+
+        //    if (dctCommunicationChecklist.imageMD5EqualityConfirmationRequestSent && !dctCommunicationChecklist.imageMD5EqualityReplied)
+        //    {
+        //        while (!dctCommunicationChecklist.imageMD5EqualityReplied)
+        //        {
+        //            if (sw.Elapsed.TotalSeconds > 60)
+        //            {
+        //                return false;
+        //            }
+        //            Thread.Sleep(100);
+        //        }
+        //        return true;
+        //    }
+
+        //    return false;
         //}
 
-        #endregion // bgwUDPmessagesParser is obsolete
+        #endregion // WaitForServerResponce
 
         
+        
+        
+        private async Task<bool> WaitForServerResponceStatsCalculation()
+        {
+            Stopwatch sw = new Stopwatch();
+            sw.Start();
+
+            while (dctCommunicationChecklist.WaitingForStatsFile)
+            {
+                if (sw.Elapsed.TotalSeconds > 180)
+                {
+                    return false;
+                }
+                Thread.Sleep(100);
+            }
+            return true;
+        }
+
+
+
+
+
+        private void Ipclient_OnError(object sender, IpportErrorEventArgs e)
+        {
+
+            theLogWindow = ServiceTools.LogAText(theLogWindow, "ERROR: " + Environment.NewLine + e.Description);
+
+        }
+
+        private void Ipclient_OnDisconnected(object sender, IpportDisconnectedEventArgs e)
+        {
+            if (incomingdataMemoryStream != null)
+            {
+                string xmlFilename =
+                    ConventionalTransitions.ImageGrIxYRGBstatsDataFileName(
+                        @"D:\_gulevlab\SkyImagesAnalysis_appData\_AI49-total\images\ai49-snapshots-2015-06-12\img-2015-06-12T17-09-18devID1.jpg",
+                        @"D:\_gulevlab\SkyImagesAnalysis\_DBGbin\IncomingImages\", true);
+                FileStream file = new FileStream(xmlFilename, FileMode.OpenOrCreate, FileAccess.Write);
+                incomingdataMemoryStream.WriteTo(file);
+                file.Close();
+                incomingdataMemoryStream.Close();
+                theLogWindow = ServiceTools.LogAText(theLogWindow, "received XML file: " + xmlFilename);
+            }
+            ipclient.Dispose();
+            theLogWindow = ServiceTools.LogAText(theLogWindow,
+                "Disconnected from remote host: " + Environment.NewLine + e.Description);
+
+        }
+
+        private void Ipclient_OnConnectionStatus(object sender, IpportConnectionStatusEventArgs e)
+        {
+
+            theLogWindow = ServiceTools.LogAText(theLogWindow, e.Description);
+
+        }
+
+        private void Ipclient_OnConnected(object sender, IpportConnectedEventArgs e)
+        {
+            theLogWindow = ServiceTools.LogAText(theLogWindow,
+                "Connected to remote host: " + Environment.NewLine + e.Description);
+        }
+
+
+
+
+
+
+
+        //private void Sshc_OnConnected(object sender, SshclientConnectedEventArgs e)
+        //{
+        //    theLogWindow = ServiceTools.LogAText(theLogWindow, "Connected: " + e.Description);
+        //}
+
+        //private void Sshc_OnSSHStatus(object sender, SshclientSSHStatusEventArgs e)
+        //{
+        //    theLogWindow = ServiceTools.LogAText(theLogWindow, e.Message);
+        //}
     }
 
     #endregion the form class
-
-
-
-
-
-
-    #region // event-model usage
-
-    //public class NotAllBgwWorkingAlertEventArgs
-    //{
-    //    public String Message { get; private set; }
-
-    //    public NotAllBgwWorkingAlertEventArgs(string message)
-    //    {
-    //        Message = message;
-    //    }
-    //}
-
-    #endregion // event-model usage
-
-
-
-
-
-    #region tools-classes
-
-    public static class PropertyHelper
-    {
-        /// <summary>
-        /// Returns a _private_ Property Value from a given Object. Uses Reflection.
-        /// Throws a ArgumentOutOfRangeException if the Property is not found.
-        /// </summary>
-        /// <typeparam name="T">Type of the Property</typeparam>
-        /// <param name="obj">Object from where the Property Value is returned</param>
-        /// <param name="propName">Propertyname as string.</param>
-        /// <returns>PropertyValue</returns>
-        public static T GetPrivatePropertyValue<T>(this object obj, string propName)
-        {
-            if (obj == null) throw new ArgumentNullException("obj");
-            PropertyInfo pi = obj.GetType().GetProperty(propName,
-                                                        BindingFlags.Public | BindingFlags.NonPublic |
-                                                        BindingFlags.Instance);
-            if (pi == null)
-                throw new ArgumentOutOfRangeException("propName",
-                                                      string.Format("Property {0} was not found in Type {1}", propName,
-                                                                    obj.GetType().FullName));
-            return (T)pi.GetValue(obj, null);
-        }
-
-        /// <summary>
-        /// Returns a private Field Value from a given Object. Uses Reflection.
-        /// Throws a ArgumentOutOfRangeException if the Property is not found.
-        /// </summary>
-        /// <typeparam name="T">Type of the Field</typeparam>
-        /// <param name="obj">Object from where the Field Value is returned</param>
-        /// <param name="propName">Field Name as string.</param>
-        /// <returns>FieldValue</returns>
-        public static T GetPrivateFieldValue<T>(this object obj, string propName)
-        {
-            if (obj == null) throw new ArgumentNullException("obj");
-            Type t = obj.GetType();
-            FieldInfo fi = null;
-            while (fi == null && t != null)
-            {
-                fi = t.GetField(propName, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
-                t = t.BaseType;
-            }
-            if (fi == null)
-                throw new ArgumentOutOfRangeException("propName",
-                                                      string.Format("Field {0} was not found in Type {1}", propName,
-                                                                    obj.GetType().FullName));
-            return (T)fi.GetValue(obj);
-        }
-
-        /// <summary>
-        /// Sets a _private_ Property Value from a given Object. Uses Reflection.
-        /// Throws a ArgumentOutOfRangeException if the Property is not found.
-        /// </summary>
-        /// <typeparam name="T">Type of the Property</typeparam>
-        /// <param name="obj">Object from where the Property Value is set</param>
-        /// <param name="propName">Propertyname as string.</param>
-        /// <param name="val">Value to set.</param>
-        /// <returns>PropertyValue</returns>
-        public static void SetPrivatePropertyValue<T>(this object obj, string propName, T val)
-        {
-            Type t = obj.GetType();
-            if (t.GetProperty(propName, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance) == null)
-                throw new ArgumentOutOfRangeException("propName",
-                                                      string.Format("Property {0} was not found in Type {1}", propName,
-                                                                    obj.GetType().FullName));
-            t.InvokeMember(propName,
-                           BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.SetProperty |
-                           BindingFlags.Instance, null, obj, new object[] { val });
-        }
-
-
-        /// <summary>
-        /// Set a private Field Value on a given Object. Uses Reflection.
-        /// </summary>
-        /// <typeparam name="T">Type of the Field</typeparam>
-        /// <param name="obj">Object from where the Property Value is returned</param>
-        /// <param name="propName">Field name as string.</param>
-        /// <param name="val">the value to set</param>
-        /// <exception cref="ArgumentOutOfRangeException">if the Property is not found</exception>
-        public static void SetPrivateFieldValue<T>(this object obj, string propName, T val)
-        {
-            if (obj == null) throw new ArgumentNullException("obj");
-            Type t = obj.GetType();
-            FieldInfo fi = null;
-            while (fi == null && t != null)
-            {
-                fi = t.GetField(propName, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
-                t = t.BaseType;
-            }
-            if (fi == null)
-                throw new ArgumentOutOfRangeException("propName",
-                                                      string.Format("Field {0} was not found in Type {1}", propName,
-                                                                    obj.GetType().FullName));
-            fi.SetValue(obj, val);
-        }
-    }
-
-    #endregion
 }

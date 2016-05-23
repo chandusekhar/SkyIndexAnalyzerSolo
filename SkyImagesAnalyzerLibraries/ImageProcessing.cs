@@ -1697,37 +1697,9 @@ namespace SkyImagesAnalyzerLibraries
 
 
 
-        //public static Image ImageResizer(Image imgToResize, int maxSideLength = 1024)
-        //{
-        //    int sourceWidth = imgToResize.Width;
-        //    int sourceHeight = imgToResize.Height;
-        //
-        //    int sourceMaxSide = Math.Max(sourceWidth, sourceHeight);
-        //    if (sourceMaxSide > maxSideLength)
-        //    {
-        //        double koeff = ((double)maxSideLength / (double)sourceMaxSide);
-        //        int newWidth = Convert.ToInt32(koeff * sourceWidth);
-        //        int neHeight = Convert.ToInt32(koeff * sourceHeight);
-        //
-        //
-        //        Bitmap b = new Bitmap(newWidth, neHeight);
-        //        Graphics g = Graphics.FromImage((Image)b);
-        //        g.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.HighQualityBicubic;
-        //
-        //        g.DrawImage(imgToResize, 0, 0, newWidth, neHeight);
-        //        g.Dispose();
-        //
-        //        b = ImageProcessing.SquareImageDimensions(b);
-        //
-        //        return (Image)b;
-        //    }
-        //    else
-        //    {
-        //        return imgToResize;
-        //    }
-        //}
 
 
+        #region static resizer
 
         public static Image<Bgr, byte> ImageResizer(Image<Bgr, Byte> imgToResize, int maxSideLength = 1024)
         {
@@ -1748,13 +1720,7 @@ namespace SkyImagesAnalyzerLibraries
             }
         }
 
-
-
-
-
-
-
-
+        
         public static Bitmap BitmapResizer(Bitmap bmToResize, int maxSideLength = 1024)
         {
             int sourceWidth = bmToResize.Width;
@@ -1785,10 +1751,12 @@ namespace SkyImagesAnalyzerLibraries
             }
         }
 
+        #endregion static resizer
 
 
 
 
+        #region static CalculateImageStatsData BGW
 
         public static void CalculateImageStatsData_BGWdoWork(object sender, DoWorkEventArgs e)
         {
@@ -2125,7 +2093,7 @@ namespace SkyImagesAnalyzerLibraries
             }
         }
 
-
+        #endregion static CalculateImageStatsData BGW
 
 
 

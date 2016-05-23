@@ -1,0 +1,40 @@
+usage:
+  ConvertSkyImagesToNetCDFfiles.exe [options]
+
+options:
+  --recursive                   - files will be searched from the base directory recursively
+                                  default behaviour is searching top directory only
+
+  -y                            - this option will switch off execution settings confirmation
+                                  default behaviour is to ask a user to confirm settings
+
+  --filenames-mask=<mask>       - defines filenames mask for files to be organized
+                                  default is *.jpg
+
+  --ImagesBasePath=<base_path>  - defines base path for images to be converted
+                                  this option will override the XML file SortFilesByDates-Settings.xml
+                                  value with the key "ImagesBasePath"
+
+  --imageYRGBstatsXMLdataFilesDirectory=<path>
+                                - defines a path to already existing GrIxYRGB stats XML files
+								  this option overrides setting for the same key:
+								  "imageYRGBstatsXMLdataFilesDirectory"
+
+  --outputNetCDFfilesDirectory=<path>
+                                - defines an output nc-files base path
+								  this option overrides setting for the same key:
+								  "outputNetCDFfilesDirectory"
+
+  --ImagesRoundMasksXMLfilesMappingList=<filename>
+                                - defines the path to CSV-file containing correspondances list
+								  of images filename (smart wildcard mask allowed) with
+								  XML-files containing image predefined rounded mask
+								  this option overrides setting for the same key:
+								  "ImagesRoundMasksXMLfilesMappingList"
+  
+  --strPerformanceCountersStatsFile=<filename>
+                                - defines the path to CSV-file to log calculations performance
+								  data
+								  default value is .\logs\ConvertSkyImagesToNetCDFfiles-perf-data.csv
+								  this option overrides setting for the same key:
+								  "strPerformanceCountersStatsFile"

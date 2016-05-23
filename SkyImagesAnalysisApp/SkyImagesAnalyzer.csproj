@@ -301,18 +301,20 @@
       <DependentUpon>SunElevationTest.cs</DependentUpon>
     </EmbeddedResource>
     <None Include="app.config" />
-    <None Include="bw.rgb">
+    <Content Include="bw.rgb">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Include="GMT_gray.rgb" />
+    </Content>
+    <Content Include="GMT_gray.rgb">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <None Include="ILNumerics_deploy\ILNImports1.targets" />
     <None Include="ILNumerics_deploy\ILNImports2.targets" />
-    <None Include="matlab_jet.rgb">
+    <Content Include="matlab_jet.rgb">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Include="ncl_default.rgb">
+    </Content>
+    <Content Include="ncl_default.rgb">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
+    </Content>
     <None Include="packages.config" />
     <None Include="Properties\app.manifest" />
     <None Include="Properties\Settings.settings">

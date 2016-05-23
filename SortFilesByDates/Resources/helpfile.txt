@@ -1,0 +1,35 @@
+usage:
+  SortFilesByDates.exe [options]
+
+options:
+  --recursive                   - files will be searched from the base directory recursively
+                                  default behaviour is searching top directory only
+  -y                            - this option will switch off execution settings confirmation
+                                  default behaviour is to ask a user to confirm settings
+  --filenames-mask=<mask>       - defines filenames mask for files to be organized
+                                  default is *.jpg
+  --file-date-mask=<datemask>   - defines mask of date substring extracting from filename
+                                  default is ????xxxxxxxxxxxxxxxxxxx*
+                                  each 'x' symbol will be treated as a symbol of date-time
+                                  substring. Others are excluded.
+                                  
+                                  If one specifies the datemask as string "creation", the file date-time
+                                  will be obtained using file creation date and time
+
+  --FilesBasePath=<base_path>   - defines base path for files to be organized
+                                  this option will override the XML file SortFilesByDates-Settings.xml
+                                  value with the key "FilesBasePath"
+  --OutputBaseDirectory=<path>  - defines output base path
+                                  this option will override the XML file SortFilesByDates-Settings.xml
+                                  value with the key "outputBaseDirectory"
+                                  
+								  if one specifies the path as string "same", OutputBaseDirectory will
+                                  be set to FilesBasePath value
+  
+  --OutputSubdirectoriesPrefix=<prefix>
+                                - defines output subdirectories names prefix
+                                  so for a file with the date 2016-04-25 using prefix "conc-data"
+                                  output subdirectory name will be "conc-data-2016-04-25"
+                                  default value is empty string
+                                  this option will override the XML file SortFilesByDates-Settings.xml
+                                  value with the key "OutputSubdirectoriesPrefix"

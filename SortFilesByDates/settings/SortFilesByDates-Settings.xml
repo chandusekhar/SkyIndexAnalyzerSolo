@@ -1,0 +1,19 @@
+<?xml version="1.0" standalone="yes"?>
+<DataSet xmlns="NetFrameWork">
+  <table>
+    <key>FilesBasePath</key>
+    <value>D:\_gulevlab\SkyImagesAnalysis_appData\_msu-meteo-2016\stats\GrIxYRGB\</value>
+  </table>
+  <table>
+    <key>bSearchFilesTopDirectoryOnly</key>
+    <value>True</value>
+  </table>
+  <table>
+    <key>outputBaseDirectory</key>
+    <value>D:\_gulevlab\SkyImagesAnalysis_appData\_msu-meteo-2016\stats\GrIxYRGB\</value>
+  </table>
+  <table>
+    <key>OutputSubdirectoriesPrefix</key>
+    <value />
+  </table>
+</DataSet>

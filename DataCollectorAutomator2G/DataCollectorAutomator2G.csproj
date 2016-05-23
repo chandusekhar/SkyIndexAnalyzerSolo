@@ -86,6 +86,10 @@
       <HintPath>..\..\components\MRG.Controls.UI\bin\MRG.Controls.UI.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="nsoftware.IPWorks">
+      <HintPath>C:\Program Files\nsoftware\IPWorks V9 .NET Edition\lib\nsoftware.IPWorks.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Data" />
@@ -153,6 +157,11 @@
     <ProjectReference Include="..\SkyImagesAnalyzerLibraries\SkyImagesAnalyzerLibraries.csproj">
       <Project>{7beac8e4-e53f-466a-b824-1fe69e60d114}</Project>
       <Name>SkyImagesAnalyzerLibraries</Name>
+      <Private>False</Private>
+    </ProjectReference>
+    <ProjectReference Include="..\SkyImagesAnalyzerLibsOrganizingLibrary\SkyImagesAnalyzerLibsOrganizingLibrary.csproj">
+      <Project>{62890930-c06d-4474-a982-4760acf4d2db}</Project>
+      <Name>SkyImagesAnalyzerLibsOrganizingLibrary</Name>
       <Private>False</Private>
     </ProjectReference>
     <ProjectReference Include="..\SolarPositioning\SolarPositioning.csproj">

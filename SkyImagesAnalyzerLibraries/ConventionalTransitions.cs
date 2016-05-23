@@ -11,7 +11,7 @@ namespace SkyImagesAnalyzerLibraries
     public class ConventionalTransitions
     {
 
-        public static string SunDiskInfoFileName(string imageFullPath, string xmlFilesBasePath = "", bool fullPath = true)
+        public static string SunDiskInfoFileName(string imageFullPath, string xmlFilesBasePath = "", bool fullPath = true, string PreserveRelativeDirectoriesFromBasePath = "")
         {
             if (xmlFilesBasePath == "")
             {
@@ -22,6 +22,27 @@ namespace SkyImagesAnalyzerLibraries
                 {
                     sunDiskInfoFileName = fInfo1.DirectoryName + Path.DirectorySeparatorChar + sunDiskInfoFileName;
                 }
+
+
+                if (fullPath && (PreserveRelativeDirectoriesFromBasePath != ""))
+                {
+                    // get imageFileName path relative to PreserveRelativeDirectoriesFromBasePath
+                    string relImgFilenamePath = MakeRelativePath(imageFullPath, PreserveRelativeDirectoriesFromBasePath);
+                    string imageFilename = Path.GetFileName(imageFullPath);
+                    relImgFilenamePath = relImgFilenamePath.Replace(imageFilename, "");
+                    string strNewBaseDirectory = xmlFilesBasePath +
+                                                 ((xmlFilesBasePath.Last() == Path.DirectorySeparatorChar)
+                                                     ? ("")
+                                                     : (Path.DirectorySeparatorChar.ToString())) + relImgFilenamePath;
+                    strNewBaseDirectory += (strNewBaseDirectory.Last() == Path.DirectorySeparatorChar)
+                                                ? ("")
+                                                : (Path.DirectorySeparatorChar.ToString());
+                    sunDiskInfoFileName = strNewBaseDirectory +
+                                                      Path.GetFileName(sunDiskInfoFileName);
+                }
+
+
+
                 return sunDiskInfoFileName;
             }
             else
@@ -36,6 +57,27 @@ namespace SkyImagesAnalyzerLibraries
                                               ? ("")
                                               : (Path.DirectorySeparatorChar.ToString())) + sunDiskInfoFileName;
                 }
+
+
+                if (fullPath && (PreserveRelativeDirectoriesFromBasePath != ""))
+                {
+                    // get imageFileName path relative to PreserveRelativeDirectoriesFromBasePath
+                    string relImgFilenamePath = MakeRelativePath(imageFullPath, PreserveRelativeDirectoriesFromBasePath);
+                    string imageFilename = Path.GetFileName(imageFullPath);
+                    relImgFilenamePath = relImgFilenamePath.Replace(imageFilename, "");
+                    string strNewBaseDirectory = xmlFilesBasePath +
+                                                 ((xmlFilesBasePath.Last() == Path.DirectorySeparatorChar)
+                                                     ? ("")
+                                                     : (Path.DirectorySeparatorChar.ToString())) + relImgFilenamePath;
+                    strNewBaseDirectory += (strNewBaseDirectory.Last() == Path.DirectorySeparatorChar)
+                                                ? ("")
+                                                : (Path.DirectorySeparatorChar.ToString());
+                    sunDiskInfoFileName = strNewBaseDirectory +
+                                                      Path.GetFileName(sunDiskInfoFileName);
+                }
+
+
+
                 return sunDiskInfoFileName;
             }
         }
@@ -51,7 +93,7 @@ namespace SkyImagesAnalyzerLibraries
 
 
 
-        public static string SunDiskConditionFileName(string imageFullPath, string xmlFilesBasePath = "", bool fullPath = true)
+        public static string SunDiskConditionFileName(string imageFullPath, string xmlFilesBasePath = "", bool fullPath = true, string PreserveRelativeDirectoriesFromBasePath = "")
         {
             if (xmlFilesBasePath == "")
             {
@@ -63,6 +105,27 @@ namespace SkyImagesAnalyzerLibraries
                     strSunDiskConditionFileName = currImageFInfo.DirectoryName + Path.DirectorySeparatorChar +
                                                   strSunDiskConditionFileName;
                 }
+
+
+                if (fullPath && (PreserveRelativeDirectoriesFromBasePath != ""))
+                {
+                    // get imageFileName path relative to PreserveRelativeDirectoriesFromBasePath
+                    string relImgFilenamePath = MakeRelativePath(imageFullPath, PreserveRelativeDirectoriesFromBasePath);
+                    string imageFilename = Path.GetFileName(imageFullPath);
+                    relImgFilenamePath = relImgFilenamePath.Replace(imageFilename, "");
+                    string strNewBaseDirectory = xmlFilesBasePath +
+                                                 ((xmlFilesBasePath.Last() == Path.DirectorySeparatorChar)
+                                                     ? ("")
+                                                     : (Path.DirectorySeparatorChar.ToString())) + relImgFilenamePath;
+                    strNewBaseDirectory += (strNewBaseDirectory.Last() == Path.DirectorySeparatorChar)
+                                                ? ("")
+                                                : (Path.DirectorySeparatorChar.ToString());
+                    strSunDiskConditionFileName = strNewBaseDirectory +
+                                                      Path.GetFileName(strSunDiskConditionFileName);
+                }
+
+
+
                 return strSunDiskConditionFileName;
             }
             else
@@ -78,6 +141,27 @@ namespace SkyImagesAnalyzerLibraries
                                                       : (Path.DirectorySeparatorChar.ToString())) +
                                                   strSunDiskConditionFileName;
                 }
+
+
+                if (fullPath && (PreserveRelativeDirectoriesFromBasePath != ""))
+                {
+                    // get imageFileName path relative to PreserveRelativeDirectoriesFromBasePath
+                    string relImgFilenamePath = MakeRelativePath(imageFullPath, PreserveRelativeDirectoriesFromBasePath);
+                    string imageFilename = Path.GetFileName(imageFullPath);
+                    relImgFilenamePath = relImgFilenamePath.Replace(imageFilename, "");
+                    string strNewBaseDirectory = xmlFilesBasePath +
+                                                 ((xmlFilesBasePath.Last() == Path.DirectorySeparatorChar)
+                                                     ? ("")
+                                                     : (Path.DirectorySeparatorChar.ToString())) + relImgFilenamePath;
+                    strNewBaseDirectory += (strNewBaseDirectory.Last() == Path.DirectorySeparatorChar)
+                                                ? ("")
+                                                : (Path.DirectorySeparatorChar.ToString());
+                    strSunDiskConditionFileName = strNewBaseDirectory +
+                                                      Path.GetFileName(strSunDiskConditionFileName);
+                }
+
+
+
                 return strSunDiskConditionFileName;
             }
         }
@@ -93,7 +177,7 @@ namespace SkyImagesAnalyzerLibraries
 
 
 
-        public static string SunDiskConditionFileName(FileInfo imageFileInfo, string xmlFilesBasePath = "", bool fullPath = true)
+        public static string SunDiskConditionFileName(FileInfo imageFileInfo, string xmlFilesBasePath = "", bool fullPath = true, string PreserveRelativeDirectoriesFromBasePath = "")
         {
             //FileInfo currImageFInfo = new FileInfo(imageFullPath);
             if (xmlFilesBasePath == "")
@@ -105,6 +189,29 @@ namespace SkyImagesAnalyzerLibraries
                     strSunDiskConditionFileName = imageFileInfo.DirectoryName + Path.DirectorySeparatorChar +
                                                   strSunDiskConditionFileName;
                 }
+
+
+
+                if (fullPath && (PreserveRelativeDirectoriesFromBasePath != ""))
+                {
+                    // get imageFileName path relative to PreserveRelativeDirectoriesFromBasePath
+                    string relImgFilenamePath = MakeRelativePath(imageFileInfo.FullName, PreserveRelativeDirectoriesFromBasePath);
+                    string imageFilename = Path.GetFileName(imageFileInfo.FullName);
+                    relImgFilenamePath = relImgFilenamePath.Replace(imageFilename, "");
+                    string strNewBaseDirectory = xmlFilesBasePath +
+                                                 ((xmlFilesBasePath.Last() == Path.DirectorySeparatorChar)
+                                                     ? ("")
+                                                     : (Path.DirectorySeparatorChar.ToString())) + relImgFilenamePath;
+                    strNewBaseDirectory += (strNewBaseDirectory.Last() == Path.DirectorySeparatorChar)
+                                                ? ("")
+                                                : (Path.DirectorySeparatorChar.ToString());
+                    strSunDiskConditionFileName = strNewBaseDirectory +
+                                                      Path.GetFileName(strSunDiskConditionFileName);
+                }
+
+
+
+
                 return strSunDiskConditionFileName;
             }
             else
@@ -119,6 +226,28 @@ namespace SkyImagesAnalyzerLibraries
                                                       : (Path.DirectorySeparatorChar.ToString())) +
                                                   strSunDiskConditionFileName;
                 }
+
+
+
+                if (fullPath && (PreserveRelativeDirectoriesFromBasePath != ""))
+                {
+                    // get imageFileName path relative to PreserveRelativeDirectoriesFromBasePath
+                    string relImgFilenamePath = MakeRelativePath(imageFileInfo.FullName, PreserveRelativeDirectoriesFromBasePath);
+                    string imageFilename = Path.GetFileName(imageFileInfo.FullName);
+                    relImgFilenamePath = relImgFilenamePath.Replace(imageFilename, "");
+                    string strNewBaseDirectory = xmlFilesBasePath +
+                                                 ((xmlFilesBasePath.Last() == Path.DirectorySeparatorChar)
+                                                     ? ("")
+                                                     : (Path.DirectorySeparatorChar.ToString())) + relImgFilenamePath;
+                    strNewBaseDirectory += (strNewBaseDirectory.Last() == Path.DirectorySeparatorChar)
+                                                ? ("")
+                                                : (Path.DirectorySeparatorChar.ToString());
+                    strSunDiskConditionFileName = strNewBaseDirectory +
+                                                      Path.GetFileName(strSunDiskConditionFileName);
+                }
+
+
+
                 return strSunDiskConditionFileName;
             }
 
@@ -126,7 +255,7 @@ namespace SkyImagesAnalyzerLibraries
 
 
 
-        public static string ImageGrIxMedianP5DataFileName(string imageFullPath, string xmlFilesBasePath = "", bool fullPath = true)
+        public static string ImageGrIxMedianP5DataFileName(string imageFullPath, string xmlFilesBasePath = "", bool fullPath = true, string PreserveRelativeDirectoriesFromBasePath = "")
         {
             if (xmlFilesBasePath == "")
             {
@@ -138,6 +267,28 @@ namespace SkyImagesAnalyzerLibraries
                     strImageGrIxMedianP5DataFileName = currImageFInfo.DirectoryName + Path.DirectorySeparatorChar +
                                                        strImageGrIxMedianP5DataFileName;
                 }
+
+
+
+                if (fullPath && (PreserveRelativeDirectoriesFromBasePath != ""))
+                {
+                    // get imageFileName path relative to PreserveRelativeDirectoriesFromBasePath
+                    string relImgFilenamePath = MakeRelativePath(imageFullPath, PreserveRelativeDirectoriesFromBasePath);
+                    string imageFilename = Path.GetFileName(imageFullPath);
+                    relImgFilenamePath = relImgFilenamePath.Replace(imageFilename, "");
+                    string strNewBaseDirectory = xmlFilesBasePath +
+                                                 ((xmlFilesBasePath.Last() == Path.DirectorySeparatorChar)
+                                                     ? ("")
+                                                     : (Path.DirectorySeparatorChar.ToString())) + relImgFilenamePath;
+                    strNewBaseDirectory += (strNewBaseDirectory.Last() == Path.DirectorySeparatorChar)
+                                                ? ("")
+                                                : (Path.DirectorySeparatorChar.ToString());
+                    strImageGrIxMedianP5DataFileName = strNewBaseDirectory +
+                                                      Path.GetFileName(strImageGrIxMedianP5DataFileName);
+                }
+
+
+
                 return strImageGrIxMedianP5DataFileName;
             }
             else
@@ -153,6 +304,28 @@ namespace SkyImagesAnalyzerLibraries
                                                            : (Path.DirectorySeparatorChar.ToString())) +
                                                        strImageGrIxMedianP5DataFileName;
                 }
+
+
+
+                if (fullPath && (PreserveRelativeDirectoriesFromBasePath != ""))
+                {
+                    // get imageFileName path relative to PreserveRelativeDirectoriesFromBasePath
+                    string relImgFilenamePath = MakeRelativePath(imageFullPath, PreserveRelativeDirectoriesFromBasePath);
+                    string imageFilename = Path.GetFileName(imageFullPath);
+                    relImgFilenamePath = relImgFilenamePath.Replace(imageFilename, "");
+                    string strNewBaseDirectory = xmlFilesBasePath +
+                                                 ((xmlFilesBasePath.Last() == Path.DirectorySeparatorChar)
+                                                     ? ("")
+                                                     : (Path.DirectorySeparatorChar.ToString())) + relImgFilenamePath;
+                    strNewBaseDirectory += (strNewBaseDirectory.Last() == Path.DirectorySeparatorChar)
+                                                ? ("")
+                                                : (Path.DirectorySeparatorChar.ToString());
+                    strImageGrIxMedianP5DataFileName = strNewBaseDirectory +
+                                                      Path.GetFileName(strImageGrIxMedianP5DataFileName);
+                }
+
+
+
                 return strImageGrIxMedianP5DataFileName;
             }
         }
@@ -169,7 +342,7 @@ namespace SkyImagesAnalyzerLibraries
 
 
 
-        public static string ImageGrIxYRGBstatsDataFileName(string imageFullPath, string xmlFilesBasePath = "", bool fullPath = true)
+        public static string ImageGrIxYRGBstatsDataFileName(string imageFullPath, string xmlFilesBasePath = "", bool fullPath = true, string PreserveRelativeDirectoriesFromBasePath = "")
         {
             if (xmlFilesBasePath == "")
             {
@@ -181,6 +354,28 @@ namespace SkyImagesAnalyzerLibraries
                     strImageGrIxYRGBstatsDataFileName = currImageFInfo.DirectoryName + Path.DirectorySeparatorChar +
                                                         strImageGrIxYRGBstatsDataFileName;
                 }
+
+
+
+                if (fullPath && (PreserveRelativeDirectoriesFromBasePath != ""))
+                {
+                    // get imageFileName path relative to PreserveRelativeDirectoriesFromBasePath
+                    string relImgFilenamePath = MakeRelativePath(imageFullPath, PreserveRelativeDirectoriesFromBasePath);
+                    string imageFilename = Path.GetFileName(imageFullPath);
+                    relImgFilenamePath = relImgFilenamePath.Replace(imageFilename, "");
+                    string strNewBaseDirectory = xmlFilesBasePath +
+                                                 ((xmlFilesBasePath.Last() == Path.DirectorySeparatorChar)
+                                                     ? ("")
+                                                     : (Path.DirectorySeparatorChar.ToString())) + relImgFilenamePath;
+                    strNewBaseDirectory += (strNewBaseDirectory.Last() == Path.DirectorySeparatorChar)
+                                                ? ("")
+                                                : (Path.DirectorySeparatorChar.ToString());
+                    strImageGrIxYRGBstatsDataFileName = strNewBaseDirectory +
+                                                      Path.GetFileName(strImageGrIxYRGBstatsDataFileName);
+                }
+
+
+
                 return strImageGrIxYRGBstatsDataFileName;
             }
             else
@@ -196,6 +391,28 @@ namespace SkyImagesAnalyzerLibraries
                                                                : (Path.DirectorySeparatorChar.ToString())) +
                                                         strImageGrIxYRGBstatsDataFileName;
                 }
+
+
+
+                if (fullPath && (PreserveRelativeDirectoriesFromBasePath != ""))
+                {
+                    // get imageFileName path relative to PreserveRelativeDirectoriesFromBasePath
+                    string relImgFilenamePath = MakeRelativePath(imageFullPath, PreserveRelativeDirectoriesFromBasePath);
+                    string imageFilename = Path.GetFileName(imageFullPath);
+                    relImgFilenamePath = relImgFilenamePath.Replace(imageFilename, "");
+                    string strNewBaseDirectory = xmlFilesBasePath +
+                                                 ((xmlFilesBasePath.Last() == Path.DirectorySeparatorChar)
+                                                     ? ("")
+                                                     : (Path.DirectorySeparatorChar.ToString())) + relImgFilenamePath;
+                    strNewBaseDirectory += (strNewBaseDirectory.Last() == Path.DirectorySeparatorChar)
+                                                ? ("")
+                                                : (Path.DirectorySeparatorChar.ToString());
+                    strImageGrIxYRGBstatsDataFileName = strNewBaseDirectory +
+                                                      Path.GetFileName(strImageGrIxYRGBstatsDataFileName);
+                }
+
+
+
                 return strImageGrIxYRGBstatsDataFileName;
             }
 
@@ -215,7 +432,7 @@ namespace SkyImagesAnalyzerLibraries
 
 
 
-        public static string SkyImagesDataWithConcurrentStatsCloudCoverAndSDC_FileName(string imageFullPath, string xmlFilesBasePath = "", bool fullPath = true)
+        public static string SkyImagesDataWithConcurrentStatsCloudCoverAndSDC_FileName(string imageFullPath, string xmlFilesBasePath = "", bool fullPath = true, string PreserveRelativeDirectoriesFromBasePath = "")
         {
             if (xmlFilesBasePath == "")
             {
@@ -227,6 +444,28 @@ namespace SkyImagesAnalyzerLibraries
                     strSkyImagesDataWithConcurrentStatsCloudCoverAndSDC_FileName = currImageFInfo.DirectoryName + Path.DirectorySeparatorChar +
                                                         strSkyImagesDataWithConcurrentStatsCloudCoverAndSDC_FileName;
                 }
+
+
+
+                if (fullPath && (PreserveRelativeDirectoriesFromBasePath != ""))
+                {
+                    // get imageFileName path relative to PreserveRelativeDirectoriesFromBasePath
+                    string relImgFilenamePath = MakeRelativePath(imageFullPath, PreserveRelativeDirectoriesFromBasePath);
+                    string imageFilename = Path.GetFileName(imageFullPath);
+                    relImgFilenamePath = relImgFilenamePath.Replace(imageFilename, "");
+                    string strNewBaseDirectory = xmlFilesBasePath +
+                                                 ((xmlFilesBasePath.Last() == Path.DirectorySeparatorChar)
+                                                     ? ("")
+                                                     : (Path.DirectorySeparatorChar.ToString())) + relImgFilenamePath;
+                    strNewBaseDirectory += (strNewBaseDirectory.Last() == Path.DirectorySeparatorChar)
+                                                ? ("")
+                                                : (Path.DirectorySeparatorChar.ToString());
+                    strSkyImagesDataWithConcurrentStatsCloudCoverAndSDC_FileName = strNewBaseDirectory +
+                                                      Path.GetFileName(strSkyImagesDataWithConcurrentStatsCloudCoverAndSDC_FileName);
+                }
+
+
+
                 return strSkyImagesDataWithConcurrentStatsCloudCoverAndSDC_FileName;
             }
             else
@@ -242,6 +481,28 @@ namespace SkyImagesAnalyzerLibraries
                                                                : (Path.DirectorySeparatorChar.ToString())) +
                                                         strSkyImagesDataWithConcurrentStatsCloudCoverAndSDC_FileName;
                 }
+
+
+
+                if (fullPath && (PreserveRelativeDirectoriesFromBasePath != ""))
+                {
+                    // get imageFileName path relative to PreserveRelativeDirectoriesFromBasePath
+                    string relImgFilenamePath = MakeRelativePath(imageFullPath, PreserveRelativeDirectoriesFromBasePath);
+                    string imageFilename = Path.GetFileName(imageFullPath);
+                    relImgFilenamePath = relImgFilenamePath.Replace(imageFilename, "");
+                    string strNewBaseDirectory = xmlFilesBasePath +
+                                                 ((xmlFilesBasePath.Last() == Path.DirectorySeparatorChar)
+                                                     ? ("")
+                                                     : (Path.DirectorySeparatorChar.ToString())) + relImgFilenamePath;
+                    strNewBaseDirectory += (strNewBaseDirectory.Last() == Path.DirectorySeparatorChar)
+                                                ? ("")
+                                                : (Path.DirectorySeparatorChar.ToString());
+                    strSkyImagesDataWithConcurrentStatsCloudCoverAndSDC_FileName = strNewBaseDirectory +
+                                                      Path.GetFileName(strSkyImagesDataWithConcurrentStatsCloudCoverAndSDC_FileName);
+                }
+
+
+
                 return strSkyImagesDataWithConcurrentStatsCloudCoverAndSDC_FileName;
             }
 
@@ -262,7 +523,7 @@ namespace SkyImagesAnalyzerLibraries
 
 
 
-        public static string ImageGrIxMedianP5DataFileName(FileInfo imageFileInfo, string xmlFilesBasePath = "", bool fullPath = true)
+        public static string ImageGrIxMedianP5DataFileName(FileInfo imageFileInfo, string xmlFilesBasePath = "", bool fullPath = true, string PreserveRelativeDirectoriesFromBasePath = "")
         {
             if (xmlFilesBasePath == "")
             {
@@ -274,6 +535,28 @@ namespace SkyImagesAnalyzerLibraries
                     strImageGrIxMedianP5DataFileName = imageFileInfo.DirectoryName + Path.DirectorySeparatorChar +
                                                        strImageGrIxMedianP5DataFileName;
                 }
+
+
+
+                if (fullPath && (PreserveRelativeDirectoriesFromBasePath != ""))
+                {
+                    // get imageFileName path relative to PreserveRelativeDirectoriesFromBasePath
+                    string relImgFilenamePath = MakeRelativePath(imageFileInfo.FullName, PreserveRelativeDirectoriesFromBasePath);
+                    string imageFilename = Path.GetFileName(imageFileInfo.FullName);
+                    relImgFilenamePath = relImgFilenamePath.Replace(imageFilename, "");
+                    string strNewBaseDirectory = xmlFilesBasePath +
+                                                 ((xmlFilesBasePath.Last() == Path.DirectorySeparatorChar)
+                                                     ? ("")
+                                                     : (Path.DirectorySeparatorChar.ToString())) + relImgFilenamePath;
+                    strNewBaseDirectory += (strNewBaseDirectory.Last() == Path.DirectorySeparatorChar)
+                                                ? ("")
+                                                : (Path.DirectorySeparatorChar.ToString());
+                    strImageGrIxMedianP5DataFileName = strNewBaseDirectory +
+                                                      Path.GetFileName(strImageGrIxMedianP5DataFileName);
+                }
+
+
+
                 return strImageGrIxMedianP5DataFileName;
             }
             else
@@ -288,6 +571,26 @@ namespace SkyImagesAnalyzerLibraries
                                                            : (Path.DirectorySeparatorChar.ToString())) +
                                                        strImageGrIxMedianP5DataFileName;
                 }
+
+
+                if (fullPath && (PreserveRelativeDirectoriesFromBasePath != ""))
+                {
+                    // get imageFileName path relative to PreserveRelativeDirectoriesFromBasePath
+                    string relImgFilenamePath = MakeRelativePath(imageFileInfo.FullName, PreserveRelativeDirectoriesFromBasePath);
+                    string imageFilename = Path.GetFileName(imageFileInfo.FullName);
+                    relImgFilenamePath = relImgFilenamePath.Replace(imageFilename, "");
+                    string strNewBaseDirectory = xmlFilesBasePath +
+                                                 ((xmlFilesBasePath.Last() == Path.DirectorySeparatorChar)
+                                                     ? ("")
+                                                     : (Path.DirectorySeparatorChar.ToString())) + relImgFilenamePath;
+                    strNewBaseDirectory += (strNewBaseDirectory.Last() == Path.DirectorySeparatorChar)
+                                                ? ("")
+                                                : (Path.DirectorySeparatorChar.ToString());
+                    strImageGrIxMedianP5DataFileName = strNewBaseDirectory +
+                                                      Path.GetFileName(strImageGrIxMedianP5DataFileName);
+                }
+
+
                 return strImageGrIxMedianP5DataFileName;
             }
         }
@@ -297,7 +600,7 @@ namespace SkyImagesAnalyzerLibraries
 
 
 
-        public static string ConcurrentGPSdataFileName(string imageFullPath, string xmlFilesBasePath = "", bool fullPath = true)
+        public static string ConcurrentGPSdataFileName(string imageFullPath, string xmlFilesBasePath = "", bool fullPath = true, string PreserveRelativeDirectoriesFromBasePath = "")
         {
             if (xmlFilesBasePath == "")
             {
@@ -309,6 +612,26 @@ namespace SkyImagesAnalyzerLibraries
                     strConcurrentGPSdataFileName = currImageFInfo.DirectoryName + Path.DirectorySeparatorChar +
                                                   strConcurrentGPSdataFileName;
                 }
+
+
+                if (fullPath && (PreserveRelativeDirectoriesFromBasePath != ""))
+                {
+                    // get imageFileName path relative to PreserveRelativeDirectoriesFromBasePath
+                    string relImgFilenamePath = MakeRelativePath(imageFullPath, PreserveRelativeDirectoriesFromBasePath);
+                    string imageFilename = Path.GetFileName(imageFullPath);
+                    relImgFilenamePath = relImgFilenamePath.Replace(imageFilename, "");
+                    string strNewBaseDirectory = xmlFilesBasePath +
+                                                 ((xmlFilesBasePath.Last() == Path.DirectorySeparatorChar)
+                                                     ? ("")
+                                                     : (Path.DirectorySeparatorChar.ToString())) + relImgFilenamePath;
+                    strNewBaseDirectory += (strNewBaseDirectory.Last() == Path.DirectorySeparatorChar)
+                                                ? ("")
+                                                : (Path.DirectorySeparatorChar.ToString());
+                    strConcurrentGPSdataFileName = strNewBaseDirectory +
+                                                      Path.GetFileName(strConcurrentGPSdataFileName);
+                }
+
+
                 return strConcurrentGPSdataFileName;
             }
             else
@@ -324,6 +647,26 @@ namespace SkyImagesAnalyzerLibraries
                                                       : (Path.DirectorySeparatorChar.ToString())) +
                                                   strConcurrentGPSdataFileName;
                 }
+
+
+                if (fullPath && (PreserveRelativeDirectoriesFromBasePath != ""))
+                {
+                    // get imageFileName path relative to PreserveRelativeDirectoriesFromBasePath
+                    string relImgFilenamePath = MakeRelativePath(imageFullPath, PreserveRelativeDirectoriesFromBasePath);
+                    string imageFilename = Path.GetFileName(imageFullPath);
+                    relImgFilenamePath = relImgFilenamePath.Replace(imageFilename, "");
+                    string strNewBaseDirectory = xmlFilesBasePath +
+                                                 ((xmlFilesBasePath.Last() == Path.DirectorySeparatorChar)
+                                                     ? ("")
+                                                     : (Path.DirectorySeparatorChar.ToString())) + relImgFilenamePath;
+                    strNewBaseDirectory += (strNewBaseDirectory.Last() == Path.DirectorySeparatorChar)
+                                                ? ("")
+                                                : (Path.DirectorySeparatorChar.ToString());
+                    strConcurrentGPSdataFileName = strNewBaseDirectory +
+                                                      Path.GetFileName(strConcurrentGPSdataFileName);
+                }
+
+
                 return strConcurrentGPSdataFileName;
             }
         }
@@ -355,6 +698,102 @@ namespace SkyImagesAnalyzerLibraries
             DateTime currImgDT = DateTime.Parse(strCurrImgDT, null,
                     System.Globalization.DateTimeStyles.AdjustToUniversal);
             return currImgDT;
+        }
+
+
+
+
+        public static string NetCDFimageBareChannelsDataFilename(string imageFileName, string ncFilesBasePath = "", bool fullPath = true, string PreserveRelativeDirectoriesFromBasePath = "")
+        {
+            if (ncFilesBasePath == "")
+            {
+                FileInfo currImageFInfo = new FileInfo(imageFileName);
+                string imageBareChannelsDataNCfilename = Path.GetFileNameWithoutExtension(imageFileName) +
+                                                     "-ColorMatrices.nc";
+                if (fullPath)
+                {
+                    imageBareChannelsDataNCfilename = currImageFInfo.DirectoryName + Path.DirectorySeparatorChar +
+                                                  imageBareChannelsDataNCfilename;
+                }
+
+
+
+                if (fullPath && (PreserveRelativeDirectoriesFromBasePath != ""))
+                {
+                    // get imageFileName path relative to PreserveRelativeDirectoriesFromBasePath
+                    string relImgFilenamePath = MakeRelativePath(imageFileName, PreserveRelativeDirectoriesFromBasePath);
+                    string imageFilename = Path.GetFileName(imageFileName);
+                    relImgFilenamePath = relImgFilenamePath.Replace(imageFilename, "");
+                    string strNewBaseDirectory = ncFilesBasePath +
+                                                 ((ncFilesBasePath.Last() == Path.DirectorySeparatorChar)
+                                                     ? ("")
+                                                     : (Path.DirectorySeparatorChar.ToString())) + relImgFilenamePath;
+                    strNewBaseDirectory += (strNewBaseDirectory.Last() == Path.DirectorySeparatorChar)
+                                                ? ("")
+                                                : (Path.DirectorySeparatorChar.ToString());
+                    imageBareChannelsDataNCfilename = strNewBaseDirectory +
+                                                      Path.GetFileName(imageBareChannelsDataNCfilename);
+                }
+
+                return imageBareChannelsDataNCfilename;
+            }
+            else
+            {
+                string imageBareChannelsDataNCfilename = Path.GetFileNameWithoutExtension(imageFileName) +
+                                                     "-concurrentGPSdata.nc";
+                if (fullPath)
+                {
+                    imageBareChannelsDataNCfilename = ncFilesBasePath +
+                                                  ((ncFilesBasePath.Last() == Path.DirectorySeparatorChar)
+                                                      ? ("")
+                                                      : (Path.DirectorySeparatorChar.ToString())) +
+                                                  imageBareChannelsDataNCfilename;
+                }
+
+                if (fullPath && (PreserveRelativeDirectoriesFromBasePath != ""))
+                {
+                    // get imageFileName path relative to PreserveRelativeDirectoriesFromBasePath
+                    string relImgFilenamePath = MakeRelativePath(PreserveRelativeDirectoriesFromBasePath, imageFileName);
+                    string imageFilename = Path.GetFileName(imageFileName);
+                    relImgFilenamePath = relImgFilenamePath.Replace(imageFilename, "");
+                    string strNewBaseDirectory = ncFilesBasePath +
+                                                 ((ncFilesBasePath.Last() == Path.DirectorySeparatorChar)
+                                                     ? ("")
+                                                     : (Path.DirectorySeparatorChar.ToString())) + relImgFilenamePath;
+                    strNewBaseDirectory += (strNewBaseDirectory.Last() == Path.DirectorySeparatorChar)
+                                                ? ("")
+                                                : (Path.DirectorySeparatorChar.ToString());
+                    imageBareChannelsDataNCfilename = strNewBaseDirectory +
+                                                      Path.GetFileName(imageBareChannelsDataNCfilename);
+                }
+
+
+                return imageBareChannelsDataNCfilename;
+            }
+        }
+
+
+
+
+        public static string MakeRelativePath(String fromPath, String toPath)
+        {
+            if (String.IsNullOrEmpty(fromPath)) throw new ArgumentNullException("fromPath");
+            if (String.IsNullOrEmpty(toPath)) throw new ArgumentNullException("toPath");
+
+            Uri fromUri = new Uri(fromPath);
+            Uri toUri = new Uri(toPath);
+
+            if (fromUri.Scheme != toUri.Scheme) { return toPath; } // path can't be made relative.
+
+            Uri relativeUri = fromUri.MakeRelativeUri(toUri);
+            String relativePath = Uri.UnescapeDataString(relativeUri.ToString());
+
+            if (toUri.Scheme.Equals("file", StringComparison.InvariantCultureIgnoreCase))
+            {
+                relativePath = relativePath.Replace(Path.AltDirectorySeparatorChar, Path.DirectorySeparatorChar);
+            }
+
+            return relativePath;
         }
     }
 }

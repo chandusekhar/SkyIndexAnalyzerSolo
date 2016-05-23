@@ -73,6 +73,7 @@
     <Compile Include="NonLinLeastSqProbWithBCNative.cs" />
     <Compile Include="NonLinLeastSqProbWoConstraints.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SummaryStatistics.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

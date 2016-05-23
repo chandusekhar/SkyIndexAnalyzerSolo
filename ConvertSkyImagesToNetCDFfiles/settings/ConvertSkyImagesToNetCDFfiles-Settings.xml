@@ -1,0 +1,23 @@
+<?xml version="1.0" standalone="yes"?>
+<DataSet xmlns="NetFrameWork">
+  <table>
+    <key>ImagesBasePath</key>
+    <value>D:\_gulevlab\SkyImagesAnalysis_appData\_msu-meteo-2016\test\snapshots\</value>
+  </table>
+  <table>
+    <key>imageYRGBstatsXMLdataFilesDirectory</key>
+    <value>D:\_gulevlab\SkyImagesAnalysis_appData\_msu-meteo-2016\stats\GrIxYRGB\</value>
+  </table>
+  <table>
+    <key>outputNetCDFfilesDirectory</key>
+    <value>D:\_gulevlab\SkyImagesAnalysis_appData\_msu-meteo-2016\test\nc_output\</value>
+  </table>
+  <table>
+    <key>ImagesRoundMasksXMLfilesMappingList</key>
+    <value>D:\_gulevlab\SkyImagesAnalysis\_DBGbin\settings\ImagesRoundMasksXMLfilesMappingList.csv</value>
+  </table>
+  <table>
+    <key>strPerformanceCountersStatsFile</key>
+    <value>D:\_gulevlab\SkyImagesAnalysis\_DBGbin\logs\ConvertSkyImagesToNetCDFfiles-perf-data.csv</value>
+  </table>
+</DataSet>

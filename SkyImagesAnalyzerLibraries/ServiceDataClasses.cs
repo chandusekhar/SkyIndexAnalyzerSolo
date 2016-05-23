@@ -1372,7 +1372,8 @@ namespace SkyImagesAnalyzerLibraries
 
                 double latGrad1 = (latTrunc - latMinutes) / 100.0d; // 59.0d
                 double latGrad2 = latMinutes / 60.0d;               // 50.0d/60.0d
-                double latGrad3 = (latGrad - latTrunc) / 60.0d;     // 0.32d/60.0d
+                //double latGrad3 = (latGrad - latTrunc) / 60.0d;     // 0.32d/60.0d
+                double latGrad3 = (latGrad - latTrunc) / 3.6d;     // 0.32d * 100.0d / 3600.0d
 
                 latGrad = latGrad1 + latGrad2 + latGrad3;
 
@@ -1408,7 +1409,8 @@ namespace SkyImagesAnalyzerLibraries
 
                 double lonGrad1 = (lonTrunc - lonMinutes) / 100.0d; // 40.0d
                 double lonGrad2 = lonMinutes / 60.0d;               // 50.0d/60.0d
-                double lonGrad3 = (lonGrad - lonTrunc) / 60.0d;     // 0.32d/60.0d
+                //double lonGrad3 = (lonGrad - lonTrunc) / 60.0d;     // 0.32d/60.0d
+                double lonGrad3 = (lonGrad - lonTrunc) / 3.6d;     // 0.32d * 100.0d/3600.0d
 
                 lonGrad = lonGrad1 + lonGrad2 + lonGrad3;
 

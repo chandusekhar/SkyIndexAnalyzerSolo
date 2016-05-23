@@ -47,7 +47,7 @@ namespace SkyImagesAnalyzerLibraries
                     throw ex;
                 }
             }
-            
+
             Variable<double> thDataVar = ds.AddVariable<double>(varName, dmData.ToArray(), "y", "x");
 
             try
@@ -105,8 +105,8 @@ namespace SkyImagesAnalyzerLibraries
                     throw ex;
                 }
             }
-            
-            
+
+
             Variable<double> thDataVar;
             if (!ds.Variables.Contains(varName))
             {
@@ -157,7 +157,7 @@ namespace SkyImagesAnalyzerLibraries
             {
                 throw ex;
             }
-            
+
             //Variable<double> thDataVar = ds.AddVariable<double>("dataMatrix", dmData.ToArray(), "y", "x");
             //Variable<double> thDataVar = ds.Variables
             foreach (Variable theVar in ds)
@@ -334,6 +334,7 @@ namespace SkyImagesAnalyzerLibraries
 
             string connectionString = "msds:nc?file=";
             connectionString += fileName;
+            // connectionString += "&deflate=best";
             NetCDFDataSet ds = null;
             try
             {
@@ -348,23 +349,148 @@ namespace SkyImagesAnalyzerLibraries
             {
                 if (keyValuePair.Value.GetType() == typeof(DenseMatrix))
                 {
-                    Variable<double> theDataVar = ds.AddVariable<double>(keyValuePair.Key, ((DenseMatrix)(keyValuePair.Value)).ToArray(), "y", "x");
+                    try
+                    {
+                        Variable<double> theDataVar = ds.AddVariable<double>(keyValuePair.Key, ((DenseMatrix)(keyValuePair.Value)).ToArray(), "y", "x");
+                    }
+                    catch (Exception ex)
+                    {
+                        throw ex;
+                    }
                 }
 
                 if (keyValuePair.Value.GetType() == typeof(DenseVector))
                 {
-                    Variable<double> theDataVar = ds.AddVariable<double>(keyValuePair.Key, ((DenseVector)(keyValuePair.Value)).ToArray(), keyValuePair.Key);
+                    try
+                    {
+                        Variable<double> theDataVar = ds.AddVariable<double>(keyValuePair.Key, ((DenseVector)(keyValuePair.Value)).ToArray(), keyValuePair.Key);
+                    }
+                    catch (Exception ex)
+                    {
+                        throw ex;
+                    }
                 }
 
                 if (keyValuePair.Value.GetType() == typeof(long[]))
                 {
-                    Variable<long> theDataVar = ds.AddVariable<long>(keyValuePair.Key, (long[])(keyValuePair.Value), keyValuePair.Key);
+                    try
+                    {
+                        Variable<long> theDataVar = ds.AddVariable<long>(keyValuePair.Key, (long[])(keyValuePair.Value), keyValuePair.Key);
+                    }
+                    catch (Exception ex)
+                    {
+                        throw ex;
+                    }
                 }
+
+
+                if (keyValuePair.Value.GetType() == typeof(long[,]))
+                {
+                    try
+                    {
+                        Variable<long> theDataVar = ds.AddVariable<long>(keyValuePair.Key, (long[,])(keyValuePair.Value), "y", "x");
+                    }
+                    catch (Exception ex)
+                    {
+                        throw ex;
+                    }
+                }
+
 
                 if (keyValuePair.Value.GetType() == typeof(int[]))
                 {
-                    Variable<int> theDataVar = ds.AddVariable<int>(keyValuePair.Key, (int[])(keyValuePair.Value), keyValuePair.Key);
+                    try
+                    {
+                        Variable<int> theDataVar = ds.AddVariable<int>(keyValuePair.Key, (int[])(keyValuePair.Value), keyValuePair.Key);
+                    }
+                    catch (Exception ex)
+                    {
+                        throw ex;
+                    }
                 }
+
+
+                if (keyValuePair.Value.GetType() == typeof(int[,]))
+                {
+                    try
+                    {
+                        Variable<int> theDataVar = ds.AddVariable<int>(keyValuePair.Key, (int[,])(keyValuePair.Value), "y", "x");
+                    }
+                    catch (Exception ex)
+                    {
+                        throw ex;
+                    }
+                }
+
+
+                if (keyValuePair.Value.GetType() == typeof(short[]))
+                {
+                    try
+                    {
+                        Variable<short> theDataVar = ds.AddVariable<short>(keyValuePair.Key, (short[])(keyValuePair.Value), keyValuePair.Key);
+                    }
+                    catch (Exception ex)
+                    {
+                        throw ex;
+                    }
+                }
+
+
+                if (keyValuePair.Value.GetType() == typeof(short[,]))
+                {
+                    try
+                    {
+                        Variable<short> theDataVar = ds.AddVariable<short>(keyValuePair.Key, (short[,])(keyValuePair.Value), "y", "x");
+                    }
+                    catch (Exception ex)
+                    {
+                        throw ex;
+                    }
+                }
+
+
+
+
+                if (keyValuePair.Value.GetType() == typeof(byte[]))
+                {
+                    try
+                    {
+                        Variable<byte> theDataVar = ds.AddVariable<byte>(keyValuePair.Key, (byte[])(keyValuePair.Value), keyValuePair.Key);
+                    }
+                    catch (Exception ex)
+                    {
+                        throw ex;
+                    }
+                }
+
+
+                if (keyValuePair.Value.GetType() == typeof(byte[,]))
+                {
+                    try
+                    {
+                        Variable<byte> theDataVar = ds.AddVariable<byte>(keyValuePair.Key, (byte[,])(keyValuePair.Value), "y", "x");
+                    }
+                    catch (Exception ex)
+                    {
+                        throw ex;
+                    }
+                }
+
+
+
+                if (keyValuePair.Value.GetType() == typeof(byte[,,]))
+                {
+                    try
+                    {
+                        Variable<byte> theDataVar = ds.AddVariable<byte>(keyValuePair.Key, (byte[,,])(keyValuePair.Value), "y", "x", "z");
+                    }
+                    catch (Exception ex)
+                    {
+                        throw ex;
+                    }
+                }
+
+
 
 
                 if (keyValuePair.Value.GetType() == typeof(string[]))
@@ -513,7 +639,7 @@ namespace SkyImagesAnalyzerLibraries
             {
                 throw ex;
             }
-            
+
             Variable<double> thDataVar = ds.AddVariable<double>("DataMatrix", dmData.ToArray(), "y", "x");
 
             try

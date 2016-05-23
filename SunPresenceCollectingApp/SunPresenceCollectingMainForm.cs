@@ -3712,6 +3712,7 @@ namespace SunPresenceCollectingApp
                 nearestConcurrentData.gps.SunZenithAzimuth().Azimuth.ToString().Replace(",", ".");
             string csvHeader = currImageStatsData.CSVHeader() + ",SunElevationDeg,SunAzimuthDeg,sunDiskCondition";
 
+            #region // obsolete
             //csvStringALLstatsForFile = String.Join(Environment.NewLine, lImagesALLstatsDataCSVWithConcurrentData.ToArray<string>());
 
             //// write header
@@ -3746,6 +3747,8 @@ namespace SunPresenceCollectingApp
             //            return 0;
             //    }
             //});
+
+            #endregion // obsolete
 
             List<string> lCalculatedData = new List<string>();
             lCalculatedData.Add(currImageALLstatsDataCSVWithConcurrentData);

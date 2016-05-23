@@ -1,0 +1,39 @@
+<?xml version="1.0" standalone="yes"?>
+<DataSet xmlns="NetFrameWork">
+  <table>
+    <key>ImagesBasePath</key>
+    <value>D:\_gulevlab\SkyImagesAnalysis_appData\_RV-ANS-31-total\images\</value>
+  </table>
+  <table>
+    <key>tgrm_token</key>
+    <value>224899642:AAHVJhzou7iW5WXILMICBalYZsAtrZOxhcU</value>
+  </table>
+  <table>
+    <key>IncomingImagesBasePath</key>
+    <value>D:\CC_Moscow_bot\CC_Moscow_bot\CC_Moscow_bot_app\bin\x64\Debug\IncomingImages\</value>
+  </table>
+  <table>
+    <key>ConcurrentDataXMLfilesBasePath</key>
+    <value>D:\_gulevlab\SkyImagesAnalysis_appData\_RV-ANS-31-total\concurrentdata\concurrent-data-2016-01-19\</value>
+  </table>
+  <table>
+    <key>YRGBstatsXMLdataFilesDirectory</key>
+    <value>D:\_gulevlab\SkyImagesAnalysis_appData\_RV-ANS-31-total\stats\GrIxYRGB\</value>
+  </table>
+
+  <table>
+    <key>R2SLufftUMBappPath</key>
+    <value>D:\_gulevlab\SkyImagesAnalysis_appData\MSU_WStation\UMB-R2S\</value>
+  </table>
+
+  <table>
+    <key>VentusLufftUMBappPath</key>
+    <value>D:\_gulevlab\SkyImagesAnalysis_appData\MSU_WStation\UMB-Ventus\</value>
+  </table>
+
+  <table>
+    <key>WSLufftUMBappPath</key>
+    <value>D:\_gulevlab\SkyImagesAnalysis_appData\MSU_WStation\UMB-WS\</value>
+  </table>
+
+</DataSet>

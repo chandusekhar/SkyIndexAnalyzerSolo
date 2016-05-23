@@ -295,7 +295,6 @@ namespace ImagesStatsCalculatingApp
             statsFilesList = statsFilesList.ConvertAll(strFileName => Path.GetFileName(strFileName));
 
 
-            // похоже накосячил - в условии должно быть отрицание?..
             int removed = filesList.RemoveAll(
                 fname =>
                     statsFilesList.Contains(ConventionalTransitions.ImageGrIxYRGBstatsDataFileName(fname, "", false)));

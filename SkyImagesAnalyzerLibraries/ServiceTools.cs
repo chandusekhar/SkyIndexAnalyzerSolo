@@ -19,6 +19,7 @@ using MathNet.Numerics.LinearAlgebra.Double;
 //using MathNet.Numerics.LinearAlgebra.Generic;
 using System.Data;
 using System.Diagnostics.CodeAnalysis;
+using System.Security.Cryptography;
 using MathNet.Numerics.LinearAlgebra;
 using Microsoft.CSharp;
 
@@ -1319,6 +1320,29 @@ namespace SkyImagesAnalyzerLibraries
                 }
             }
             return propertyList;
+        }
+
+
+
+        public static byte[] CalculateMD5hash(string filename)
+        {
+            byte[] fileMD5hash;
+            using (var md5 = MD5.Create())
+            {
+                using (var stream = File.OpenRead(filename))
+                {
+                    fileMD5hash = md5.ComputeHash(stream);
+                }
+            }
+            return fileMD5hash;
+        }
+
+
+
+
+        public static string CalculateMD5hashString(string filename)
+        {
+            return Encoding.ASCII.GetString(CalculateMD5hash(filename));
         }
     }
 }

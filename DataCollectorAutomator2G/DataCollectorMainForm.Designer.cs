@@ -78,6 +78,7 @@
             this.btnPrefs = new System.Windows.Forms.Button();
             this.btnAccCalibrationData = new System.Windows.Forms.Button();
             this.lblWhetherRestrictsObtainingDataDueSunElevation = new System.Windows.Forms.Label();
+            this.btnTestSSH = new System.Windows.Forms.Button();
             this.tabPageService = new System.Windows.Forms.TabPage();
             this.tableLayoutPanel2 = new System.Windows.Forms.TableLayoutPanel();
             this.tbMainLog = new System.Windows.Forms.TextBox();
@@ -232,6 +233,7 @@
             this.tableLayoutPanel1.Controls.Add(this.btnPrefs, 18, 0);
             this.tableLayoutPanel1.Controls.Add(this.btnAccCalibrationData, 15, 0);
             this.tableLayoutPanel1.Controls.Add(this.lblWhetherRestrictsObtainingDataDueSunElevation, 14, 9);
+            this.tableLayoutPanel1.Controls.Add(this.btnTestSSH, 14, 1);
             this.tableLayoutPanel1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tableLayoutPanel1.Location = new System.Drawing.Point(4, 4);
             this.tableLayoutPanel1.Margin = new System.Windows.Forms.Padding(4);
@@ -981,6 +983,18 @@
             this.lblWhetherRestrictsObtainingDataDueSunElevation.TabIndex = 116;
             this.lblWhetherRestrictsObtainingDataDueSunElevation.Text = "---";
             this.lblWhetherRestrictsObtainingDataDueSunElevation.TextAlign = System.Drawing.ContentAlignment.BottomCenter;
+            // 
+            // btnTestSSH
+            // 
+            this.btnTestSSH.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.btnTestSSH.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnTestSSH.Location = new System.Drawing.Point(857, 42);
+            this.btnTestSSH.Name = "btnTestSSH";
+            this.btnTestSSH.Size = new System.Drawing.Size(63, 33);
+            this.btnTestSSH.TabIndex = 117;
+            this.btnTestSSH.Text = "ssh";
+            this.btnTestSSH.UseVisualStyleBackColor = true;
+            this.btnTestSSH.Click += new System.EventHandler(this.btnTestSSH_Click);
             // 
             // tabPageService
             // 
@@ -1818,6 +1832,7 @@
         private System.Windows.Forms.Label lblUDPpacketsRecievingSpeedValue;
         private System.Windows.Forms.Label lblUDPpacketsProcessingSpeedValue;
         private System.Windows.Forms.Label lblWhetherRestrictsObtainingDataDueSunElevation;
+        private System.Windows.Forms.Button btnTestSSH;
     }
 }
 
