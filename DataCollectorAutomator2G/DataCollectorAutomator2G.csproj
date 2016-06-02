@@ -90,6 +90,10 @@
       <HintPath>C:\Program Files\nsoftware\IPWorks V9 .NET Edition\lib\nsoftware.IPWorks.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="nsoftware.IPWorksZip">
+      <HintPath>C:\Program Files\nsoftware\IPWorks ZIP V9 .NET Edition\lib\nsoftware.IPWorksZip.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Data" />
@@ -127,6 +131,7 @@
     <EmbeddedResource Include="DataCollectorMainForm.resx">
       <DependentUpon>DataCollectorMainForm.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Properties\licenses.licx" />
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources1.Designer.cs</LastGenOutput>

@@ -71,27 +71,8 @@ namespace SDCpredictNN
                 csvFileContentStringsFiltered.ConvertAll(
                     lstr => (SunDiskCondition)Enum.Parse(typeof(SunDiskCondition), lstr.Last()));
 
-            // Так, как закодировал в Матлабе
-            List<int> trueAnswersInt = trueAnswers.ConvertAll(sdc =>
-            {
-                switch (sdc)
-                {
-                    case SunDiskCondition.NoSun:
-                        return 4;
-                        break;
-                    case SunDiskCondition.Sun0:
-                        return 1;
-                        break;
-                    case SunDiskCondition.Sun1:
-                        return 2;
-                        break;
-                    case SunDiskCondition.Sun2:
-                        return 3;
-                        break;
-                    default:
-                        return 0;
-                }
-            });
+            
+            List<int> trueAnswersInt = trueAnswers.ConvertAll(sdc => SunDiskConditionData.MatlabNumeralSDC(sdc));
 
             List<List<string>> csvFileContentStringsFiltered_wo_sdc =
                 csvFileContentStringsFiltered.ConvertAll(list => list.Where((val, idx) => idx < list.Count - 1).ToList());

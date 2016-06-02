@@ -370,6 +370,24 @@ namespace SkyImagesAnalyzerLibraries
 
 
 
+
+        public static DenseVector DataVectorizedWithCondition(DenseMatrix dmData, DenseMatrix dmConditionsSource, Predicate<double> theConditionByConditionsSource)
+        {
+            List<double> listOfData = new List<double>(dmData.Values);
+            List<double> listOfConditionsSourceData = new List<double>(dmConditionsSource.Values);
+            listOfData =
+                listOfData.Where((dVal, idx) => theConditionByConditionsSource(listOfConditionsSourceData[idx]))
+                    .ToList();
+            //listOfData.RemoveAll(theCondition);
+            if (listOfData.Count == 0) return null;
+            DenseVector dvOutData = DenseVector.OfEnumerable(listOfData);
+            return dvOutData;
+        }
+
+
+
+
+
         public static List<double> DataListedWithCondition(DenseMatrix dmData, Predicate<double> theCondition)
         {
             List<double> listOfData = new List<double>(dmData.Values);

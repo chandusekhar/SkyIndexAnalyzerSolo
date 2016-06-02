@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Globalization;
+using System.Text.RegularExpressions;
 
 namespace SkyImagesAnalyzerLibraries
 {
@@ -49,23 +50,7 @@ namespace SkyImagesAnalyzerLibraries
             }
 
             DirectoryInfo dirConcurrentDataFiles = new DirectoryInfo(basePath);
-
-            #region // obsolete
-            //string fileNameWOext = Path.GetFileNameWithoutExtension(imgFileName);
-            //fileNameWOext = fileNameWOext.Replace("img-", "");
-            //fileNameWOext = fileNameWOext.Replace("devID1", "");
-            //fileNameWOext = fileNameWOext.Replace("devID2", "");
-            //string strImgFileYear = fileNameWOext.Substring(0, 4);
-            //string strImgFileMonth = fileNameWOext.Substring(5, 2);
-            //string strImgFileDate = fileNameWOext.Substring(8, 2);
-            //string strImgFileHour = fileNameWOext.Substring(11, 2);
-            //string strImgFileMinute = fileNameWOext.Substring(14, 2);
-            //string strImgFileSecond = fileNameWOext.Substring(17, 2);
-            //DateTime currImgDateTime = new DateTime(Convert.ToInt32(strImgFileYear), Convert.ToInt32(strImgFileMonth),
-            //    Convert.ToInt32(strImgFileDate), Convert.ToInt32(strImgFileHour), Convert.ToInt32(strImgFileMinute),
-            //    Convert.ToInt32(strImgFileSecond));
-            #endregion // obsolete
-
+            
             string strDateTime = Path.GetFileName(imgFileName);
             strDateTime = strDateTime.Substring(4, 19);
             DateTime currImgDateTime = CommonTools.DateTimeOfString(strDateTime);
@@ -95,9 +80,6 @@ namespace SkyImagesAnalyzerLibraries
                 if (!lTplConcurrentDataFilesInfo.Any())
                 {
                     err = "========== ERROR: couldn`t find concurrent data file for " + imgFileName;
-                    //theLogWindow = ServiceTools.LogAText(theLogWindow,
-                    //    "========== ERROR: couldn`t find concurrent data file for " + imgFileName +
-                    //    Environment.NewLine, true);
                     return "";
                 }
 
@@ -120,12 +102,205 @@ namespace SkyImagesAnalyzerLibraries
             else
             {
                 err = "========== ERROR: couldn`t find concurrent data file for " + imgFileName;
-                //theLogWindow = ServiceTools.LogAText(theLogWindow,
-                //        "========== ERROR: couldn`t find concurrent data file for " + imgFileName +
-                //        Environment.NewLine, true);
                 return "";
             }
         }
+
+
+
+
+
+
+        public static async Task<string> FindConcurrentDataXMLfileAsync(string ImageFilename, string basePath = "",
+            bool searchFilesRecursively = true,
+            ServiceTools.DatetimeExtractionMethod method = ServiceTools.DatetimeExtractionMethod.Filename)
+        {
+            if (basePath == "")
+            {
+                basePath = Directory.GetCurrentDirectory();
+                basePath = basePath +
+                           ((basePath.Last() == Path.DirectorySeparatorChar)
+                               ? ("")
+                               : (Path.DirectorySeparatorChar.ToString()));
+                basePath += "results" + Path.DirectorySeparatorChar;
+            }
+
+
+            string nearestConcurrentDataXMLfilename = "";
+
+
+
+            string currImgFilename = ImageFilename;
+            ServiceTools.DatetimeExtractionMethod _method = method;
+
+            #region find most close concurrent data XML file
+
+            List<FileDatetimeInfo> lImagesConcurrentDataFilesInfo = new List<FileDatetimeInfo>();
+            
+            List<string> filesListConcurrentData =
+                Directory.EnumerateFiles(basePath,
+                    ConventionalTransitions.ImageConcurrentDataFilesNamesPattern(),
+                    (searchFilesRecursively) ? (SearchOption.AllDirectories) : (SearchOption.TopDirectoryOnly))
+                    .ToList();
+
+
+            foreach (string strConcDataXMLFile in filesListConcurrentData)
+            {
+                try
+                {
+                    lImagesConcurrentDataFilesInfo.Add(new FileDatetimeInfo(strConcDataXMLFile,
+                        _method));
+                }
+                catch (Exception ex)
+                {
+                    continue;
+                }
+            }
+
+
+            string currImgFilenameWOext = Path.GetFileNameWithoutExtension(currImgFilename);
+
+            string ptrn = @"(devID\d)";
+            Regex rgxp = new Regex(ptrn, RegexOptions.IgnoreCase);
+
+            string strCurrImgDT = rgxp.Replace(currImgFilenameWOext.Substring(4), "");
+            //2015-12-16T06-01-38
+            strCurrImgDT = strCurrImgDT.Substring(0, 11) + strCurrImgDT.Substring(11).Replace("-", ":");
+
+            DateTime currImgDT = DateTime.Parse(strCurrImgDT, null,
+                DateTimeStyles.AdjustToUniversal);
+            DateTime.SpecifyKind(currImgDT, DateTimeKind.Utc);
+
+            FileDatetimeInfo nearestConcurrentDataXMLfileInfo = lImagesConcurrentDataFilesInfo.Aggregate((cDtFinfo1, cDtFinfo2) =>
+            {
+                TimeSpan tspan1 = new TimeSpan(Math.Abs((cDtFinfo1.datetime - currImgDT).Ticks));
+                TimeSpan tspan2 = new TimeSpan(Math.Abs((cDtFinfo2.datetime - currImgDT).Ticks));
+                return ((tspan1 <= tspan2) ? (cDtFinfo1) : (cDtFinfo2));
+            });
+
+
+            if (new TimeSpan(Math.Abs((nearestConcurrentDataXMLfileInfo.datetime - currImgDT).Ticks)) >=
+                new TimeSpan(0, 3, 0))
+            {
+                //theLogWindow = ServiceTools.LogAText(theLogWindow,
+                //    "couldn`t find close enough concurrent data file for image:" + Environment.NewLine +
+                //    currImgFilename + Environment.NewLine + "closest concurrent data file is:" +
+                //    Environment.NewLine + nearestConcurrentDataXMLfileInfo.filename + Environment.NewLine +
+                //    "with date-time value " + nearestConcurrentDataXMLfileInfo.datetime.ToString("o"));
+                nearestConcurrentDataXMLfilename = "";
+            }
+            else
+            {
+                nearestConcurrentDataXMLfilename = nearestConcurrentDataXMLfileInfo.filename;
+            }
+
+
+            #endregion find most close concurrent data
+
+
+            return nearestConcurrentDataXMLfilename;
+        }
+
+
+
+
+
+
+
+        public static string FindConcurrentDataXMLfile(string ImageFilename, string basePath = "",
+            bool searchFilesRecursively = true,
+            ServiceTools.DatetimeExtractionMethod method = ServiceTools.DatetimeExtractionMethod.Filename)
+        {
+            if (basePath == "")
+            {
+                basePath = Directory.GetCurrentDirectory();
+                basePath = basePath +
+                           ((basePath.Last() == Path.DirectorySeparatorChar)
+                               ? ("")
+                               : (Path.DirectorySeparatorChar.ToString()));
+                basePath += "results" + Path.DirectorySeparatorChar;
+            }
+
+
+            string nearestConcurrentDataXMLfilename = "";
+
+
+
+            string currImgFilename = ImageFilename;
+            ServiceTools.DatetimeExtractionMethod _method = method;
+
+            #region find most close concurrent data XML file
+
+            List<FileDatetimeInfo> lImagesConcurrentDataFilesInfo = new List<FileDatetimeInfo>();
+
+            List<string> filesListConcurrentData =
+                Directory.EnumerateFiles(basePath,
+                    ConventionalTransitions.ImageConcurrentDataFilesNamesPattern(),
+                    (searchFilesRecursively) ? (SearchOption.AllDirectories) : (SearchOption.TopDirectoryOnly))
+                    .ToList();
+
+
+            foreach (string strConcDataXMLFile in filesListConcurrentData)
+            {
+                try
+                {
+                    lImagesConcurrentDataFilesInfo.Add(new FileDatetimeInfo(strConcDataXMLFile,
+                        _method));
+                }
+                catch (Exception ex)
+                {
+                    continue;
+                }
+            }
+
+
+            string currImgFilenameWOext = Path.GetFileNameWithoutExtension(currImgFilename);
+
+            string ptrn = @"(devID\d)";
+            Regex rgxp = new Regex(ptrn, RegexOptions.IgnoreCase);
+
+            string strCurrImgDT = rgxp.Replace(currImgFilenameWOext.Substring(4), "");
+            //2015-12-16T06-01-38
+            strCurrImgDT = strCurrImgDT.Substring(0, 11) + strCurrImgDT.Substring(11).Replace("-", ":");
+
+            DateTime currImgDT = DateTime.Parse(strCurrImgDT, null,
+                DateTimeStyles.AdjustToUniversal);
+            DateTime.SpecifyKind(currImgDT, DateTimeKind.Utc);
+
+            FileDatetimeInfo nearestConcurrentDataXMLfileInfo = lImagesConcurrentDataFilesInfo.Aggregate((cDtFinfo1, cDtFinfo2) =>
+            {
+                TimeSpan tspan1 = new TimeSpan(Math.Abs((cDtFinfo1.datetime - currImgDT).Ticks));
+                TimeSpan tspan2 = new TimeSpan(Math.Abs((cDtFinfo2.datetime - currImgDT).Ticks));
+                return ((tspan1 <= tspan2) ? (cDtFinfo1) : (cDtFinfo2));
+            });
+
+
+            if (new TimeSpan(Math.Abs((nearestConcurrentDataXMLfileInfo.datetime - currImgDT).Ticks)) >=
+                new TimeSpan(0, 3, 0))
+            {
+                //theLogWindow = ServiceTools.LogAText(theLogWindow,
+                //    "couldn`t find close enough concurrent data file for image:" + Environment.NewLine +
+                //    currImgFilename + Environment.NewLine + "closest concurrent data file is:" +
+                //    Environment.NewLine + nearestConcurrentDataXMLfileInfo.filename + Environment.NewLine +
+                //    "with date-time value " + nearestConcurrentDataXMLfileInfo.datetime.ToString("o"));
+                nearestConcurrentDataXMLfilename = "";
+            }
+            else
+            {
+                nearestConcurrentDataXMLfilename = nearestConcurrentDataXMLfileInfo.filename;
+            }
+
+
+            #endregion find most close concurrent data
+
+
+            return nearestConcurrentDataXMLfilename;
+        }
+
+
+
+
+
 
 
 

@@ -2711,6 +2711,61 @@ namespace SkyImagesAnalyzerLibraries
 
 
 
+        public static int MatlabNumeralSDC(SunDiskCondition sdc)
+        {
+            switch (sdc)
+            {
+                case SunDiskCondition.NoSun:
+                    return 4;
+                    break;
+                case SunDiskCondition.Sun0:
+                    return 1;
+                    break;
+                case SunDiskCondition.Sun1:
+                    return 2;
+                    break;
+                case SunDiskCondition.Sun2:
+                    return 3;
+                    break;
+                case SunDiskCondition.Defect:
+                    return 0;
+                    break;
+                default:
+                    return 0;
+            }
+        }
+
+
+
+
+        public static SunDiskCondition MatlabSDCenum(int sdcInt)
+        {
+            switch (sdcInt)
+            {
+                case 4:
+                    return SunDiskCondition.NoSun;
+                    break;
+                case 1:
+                    return SunDiskCondition.Sun0;
+                    break;
+                case 2:
+                    return SunDiskCondition.Sun1;
+                    break;
+                case 3:
+                    return SunDiskCondition.Sun2;
+                    break;
+                default:
+                    return SunDiskCondition.Defect;
+            }
+        }
+
+
+
+
+
+
+
+
         #region // obsolete - moved to CsvExportable abstract class
         //public string ToCSV()
         //{
@@ -3239,6 +3294,26 @@ namespace SkyImagesAnalyzerLibraries
 
 
 
+    public class PredictedCloudCoverData
+    {
+        public DateTime dateTimeUTC { get; set; }
+        public int CloudCoverTotal { get; set; }
+        public int CloudCoverLower { get; set; }
+
+        public PredictedCloudCoverData() { }
+
+        public PredictedCloudCoverData(IEnumerable<string> csvData)
+        {
+            dateTimeUTC = DateTime.Parse(csvData.ElementAt(0), null,
+                System.Globalization.DateTimeStyles.AdjustToUniversal);
+            CloudCoverTotal = Convert.ToInt32(csvData.ElementAt(1));
+            CloudCoverLower = Convert.ToInt32(csvData.ElementAt(2));
+        }
+    }
+
+
+
+
     public class SkyImagesDataWith_Concurrent_Stats_CloudCover
     {
         public string skyImageFullFileName { get; set; }
@@ -3271,6 +3346,26 @@ namespace SkyImagesAnalyzerLibraries
 
 
         public SkyImagesDataWith_Concurrent_Stats_CloudCover_SDC() { }
+    }
+
+
+
+
+
+    public class SkyImagesProcessedAndPredictedData
+    {
+        public string skyImageFullFileName { get; set; }
+        public string skyImageFileName { get; set; }
+        public DateTime imageShootingDateTimeUTC { get; set; }
+        public PredictedCloudCoverData PredictedCC { get; set; }
+        public string concurrentDataXMLfile { get; set; }
+        public ConcurrentData concurrentData { get; set; }
+        public string grixyrgbStatsXMLfile { get; set; }
+        public SkyImageIndexesStatsData grixyrgbStats { get; set; }
+        public SunDiskCondition PredictedSDC { get; set; }
+
+
+        public SkyImagesProcessedAndPredictedData() { }
     }
 
 

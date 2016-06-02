@@ -13,6 +13,7 @@ using System.Linq;
 using System.Management.Automation;
 using System.Threading;
 using Emgu.CV.Util;
+using MathNet.Numerics.LinearAlgebra;
 using MathNet.Numerics.LinearAlgebra.Double;
 using MathNet.Numerics.Statistics;
 using MKLwrapper;
@@ -872,7 +873,7 @@ namespace SkyImagesAnalyzerLibraries
 
 
 
-        public static SkyImageIndexesStatsData CalculateImageIndexesStats(string strFullFilePath, out ImageProcessing imgP, int MaxImageSize = 0, RoundData predefinedRoundedMask = null, string logFileName = "")
+        public static SkyImageIndexesStatsData CalculateImageIndexesStats(string strFullFilePath, out ImageProcessing imgP, int MaxImageSize = 0, RoundData predefinedRoundedMask = null, string logFileName = "", bool bForceCalculateionsWithoutMKL = false)
         {
             SkyImageIndexesStatsData retStatsData = new SkyImageIndexesStatsData();
             if (!File.Exists(strFullFilePath))
@@ -1052,11 +1053,19 @@ namespace SkyImagesAnalyzerLibraries
             dmGdata = (DenseMatrix)dmGdata.PointwiseMultiply(dmMaskCircled100);
             dmBdata = (DenseMatrix)dmBdata.PointwiseMultiply(dmMaskCircled100);
 
-            DenseVector dvGrixData = DataAnalysis.DataVectorizedWithCondition(dmGrixData, dval => ((dval > 0.0d) && (dval < 1.0d)));
-            DenseVector dvYData = DataAnalysis.DataVectorizedWithCondition(dmYdata, dval => (dval > 0.0d));
-            DenseVector dvRData = DataAnalysis.DataVectorizedWithCondition(dmRdata, dval => (dval > 0.0d));
-            DenseVector dvGData = DataAnalysis.DataVectorizedWithCondition(dmGdata, dval => (dval > 0.0d));
-            DenseVector dvBData = DataAnalysis.DataVectorizedWithCondition(dmBdata, dval => (dval > 0.0d));
+            //DenseVector dvGrixData = DataAnalysis.DataVectorizedWithCondition(dmGrixData, dval => ((dval > 0.0d) && (dval < 1.0d)));
+            //DenseVector dvYData = DataAnalysis.DataVectorizedWithCondition(dmYdata, dval => (dval > 0.0d));
+            //DenseVector dvRData = DataAnalysis.DataVectorizedWithCondition(dmRdata, dval => (dval > 0.0d));
+            //DenseVector dvGData = DataAnalysis.DataVectorizedWithCondition(dmGdata, dval => (dval > 0.0d));
+            //DenseVector dvBData = DataAnalysis.DataVectorizedWithCondition(dmBdata, dval => (dval > 0.0d));
+
+            DenseVector dvGrixData = DataAnalysis.DataVectorizedWithCondition(dmGrixData, dmMaskCircled100, dval => (dval > 0.0d));
+            DenseVector dvYData = DataAnalysis.DataVectorizedWithCondition(dmYdata, dmMaskCircled100, dval => (dval > 0.0d));
+            DenseVector dvRData = DataAnalysis.DataVectorizedWithCondition(dmRdata, dmMaskCircled100, dval => (dval > 0.0d));
+            DenseVector dvGData = DataAnalysis.DataVectorizedWithCondition(dmGdata, dmMaskCircled100, dval => (dval > 0.0d));
+            DenseVector dvBData = DataAnalysis.DataVectorizedWithCondition(dmBdata, dmMaskCircled100, dval => (dval > 0.0d));
+
+
 
             #region debug report
 #if (MONO && DEBUG)
@@ -1072,19 +1081,48 @@ namespace SkyImagesAnalyzerLibraries
             #endregion debug report
 
 
-            retStatsData.brightnessStatsData = VariableStatsData(dvYData);
+            List<DenseVector> lDvFieldsData = new List<DenseVector>();
+            lDvFieldsData.Add(dvYData);
+            lDvFieldsData.Add(dvGrixData);
+            lDvFieldsData.Add(dvRData);
+            lDvFieldsData.Add(dvGData);
+            lDvFieldsData.Add(dvBData);
+            List<SkyImageVariableStatsData> stats = VariablesStatsData(lDvFieldsData, bForceCalculateionsWithoutMKL).ToList();
+
+            #region // obsolete
+
+            //retStatsData.brightnessStatsData = VariableStatsData(dvYData);
+            //retStatsData.brightnessStatsData.varname = "Brightness";
+            //retStatsData.brightnessStatsData.FileName = strFullFilePath;
+            //retStatsData.grixStatsData = VariableStatsData(dvGrixData);
+            //retStatsData.grixStatsData.varname = "GrIx";
+            //retStatsData.grixStatsData.FileName = strFullFilePath;
+            //retStatsData.rStatsData = VariableStatsData(dvRData);
+            //retStatsData.rStatsData.varname = "Rchannel";
+            //retStatsData.rStatsData.FileName = strFullFilePath;
+            //retStatsData.gStatsData = VariableStatsData(dvGData);
+            //retStatsData.gStatsData.varname = "Gchannel";
+            //retStatsData.gStatsData.FileName = strFullFilePath;
+            //retStatsData.bStatsData = VariableStatsData(dvBData);
+            //retStatsData.bStatsData.varname = "Bchannel";
+            //retStatsData.bStatsData.FileName = strFullFilePath;
+            //retStatsData.FileName = strFullFilePath;
+
+            #endregion
+
+            retStatsData.brightnessStatsData = stats[0];
             retStatsData.brightnessStatsData.varname = "Brightness";
             retStatsData.brightnessStatsData.FileName = strFullFilePath;
-            retStatsData.grixStatsData = VariableStatsData(dvGrixData);
+            retStatsData.grixStatsData = stats[1];
             retStatsData.grixStatsData.varname = "GrIx";
             retStatsData.grixStatsData.FileName = strFullFilePath;
-            retStatsData.rStatsData = VariableStatsData(dvRData);
+            retStatsData.rStatsData = stats[2];
             retStatsData.rStatsData.varname = "Rchannel";
             retStatsData.rStatsData.FileName = strFullFilePath;
-            retStatsData.gStatsData = VariableStatsData(dvGData);
+            retStatsData.gStatsData = stats[3];
             retStatsData.gStatsData.varname = "Gchannel";
             retStatsData.gStatsData.FileName = strFullFilePath;
-            retStatsData.bStatsData = VariableStatsData(dvBData);
+            retStatsData.bStatsData = stats[4];
             retStatsData.bStatsData.varname = "Bchannel";
             retStatsData.bStatsData.FileName = strFullFilePath;
             retStatsData.FileName = strFullFilePath;
@@ -1094,26 +1132,214 @@ namespace SkyImagesAnalyzerLibraries
 
 
 
-        private static SkyImageVariableStatsData VariableStatsData(DenseVector dvSourceData)
+        private static SkyImageVariableStatsData VariableStatsData(DenseVector dvSourceData, bool forceWithoutMKL = false)
         {
+            //forceWithoutMKL = true;
             SkyImageVariableStatsData retStatsData = new SkyImageVariableStatsData();
-            DescriptiveStatistics stats = new DescriptiveStatistics(dvSourceData, true);
-            List<FieldPercentileValue> lTplGrIxStats = new List<FieldPercentileValue>();
+
+            SummaryStatistics MKLstats = new SummaryStatistics();
+            List<double> xVec = dvSourceData.ToList();
+            MKLstats.xVector = xVec;
+            List<double> percOrders = new List<double>();
             for (int i = 5; i <= 100; i += 5)
             {
-                double currPercValue = dvSourceData.Percentile(i);
-                lTplGrIxStats.Add(new FieldPercentileValue(i, currPercValue));
+                percOrders.Add((double)i);
             }
-            retStatsData.lTplFieldPercentiles = lTplGrIxStats;
-            retStatsData.min = stats.Minimum;
-            retStatsData.max = stats.Maximum;
-            retStatsData.mean = stats.Mean;
-            retStatsData.variance = stats.Variance;
-            retStatsData.stdev = stats.StandardDeviation;
-            retStatsData.skewness = stats.Skewness;
-            retStatsData.kurtosis = stats.Kurtosis;
-            retStatsData.rms = dvSourceData.RootMeanSquare();
+            double out_min = 0.0d;
+            double out_max = 0.0d;
+            double out_mean = 0.0d;
+            double out_rms = 0.0d;
+            double out_skewness = 0.0d;
+            double out_kurtosis = 0.0d;
+            double out_variance = 0.0d;
+            double out_stdev = 0.0d;
+            bool mklSucceeded = false;
+            double[] MKLComputedPrecentiles = percOrders.ToList().ConvertAll(dVal => 0.0d).ToArray();
+            if (!forceWithoutMKL)
+            {
+                try
+                {
+                    MKLComputedPrecentiles =
+                        MKLstats.CalculateStats(
+                            percOrders, 
+                            out out_min, 
+                            out out_max, 
+                            out out_mean, 
+                            out out_rms,
+                            out out_skewness, 
+                            out out_kurtosis, 
+                            out out_variance, 
+                            out out_stdev).ToArray();
+                    mklSucceeded = true;
+                }
+                catch (Exception ex)
+                {
+                    mklSucceeded = false;
+                }
+            }
 
+
+            List<FieldPercentileValue> lTplFieldStats = new List<FieldPercentileValue>();
+            if (!mklSucceeded)
+            {
+                
+                for (int i = 5; i <= 100; i += 5)
+                {
+                    double currPercValue = dvSourceData.Percentile(i);
+                    lTplFieldStats.Add(new FieldPercentileValue(i, currPercValue));
+                }
+                retStatsData.lTplFieldPercentiles = lTplFieldStats;
+
+                DescriptiveStatistics stats = new DescriptiveStatistics(dvSourceData, true);
+                retStatsData.min = stats.Minimum;
+                retStatsData.max = stats.Maximum;
+                retStatsData.mean = stats.Mean;
+                retStatsData.variance = stats.Variance;
+                retStatsData.stdev = stats.StandardDeviation;
+                retStatsData.skewness = stats.Skewness;
+                retStatsData.kurtosis = stats.Kurtosis;
+                retStatsData.rms = dvSourceData.RootMeanSquare();
+            }
+            else
+            {
+                for (int i = 5; i <= 100; i += 5)
+                {
+                    double currPercValue = MKLComputedPrecentiles[percOrders.IndexOf(i)];
+                    lTplFieldStats.Add(new FieldPercentileValue(i, currPercValue));
+                }
+                retStatsData.lTplFieldPercentiles = lTplFieldStats;
+                retStatsData.min = out_min;
+                retStatsData.max = out_max;
+                retStatsData.mean = out_mean;
+                retStatsData.variance = out_variance;
+                retStatsData.stdev = out_stdev;
+                retStatsData.skewness = out_skewness;
+                retStatsData.kurtosis = out_kurtosis;
+                retStatsData.rms = out_rms;
+            }
+
+            
+
+
+
+
+            return retStatsData;
+        }
+
+
+
+
+
+
+
+        /// <summary>
+        /// Variableses the stats data.
+        /// </summary>
+        /// <param name="srcData">The source data.</param>
+        /// <param name="forceWithoutMKL">if set to <c>true</c> [force without MKL].</param>
+        /// <returns>IEnumerable&lt;SkyImageVariableStatsData&gt;.</returns>
+        private static IEnumerable<SkyImageVariableStatsData> VariablesStatsData(IEnumerable<DenseVector> srcData, bool forceWithoutMKL = false)
+        {
+            //forceWithoutMKL = true;
+            List<SkyImageVariableStatsData> retStatsData = new List<SkyImageVariableStatsData>();
+
+            DenseMatrix dmSourceData = DenseMatrix.OfRowVectors(srcData.ToArray());
+
+            SummaryStatistics MKLstats = new SummaryStatistics(dmSourceData.ToArray());
+            int p = dmSourceData.RowCount;
+            int n = dmSourceData.ColumnCount;
+            List<double> percOrders = new List<double>();
+            for (int i = 5; i <= 100; i += 5)
+            {
+                percOrders.Add((double)i);
+            }
+            double[] out_min = new double[p];
+            double[] out_max = new double[p];
+            double[] out_mean = new double[p];
+            double[] out_rms = new double[p];
+            double[] out_skewness = new double[p];
+            double[] out_kurtosis = new double[p];
+            double[] out_variance = new double[p];
+            double[] out_stdev = new double[p];
+            bool mklSucceeded = false;
+            List<double[]> MKLComputedPrecentiles = new List<double[]>();
+            if (!forceWithoutMKL)
+            {
+                try
+                {
+                    double[,] percValues2dArray = 
+                        MKLstats.CalculateStatsMult(
+                            percOrders,
+                            out out_min,
+                            out out_max,
+                            out out_mean,
+                            out out_rms,
+                            out out_skewness,
+                            out out_kurtosis,
+                            out out_variance,
+                            out out_stdev);
+                    MKLComputedPrecentiles =
+                        DenseMatrix.OfArray(percValues2dArray).EnumerateRows().ToList().ConvertAll(dv => dv.ToArray());
+                    mklSucceeded = true;
+                }
+                catch (Exception ex)
+                {
+                    mklSucceeded = false;
+                }
+            }
+
+
+
+
+            foreach (DenseVector row in srcData)
+            {
+                SkyImageVariableStatsData currRowStatsData = new SkyImageVariableStatsData();
+
+                List<FieldPercentileValue> lTplFieldStats = new List<FieldPercentileValue>();
+                if (!mklSucceeded)
+                {
+
+                    for (int i = 5; i <= 100; i += 5)
+                    {
+                        double currPercValue = row.Percentile(i);
+                        lTplFieldStats.Add(new FieldPercentileValue(i, currPercValue));
+                    }
+                    currRowStatsData.lTplFieldPercentiles = lTplFieldStats;
+
+                    DescriptiveStatistics stats = new DescriptiveStatistics(row, true);
+                    currRowStatsData.min = stats.Minimum;
+                    currRowStatsData.max = stats.Maximum;
+                    currRowStatsData.mean = stats.Mean;
+                    currRowStatsData.variance = stats.Variance;
+                    currRowStatsData.stdev = stats.StandardDeviation;
+                    currRowStatsData.skewness = stats.Skewness;
+                    currRowStatsData.kurtosis = stats.Kurtosis;
+                    currRowStatsData.rms = row.RootMeanSquare();
+                }
+                else
+                {
+                    int currRowIndex = srcData.ToList().IndexOf(row);
+
+                    for (int i = 5; i <= 100; i += 5)
+                    {
+                        double currPercValue = MKLComputedPrecentiles[currRowIndex][percOrders.IndexOf(i)];
+                        lTplFieldStats.Add(new FieldPercentileValue(i, currPercValue));
+                    }
+                    currRowStatsData.lTplFieldPercentiles = lTplFieldStats;
+                    currRowStatsData.min = out_min[currRowIndex];
+                    currRowStatsData.max = out_max[currRowIndex];
+                    currRowStatsData.mean = out_mean[currRowIndex];
+                    currRowStatsData.variance = out_variance[currRowIndex];
+                    currRowStatsData.stdev = out_stdev[currRowIndex];
+                    currRowStatsData.skewness = out_skewness[currRowIndex];
+                    currRowStatsData.kurtosis = out_kurtosis[currRowIndex];
+                    currRowStatsData.rms = out_rms[currRowIndex];
+                }
+
+
+                retStatsData.Add(currRowStatsData);
+            }
+            
             return retStatsData;
         }
 
@@ -1720,7 +1946,7 @@ namespace SkyImagesAnalyzerLibraries
             }
         }
 
-        
+
         public static Bitmap BitmapResizer(Bitmap bmToResize, int maxSideLength = 1024)
         {
             int sourceWidth = bmToResize.Width;
@@ -1904,6 +2130,8 @@ namespace SkyImagesAnalyzerLibraries
             ImageStatsDataCalculationResult Result = new ImageStatsDataCalculationResult();
             List<Tuple<string, string>> lImagesRoundMasksMappingFiles = null;
             Stopwatch stopwatch = null;
+            bool bForceCalculateionsWithoutMKL = false;
+
 
             string currentFullFileName = imgFileName;
             string logFileName = "";
@@ -1933,6 +2161,11 @@ namespace SkyImagesAnalyzerLibraries
                 if (optionalParameters.ContainsKey("logFileName"))
                 {
                     logFileName = optionalParameters["logFileName"] as string;
+                }
+
+                if (optionalParameters.ContainsKey("bForceCalculateionsWithoutMKL"))
+                {
+                    bForceCalculateionsWithoutMKL = (bool)optionalParameters["bForceCalculateionsWithoutMKL"];
                 }
             }
 
@@ -1995,7 +2228,7 @@ namespace SkyImagesAnalyzerLibraries
                                     tpl => (new WildcardPattern(tpl.Item1)).IsMatch(currentFullFileName)).Item2;
                             strFoundPredefinedRoundedMaskParametersXMLfile =
                                 strFoundPredefinedRoundedMaskParametersXMLfile.Substring(0, strFoundPredefinedRoundedMaskParametersXMLfile.IndexOf(".xml") + 4);
-                                
+
 
                             #region debug report
 #if (MONO && DEBUG)
@@ -2035,7 +2268,7 @@ namespace SkyImagesAnalyzerLibraries
                     }
                 }
 
-                SkyImageIndexesStatsData grixyrgbStatsData = ImageProcessing.CalculateImageIndexesStats(currentFullFileName, out imgP, 0, predefinedRoundedMask, logFileName);
+                SkyImageIndexesStatsData grixyrgbStatsData = ImageProcessing.CalculateImageIndexesStats(currentFullFileName, out imgP, 0, predefinedRoundedMask, logFileName, bForceCalculateionsWithoutMKL);
 
 
                 SkyImageMedianPerc5Data mp5dt = new SkyImageMedianPerc5Data(currentFullFileName,

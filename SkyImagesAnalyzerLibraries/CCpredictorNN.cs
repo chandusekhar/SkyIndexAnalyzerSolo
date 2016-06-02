@@ -1,17 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
-using System.Diagnostics;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using ANN;
 using MathNet.Numerics.LinearAlgebra.Double;
 
 namespace SkyImagesAnalyzerLibraries
 {
-    public class SDCpredictorNN
+    public class CCpredictorNN
     {
         private bool bNeedToCalculateStats = false;
 
@@ -23,11 +23,11 @@ namespace SkyImagesAnalyzerLibraries
 
 
         private SkyImageIndexesStatsData currImageStatsData = null;
-        List<ConcurrentData> lConcurrentDataAlreadyRead = null;
+        List<int> lConcurrentDataAlreadyRead = null;
 
 
 
-        public SDCpredictorNN(string strImageFilename, string strConcurrentDataXMLfilesBasePath, string strimageYRGBstatsXMLdataFilesDirectory)
+        public CCpredictorNN(string strImageFilename, string strConcurrentDataXMLfilesBasePath, string strimageYRGBstatsXMLdataFilesDirectory)
         {
             if (!File.Exists(strImageFilename))
             {
@@ -45,7 +45,8 @@ namespace SkyImagesAnalyzerLibraries
 
 
 
-        public async Task<SunDiskCondition> CalcSDC_NN(string SDC_NNconfigFile, string SDC_NNtrainedParametersFile, string NormMeansFile, string NormRangeFile)
+        public async Task<int> CalcCC_NN(string SDC_NNconfigFile, string SDC_NNtrainedParametersFile, string NormMeansFile,
+            string NormRangeFile, string CC_NNconfigFile, string CC_NNtrainedParametersFile)
         {
             if (!File.Exists(SDC_NNconfigFile))
             {
@@ -128,16 +129,6 @@ namespace SkyImagesAnalyzerLibraries
                         ServiceTools.WriteObjectToXML(currImageProcessingResult.grixyrgbStatsData,
                             strImageGrIxYRGBDataFileName);
 
-                        // currImageProcessingResult.stopwatch.Stop();
-                        // string currentFullFileName = currImageProcessingResult.imgFilename;
-                        // string strPerfCountersData = currentFullFileName + ";" +
-                        //                             currImageProcessingResult.stopwatch.ElapsedMilliseconds + ";" +
-                        //                             (currImageProcessingResult.procTotalProcessorTimeEnd -
-                        //                              currImageProcessingResult.procTotalProcessorTimeStart)
-                        //                                 .TotalMilliseconds +
-                        //                             Environment.NewLine;
-                        // ServiceTools.logToTextFile(strPerformanceCountersStatsFile, strPerfCountersData, true);
-
                         currImageStatsData = currImageProcessingResult.grixyrgbStatsData;
 
 
@@ -212,12 +203,6 @@ namespace SkyImagesAnalyzerLibraries
                 if (new TimeSpan(Math.Abs((nearestConcurrentDataObtained.datetimeUTC - currImgDT).Ticks)) >=
                     new TimeSpan(0, 2, 0))
                 {
-
-                    //theLogWindow = ServiceTools.LogAText(theLogWindow,
-                    //    "couldn`t find close enough concurrent data file for image:" + Environment.NewLine +
-                    //    bgwCurrImageFInfo.FullName + Environment.NewLine + "closest concurrent data file is:" +
-                    //    Environment.NewLine + nearestConcurrentData.filename + Environment.NewLine +
-                    //    "with date-time value " + nearestConcurrentData.datetimeUTC.ToString("o"));
                     nearestConcurrentDataObtained = null;
                 }
 
@@ -235,23 +220,29 @@ namespace SkyImagesAnalyzerLibraries
             #endregion search for concurrent data
 
 
+
             DenseVector dvMeans = (DenseVector)((DenseMatrix)ServiceTools.ReadDataFromCSV(NormMeansFile, 0, ",")).Row(0);
             DenseVector dvRanges = (DenseVector)((DenseMatrix)ServiceTools.ReadDataFromCSV(NormRangeFile, 0, ",")).Row(0);
             DenseVector dvThetaValues = (DenseVector)ServiceTools.ReadDataFromCSV(SDC_NNtrainedParametersFile, 0, ",");
+            DenseVector dv_CC_ThetaValues = (DenseVector)ServiceTools.ReadDataFromCSV(CC_NNtrainedParametersFile, 0, ",");
             List<int> NNlayersConfig =
                 new List<double>(((DenseMatrix)ServiceTools.ReadDataFromCSV(SDC_NNconfigFile, 0, ",")).Row(0)).ConvertAll
                     (dVal => Convert.ToInt32(dVal));
-            List<double> decisionProbabilities = new List<double>();
-            return PredictSDC_NN(currImageStatsData, nearestConcurrentData, NNlayersConfig, dvThetaValues, dvMeans,
-                dvRanges, out decisionProbabilities);
+            List<int> CC_NNlayersConfig =
+                new List<double>(((DenseMatrix)ServiceTools.ReadDataFromCSV(CC_NNconfigFile, 0, ",")).Row(0)).ConvertAll
+                    (dVal => Convert.ToInt32(dVal));
+            return PredictCC_NN(currImageStatsData, nearestConcurrentData, NNlayersConfig, dvThetaValues, dvMeans,
+                dvRanges, CC_NNlayersConfig, dv_CC_ThetaValues);
+
         }
 
 
 
 
 
-        public static SunDiskCondition CalcSDC_NN(string statsXMLfile, string concurrentDataXMLfile, string SDC_NNconfigFile,
-            string SDC_NNtrainedParametersFile, string NormMeansFile, string NormRangeFile, out List<double> decisionProbabilities)
+        public static int CalcCC_NN(string statsXMLfile, string concurrentDataXMLfile, string SDC_NNconfigFile,
+            string SDC_NNtrainedParametersFile, string NormMeansFile, string NormRangeFile, string CC_NNconfigFile,
+            string CC_NNtrainedParametersFile)
         {
             if (!File.Exists(SDC_NNconfigFile))
             {
@@ -269,6 +260,14 @@ namespace SkyImagesAnalyzerLibraries
             {
                 throw new FileNotFoundException("couldn`t find the file specified: " + NormRangeFile);
             }
+            if (!File.Exists(CC_NNconfigFile))
+            {
+                throw new FileNotFoundException("couldn`t find the file specified: " + CC_NNconfigFile);
+            }
+            if (!File.Exists(CC_NNtrainedParametersFile))
+            {
+                throw new FileNotFoundException("couldn`t find the file specified: " + CC_NNtrainedParametersFile);
+            }
             if (!File.Exists(statsXMLfile))
             {
                 throw new FileNotFoundException("couldn`t find the file specified: " + statsXMLfile);
@@ -279,7 +278,7 @@ namespace SkyImagesAnalyzerLibraries
             }
 
 
-            #region read GrIxYRGB stats
+            #region read or calculate GrIxYRGB stats
 
             SkyImageIndexesStatsData currImageStatsData = null;
             try
@@ -330,11 +329,16 @@ namespace SkyImagesAnalyzerLibraries
             DenseVector dvMeans = (DenseVector)((DenseMatrix)ServiceTools.ReadDataFromCSV(NormMeansFile, 0, ",")).Row(0);
             DenseVector dvRanges = (DenseVector)((DenseMatrix)ServiceTools.ReadDataFromCSV(NormRangeFile, 0, ",")).Row(0);
             DenseVector dvThetaValues = (DenseVector)ServiceTools.ReadDataFromCSV(SDC_NNtrainedParametersFile, 0, ",");
+            DenseVector dv_CC_ThetaValues = (DenseVector)ServiceTools.ReadDataFromCSV(CC_NNtrainedParametersFile, 0, ",");
             List<int> NNlayersConfig =
                 new List<double>(((DenseMatrix)ServiceTools.ReadDataFromCSV(SDC_NNconfigFile, 0, ",")).Row(0)).ConvertAll
                     (dVal => Convert.ToInt32(dVal));
-            return PredictSDC_NN(currImageStatsData, nearestConcurrentData, NNlayersConfig, dvThetaValues, dvMeans,
-                dvRanges, out decisionProbabilities);
+            List<int> CC_NNlayersConfig =
+                new List<double>(((DenseMatrix)ServiceTools.ReadDataFromCSV(CC_NNconfigFile, 0, ",")).Row(0)).ConvertAll
+                    (dVal => Convert.ToInt32(dVal));
+
+            return PredictCC_NN(currImageStatsData, nearestConcurrentData, NNlayersConfig, dvThetaValues, dvMeans,
+                dvRanges, CC_NNlayersConfig, dv_CC_ThetaValues);
         }
 
 
@@ -342,17 +346,20 @@ namespace SkyImagesAnalyzerLibraries
 
 
 
-
-        public static SunDiskCondition PredictSDC_NN(SkyImageIndexesStatsData imageStats,
-            ConcurrentData snapshotConcurrentData, IEnumerable<int> SDC_NNconfig, IEnumerable<double> SDC_NNtrainedParameters,
-            IEnumerable<double> NNfeturesNormMeans, IEnumerable<double> NNfeaturesNormRange, out List<double> decisionProbabilities)
+        public static int PredictCC_NN(SkyImageIndexesStatsData imageStats, ConcurrentData snapshotConcurrentData,
+            IEnumerable<int> SDC_NNconfig, IEnumerable<double> SDC_NNtrainedParameters, IEnumerable<double> NNfeturesNormMeans,
+            IEnumerable<double> NNfeaturesNormRange, IEnumerable<int> CC_NNconfig, IEnumerable<double> CC_NNtrainedParameters)
         {
             string currImageALLstatsDataCSVWithConcurrentData = imageStats.ToCSV() + "," +
                 snapshotConcurrentData.gps.SunZenithAzimuth().ElevationAngle.ToString().Replace(",", ".") + "," +
                 snapshotConcurrentData.gps.SunZenithAzimuth().Azimuth.ToString().Replace(",", ".");
-            string csvHeader = imageStats.CSVHeader() + ",SunElevationDeg,SunAzimuthDeg,sunDiskCondition";
+
             List<string> lCalculatedData = new List<string>();
             lCalculatedData.Add(currImageALLstatsDataCSVWithConcurrentData);
+
+            string csvHeader = imageStats.CSVHeader() + ",SunElevationDeg,SunAzimuthDeg,CloudCover";
+
+
 
             List<List<string>> csvFileContentStrings =
                 lCalculatedData.ConvertAll(str => str.Split(',').ToList()).ToList();
@@ -367,21 +374,22 @@ namespace SkyImagesAnalyzerLibraries
                 csvFileContentStringsFiltered.Add(
                     listDataStrings.Where((str, idx) => !columnsToDelete.Contains(idx)).ToList());
             }
+            
 
+            List<List<string>> csvFileContentStringsFiltered_wo_CC = csvFileContentStringsFiltered;
 
-
-            List<List<string>> csvFileContentStringsFiltered_wo_sdc = csvFileContentStringsFiltered;
 
             List<DenseVector> lDV_objects_features =
-                csvFileContentStringsFiltered_wo_sdc.ConvertAll(
+                csvFileContentStringsFiltered_wo_CC.ConvertAll(
                     list =>
                         DenseVector.OfEnumerable(list.ConvertAll<double>(str => Convert.ToDouble(str.Replace(".", ",")))));
 
 
             DenseVector dvMeans = DenseVector.OfEnumerable(NNfeturesNormMeans);
             DenseVector dvRanges = DenseVector.OfEnumerable(NNfeaturesNormRange);
-            DenseVector dvThetaValues = DenseVector.OfEnumerable(SDC_NNtrainedParameters);
-            List<int> NNlayersConfig = SDC_NNconfig.ToList();
+
+
+            #region normalize features
 
             lDV_objects_features = lDV_objects_features.ConvertAll(dv =>
             {
@@ -390,6 +398,27 @@ namespace SkyImagesAnalyzerLibraries
                 return dvNormed;
             });
 
+            #endregion normalize features
+
+
+            #region adding SDC feature
+
+            // добавить последнюю фичу - SDC
+            List<int> sdcMatlabValues = new List<int>();
+            List<double> lSDCpredictionProbabilities = new List<double>();
+            SunDiskCondition sdc = SDCpredictorNN.PredictSDC_NN(imageStats, snapshotConcurrentData, SDC_NNconfig,
+                SDC_NNtrainedParameters, NNfeturesNormMeans, NNfeaturesNormRange, out lSDCpredictionProbabilities);
+            sdcMatlabValues.Add(SunDiskConditionData.MatlabNumeralSDC(sdc));
+
+            lDV_objects_features = lDV_objects_features.Zip(sdcMatlabValues, (dv, intSDC) =>
+            {
+                List<double> lFeaturesWithSDCdata = lDV_objects_features[0].ToList();
+                lFeaturesWithSDCdata.Add((double) intSDC);
+                return DenseVector.OfEnumerable(lFeaturesWithSDCdata);
+            }).ToList();
+
+            #endregion adding SDC feature
+
             DenseMatrix dmObjectsFeatures = DenseMatrix.OfRowVectors(lDV_objects_features);
 
 
@@ -397,16 +426,16 @@ namespace SkyImagesAnalyzerLibraries
 
             List<List<double>> lDecisionProbabilities = null;
 
-            List<int> predictedSDC =
-                NNclassificatorPredictor.NNpredict(dmObjectsFeatures, dvThetaValues, NNlayersConfig,
+            List<int> predictedCC =
+                NNclassificatorPredictor.NNpredict(dmObjectsFeatures, CC_NNtrainedParameters, CC_NNconfig,
                     out lDecisionProbabilities).ToList();
-            
-            List<SunDiskCondition> predictedSDClist =
-                predictedSDC.ConvertAll(sdcInt => SunDiskConditionData.MatlabSDCenum(sdcInt));
 
 
-            decisionProbabilities = lDecisionProbabilities[0];
-            return predictedSDClist[0];
+            // Matlab trained TCC model: classes 1-9
+            predictedCC = predictedCC.ConvertAll(iVal => iVal - 1);
+
+
+            return predictedCC[0];
         }
     }
 }

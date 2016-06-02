@@ -26,6 +26,7 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using ANN;
 using MathNet.Numerics.LinearAlgebra.Double;
+using MKLwrapper;
 
 
 namespace SunPresenceCollectingApp
@@ -64,6 +65,8 @@ namespace SunPresenceCollectingApp
         private string ImagesRoundMasksXMLfilesMappingList = Directory.GetCurrentDirectory() + Path.DirectorySeparatorChar + "settings" +
                                           Path.DirectorySeparatorChar +
                                           "ImagesRoundMasksXMLfilesMappingList.csv";
+
+        private bool bForceCalculateionsWithoutMKL = false;
 
         private string strPerformanceCountersStatsFile = "";
         private TimeSpan TimeSpanForSDCdataMappingTolerance;
@@ -489,6 +492,18 @@ namespace SunPresenceCollectingApp
             }
 
 
+
+
+            // bForceCalculateionsWithoutMKL
+            if (defaultProperties.ContainsKey("bForceCalculateionsWithoutMKL"))
+            {
+                bForceCalculateionsWithoutMKL = (((string)defaultProperties["bForceCalculateionsWithoutMKL"]).ToLower() == "true");
+            }
+            else
+            {
+                defaultProperties.Add("bForceCalculateionsWithoutMKL", bForceCalculateionsWithoutMKL);
+                bDefaultPropertiesHasBeenUpdated = true;
+            }
 
 
 
@@ -1736,6 +1751,7 @@ namespace SunPresenceCollectingApp
 
 
             #region read SDC data from XML files
+
             List<SunDiskConditionData> lImagesSunConditionData = new List<SunDiskConditionData>();
             foreach (string sunConditionDataFilename in filesListSunConditionData)
             {
@@ -1761,6 +1777,7 @@ namespace SunPresenceCollectingApp
             {
                 sunConditionData.ShrinkFileName();
             }
+
             #endregion read SDC data from XML files
 
 
@@ -1855,6 +1872,7 @@ namespace SunPresenceCollectingApp
 
 
             #region // remove corrupted XML files
+
             //foreach (string corruptedXmLfile in lCorruptedXMLfiles)
             //{
             //    File.Delete(corruptedXmLfile);
@@ -1864,6 +1882,7 @@ namespace SunPresenceCollectingApp
             //            theLogWindow = ServiceTools.LogAText(theLogWindow, "the file removed because it is corrupted or cannot be read: " + Environment.NewLine + corruptedXmLfile);
             //        });
             //}
+
             #endregion // remove corrupted XML files
 
 
@@ -1894,6 +1913,7 @@ namespace SunPresenceCollectingApp
                     lDictionariesConcurrentData.Add(currDict);
 
                     #region calculate and report progress
+
                     filesRead++;
                     double progress = 100.0d * (double)filesRead / (double)totalFilesCountToRead;
                     if (progress - (double)currProgressPerc > 1.0d)
@@ -1906,6 +1926,7 @@ namespace SunPresenceCollectingApp
                     {
                         return;
                     }
+
                     #endregion calculate and report progress
                 }
 
@@ -1967,13 +1988,15 @@ namespace SunPresenceCollectingApp
                     });
 
 
-                    if (new TimeSpan(Math.Abs((nearestConcurrentData.datetimeUTC - currImgDT).Ticks)) <= TimeSpanForConcurrentDataMappingTolerance)
+                    if (new TimeSpan(Math.Abs((nearestConcurrentData.datetimeUTC - currImgDT).Ticks)) <=
+                        TimeSpanForConcurrentDataMappingTolerance)
                     {
                         lImagesConcurrentData.Add(new Tuple<string, ConcurrentData>(statsData.FileName,
                             nearestConcurrentData));
                     }
 
                     #region calculate and report progress
+
                     recordsMapped++;
                     double progress = 100.0d * (double)recordsMapped / (double)totalrecordsToMap;
                     if (progress - (double)currProgressPerc > 1.0d)
@@ -1986,6 +2009,7 @@ namespace SunPresenceCollectingApp
                     {
                         return;
                     }
+
                     #endregion calculate and report progress
                 }
             }
@@ -2002,7 +2026,8 @@ namespace SunPresenceCollectingApp
 
             if (File.Exists(strSDCdataCSVfileName))
             {
-                List<List<string>> llCSVfileRawData = ServiceTools.ReadDataFromCSV(strSDCdataCSVfileName, 1, true, ";", Environment.NewLine);
+                List<List<string>> llCSVfileRawData = ServiceTools.ReadDataFromCSV(strSDCdataCSVfileName, 1, true, ";",
+                    Environment.NewLine);
 
                 List<MeteoObservationsImportedData> lMeteoObsData = llCSVfileRawData
                     .ConvertAll<MeteoObservationsImportedData>(
@@ -2080,12 +2105,15 @@ namespace SunPresenceCollectingApp
                     });
 
 
-                    if (new TimeSpan(Math.Abs((nearestMeteoObservationsData.datetimeUTC - currImgDT).Ticks)) <= TimeSpanForSDCdataMappingTolerance)
+                    if (new TimeSpan(Math.Abs((nearestMeteoObservationsData.datetimeUTC - currImgDT).Ticks)) <=
+                        TimeSpanForSDCdataMappingTolerance)
                     {
-                        lImagesSunConditionData.Add(new SunDiskConditionData(statsData.FileName, nearestMeteoObservationsData.sdc));
+                        lImagesSunConditionData.Add(new SunDiskConditionData(statsData.FileName,
+                            nearestMeteoObservationsData.sdc));
                     }
 
                     #region calculate and report progress
+
                     recordsMapped++;
                     double progress = 100.0d * (double)recordsMapped / (double)totalrecordsToMap;
                     if (progress - (double)currProgressPerc > 1.0d)
@@ -2098,6 +2126,7 @@ namespace SunPresenceCollectingApp
                     {
                         return;
                     }
+
                     #endregion calculate and report progress
                 }
 
@@ -2109,24 +2138,37 @@ namespace SunPresenceCollectingApp
 
             #region zip SDC data with GrIx MP5 data -> write to file
 
-            List<SkyImageMP5andSDCdata> lDataSkyImagesMP5andSDCdata = lImagesMP5StatsData
-                .ConvertAll<SkyImageMP5andSDCdata>(
-                    stats =>
-                    {
-                        int foundSunConditionDatumIdx =
-                            lImagesSunConditionData.FindIndex(scdt => scdt.filename == stats.FileName);
-                        if (foundSunConditionDatumIdx != -1)
+            List<SkyImageMP5andSDCdata> lDataSkyImagesMP5andSDCdata = new List<SkyImageMP5andSDCdata>();
+            if (File.Exists(strSDCdataCSVfileName))
+            {
+                lDataSkyImagesMP5andSDCdata = lImagesMP5StatsData
+                    .ConvertAll<SkyImageMP5andSDCdata>(
+                        stats =>
                         {
-                            return new SkyImageMP5andSDCdata(stats, lImagesSunConditionData[foundSunConditionDatumIdx]);
-                        }
-                        else return null;
+                            int foundSunConditionDatumIdx =
+                                lImagesSunConditionData.FindIndex(scdt => scdt.filename == stats.FileName);
+                            if (foundSunConditionDatumIdx != -1)
+                            {
+                                return new SkyImageMP5andSDCdata(stats,
+                                    lImagesSunConditionData[foundSunConditionDatumIdx]);
+                            }
+                            else return null;
 
-                    });
-            lDataSkyImagesMP5andSDCdata.RemoveAll(val => val == null);
+                        });
+                lDataSkyImagesMP5andSDCdata.RemoveAll(val => val == null);
+            }
+            else
+            {
+                lDataSkyImagesMP5andSDCdata = lImagesMP5StatsData
+                    .ConvertAll<SkyImageMP5andSDCdata>(
+                        stats =>
+                            new SkyImageMP5andSDCdata(stats, new SunDiskConditionData("", SunDiskCondition.Undefined)));
+                lDataSkyImagesMP5andSDCdata.RemoveAll(val => val == null);
+            }
 
 
             List<string> lImagesStatsDataForCSV =
-                lDataSkyImagesMP5andSDCdata.ConvertAll<string>(dt => dt.mp5Data.ToCSV() + "," + dt.sdcData.ToCSV());
+                    lDataSkyImagesMP5andSDCdata.ConvertAll<string>(dt => dt.mp5Data.ToCSV() + "," + dt.sdcData.ToCSV());
 
             string csvStringForFile = String.Join(Environment.NewLine, lImagesStatsDataForCSV.ToArray<string>());
 
@@ -2189,21 +2231,35 @@ namespace SunPresenceCollectingApp
 
             #region zip SDC data with ALL fields stats data -> write to file
 
-            List<SkyImageGrIxYRGBstatsAndSDCdata> lDataALLstatsTuples = lImagesALLstatsData
-                .ConvertAll<SkyImageGrIxYRGBstatsAndSDCdata>(
-                    stats =>
-                    {
-                        int foundSunConditionDatumIdx =
-                            lImagesSunConditionData.FindIndex(scdt => scdt.filename == stats.FileName);
-                        if (foundSunConditionDatumIdx != -1)
+            List<SkyImageGrIxYRGBstatsAndSDCdata> lDataALLstatsTuples = new List<SkyImageGrIxYRGBstatsAndSDCdata>();
+            if (File.Exists(strSDCdataCSVfileName))
+            {
+                lDataALLstatsTuples = lImagesALLstatsData
+                    .ConvertAll<SkyImageGrIxYRGBstatsAndSDCdata>(
+                        stats =>
                         {
-                            return new SkyImageGrIxYRGBstatsAndSDCdata(stats,
-                                lImagesSunConditionData[foundSunConditionDatumIdx]);
-                        }
-                        else return null;
-                    });
+                            int foundSunConditionDatumIdx =
+                                lImagesSunConditionData.FindIndex(scdt => scdt.filename == stats.FileName);
+                            if (foundSunConditionDatumIdx != -1)
+                            {
+                                return new SkyImageGrIxYRGBstatsAndSDCdata(stats,
+                                    lImagesSunConditionData[foundSunConditionDatumIdx]);
+                            }
+                            else return null;
+                        });
 
-            lDataALLstatsTuples.RemoveAll(tpl => tpl == null);
+                lDataALLstatsTuples.RemoveAll(tpl => tpl == null);
+            }
+            else
+            {
+                lDataALLstatsTuples = lImagesALLstatsData
+                    .ConvertAll<SkyImageGrIxYRGBstatsAndSDCdata>(
+                        stats =>
+                            new SkyImageGrIxYRGBstatsAndSDCdata(stats,
+                                new SunDiskConditionData("", SunDiskCondition.Undefined)));
+
+                lDataALLstatsTuples.RemoveAll(tpl => tpl == null);
+            }
 
             List<string> lImagesALLstatsDataCSV = lDataALLstatsTuples.ConvertAll<string>(dt => dt.GrIxYRGBstatsData.ToCSV() + "," + dt.sdcData.ToCSV());
 
@@ -2308,7 +2364,7 @@ namespace SunPresenceCollectingApp
                                 },
                                 concurrentData = data.concurrentData
                             };
-                            
+
                             return retVal;
                         });
             lDt.RemoveAll(val => val == null);
@@ -3242,7 +3298,7 @@ namespace SunPresenceCollectingApp
 
 
 
-        
+
 
         private class SkyImage_MP5_SDC_ConcurrentData
         {
@@ -3310,7 +3366,7 @@ namespace SunPresenceCollectingApp
         #region SDC prediction
 
 
-        private void btnPredictSDC_Click(object sender, EventArgs e)
+        private async void btnPredictSDC_Click(object sender, EventArgs e)
         {
             if (!File.Exists(currImageFInfo.FullName))
             {
@@ -3370,6 +3426,7 @@ namespace SunPresenceCollectingApp
                     sw.Start();
                     optionalParameters.Add("Stopwatch", sw);
                     optionalParameters.Add("logFileName", errorLogFilename);
+                    optionalParameters.Add("bForceCalculateionsWithoutMKL", bForceCalculateionsWithoutMKL);
 
 
                     ImageStatsDataCalculationResult currImageProcessingResult =
@@ -3491,397 +3548,55 @@ namespace SunPresenceCollectingApp
 
             #region search for concurrent data
 
-            if (nearestConcurrentData == null)
+            string nearestConcurrentDataFilename = "";
+            try
             {
-                BackgroundWorker bgwImageConcurrentDataSearch = new BackgroundWorker();
-                bgwImageConcurrentDataSearch.WorkerSupportsCancellation = false;
-                bgwImageConcurrentDataSearch.WorkerReportsProgress = true;
-
-
-                #region DoWork
-
-                bgwImageConcurrentDataSearch.DoWork += (bgwSender, bgwEvArgs) =>
-                {
-                    BackgroundWorker selfWorker = bgwSender as BackgroundWorker;
-                    FileInfo bgwCurrImageFInfo = ((object[])bgwEvArgs.Argument)[0] as FileInfo;
-                    object var2 = ((object[])bgwEvArgs.Argument)[1];
-                    List<ConcurrentData> lBgwConcurrentDataAlreadyRead = null;
-                    if (var2 != null)
-                    {
-                        lBgwConcurrentDataAlreadyRead = (List<ConcurrentData>)var2;
-                    }
-
-                    #region find closest concurrent data
-
-                    List<ConcurrentData> lConcurrentData = null;
-                    if (lBgwConcurrentDataAlreadyRead == null)
-                    {
-
-                        theLogWindow = ServiceTools.LogAText(theLogWindow, "started concurrent data reading");
-
-                        List<Tuple<string, ConcurrentData>> lImagesConcurrentData =
-                            new List<Tuple<string, ConcurrentData>>();
-
-                        List<string> filesListConcurrentData =
-                            Directory.EnumerateFiles(ConcurrentDataXMLfilesDirectory,
-                                ConventionalTransitions.ImageConcurrentDataFilesNamesPattern(),
-                                SearchOption.AllDirectories)
-                                .ToList();
-
-                        int totalFilesCountToRead = filesListConcurrentData.Count;
-                        int filesRead = 0;
-                        int currProgressPerc = 0;
-                        selfWorker.ReportProgress(0);
-                        List<Dictionary<string, object>> lDictionariesConcurrentData =
-                            new List<Dictionary<string, object>>();
-                        foreach (string strConcDataXMLFile in filesListConcurrentData)
-                        {
-                            Dictionary<string, object> currDict = ServiceTools.ReadDictionaryFromXML(strConcDataXMLFile);
-                            currDict.Add("XMLfileName", Path.GetFileName(strConcDataXMLFile));
-
-                            lDictionariesConcurrentData.Add(currDict);
-
-                            #region calculate and report progress
-
-                            filesRead++;
-                            double progress = 100.0d * (double)filesRead / (double)totalFilesCountToRead;
-                            if (progress - (double)currProgressPerc > 1.0d)
-                            {
-                                currProgressPerc = Convert.ToInt32(progress);
-                                selfWorker.ReportProgress(currProgressPerc);
-                            }
-
-                            if (selfWorker.CancellationPending)
-                            {
-                                return;
-                            }
-
-                            #endregion calculate and report progress
-                        }
-
-
-
-                        lDictionariesConcurrentData.RemoveAll(dict => dict == null);
-                        lConcurrentData =
-                            lDictionariesConcurrentData.ConvertAll<ConcurrentData>(dict =>
-                            {
-                                ConcurrentData retVal = null;
-                                try
-                                {
-                                    retVal = new ConcurrentData(dict);
-                                }
-                                catch (Exception ex)
-                                {
-                                    string strError = "couldn`t parse XML file " + dict["XMLfileName"] + " : " +
-                                                      Environment.NewLine + ex.Message;
-                                    ServiceTools.logToTextFile(errorLogFilename, strError, true, true);
-                                }
-                                return retVal;
-                            });
-                        lConcurrentData.RemoveAll(val => val == null);
-                    }
-                    else
-                    {
-                        lConcurrentData = lBgwConcurrentDataAlreadyRead;
-                    }
-
-
-                    // map obtained concurrent data to images by its datetime
-                    theLogWindow = ServiceTools.LogAText(theLogWindow, "concurrent data mapping started");
-
-                    string currImgFilename = bgwCurrImageFInfo.FullName;
-                    currImgFilename = Path.GetFileNameWithoutExtension(currImgFilename);
-
-                    string ptrn = @"(devID\d)";
-                    Regex rgxp = new Regex(ptrn, RegexOptions.IgnoreCase);
-
-                    string strCurrImgDT = rgxp.Replace(currImgFilename.Substring(4), "");
-                    //2015-12-16T06-01-38
-                    strCurrImgDT = strCurrImgDT.Substring(0, 11) + strCurrImgDT.Substring(11).Replace("-", ":");
-
-                    DateTime currImgDT = DateTime.Parse(strCurrImgDT, null,
-                        System.Globalization.DateTimeStyles.AdjustToUniversal);
-
-                    nearestConcurrentData = lConcurrentData.Aggregate((cDt1, cDt2) =>
-                    {
-                        TimeSpan tspan1 = new TimeSpan(Math.Abs((cDt1.datetimeUTC - currImgDT).Ticks));
-                        TimeSpan tspan2 = new TimeSpan(Math.Abs((cDt2.datetimeUTC - currImgDT).Ticks));
-                        return ((tspan1 <= tspan2) ? (cDt1) : (cDt2));
-                    });
-
-
-                    if (new TimeSpan(Math.Abs((nearestConcurrentData.datetimeUTC - currImgDT).Ticks)) >=
-                        TimeSpanForConcurrentDataMappingTolerance)
-                    {
-                        theLogWindow = ServiceTools.LogAText(theLogWindow,
-                            "couldn`t find close enough concurrent data file for image:" + Environment.NewLine +
-                            bgwCurrImageFInfo.FullName + Environment.NewLine + "closest concurrent data file is:" +
-                            Environment.NewLine + nearestConcurrentData.filename + Environment.NewLine +
-                            "with date-time value " + nearestConcurrentData.datetimeUTC.ToString("o"));
-                        nearestConcurrentData = null;
-                    }
-
-
-                    #endregion find closest concurrent data
-
-
-
-                    bgwEvArgs.Result = new object[] { nearestConcurrentData, lConcurrentData };
-
-                };
-
-                #endregion
-
-
-
-                #region ProgressChanged
-
-                bgwImageConcurrentDataSearch.ProgressChanged += (bgwProgressChangedSender, bgwProgressChangedArgs) =>
-                {
-                    ThreadSafeOperations.SetText(lblCalculationProgressPercentage,
-                        "read progress: " + bgwProgressChangedArgs.ProgressPercentage, false);
-                };
-
-                #endregion ProgressChanged
-
-
-
-                #region RunWorkerCompleted
-                bgwImageConcurrentDataSearch.RunWorkerCompleted += (bgwCompletedSender, bgwCompletedEvArgs) =>
-                {
-                    if (bgwCompletedEvArgs == null)
-                    {
-                        theLogWindow = ServiceTools.LogAText(theLogWindow, "ERROR searching concurrent data for image. Will not proceed.");
-                        return;
-                    }
-
-                    if (bgwCompletedEvArgs.Result == null)
-                    {
-                        theLogWindow = ServiceTools.LogAText(theLogWindow, "ERROR searching concurrent data for image. Will not proceed.");
-                        return;
-                    }
-
-                    nearestConcurrentData =
-                        ((object[])bgwCompletedEvArgs.Result)[0] as ConcurrentData;
-
-                    #region save already read concurrent data array for future use
-                    object lConcurrentDataObtained =
-                        ((object[])bgwCompletedEvArgs.Result)[1];
-                    if (lConcurrentDataObtained != null)
-                    {
-                        lConcurrentDataAlreadyRead = lConcurrentDataObtained as List<ConcurrentData>;
-                    }
-                    #endregion save already read concurrent data array for future use
-
-
-                    if (nearestConcurrentData == null)
-                    {
-                        theLogWindow = ServiceTools.LogAText(theLogWindow,
-                            "Unable to find concurrent data in tolerance gap " +
-                            TimeSpanForConcurrentDataMappingTolerance.ToString() + Environment.NewLine +
-                            "It is required now to use that data to determine sun positioning. So SDC estimation will not proceed.");
-                        return;
-                    }
-                };
-                #endregion RunWorkerCompleted
-
-
-
-                theLogWindow = ServiceTools.LogAText(theLogWindow,
-                    "searching for concurrent data for image " + currImageFInfo.FullName + Environment.NewLine +
-                    "Please wait while the process finishes...");
-
-                object[] bgwImageStatsCalculationArgs = new object[] { currImageFInfo, lConcurrentDataAlreadyRead };
-
-                bgwImageConcurrentDataSearch.RunWorkerAsync(bgwImageStatsCalculationArgs);
-
-                while (bgwImageConcurrentDataSearch.IsBusy)
-                {
-                    Application.DoEvents();
-                    Thread.Sleep(0);
-                }
+                nearestConcurrentDataFilename = await CommonTools.FindConcurrentDataXMLfileAsync(currImageFInfo.FullName,
+                    ConcurrentDataXMLfilesDirectory, true, ServiceTools.DatetimeExtractionMethod.Filename);
+                Dictionary<string, object> currDict = ServiceTools.ReadDictionaryFromXML(nearestConcurrentDataFilename);
+                currDict.Add("XMLfileName", Path.GetFileName(nearestConcurrentDataFilename));
+                nearestConcurrentData = new ConcurrentData(currDict);
+            }
+            catch (Exception ex)
+            {
+                theLogWindow = ServiceTools.LogAText(theLogWindow, "ERROR: " + ex.Message);
+                return;
             }
 
             #endregion search for concurrent data
 
 
-
-
-            string currImageALLstatsDataCSVWithConcurrentData = currImageStatsData.ToCSV() + "," +
-                nearestConcurrentData.gps.SunZenithAzimuth().ElevationAngle.ToString().Replace(",", ".") + "," +
-                nearestConcurrentData.gps.SunZenithAzimuth().Azimuth.ToString().Replace(",", ".");
-            string csvHeader = currImageStatsData.CSVHeader() + ",SunElevationDeg,SunAzimuthDeg,sunDiskCondition";
-
-            #region // obsolete
-            //csvStringALLstatsForFile = String.Join(Environment.NewLine, lImagesALLstatsDataCSVWithConcurrentData.ToArray<string>());
-
-            //// write header
-            //ServiceTools.logToTextFile(outPath + "ALLstatsWithSunPositions.csv",
-            //    lDataALLstatsTuples[0].GrIxYRGBstatsData.CSVHeader() + ",SunElevationDeg,SunAzimuthDeg," + lDataALLstatsTuples[0].sdcData.CSVHeader() +
-            //    Environment.NewLine, false, false);
-            //// write content
-            //ServiceTools.logToTextFile(outPath + "ALLstatsWithSunPositions.csv", csvStringALLstatsForFile, true, false);
+            string imageGrIxYRGBDataFileName =
+                ConventionalTransitions.ImageGrIxYRGBstatsDataFileName(currImageFInfo.FullName,
+                    imageYRGBstatsXMLdataFilesDirectory);
+            string CurDir = Directory.GetCurrentDirectory();
+            string SDC_NNconfigFile = NNconfigFile; // CurDir + Path.DirectorySeparatorChar + "settings" + Path.DirectorySeparatorChar + "NNconfig.csv";
+            string SDC_NNtrainedParametersFile = NNtrainedParametersFile; //CurDir + Path.DirectorySeparatorChar + "settings" + Path.DirectorySeparatorChar + "NNtrainedParameters.csv";
+            //string NormMeansFile = ; // CurDir + Path.DirectorySeparatorChar + "settings" + Path.DirectorySeparatorChar + "NormMeans.csv";
+            //string NormRangeFile = CurDir + Path.DirectorySeparatorChar + "settings" + Path.DirectorySeparatorChar + "NormRange.csv";
+            List<double> lDecisionProbabilities = new List<double>();
+            SunDiskCondition sdcPredicted = SDCpredictorNN.CalcSDC_NN(imageGrIxYRGBDataFileName,
+                nearestConcurrentDataFilename, SDC_NNconfigFile, SDC_NNtrainedParametersFile, NormMeansFile,
+                NormRangeFile, out lDecisionProbabilities);
 
 
 
-            // А теперь применим модель
-            // В модели, просчитанной в Матлабе, закодировано следующим образом:
-            // Так, как закодировал в Матлабе
-            //List<int> trueAnswersInt = trueAnswers.ConvertAll(sdc =>
-            //{
-            //    switch (sdc)
-            //    {
-            //        case SunDiskCondition.NoSun:
-            //            return 4;
-            //            break;
-            //        case SunDiskCondition.Sun0:
-            //            return 1;
-            //            break;
-            //        case SunDiskCondition.Sun1:
-            //            return 2;
-            //            break;
-            //        case SunDiskCondition.Sun2:
-            //            return 3;
-            //            break;
-            //        default:
-            //            return 0;
-            //    }
-            //});
-
-            #endregion // obsolete
-
-            List<string> lCalculatedData = new List<string>();
-            lCalculatedData.Add(currImageALLstatsDataCSVWithConcurrentData);
-
-
-
-
-
-
-
-
-            #region predict using LIST of data
-
-            List<List<string>> csvFileContentStrings =
-                lCalculatedData.ConvertAll(str => str.Split(',').ToList()).ToList();
-            List<string> lCSVheader = csvHeader.Split(',').ToList();
-
-            List<int> columnsToDelete =
-                lCSVheader.Select((str, idx) => new Tuple<int, string>(idx, str))
-                    .Where(tpl => tpl.Item2.ToLower().Contains("filename")).ToList().ConvertAll(tpl => tpl.Item1);
-            List<List<string>> csvFileContentStringsFiltered = new List<List<string>>();
-            foreach (List<string> listDataStrings in csvFileContentStrings)
-            {
-                csvFileContentStringsFiltered.Add(
-                    listDataStrings.Where((str, idx) => !columnsToDelete.Contains(idx)).ToList());
-            }
-
-
-            #region true answers is not present yet
-
-            //List<SunDiskCondition> trueAnswers =
-            //    csvFileContentStringsFiltered.ConvertAll(
-            //        lstr => (SunDiskCondition)Enum.Parse(typeof(SunDiskCondition), lstr.Last()));
-
-            //// Так, как закодировал в Матлабе
-            //List<int> trueAnswersInt = trueAnswers.ConvertAll(sdc =>
-            //{
-            //    switch (sdc)
-            //    {
-            //        case SunDiskCondition.NoSun:
-            //            return 4;
-            //            break;
-            //        case SunDiskCondition.Sun0:
-            //            return 1;
-            //            break;
-            //        case SunDiskCondition.Sun1:
-            //            return 2;
-            //            break;
-            //        case SunDiskCondition.Sun2:
-            //            return 3;
-            //            break;
-            //        default:
-            //            return 0;
-            //    }
-            //});
-
-            //List<List<string>> csvFileContentStringsFiltered_wo_sdc =
-            //    csvFileContentStringsFiltered.ConvertAll(list => list.Where((val, idx) => idx < list.Count - 1).ToList());
-
-            #endregion true answers is not present yet
-
-
-            List<List<string>> csvFileContentStringsFiltered_wo_sdc = csvFileContentStringsFiltered;
-
-            List<DenseVector> lDV_objects_features =
-                csvFileContentStringsFiltered_wo_sdc.ConvertAll(
-                    list =>
-                        DenseVector.OfEnumerable(list.ConvertAll<double>(str => Convert.ToDouble(str.Replace(".", ",")))));
-
-
-            DenseVector dvMeans = (DenseVector)((DenseMatrix)ServiceTools.ReadDataFromCSV(NormMeansFile, 0, ",")).Row(0);
-            DenseVector dvRanges = (DenseVector)((DenseMatrix)ServiceTools.ReadDataFromCSV(NormRangeFile, 0, ",")).Row(0);
-
-            lDV_objects_features = lDV_objects_features.ConvertAll(dv =>
-            {
-                DenseVector dvShifted = dv - dvMeans;
-                DenseVector dvNormed = (DenseVector)dvShifted.PointwiseDivide(dvRanges);
-                return dvNormed;
-            });
-
-            DenseMatrix dmObjectsFeatures = DenseMatrix.OfRowVectors(lDV_objects_features);
-
-            DenseVector dvThetaValues = (DenseVector)ServiceTools.ReadDataFromCSV(NNtrainedParametersFile, 0, ",");
-            List<int> NNlayersConfig =
-                new List<double>(((DenseMatrix)ServiceTools.ReadDataFromCSV(NNconfigFile, 0, ",")).Row(0)).ConvertAll
-                    (dVal => Convert.ToInt32(dVal));
-
-
-            List<List<double>> lDecisionProbabilities = null;
-
-            List<int> predictedSDC =
-                NNclassificatorPredictor.NNpredict(dmObjectsFeatures, dvThetaValues, NNlayersConfig,
-                    out lDecisionProbabilities).ToList();
-
-            List<SunDiskCondition> predictedSDClist = predictedSDC.ConvertAll(sdcInt =>
-            {
-                switch (sdcInt)
-                {
-                    case 4:
-                        return SunDiskCondition.NoSun;
-                        break;
-                    case 1:
-                        return SunDiskCondition.Sun0;
-                        break;
-                    case 2:
-                        return SunDiskCondition.Sun1;
-                        break;
-                    case 3:
-                        return SunDiskCondition.Sun2;
-                        break;
-                    default:
-                        return SunDiskCondition.Defect;
-                }
-            });
-
-            #endregion
 
             string strToShow = "SDC values probabilities: " + Environment.NewLine +
                 "| No Sun | Sun_0  | Sun_1  | Sun_2  |" + Environment.NewLine;
-            foreach (List<double> lDecisionProbability in lDecisionProbabilities)
-            {
-                strToShow += "| " + lDecisionProbability[3].ToString("F4") +
-                             " | " + lDecisionProbability[0].ToString("F4") +
-                             " | " + lDecisionProbability[1].ToString("F4") +
-                             " | " + lDecisionProbability[2].ToString("F4") + " |";
-            }
+
+            strToShow += "| " + lDecisionProbabilities[3].ToString("F4") +
+                             " | " + lDecisionProbabilities[0].ToString("F4") +
+                             " | " + lDecisionProbabilities[1].ToString("F4") +
+                             " | " + lDecisionProbabilities[2].ToString("F4") + " |";
 
             theLogWindow = ServiceTools.LogAText(theLogWindow, strToShow);
 
             theLogWindow = ServiceTools.LogAText(theLogWindow,
-                Environment.NewLine + Environment.NewLine + "=== detected SDC: " + predictedSDClist[0] + " ===");
+                Environment.NewLine + Environment.NewLine + "=== detected SDC: " + sdcPredicted + " ===");
 
-            switch (predictedSDClist[0])
+
+            switch (sdcPredicted)
             {
                 case SunDiskCondition.NoSun:
                     MarkSunCondition(SunDiskCondition.NoSun, false);

@@ -186,6 +186,7 @@
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="ArithmeticsOnImages.cs" />
+    <Compile Include="CCpredictorNN.cs" />
     <Compile Include="ColorScheme.cs" />
     <Compile Include="CommonTools.cs" />
     <Compile Include="CommunicationHelperClasses.cs" />
@@ -207,6 +208,7 @@
     <Compile Include="Field4Drepresentation.Designer.cs">
       <DependentUpon>Field4Drepresentation.cs</DependentUpon>
     </Compile>
+    <Compile Include="FileDatetimeInfo.cs" />
     <Compile Include="GeoTrackRenderer.cs" />
     <Compile Include="Graph.cs" />
     <Compile Include="HeatMap.cs" />

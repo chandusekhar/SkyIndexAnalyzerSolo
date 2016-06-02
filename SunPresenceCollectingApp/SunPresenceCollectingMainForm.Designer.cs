@@ -48,6 +48,7 @@
             this.lblGrIxPerc5Value = new System.Windows.Forms.Label();
             this.cbCalculateGrIxStatsOnline = new System.Windows.Forms.CheckBox();
             this.btnSwitchModes = new System.Windows.Forms.Button();
+            this.btnPredictSDC = new System.Windows.Forms.Button();
             this.tabConvert = new System.Windows.Forms.TabPage();
             this.tableLayoutPanel3 = new System.Windows.Forms.TableLayoutPanel();
             this.label1 = new System.Windows.Forms.Label();
@@ -106,7 +107,6 @@
             this.btnProperties = new System.Windows.Forms.Button();
             this.circBgwProcessingImage = new MRG.Controls.UI.LoadingCircle();
             this.lblCalculationProgressPercentage = new System.Windows.Forms.Label();
-            this.btnPredictSDC = new System.Windows.Forms.Button();
             this.tableLayoutPanel1.SuspendLayout();
             this.tabControl1.SuspendLayout();
             this.tabSunDiskCondition.SuspendLayout();
@@ -433,6 +433,20 @@
             this.btnSwitchModes.UseVisualStyleBackColor = false;
             this.btnSwitchModes.Click += new System.EventHandler(this.btnSwitchModes_Click);
             // 
+            // btnPredictSDC
+            // 
+            this.btnPredictSDC.BackColor = System.Drawing.Color.Gainsboro;
+            this.tableLayoutPanel6.SetColumnSpan(this.btnPredictSDC, 2);
+            this.btnPredictSDC.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.btnPredictSDC.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnPredictSDC.Location = new System.Drawing.Point(1015, 63);
+            this.btnPredictSDC.Name = "btnPredictSDC";
+            this.btnPredictSDC.Size = new System.Drawing.Size(117, 54);
+            this.btnPredictSDC.TabIndex = 10;
+            this.btnPredictSDC.Text = "Predict SDC";
+            this.btnPredictSDC.UseVisualStyleBackColor = false;
+            this.btnPredictSDC.Click += new System.EventHandler(this.btnPredictSDC_Click);
+            // 
             // tabConvert
             // 
             this.tabConvert.Controls.Add(this.tableLayoutPanel3);
@@ -449,7 +463,7 @@
             this.tableLayoutPanel3.ColumnCount = 3;
             this.tableLayoutPanel3.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 26.23574F));
             this.tableLayoutPanel3.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 73.76426F));
-            this.tableLayoutPanel3.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 63F));
+            this.tableLayoutPanel3.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 64F));
             this.tableLayoutPanel3.Controls.Add(this.label1, 0, 1);
             this.tableLayoutPanel3.Controls.Add(this.label2, 0, 2);
             this.tableLayoutPanel3.Controls.Add(this.rtbSourceDirectory, 1, 1);
@@ -522,7 +536,7 @@
             this.rtbSourceDirectory.Location = new System.Drawing.Point(285, 42);
             this.rtbSourceDirectory.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.rtbSourceDirectory.Name = "rtbSourceDirectory";
-            this.rtbSourceDirectory.Size = new System.Drawing.Size(789, 36);
+            this.rtbSourceDirectory.Size = new System.Drawing.Size(788, 36);
             this.rtbSourceDirectory.TabIndex = 2;
             this.rtbSourceDirectory.Text = "";
             // 
@@ -535,7 +549,7 @@
             this.rtbOutputDirectory.Location = new System.Drawing.Point(285, 82);
             this.rtbOutputDirectory.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.rtbOutputDirectory.Name = "rtbOutputDirectory";
-            this.rtbOutputDirectory.Size = new System.Drawing.Size(789, 36);
+            this.rtbOutputDirectory.Size = new System.Drawing.Size(788, 36);
             this.rtbOutputDirectory.TabIndex = 3;
             this.rtbOutputDirectory.Text = "";
             // 
@@ -545,10 +559,10 @@
             this.btnSelectSourceDirectory.Dock = System.Windows.Forms.DockStyle.Fill;
             this.btnSelectSourceDirectory.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnSelectSourceDirectory.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnSelectSourceDirectory.Location = new System.Drawing.Point(1080, 42);
+            this.btnSelectSourceDirectory.Location = new System.Drawing.Point(1079, 42);
             this.btnSelectSourceDirectory.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.btnSelectSourceDirectory.Name = "btnSelectSourceDirectory";
-            this.btnSelectSourceDirectory.Size = new System.Drawing.Size(58, 36);
+            this.btnSelectSourceDirectory.Size = new System.Drawing.Size(59, 36);
             this.btnSelectSourceDirectory.TabIndex = 4;
             this.btnSelectSourceDirectory.Text = "...";
             this.btnSelectSourceDirectory.UseVisualStyleBackColor = false;
@@ -560,10 +574,10 @@
             this.btnSelectOutputDirectory.Dock = System.Windows.Forms.DockStyle.Fill;
             this.btnSelectOutputDirectory.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnSelectOutputDirectory.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnSelectOutputDirectory.Location = new System.Drawing.Point(1080, 82);
+            this.btnSelectOutputDirectory.Location = new System.Drawing.Point(1079, 82);
             this.btnSelectOutputDirectory.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.btnSelectOutputDirectory.Name = "btnSelectOutputDirectory";
-            this.btnSelectOutputDirectory.Size = new System.Drawing.Size(58, 36);
+            this.btnSelectOutputDirectory.Size = new System.Drawing.Size(59, 36);
             this.btnSelectOutputDirectory.TabIndex = 5;
             this.btnSelectOutputDirectory.Text = "...";
             this.btnSelectOutputDirectory.UseVisualStyleBackColor = false;
@@ -614,7 +628,7 @@
             this.tableLayoutPanel10.ColumnCount = 3;
             this.tableLayoutPanel10.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 30F));
             this.tableLayoutPanel10.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 70F));
-            this.tableLayoutPanel10.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 65F));
+            this.tableLayoutPanel10.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 66F));
             this.tableLayoutPanel10.Controls.Add(this.tableLayoutPanel7, 1, 1);
             this.tableLayoutPanel10.Controls.Add(this.btnCalculateAllVarsStats, 0, 1);
             this.tableLayoutPanel10.Controls.Add(this.lblServiceSourceDirectoryTitle, 0, 0);
@@ -642,7 +656,7 @@
             this.tableLayoutPanel7.Controls.Add(this.cbSearchImagesTopDirectoryOnly, 0, 0);
             this.tableLayoutPanel7.Controls.Add(this.cbSunDiskConditionMarkedOnly, 0, 1);
             this.tableLayoutPanel7.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.tableLayoutPanel7.Location = new System.Drawing.Point(323, 44);
+            this.tableLayoutPanel7.Location = new System.Drawing.Point(322, 44);
             this.tableLayoutPanel7.Margin = new System.Windows.Forms.Padding(4);
             this.tableLayoutPanel7.Name = "tableLayoutPanel7";
             this.tableLayoutPanel7.RowCount = 4;
@@ -650,7 +664,7 @@
             this.tableLayoutPanel7.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 25F));
             this.tableLayoutPanel7.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 25F));
             this.tableLayoutPanel7.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 25F));
-            this.tableLayoutPanel7.Size = new System.Drawing.Size(802, 137);
+            this.tableLayoutPanel7.Size = new System.Drawing.Size(803, 137);
             this.tableLayoutPanel7.TabIndex = 3;
             // 
             // cbSearchImagesTopDirectoryOnly
@@ -661,7 +675,7 @@
             this.cbSearchImagesTopDirectoryOnly.Location = new System.Drawing.Point(3, 2);
             this.cbSearchImagesTopDirectoryOnly.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.cbSearchImagesTopDirectoryOnly.Name = "cbSearchImagesTopDirectoryOnly";
-            this.cbSearchImagesTopDirectoryOnly.Size = new System.Drawing.Size(796, 30);
+            this.cbSearchImagesTopDirectoryOnly.Size = new System.Drawing.Size(797, 30);
             this.cbSearchImagesTopDirectoryOnly.TabIndex = 13;
             this.cbSearchImagesTopDirectoryOnly.Text = "for JPG files within top level of source directory only";
             this.cbSearchImagesTopDirectoryOnly.UseVisualStyleBackColor = true;
@@ -674,7 +688,7 @@
             this.cbSunDiskConditionMarkedOnly.Location = new System.Drawing.Point(4, 38);
             this.cbSunDiskConditionMarkedOnly.Margin = new System.Windows.Forms.Padding(4);
             this.cbSunDiskConditionMarkedOnly.Name = "cbSunDiskConditionMarkedOnly";
-            this.cbSunDiskConditionMarkedOnly.Size = new System.Drawing.Size(794, 26);
+            this.cbSunDiskConditionMarkedOnly.Size = new System.Drawing.Size(795, 26);
             this.cbSunDiskConditionMarkedOnly.TabIndex = 14;
             this.cbSunDiskConditionMarkedOnly.Text = "for marked with sun disk condition only";
             this.cbSunDiskConditionMarkedOnly.UseVisualStyleBackColor = true;
@@ -688,7 +702,7 @@
             this.btnCalculateAllVarsStats.Location = new System.Drawing.Point(3, 42);
             this.btnCalculateAllVarsStats.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.btnCalculateAllVarsStats.Name = "btnCalculateAllVarsStats";
-            this.btnCalculateAllVarsStats.Size = new System.Drawing.Size(313, 141);
+            this.btnCalculateAllVarsStats.Size = new System.Drawing.Size(312, 141);
             this.btnCalculateAllVarsStats.TabIndex = 2;
             this.btnCalculateAllVarsStats.Text = "Calculate GrIx,Y,R,G,B fields stats";
             this.btnCalculateAllVarsStats.UseVisualStyleBackColor = false;
@@ -702,7 +716,7 @@
             this.lblServiceSourceDirectoryTitle.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lblServiceSourceDirectoryTitle.Location = new System.Drawing.Point(3, 0);
             this.lblServiceSourceDirectoryTitle.Name = "lblServiceSourceDirectoryTitle";
-            this.lblServiceSourceDirectoryTitle.Size = new System.Drawing.Size(313, 40);
+            this.lblServiceSourceDirectoryTitle.Size = new System.Drawing.Size(312, 40);
             this.lblServiceSourceDirectoryTitle.TabIndex = 9;
             this.lblServiceSourceDirectoryTitle.Text = "Source directory:";
             this.lblServiceSourceDirectoryTitle.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
@@ -713,7 +727,7 @@
             this.rtbServiceSourceDirectory.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.rtbServiceSourceDirectory.Dock = System.Windows.Forms.DockStyle.Fill;
             this.rtbServiceSourceDirectory.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.rtbServiceSourceDirectory.Location = new System.Drawing.Point(322, 2);
+            this.rtbServiceSourceDirectory.Location = new System.Drawing.Point(321, 2);
             this.rtbServiceSourceDirectory.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.rtbServiceSourceDirectory.Name = "rtbServiceSourceDirectory";
             this.rtbServiceSourceDirectory.Size = new System.Drawing.Size(738, 36);
@@ -726,10 +740,10 @@
             this.btnServiceInputDirectory.Dock = System.Windows.Forms.DockStyle.Fill;
             this.btnServiceInputDirectory.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnServiceInputDirectory.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnServiceInputDirectory.Location = new System.Drawing.Point(1066, 2);
+            this.btnServiceInputDirectory.Location = new System.Drawing.Point(1065, 2);
             this.btnServiceInputDirectory.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.btnServiceInputDirectory.Name = "btnServiceInputDirectory";
-            this.btnServiceInputDirectory.Size = new System.Drawing.Size(60, 36);
+            this.btnServiceInputDirectory.Size = new System.Drawing.Size(61, 36);
             this.btnServiceInputDirectory.TabIndex = 7;
             this.btnServiceInputDirectory.Text = "...";
             this.btnServiceInputDirectory.UseVisualStyleBackColor = false;
@@ -835,7 +849,7 @@
             this.rtbSDCdataCSVfile.Dock = System.Windows.Forms.DockStyle.Fill;
             this.rtbSDCdataCSVfile.Location = new System.Drawing.Point(285, 123);
             this.rtbSDCdataCSVfile.Name = "rtbSDCdataCSVfile";
-            this.rtbSDCdataCSVfile.Size = new System.Drawing.Size(789, 34);
+            this.rtbSDCdataCSVfile.Size = new System.Drawing.Size(788, 34);
             this.rtbSDCdataCSVfile.TabIndex = 18;
             this.rtbSDCdataCSVfile.Text = "";
             // 
@@ -845,9 +859,9 @@
             this.btnSelectSDCdataCSVfile.Dock = System.Windows.Forms.DockStyle.Fill;
             this.btnSelectSDCdataCSVfile.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnSelectSDCdataCSVfile.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.btnSelectSDCdataCSVfile.Location = new System.Drawing.Point(1080, 123);
+            this.btnSelectSDCdataCSVfile.Location = new System.Drawing.Point(1079, 123);
             this.btnSelectSDCdataCSVfile.Name = "btnSelectSDCdataCSVfile";
-            this.btnSelectSDCdataCSVfile.Size = new System.Drawing.Size(58, 34);
+            this.btnSelectSDCdataCSVfile.Size = new System.Drawing.Size(59, 34);
             this.btnSelectSDCdataCSVfile.TabIndex = 19;
             this.btnSelectSDCdataCSVfile.Text = "...";
             this.btnSelectSDCdataCSVfile.UseVisualStyleBackColor = false;
@@ -872,7 +886,7 @@
             this.rtbConcurrentDataXMLfilesDirectory.Dock = System.Windows.Forms.DockStyle.Fill;
             this.rtbConcurrentDataXMLfilesDirectory.Location = new System.Drawing.Point(285, 163);
             this.rtbConcurrentDataXMLfilesDirectory.Name = "rtbConcurrentDataXMLfilesDirectory";
-            this.rtbConcurrentDataXMLfilesDirectory.Size = new System.Drawing.Size(789, 34);
+            this.rtbConcurrentDataXMLfilesDirectory.Size = new System.Drawing.Size(788, 34);
             this.rtbConcurrentDataXMLfilesDirectory.TabIndex = 21;
             this.rtbConcurrentDataXMLfilesDirectory.Text = "";
             // 
@@ -882,9 +896,9 @@
             this.btnSelectConcurrentDataXMLfilesDirectory.Dock = System.Windows.Forms.DockStyle.Fill;
             this.btnSelectConcurrentDataXMLfilesDirectory.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnSelectConcurrentDataXMLfilesDirectory.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.btnSelectConcurrentDataXMLfilesDirectory.Location = new System.Drawing.Point(1080, 163);
+            this.btnSelectConcurrentDataXMLfilesDirectory.Location = new System.Drawing.Point(1079, 163);
             this.btnSelectConcurrentDataXMLfilesDirectory.Name = "btnSelectConcurrentDataXMLfilesDirectory";
-            this.btnSelectConcurrentDataXMLfilesDirectory.Size = new System.Drawing.Size(58, 34);
+            this.btnSelectConcurrentDataXMLfilesDirectory.Size = new System.Drawing.Size(59, 34);
             this.btnSelectConcurrentDataXMLfilesDirectory.TabIndex = 22;
             this.btnSelectConcurrentDataXMLfilesDirectory.Text = "...";
             this.btnSelectConcurrentDataXMLfilesDirectory.UseVisualStyleBackColor = false;
@@ -1287,20 +1301,6 @@
             this.lblCalculationProgressPercentage.Size = new System.Drawing.Size(1013, 62);
             this.lblCalculationProgressPercentage.TabIndex = 9;
             this.lblCalculationProgressPercentage.Text = "---";
-            // 
-            // btnPredictSDC
-            // 
-            this.btnPredictSDC.BackColor = System.Drawing.Color.Gainsboro;
-            this.tableLayoutPanel6.SetColumnSpan(this.btnPredictSDC, 2);
-            this.btnPredictSDC.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.btnPredictSDC.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnPredictSDC.Location = new System.Drawing.Point(1015, 63);
-            this.btnPredictSDC.Name = "btnPredictSDC";
-            this.btnPredictSDC.Size = new System.Drawing.Size(117, 54);
-            this.btnPredictSDC.TabIndex = 10;
-            this.btnPredictSDC.Text = "Predict SDC";
-            this.btnPredictSDC.UseVisualStyleBackColor = false;
-            this.btnPredictSDC.Click += new System.EventHandler(this.btnPredictSDC_Click);
             // 
             // SunPresenceCollectingMainForm
             // 

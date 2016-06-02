@@ -19,7 +19,10 @@ using MathNet.Numerics.LinearAlgebra.Double;
 //using MathNet.Numerics.LinearAlgebra.Generic;
 using System.Data;
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.Security.Cryptography;
+using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using MathNet.Numerics.LinearAlgebra;
 using Microsoft.CSharp;
 
@@ -438,7 +441,7 @@ namespace SkyImagesAnalyzerLibraries
 
         public static string GetExceptionMessages(Exception e, string msgs = "")
         {
-            if (e == null) return string.Empty;
+            if (e == null) return String.Empty;
             if (msgs == "") msgs = e.Message;
             if (e.InnerException != null)
                 msgs += "\r\nInnerException: " + GetExceptionMessages(e.InnerException);
@@ -805,7 +808,7 @@ namespace SkyImagesAnalyzerLibraries
 
             Stream fs = new FileStream(fileName, FileMode.Create);
             XmlWriter writer = new XmlTextWriter(fs, Encoding.UTF8);
-            XmlSerializer serializer = new System.Xml.Serialization.XmlSerializer(objToSave.GetType());
+            XmlSerializer serializer = new XmlSerializer(objToSave.GetType());
             serializer.Serialize(writer, objToSave);
             writer.Close();
             return fileName;
@@ -859,7 +862,7 @@ namespace SkyImagesAnalyzerLibraries
         {
             owner.Invoke(method);
         }
-        
+
 
 
 
@@ -977,7 +980,7 @@ namespace SkyImagesAnalyzerLibraries
         }
 
 
-        
+
 
 
         public static GPSdata FindProperGPSdataForImage(
@@ -993,7 +996,7 @@ namespace SkyImagesAnalyzerLibraries
 
 
 
-        
+
         public static GPSdata FindProperGPSdataForImage(
             string imgFileName,
             object inLogWindow,
@@ -1003,7 +1006,7 @@ namespace SkyImagesAnalyzerLibraries
         {
             DateTime curDateTime = DateTime.UtcNow;
 
-            LogWindow theLogWindow = (LogWindow) inLogWindow;
+            LogWindow theLogWindow = (LogWindow)inLogWindow;
             if (NVdataFilesAlreadyReadDateTimeSpans == null)
             {
                 NVdataFilesAlreadyReadDateTimeSpans = new List<Tuple<string, DateTimeSpan>>();
@@ -1050,7 +1053,7 @@ namespace SkyImagesAnalyzerLibraries
                 {
                     Console.WriteLine("couldn`t get picture date/time for file: " + Environment.NewLine + ImageFileName);
                 }
-                
+
                 return null;
             }
             curDateTime = DateTime.SpecifyKind(curDateTime, DateTimeKind.Utc);
@@ -1086,14 +1089,14 @@ namespace SkyImagesAnalyzerLibraries
             {
                 strCurrImgConcurrentXMLdataFile = "";
             }
-            
+
             if (strCurrImgConcurrentXMLdataFile != "")
             {
                 Dictionary<string, object> dictSavedData =
                     ServiceTools.ReadDictionaryFromXML(strCurrImgConcurrentXMLdataFile);
-                GPSdata gps = new GPSdata((string) dictSavedData["GPSdata"], GPSdatasources.CloudCamArduinoGPS,
-                    DateTime.Parse((string) dictSavedData["GPSDateTimeUTC"], null,
-                        System.Globalization.DateTimeStyles.RoundtripKind));
+                GPSdata gps = new GPSdata((string)dictSavedData["GPSdata"], GPSdatasources.CloudCamArduinoGPS,
+                    DateTime.Parse((string)dictSavedData["GPSDateTimeUTC"], null,
+                        DateTimeStyles.RoundtripKind));
                 if (gps.validGPSdata)
                 {
                     return gps;
@@ -1109,14 +1112,14 @@ namespace SkyImagesAnalyzerLibraries
             {
                 strCurrImgConcurrentXMLdataFile = "";
             }
-            
+
             if (strCurrImgConcurrentXMLdataFile != "")
             {
                 Dictionary<string, object> dictSavedData =
                     ServiceTools.ReadDictionaryFromXML(strCurrImgConcurrentXMLdataFile);
-                GPSdata gps = new GPSdata((string) dictSavedData["GPSdata"], GPSdatasources.CloudCamArduinoGPS,
-                    DateTime.Parse((string) dictSavedData["GPSDateTimeUTC"], null,
-                        System.Globalization.DateTimeStyles.RoundtripKind));
+                GPSdata gps = new GPSdata((string)dictSavedData["GPSdata"], GPSdatasources.CloudCamArduinoGPS,
+                    DateTime.Parse((string)dictSavedData["GPSDateTimeUTC"], null,
+                        DateTimeStyles.RoundtripKind));
                 if (gps.validGPSdata)
                 {
                     return gps;
@@ -1124,7 +1127,7 @@ namespace SkyImagesAnalyzerLibraries
             }
 
 
-#region // obsolete
+            #region // obsolete
             //string[] xmlFileNames = Directory.GetFiles(currImgPath,
             //    "*data*" + curDateTime.ToString("s").Substring(0, 13).Replace(":", "-") + "*.xml"); // с точностью до часа
             //if (xmlFileNames.Count() > 0)
@@ -1150,7 +1153,7 @@ namespace SkyImagesAnalyzerLibraries
             //}
             //else
             //{
-#endregion // obsolete
+            #endregion // obsolete
 
 
             //string navFilesPath =
@@ -1237,7 +1240,7 @@ namespace SkyImagesAnalyzerLibraries
                         Console.WriteLine("файл навигации прочитан: " + navFilename);
                     }
 
-                    
+
                     Application.DoEvents();
                     lAllNavData.AddRange(dataHasBeenRead);
                 }
@@ -1253,7 +1256,7 @@ namespace SkyImagesAnalyzerLibraries
                 {
                     Console.WriteLine("Не найдено файлов данных с нужными данными");
                 }
-                
+
                 return null;
             }
 
@@ -1270,6 +1273,25 @@ namespace SkyImagesAnalyzerLibraries
 
             return neededGPSdata;
         }
+
+
+
+
+
+
+
+
+
+
+        public enum DatetimeExtractionMethod
+        {
+            Filename,
+            Content,
+            FileCreation
+        }
+
+
+
 
 
 

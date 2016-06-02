@@ -430,6 +430,96 @@ namespace SkyImagesAnalyzerLibraries
 
 
 
+        #region ProcessedAndPredictedData
+
+        public static string ImageProcessedAndPredictedDataFileName(string imageFullPath, string xmlFilesBasePath = "", bool fullPath = true, string PreserveRelativeDirectoriesFromBasePath = "")
+        {
+            if (xmlFilesBasePath == "")
+            {
+                FileInfo currImageFInfo = new FileInfo(imageFullPath);
+                string strImageProcessedAndPredictedDataFileName = Path.GetFileNameWithoutExtension(currImageFInfo.FullName) +
+                                                           "-ProcessedAndPredictedData.xml";
+                if (fullPath)
+                {
+                    strImageProcessedAndPredictedDataFileName = currImageFInfo.DirectoryName + Path.DirectorySeparatorChar +
+                                                        strImageProcessedAndPredictedDataFileName;
+                }
+
+
+
+                if (fullPath && (PreserveRelativeDirectoriesFromBasePath != ""))
+                {
+                    // get imageFileName path relative to PreserveRelativeDirectoriesFromBasePath
+                    string relImgFilenamePath = MakeRelativePath(imageFullPath, PreserveRelativeDirectoriesFromBasePath);
+                    string imageFilename = Path.GetFileName(imageFullPath);
+                    relImgFilenamePath = relImgFilenamePath.Replace(imageFilename, "");
+                    string strNewBaseDirectory = xmlFilesBasePath +
+                                                 ((xmlFilesBasePath.Last() == Path.DirectorySeparatorChar)
+                                                     ? ("")
+                                                     : (Path.DirectorySeparatorChar.ToString())) + relImgFilenamePath;
+                    strNewBaseDirectory += (strNewBaseDirectory.Last() == Path.DirectorySeparatorChar)
+                                                ? ("")
+                                                : (Path.DirectorySeparatorChar.ToString());
+                    strImageProcessedAndPredictedDataFileName = strNewBaseDirectory +
+                                                      Path.GetFileName(strImageProcessedAndPredictedDataFileName);
+                }
+
+
+
+                return strImageProcessedAndPredictedDataFileName;
+            }
+            else
+            {
+                FileInfo currImageFInfo = new FileInfo(imageFullPath);
+                string strImageProcessedAndPredictedDataFileName = Path.GetFileNameWithoutExtension(currImageFInfo.FullName) +
+                                                           "-ProcessedAndPredictedData.xml";
+                if (fullPath)
+                {
+                    strImageProcessedAndPredictedDataFileName = xmlFilesBasePath +
+                                                           ((xmlFilesBasePath.Last() == Path.DirectorySeparatorChar)
+                                                               ? ("")
+                                                               : (Path.DirectorySeparatorChar.ToString())) +
+                                                        strImageProcessedAndPredictedDataFileName;
+                }
+
+
+
+                if (fullPath && (PreserveRelativeDirectoriesFromBasePath != ""))
+                {
+                    // get imageFileName path relative to PreserveRelativeDirectoriesFromBasePath
+                    string relImgFilenamePath = MakeRelativePath(imageFullPath, PreserveRelativeDirectoriesFromBasePath);
+                    string imageFilename = Path.GetFileName(imageFullPath);
+                    relImgFilenamePath = relImgFilenamePath.Replace(imageFilename, "");
+                    string strNewBaseDirectory = xmlFilesBasePath +
+                                                 ((xmlFilesBasePath.Last() == Path.DirectorySeparatorChar)
+                                                     ? ("")
+                                                     : (Path.DirectorySeparatorChar.ToString())) + relImgFilenamePath;
+                    strNewBaseDirectory += (strNewBaseDirectory.Last() == Path.DirectorySeparatorChar)
+                                                ? ("")
+                                                : (Path.DirectorySeparatorChar.ToString());
+                    strImageProcessedAndPredictedDataFileName = strNewBaseDirectory +
+                                                      Path.GetFileName(strImageProcessedAndPredictedDataFileName);
+                }
+
+
+
+                return strImageProcessedAndPredictedDataFileName;
+            }
+
+        }
+
+
+
+
+        public static string ImageProcessedAndPredictedDataFileNamesPattern()
+        {
+            return "*-ProcessedAndPredictedData.xml";
+        }
+
+        #endregion ProcessedAndPredictedData
+
+
+
 
 
         public static string SkyImagesDataWithConcurrentStatsCloudCoverAndSDC_FileName(string imageFullPath, string xmlFilesBasePath = "", bool fullPath = true, string PreserveRelativeDirectoriesFromBasePath = "")
@@ -670,10 +760,7 @@ namespace SkyImagesAnalyzerLibraries
                 return strConcurrentGPSdataFileName;
             }
         }
-
-
-
-
+        
 
 
         public static string ImageConcurrentDataFilesNamesPattern()

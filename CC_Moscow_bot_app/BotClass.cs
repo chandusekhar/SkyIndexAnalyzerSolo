@@ -114,23 +114,23 @@ namespace CC_Moscow_bot_app
                                     Bot.SendTextMessage(update.Message.Chat.Id, lastConcurrentInfoFileName, true, false,
                                         update.Message.MessageId);
                         }
-                        //else if (update.Message.Text == "/current_cc")
-                        //{
-                        //    Task<string> tskObtainCC = ObtainLastImageCC();
+                        else if (update.Message.Text == "/current_cc")
+                        {
+                            Task<string> tskObtainCC = ObtainLastImageCC();
 
-                        //    Message sentMessage1 =
-                        //        await
-                        //            Bot.SendTextMessage(update.Message.Chat.Id,
-                        //                "Started calculations. Be patient please, it may take a few minutes.", true,
-                        //                false, update.Message.MessageId);
+                            //Message sentMessage1 =
+                            //    await
+                            //        Bot.SendTextMessage(update.Message.Chat.Id,
+                            //            "Started calculations. Be patient please, it may take a few minutes.", true,
+                            //            false, update.Message.MessageId);
 
-                        //    string strReply = await tskObtainCC;
+                            string strReply = await tskObtainCC;
 
-                        //    Message sentMessage2 =
-                        //        await
-                        //            Bot.SendTextMessage(update.Message.Chat.Id, strReply, true, false,
-                        //                update.Message.MessageId);
-                        //}
+                            Message sentMessage2 =
+                                await
+                                    Bot.SendTextMessage(update.Message.Chat.Id, strReply, true, false,
+                                        update.Message.MessageId);
+                        }
                         else if (update.Message.Text == "/meteo_info")
                         {
                             string strCurrentMeteoParametersString = await ObtainLatestMeteoParameters();
@@ -248,7 +248,9 @@ namespace CC_Moscow_bot_app
         private string GetLastConcurrentInfo()
         {
             DirectoryInfo dir = new DirectoryInfo(ConcurrentDataXMLfilesBasePath);
-            List<FileInfo> lXMLFilesInfo = dir.GetFiles("*.xml", SearchOption.AllDirectories).ToList();
+            List<FileInfo> lXMLFilesInfo =
+                dir.GetFiles(ConventionalTransitions.ImageConcurrentDataFilesNamesPattern(), SearchOption.AllDirectories)
+                    .ToList();
             lXMLFilesInfo.Sort((finfo1, finfo2) => finfo1.CreationTimeUtc.CompareTo(finfo2.CreationTimeUtc));
 
             Dictionary<string, object> dictReadXMLfileData =
@@ -276,29 +278,44 @@ namespace CC_Moscow_bot_app
         {
             string retStr = "";
 
-            SDCpredictorNN predSDC = new SDCpredictorNN(CurrentImageFilename(), ConcurrentDataXMLfilesBasePath,
-                YRGBstatsXMLdataFilesDirectory);
-            SunDiskCondition sdc = SunDiskCondition.Undefined;
+            if (!Directory.Exists(ConcurrentDataXMLfilesBasePath))
+            {
+                throw new DirectoryNotFoundException("unable to locate directory: " + ConcurrentDataXMLfilesBasePath);
+            }
+
+            DirectoryInfo dir = new DirectoryInfo(ConcurrentDataXMLfilesBasePath);
+            List<FileInfo> lXMLFilesInfo =
+                dir.GetFiles(ConventionalTransitions.ImageProcessedAndPredictedDataFileNamesPattern(),
+                    SearchOption.AllDirectories).ToList();
+
+            if (lXMLFilesInfo.Count == 0)
+            {
+                return "No snapshots has been analyzed yet. Please wait for a couple of minutes.";
+            }
+
+            lXMLFilesInfo.Sort((finfo1, finfo2) => finfo1.CreationTimeUtc.CompareTo(finfo2.CreationTimeUtc));
+            
+            SkyImagesProcessedAndPredictedData data = null;
             try
             {
-                sdc = await
-                    predSDC.CalcSDC_NN(
-                        Directory.GetCurrentDirectory() + Path.DirectorySeparatorChar + "settings" +
-                        Path.DirectorySeparatorChar + "NNconfig.csv",
-                        Directory.GetCurrentDirectory() + Path.DirectorySeparatorChar + "settings" +
-                        Path.DirectorySeparatorChar + "NNtrainedParameters.csv",
-                        Directory.GetCurrentDirectory() + Path.DirectorySeparatorChar + "settings" +
-                        Path.DirectorySeparatorChar + "NormMeans.csv",
-                        Directory.GetCurrentDirectory() + Path.DirectorySeparatorChar + "settings" +
-                        Path.DirectorySeparatorChar + "NormRange.csv");
-
-                retStr = "Sun disk condition obtained using last available snapshot: " + sdc.ToString();
+                data =
+                    (SkyImagesProcessedAndPredictedData)
+                        ServiceTools.ReadObjectFromXML(lXMLFilesInfo.Last().FullName,
+                            typeof(SkyImagesProcessedAndPredictedData));
             }
             catch (Exception ex)
             {
-                retStr = "Error obtaining SDC. Please refer to the support: krinitky@sail.msk.ru";
+                throw ex;
             }
 
+            if (data != null)
+            {
+                retStr += "date of snapshot analyzed (UTC): " + data.imageShootingDateTimeUTC.ToString("u") +
+                          Environment.NewLine +
+                          "Sun disk condition: " + data.PredictedSDC.ToString() + Environment.NewLine +
+                          "Total cloud cover: " + data.PredictedCC.CloudCoverTotal + " (of 8)";
+            }
+            
 
             return retStr;
         }

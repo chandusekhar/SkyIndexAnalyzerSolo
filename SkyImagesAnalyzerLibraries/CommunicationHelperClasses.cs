@@ -11,37 +11,138 @@ using nsoftware.IPWorks;
 
 namespace SkyImagesAnalyzerLibraries
 {
+    public delegate void FileTransfer_SenderChecklist_ValuesModified_Handler(object sender, FileTransfer_SenderChecklist_ValuesModified_EventArgs e);
+    public class FileTransfer_SenderChecklist_ValuesModified_EventArgs
+    {
+        public string VarNameModified { get; set; }
+    }
+
     public class FileTransfer_SenderChecklist
     {
+        public event FileTransfer_SenderChecklist_ValuesModified_Handler ValueModified;
+
         #region file itself
         public bool SendingFileMarkerSent { get; set; }
-        public bool SendingFileMarkerSentConfirmed { get; set; }
-
+        private bool _SendingFileMarkerSentConfirmed = false;
+        public bool SendingFileMarkerSentConfirmed
+        {
+            get { return _SendingFileMarkerSentConfirmed; }
+            set
+            {
+                _SendingFileMarkerSentConfirmed = value;
+                ValueModified(this, new FileTransfer_SenderChecklist_ValuesModified_EventArgs()
+                {
+                    VarNameModified = "SendingFileMarkerSentConfirmed"
+                });
+            }
+        }
+        
         public bool SendingFile { get; set; }
         public bool FileSent { get; set; }
-        public bool FileReceivedBytesConfirmed { get; set; }
+        private bool _FileReceivedBytesConfirmed = false;
+        public bool FileReceivedBytesConfirmed
+        {
+            get { return _FileReceivedBytesConfirmed; }
+            set
+            {
+                _FileReceivedBytesConfirmed = value;
+                ValueModified(this, new FileTransfer_SenderChecklist_ValuesModified_EventArgs()
+                {
+                    VarNameModified = "FileReceivedBytesConfirmed"
+                });
+            }
+        }
 
         public bool FileSendingFinishedMarkerSent { get; set; }
-        public bool FileSendingFinishedMarkerSentConfirmed { get; set; }
+        private bool _FileSendingFinishedMarkerSentConfirmed = false;
+        public bool FileSendingFinishedMarkerSentConfirmed {
+            get { return _FileSendingFinishedMarkerSentConfirmed; }
+            set
+            {
+                _FileSendingFinishedMarkerSentConfirmed = value;
+                ValueModified(this, new FileTransfer_SenderChecklist_ValuesModified_EventArgs()
+                {
+                    VarNameModified = "FileSendingFinishedMarkerSentConfirmed"
+                });
+            } }
         #endregion file itself
 
         #region filename
         public bool FilenameSendingMarkerSent { get; set; }
-        public bool FilenameSendingMarkerSentConfirmed { get; set; }
+        private bool _FilenameSendingMarkerSentConfirmed = false;
+        public bool FilenameSendingMarkerSentConfirmed
+        {
+            get { return _FilenameSendingMarkerSentConfirmed; }
+            set
+            {
+                _FilenameSendingMarkerSentConfirmed = value;
+                ValueModified(this, new FileTransfer_SenderChecklist_ValuesModified_EventArgs()
+                {
+                    VarNameModified = "FilenameSendingMarkerSentConfirmed"
+                });
+            }
+        }
 
         public bool FilenameSent { get; set; }
-        public bool FilenameSentConfirmed { get; set; }
+        private bool _FilenameSentConfirmed = false;
+        public bool FilenameSentConfirmed {
+            get { return _FilenameSentConfirmed; }
+            set
+            {
+                _FilenameSentConfirmed = value;
+                ValueModified(this,
+                    new FileTransfer_SenderChecklist_ValuesModified_EventArgs()
+                    {
+                        VarNameModified = "FilenameSentConfirmed"
+                    });
+            } }
         #endregion filename
 
         #region file MD5 hash
         public bool MD5hashSendingMarkerSent { get; set; }
-        public bool MD5hashSendingMarkerSentConfirmed { get; set; }
+        private bool _MD5hashSendingMarkerSentConfirmed = false;
+        public bool MD5hashSendingMarkerSentConfirmed
+        {
+            get { return _MD5hashSendingMarkerSentConfirmed; }
+            set
+            {
+                _MD5hashSendingMarkerSentConfirmed = value;
+                ValueModified(this, new FileTransfer_SenderChecklist_ValuesModified_EventArgs()
+                {
+                    VarNameModified = "MD5hashSendingMarkerSentConfirmed"
+                });
+            }
+        }
 
         public bool MD5hashSent { get; set; }
-        public bool MD5hashSentConfirmed { get; set; }
+        private bool _MD5hashSentConfirmed = false;
+        public bool MD5hashSentConfirmed
+        {
+            get { return _MD5hashSentConfirmed; }
+            set
+            {
+                _MD5hashSentConfirmed = value;
+                ValueModified(this, new FileTransfer_SenderChecklist_ValuesModified_EventArgs()
+                {
+                    VarNameModified = "MD5hashSentConfirmed"
+                });
+            }
+        }
 
         public bool MD5EqualityConfirmationRequestSent { get; set; }
-        public bool MD5EqualityReplied { get; set; }
+        private bool _MD5EqualityReplied = false;
+        public bool MD5EqualityReplied
+        {
+            get { return _MD5EqualityReplied; }
+            set
+            {
+                _MD5EqualityReplied = value;
+                ValueModified(this, new FileTransfer_SenderChecklist_ValuesModified_EventArgs()
+                {
+                    VarNameModified = "MD5EqualityReplied"
+                });
+            }
+        }
         public bool MD5EqualityOK { get; set; }
 
         #endregion file MD5 hash
@@ -211,10 +312,13 @@ namespace SkyImagesAnalyzerLibraries
 
     public class Communication_ClientChecklist
     {
-        public bool imageFileSent { get; set; }
-        public bool WaitingForStatsFile { get; set; }
-        public bool statsXMLfileReceived { get; set; }
+        public bool SourceFileSent { get; set; }
+        public bool WaitingForResponceFile { get; set; }
+        public bool responceFileReceived { get; set; }
 
+        public string strImageFilename { get; set; }
+        public string strReturnedStatsDataXMLfilename { get; set; }
+        public string strConcurrentDataXMLfilename { get; set; }
 
 
         bool[] bData
@@ -223,9 +327,9 @@ namespace SkyImagesAnalyzerLibraries
             {
                 return new bool[]
                 {
-                        imageFileSent,
-                        WaitingForStatsFile,
-                        statsXMLfileReceived
+                        SourceFileSent,
+                        WaitingForResponceFile,
+                        responceFileReceived
                 };
             }
         }
@@ -320,7 +424,7 @@ namespace SkyImagesAnalyzerLibraries
     {
         public string ConnectionID { get; set; }
         public Communication_ServerChecklist serverCommunicationChecklist { get; set; }
-        public string ImageFilename { get; set; }
+        public string IncomingFilename { get; set; }
         public IPWorksFileSenderReceiver fileSenderReceiverDescription { get; set; }
     }
 
@@ -377,13 +481,13 @@ namespace SkyImagesAnalyzerLibraries
 
     public class FileTransferFinishedEventArgs
     {
-        public bool fileReceivingSuccess { get; set; }
-        public string fileReceivedFullName { get; set; }
+        public bool fileTransferSuccess { get; set; }
+        public string fileTransferredFullName { get; set; }
     }
 
 
 
-
+    
 
     public class IPWorksFileSenderReceiver
     {
@@ -438,15 +542,215 @@ namespace SkyImagesAnalyzerLibraries
         #region file transfer methods
 
 
-        public async void Ipd_OnDataIn(object sender, IpdaemonDataInEventArgs e)
+
+
+
+        
+        private int bytesToSendFileSize = 0;
+        private string _filenameToSend = "";
+        private string _proposedFilename = "";
+        public async void SendFile(string filenameToSend, string proposedFilename)
         {
-            if (fileReceiverConnection.ConnectionID != e.ConnectionId)
+            _filenameToSend = filenameToSend;
+            _proposedFilename = proposedFilename;
+            FileInfo f = new FileInfo(filenameToSend);
+            bytesToSendFileSize = Convert.ToInt32(f.Length);
+            
+            if (ipclient != null) ipclient.OnDataIn += Ipclient_OnDataIn;
+            else ipd.OnDataIn += Ipd_OnDataIn;
+
+            fileSenderConnection.FileSenderCommunicationChecklist.ValueModified += FileSenderCommunicationChecklist_ValueModified;
+
+
+            #region start sending file
+
+            if (ipclient != null) ipclient.SendLine("<SendingFile=" + bytesToSendFileSize.ToString() + ">");
+            else ipd.SendLine(fileSenderConnection.ConnectionID, "<SendingFile=" + bytesToSendFileSize.ToString() + ">");
+
+            fileSenderConnection.FileSenderCommunicationChecklist.SendingFileMarkerSent = true;
+
+            #endregion start sending file
+        }
+
+
+
+
+
+
+
+        private void FileSenderCommunicationChecklist_ValueModified(object sender, FileTransfer_SenderChecklist_ValuesModified_EventArgs e)
+        {
+            LogMessage(e.VarNameModified);
+
+
+            #region sending file
+            if (fileSenderConnection.FileSenderCommunicationChecklist.SendingFileMarkerSent && (e.VarNameModified == "SendingFileMarkerSentConfirmed"))
             {
+                Thread.Sleep(100);
+                
+
+                string filenameToSend = _filenameToSend;
+
+                if (ipclient != null) ipclient.SendFile(filenameToSend);
+                else ipd.SendFile(fileSenderConnection.ConnectionID, filenameToSend);
+                fileSenderConnection.FileSenderCommunicationChecklist.SendingFile = true;
+                fileSenderConnection.FileSenderCommunicationChecklist.FileSent = true;
                 return;
             }
 
 
-            LogMessage("incoming data from " + e.ConnectionId);
+
+            if (fileSenderConnection.FileSenderCommunicationChecklist.SendingFile && fileSenderConnection.FileSenderCommunicationChecklist.FileSent && (e.VarNameModified == "FileReceivedBytesConfirmed"))
+            {
+                Thread.Sleep(100);
+
+                if (ipclient != null) ipclient.SendLine("<FileSendingFinished>");
+                else ipd.SendLine(fileSenderConnection.ConnectionID, "<FileSendingFinished>");
+                fileSenderConnection.FileSenderCommunicationChecklist.FileSendingFinishedMarkerSent = true;
+
+                return;
+            }
+
+            #endregion sending file
+
+
+
+            #region sending filename
+
+            if (fileSenderConnection.FileSenderCommunicationChecklist.FileSendingFinishedMarkerSent && (e.VarNameModified == "FileSendingFinishedMarkerSentConfirmed"))
+            {
+                Thread.Sleep(100);
+                if (ipclient != null) ipclient.SendLine("<SendingFilename>");
+                else ipd.SendLine(fileSenderConnection.ConnectionID, "<SendingFilename>");
+                fileSenderConnection.FileSenderCommunicationChecklist.FilenameSendingMarkerSent = true;
+
+                return;
+            }
+
+
+
+            if (fileSenderConnection.FileSenderCommunicationChecklist.FilenameSendingMarkerSent && (e.VarNameModified == "FilenameSendingMarkerSentConfirmed"))
+            {
+                Thread.Sleep(100);
+
+                string filenameToSend = _filenameToSend;
+                string proposedFilename = _proposedFilename;
+                if (proposedFilename == "")
+                {
+                    proposedFilename = Path.GetFileName(filenameToSend);
+                }
+
+                if (ipclient != null) ipclient.SendLine(proposedFilename);
+                else ipd.SendLine(fileSenderConnection.ConnectionID, proposedFilename);
+                fileSenderConnection.FileSenderCommunicationChecklist.FilenameSent = true;
+
+                return;
+            }
+
+            #endregion sending filename
+
+
+
+            #region sending MD5
+
+            if (fileSenderConnection.FileSenderCommunicationChecklist.FilenameSent && (e.VarNameModified == "FilenameSentConfirmed"))
+            {
+                Thread.Sleep(100);
+
+                if (ipclient != null) ipclient.SendLine("<SendingFileMD5Hash>");
+                else ipd.SendLine(fileSenderConnection.ConnectionID, "<SendingFileMD5Hash>");
+                fileSenderConnection.FileSenderCommunicationChecklist.MD5hashSendingMarkerSent = true;
+
+                return;
+            }
+
+
+
+
+            if (fileSenderConnection.FileSenderCommunicationChecklist.MD5hashSendingMarkerSent && (e.VarNameModified == "MD5hashSendingMarkerSentConfirmed"))
+            {
+                Thread.Sleep(100);
+
+                string filenameToSend = _filenameToSend;
+                string fileMD5hashString = ServiceTools.CalculateMD5hashString(filenameToSend);
+                if (ipclient != null) ipclient.SendLine(fileMD5hashString);
+                else ipd.SendLine(fileSenderConnection.ConnectionID, fileMD5hashString);
+
+                fileSenderConnection.FileSenderCommunicationChecklist.MD5hashSent = true;
+
+                return;
+            }
+
+            #endregion sending MD5
+
+
+
+            #region check if MD5 hash equality confirmed
+
+            if (fileSenderConnection.FileSenderCommunicationChecklist.MD5hashSent && (e.VarNameModified == "MD5hashSentConfirmed"))
+            {
+                Thread.Sleep(100);
+
+                if (ipclient != null) ipclient.SendLine("<MD5EqualityConfirmationRequest>");
+                else ipd.SendLine(fileSenderConnection.ConnectionID, "<MD5EqualityConfirmationRequest>");
+                fileSenderConnection.FileSenderCommunicationChecklist.MD5EqualityConfirmationRequestSent = true;
+
+                return;
+            }
+
+
+
+            if (fileSenderConnection.FileSenderCommunicationChecklist.MD5EqualityConfirmationRequestSent && (e.VarNameModified == "MD5EqualityReplied"))
+            {
+                Thread.Sleep(100);
+
+                if (!fileSenderConnection.FileSenderCommunicationChecklist.MD5EqualityOK)
+                {
+                    LogMessage("File transferred MD5 checksum doesnt match. Will not proceed.");
+                    return;
+                }
+                else
+                {
+                    FileSendingFinished(this, new FileTransferFinishedEventArgs()
+                    {
+                        fileTransferSuccess = true,
+                        fileTransferredFullName = _filenameToSend
+                    });
+                }
+
+
+
+                if (ipclient != null) ipclient.OnDataIn -= Ipclient_OnDataIn;
+                else ipd.OnDataIn -= Ipd_OnDataIn;
+
+                return;
+            }
+            
+            #endregion check if MD5 hash equality confirmed
+
+        }
+
+
+
+
+
+
+        public async void Ipd_OnDataIn(object sender, IpdaemonDataInEventArgs e)
+        {
+            if (role == FileSenderReceiverRole.receiver)
+            {
+                if (fileReceiverConnection.ConnectionID != e.ConnectionId)
+                {
+                    return;
+                }
+            }
+            else
+            {
+                if (fileSenderConnection.ConnectionID != e.ConnectionId)
+                {
+                    return;
+                }
+            }
 
 
             string TextReceived = e.Text;
@@ -455,30 +759,32 @@ namespace SkyImagesAnalyzerLibraries
             FirstLine = FirstLine.Replace(Environment.NewLine, "");
 
 
+            
 
 
             if (role == FileSenderReceiverRole.receiver)
             {
+
                 #region file receiver behaviour
 
                 #region receiving file
 
                 if (!fileReceiverConnection.FileReceiverCommunicationChecklist.SendingFileMarkerReceived)
                 {
-                    if (FirstLine.Contains("<SendingImageFile="))
+                    if (FirstLine.Contains("<SendingFile="))
                     {
-                        Console.WriteLine(FirstLine);
+                        LogMessage(FirstLine);
 
                         // extract image file size
                         // IncomingImageFileSize
-                        string IncomingFileSizeStr = FirstLine.Replace("<SendingImageFile=", "").Replace(">", "");
+                        string IncomingFileSizeStr = FirstLine.Replace("<SendingFile=", "").Replace(">", "");
                         fileReceiverConnection.IncomingFileSize = Convert.ToInt32(IncomingFileSizeStr);
 
                         fileReceiverConnection.FileReceiverCommunicationChecklist.SendingFileMarkerReceived = true;
                         fileReceiverConnection.incomingFileMemoryStream = new MemoryStream();
+                        Thread.Sleep(100);
                         ipd.SendLine(fileReceiverConnection.ConnectionID, "OK");
                         fileReceiverConnection.FileReceiverCommunicationChecklist.SendingFileMarkerReceivedConfirmed = true;
-                        fileReceiverConnection.incomingFileMemoryStream = new MemoryStream();
                         fileReceiverConnection.FileReceiverCommunicationChecklist.ReceivingFile = true;
                         return;
                     }
@@ -489,11 +795,12 @@ namespace SkyImagesAnalyzerLibraries
                     fileReceiverConnection.FileReceiverCommunicationChecklist.SendingFileMarkerReceivedConfirmed &&
                     fileReceiverConnection.FileReceiverCommunicationChecklist.ReceivingFile)
                 {
-                    if (FirstLine == "<ImageFileSendingFinished>")
+                    if (FirstLine == "<FileSendingFinished>")
                     {
-                        Console.WriteLine(FirstLine);
-                        //currentConnection.FileReceiverCommunicationChecklist.ImageFileReceived = true;
+                        LogMessage(FirstLine);
+
                         fileReceiverConnection.FileReceiverCommunicationChecklist.FileSendingFinishedMarkerReceived = true;
+                        Thread.Sleep(100);
                         ipd.SendLine(fileReceiverConnection.ConnectionID, "OK");
                         fileReceiverConnection.FileReceiverCommunicationChecklist.FileSendingFinishedMarkerReceivedConfirmed
                             = true;
@@ -502,12 +809,19 @@ namespace SkyImagesAnalyzerLibraries
                     else if (!fileReceiverConnection.FileReceiverCommunicationChecklist.FileReceived)
                     {
                         fileReceiverConnection.incomingFileMemoryStream.Write(e.TextB, 0, e.TextB.Length);
+                        double perc =
+                            Math.Round(
+                                ((double) fileReceiverConnection.incomingFileMemoryStream.Length/
+                                 (double) fileReceiverConnection.IncomingFileSize)*100.0d, 2);
+                        LogMessage("bytes received " + perc.ToString("F2") + "% : " +
+                                   fileReceiverConnection.incomingFileMemoryStream.Length + " of " +
+                                   fileReceiverConnection.IncomingFileSize);
+
                         if (fileReceiverConnection.incomingFileMemoryStream.Length == fileReceiverConnection.IncomingFileSize)
                         {
                             fileReceiverConnection.FileReceiverCommunicationChecklist.FileReceived = true;
+                            ipd.SendLine(fileReceiverConnection.ConnectionID, "OK");
                         }
-                        ipd.SendLine(fileReceiverConnection.ConnectionID,
-                            "<BytesReceived=" + fileReceiverConnection.incomingFileMemoryStream.Length + ">");
                         return;
                     }
                 }
@@ -524,8 +838,10 @@ namespace SkyImagesAnalyzerLibraries
                 {
                     if (FirstLine == "<SendingFilename>")
                     {
-                        Console.WriteLine(FirstLine);
+                        LogMessage(FirstLine);
+
                         fileReceiverConnection.FileReceiverCommunicationChecklist.FilenameSendingMarkerReceived = true;
+                        Thread.Sleep(100);
                         ipd.SendLine(fileReceiverConnection.ConnectionID, "OK");
                         fileReceiverConnection.FileReceiverCommunicationChecklist.FilenameSendingMarkerReceivedConfirmed =
                             true;
@@ -537,8 +853,11 @@ namespace SkyImagesAnalyzerLibraries
                 if (fileReceiverConnection.FileReceiverCommunicationChecklist.FilenameSendingMarkerReceivedConfirmed &&
                     !fileReceiverConnection.FileReceiverCommunicationChecklist.FilenameReceived)
                 {
+                    LogMessage(FirstLine);
+
                     fileReceiverConnection.IncomingFilename = FirstLine;
                     fileReceiverConnection.FileReceiverCommunicationChecklist.FilenameReceived = true;
+                    Thread.Sleep(100);
                     ipd.SendLine(fileReceiverConnection.ConnectionID, "OK");
                     fileReceiverConnection.FileReceiverCommunicationChecklist.FilenameReceivedConfirmed = true;
 
@@ -549,7 +868,7 @@ namespace SkyImagesAnalyzerLibraries
                     fileReceiverConnection.incomingFileMemoryStream.WriteTo(file);
                     file.Close();
                     fileReceiverConnection.incomingFileMemoryStream.Close();
-                    Console.WriteLine("file received: " + fileReceiverConnection.IncomingFilename);
+                    LogMessage("file received: " + fileReceiverConnection.IncomingFilename);
 
 
                     return;
@@ -567,8 +886,10 @@ namespace SkyImagesAnalyzerLibraries
                 {
                     if (FirstLine == "<SendingFileMD5Hash>")
                     {
-                        Console.WriteLine(FirstLine);
+                        LogMessage(FirstLine);
+
                         fileReceiverConnection.FileReceiverCommunicationChecklist.MD5hashSendingMarkerReceived = true;
+                        Thread.Sleep(100);
                         ipd.SendLine(fileReceiverConnection.ConnectionID, "OK");
                         fileReceiverConnection.FileReceiverCommunicationChecklist.MD5hashSendingMarkerReceivedConfirmed =
                             true;
@@ -580,8 +901,11 @@ namespace SkyImagesAnalyzerLibraries
                 if (fileReceiverConnection.FileReceiverCommunicationChecklist.MD5hashSendingMarkerReceivedConfirmed &&
                     !fileReceiverConnection.FileReceiverCommunicationChecklist.MD5hashReceived)
                 {
+                    LogMessage(FirstLine);
+
                     fileReceiverConnection.IncomingFileMD5hash = FirstLine;
                     fileReceiverConnection.FileReceiverCommunicationChecklist.MD5hashReceived = true;
+                    Thread.Sleep(100);
                     ipd.SendLine(fileReceiverConnection.ConnectionID, "OK");
                     fileReceiverConnection.FileReceiverCommunicationChecklist.MD5hashReceivedConfirmed = true;
 
@@ -592,11 +916,13 @@ namespace SkyImagesAnalyzerLibraries
                 if (fileReceiverConnection.FileReceiverCommunicationChecklist.MD5hashReceivedConfirmed &&
                     !fileReceiverConnection.FileReceiverCommunicationChecklist.MD5EqualityConfirmationRequestReceived)
                 {
-                    if (FirstLine == "<ImageMD5EqualityConfirmationRequest>")
+                    if (FirstLine == "<MD5EqualityConfirmationRequest>")
                     {
-                        Console.WriteLine(FirstLine);
+                        LogMessage(FirstLine);
+
                         fileReceiverConnection.FileReceiverCommunicationChecklist.MD5EqualityConfirmationRequestReceived =
                             true;
+                        Thread.Sleep(100);
 
                         string fileReceivedMD5hashString =
                             ServiceTools.CalculateMD5hashString(fileReceiverConnection.IncomingFilename);
@@ -610,8 +936,8 @@ namespace SkyImagesAnalyzerLibraries
 
                             FileReceivingFinished(this, new FileTransferFinishedEventArgs()
                             {
-                                fileReceivingSuccess = true,
-                                fileReceivedFullName = fileReceiverConnection.IncomingFilename
+                                fileTransferSuccess = true,
+                                fileTransferredFullName = fileReceiverConnection.IncomingFilename
                             });
 
                             return;
@@ -621,6 +947,12 @@ namespace SkyImagesAnalyzerLibraries
                             ipd.SendLine(fileReceiverConnection.ConnectionID, "MD5failed");
                             fileReceiverConnection.FileReceiverCommunicationChecklist.MD5EqualityReplied = true;
                             fileReceiverConnection.FileReceiverCommunicationChecklist.MD5EqualityOK = false;
+
+                            FileReceivingFinished(this, new FileTransferFinishedEventArgs()
+                            {
+                                fileTransferSuccess = false,
+                                fileTransferredFullName = fileReceiverConnection.IncomingFilename
+                            });
                         }
                         return;
                     }
@@ -629,158 +961,146 @@ namespace SkyImagesAnalyzerLibraries
                 #endregion receiving file MD5 hash
 
                 #endregion file receiver behaviour
+
             }
             else
             {
+
                 #region file sender behaviour
 
+                LogMessage(FirstLine);
+
+                #region file sending
+
+                if (fileSenderConnection.FileSenderCommunicationChecklist.SendingFileMarkerSent &&
+                    !fileSenderConnection.FileSenderCommunicationChecklist.SendingFileMarkerSentConfirmed)
+                {
+                    if (FirstLine == "OK")
+                    {
+                        Thread.Sleep(100);
+                        fileSenderConnection.FileSenderCommunicationChecklist.SendingFileMarkerSentConfirmed = true;
+                        return;
+                    }
+                }
+
+
+                if (fileSenderConnection.FileSenderCommunicationChecklist.SendingFile &&
+                    fileSenderConnection.FileSenderCommunicationChecklist.FileSent &&
+                    !fileSenderConnection.FileSenderCommunicationChecklist.FileReceivedBytesConfirmed)
+                {
+                    if (FirstLine == "OK")
+                    {
+                        Thread.Sleep(100);
+                        fileSenderConnection.FileSenderCommunicationChecklist.FileReceivedBytesConfirmed = true;
+                    }
+                    return;
+                }
+
+
+                if (fileSenderConnection.FileSenderCommunicationChecklist.FileSendingFinishedMarkerSent &&
+                    !fileSenderConnection.FileSenderCommunicationChecklist.FileSendingFinishedMarkerSentConfirmed)
+                {
+                    if (FirstLine == "OK")
+                    {
+                        Thread.Sleep(100);
+                        fileSenderConnection.FileSenderCommunicationChecklist.FileSendingFinishedMarkerSentConfirmed =
+                            true;
+                        return;
+                    }
+                }
+
+                #endregion file sending
+
+
+
+                #region filename sending
+
+                if (fileSenderConnection.FileSenderCommunicationChecklist.FilenameSendingMarkerSent &&
+                    !fileSenderConnection.FileSenderCommunicationChecklist.FilenameSendingMarkerSentConfirmed)
+                {
+                    if (FirstLine == "OK")
+                    {
+                        Thread.Sleep(100);
+                        fileSenderConnection.FileSenderCommunicationChecklist.FilenameSendingMarkerSentConfirmed = true;
+                        return;
+                    }
+                }
+
+
+
+                if (fileSenderConnection.FileSenderCommunicationChecklist.FilenameSent &&
+                    !fileSenderConnection.FileSenderCommunicationChecklist.FilenameSentConfirmed)
+                {
+                    if (FirstLine == "OK")
+                    {
+                        Thread.Sleep(100);
+                        fileSenderConnection.FileSenderCommunicationChecklist.FilenameSentConfirmed = true;
+                        return;
+                    }
+                }
+
+                #endregion filename sending
+
+
+
+                #region MD5 hash sending
+
+                if (fileSenderConnection.FileSenderCommunicationChecklist.MD5hashSendingMarkerSent &&
+                    !fileSenderConnection.FileSenderCommunicationChecklist.MD5hashSendingMarkerSentConfirmed)
+                {
+                    if (FirstLine == "OK")
+                    {
+                        Thread.Sleep(100);
+                        fileSenderConnection.FileSenderCommunicationChecklist.MD5hashSendingMarkerSentConfirmed = true;
+                        return;
+                    }
+                }
+
+
+
+                if (fileSenderConnection.FileSenderCommunicationChecklist.MD5hashSent &&
+                    !fileSenderConnection.FileSenderCommunicationChecklist.MD5hashSentConfirmed)
+                {
+                    if (FirstLine == "OK")
+                    {
+                        Thread.Sleep(100);
+                        fileSenderConnection.FileSenderCommunicationChecklist.MD5hashSentConfirmed = true;
+                        return;
+                    }
+                }
+
+                #endregion MD5 hash sending
+
+
+
+                #region  check if MD5 hash equality confirmed
+
+                if (fileSenderConnection.FileSenderCommunicationChecklist.MD5EqualityConfirmationRequestSent &&
+                    !fileSenderConnection.FileSenderCommunicationChecklist.MD5EqualityReplied)
+                {
+                    if (FirstLine == "MD5OK")
+                    {
+                        Thread.Sleep(100);
+                        fileSenderConnection.FileSenderCommunicationChecklist.MD5EqualityOK = true;
+                        fileSenderConnection.FileSenderCommunicationChecklist.MD5EqualityReplied = true;
+                        return;
+                    }
+                    else if (FirstLine == "MD5failed")
+                    {
+                        Thread.Sleep(100);
+                        fileSenderConnection.FileSenderCommunicationChecklist.MD5EqualityOK = false;
+                        fileSenderConnection.FileSenderCommunicationChecklist.MD5EqualityReplied = true;
+                        return;
+                    }
+                }
+
+                #endregion  check if MD5 hash equality confirmed
 
 
                 #endregion file sender behaviour
 
             }
         }
-
-
-
-
-        private int bytesToSendFileSize = 0;
-        public async void SendFile(string filenameToSend, string proposedFilename)
-        {
-            FileInfo f = new FileInfo(filenameToSend);
-            bytesToSendFileSize = Convert.ToInt32(f.Length);
-            string fileMD5hashString = ServiceTools.CalculateMD5hashString(filenameToSend);
-
-
-            ipclient.OnDataIn += Ipclient_OnDataIn;
-
-
-            #region sending file
-
-            ipclient.SendLine("<SendingImageFile=" + bytesToSendFileSize.ToString() + ">");
-            fileSenderConnection.FileSenderCommunicationChecklist.SendingFileMarkerSent = true;
-            Task<bool> taskSendingFileMarker = Task.Run(WaitForServerResponce);
-            // dctCommunicationChecklist.ServerReadyToReceiveImageFile = true
-            if (!(await taskSendingFileMarker))
-            {
-                theLogWindow = ServiceTools.LogAText(theLogWindow, "Server ready-to-receive-file responce timeout");
-                return;
-            }
-
-
-
-            ipclient.SendFile(filenameToSend);
-            fileSenderConnection.FileSenderCommunicationChecklist.SendingFile = true;
-            Task<bool> taskSentFileReceivedResponce = Task.Run(WaitForServerResponce);
-            fileSenderConnection.FileSenderCommunicationChecklist.FileSent = true;
-            if (!(await taskSentFileReceivedResponce))
-            {
-                theLogWindow = ServiceTools.LogAText(theLogWindow, "Server file-received-ready responce timeout");
-                return;
-            }
-
-            ipclient.SendLine("<ImageFileSendingFinished>");
-            fileSenderConnection.FileSenderCommunicationChecklist.FileSendingFinishedMarkerSent = true;
-            Task<bool> taskSendingFileFinishedMarker = Task.Run(WaitForServerResponce);
-            if (!(await taskSendingFileFinishedMarker))
-            {
-                theLogWindow = ServiceTools.LogAText(theLogWindow, "Server ready responce timeout");
-                return;
-            }
-
-            #endregion sending file
-
-
-
-
-            #region sending filename
-
-            ipclient.SendLine("<SendingFilename>");
-            fileSenderConnection.FileSenderCommunicationChecklist.FilenameSendingMarkerSent = true;
-            Task<bool> taskSendingFilenameMarker = Task.Run(WaitForServerResponce);
-            if (!(await taskSendingFilenameMarker))
-            {
-                theLogWindow = ServiceTools.LogAText(theLogWindow, "Server ready-to-receive-filename responce timeout");
-                return;
-            }
-
-
-            // ipclient.SendLine("img-2015-06-12T17-09-18devID1.jpg");
-            if (proposedFilename == "")
-            {
-                proposedFilename = Path.GetFileName(filenameToSend);
-            }
-            ipclient.SendLine(proposedFilename);
-            fileSenderConnection.FileSenderCommunicationChecklist.FilenameSent = true;
-            Task<bool> taskSendingFilename = Task.Run(WaitForServerResponce);
-            if (!(await taskSendingFilename))
-            {
-                theLogWindow = ServiceTools.LogAText(theLogWindow, "Server filename-received responce timeout");
-                return;
-            }
-
-            #endregion sending filename
-
-
-
-            #region sending MD5
-
-            ipclient.SendLine("<SendingFileMD5Hash>");
-            fileSenderConnection.FileSenderCommunicationChecklist.MD5hashSendingMarkerSent = true;
-            Task<bool> taskSendingMD5marker = Task.Run(WaitForServerResponce);
-            if (!(await taskSendingMD5marker))
-            {
-                theLogWindow = ServiceTools.LogAText(theLogWindow, "Server ready-to-receive-MD5 responce timeout");
-                return;
-            }
-
-
-
-            ipclient.SendLine(fileMD5hashString);
-            fileSenderConnection.FileSenderCommunicationChecklist.MD5hashSent = true;
-            Task<bool> taskSendingMD5string = Task.Run(WaitForServerResponce);
-            if (!(await taskSendingMD5string))
-            {
-                theLogWindow = ServiceTools.LogAText(theLogWindow, "Server MD5-received responce timeout");
-                return;
-            }
-
-            #endregion sending MD5
-
-
-
-            #region check if MD5 hash equality confirmed
-
-            ipclient.SendLine("<ImageMD5EqualityConfirmationRequest>");
-            fileSenderConnection.FileSenderCommunicationChecklist.MD5EqualityConfirmationRequestSent = true;
-            Task<bool> taskimageMD5EqualityConfirmationRequestWaiting = Task.Run(WaitForServerResponce);
-            if (!(await taskimageMD5EqualityConfirmationRequestWaiting))
-            {
-                theLogWindow = ServiceTools.LogAText(theLogWindow, "Server Image MD5 Equality Confirmation responce timeout");
-                return;
-            }
-
-            if (!fileSenderConnection.FileSenderCommunicationChecklist.MD5EqualityOK)
-            {
-                theLogWindow = ServiceTools.LogAText(theLogWindow,
-                    "Image file transferred MD5 checksum doesnt match. Will not proceed.");
-                return;
-            }
-            else
-            {
-                FileSendingFinished(this, new FileTransferFinishedEventArgs()
-                {
-                    fileReceivingSuccess = true,
-                    fileReceivedFullName = filenameToSend
-                });
-            }
-            
-            #endregion check if MD5 hash equality confirmed
-
-
-            ipclient.OnDataIn -= Ipclient_OnDataIn;
-        }
-
 
 
 
@@ -793,266 +1113,343 @@ namespace SkyImagesAnalyzerLibraries
                 StringSplitOptions.RemoveEmptyEntries).First();
             FirstLine = FirstLine.Replace(Environment.NewLine, "");
 
-
-            #region file sending
-
-            if (fileSenderConnection.FileSenderCommunicationChecklist.SendingFileMarkerSent && !fileSenderConnection.FileSenderCommunicationChecklist.SendingFileMarkerSentConfirmed)
+            
+            if (role == FileSenderReceiverRole.sender)
             {
-                if (FirstLine == "OK")
-                {
-                    Thread.Sleep(100);
-                    fileSenderConnection.FileSenderCommunicationChecklist.SendingFileMarkerSentConfirmed = true;
-                    return;
-                }
-            }
 
+                #region file sending behaviour
 
-            if (fileSenderConnection.FileSenderCommunicationChecklist.SendingFile && fileSenderConnection.FileSenderCommunicationChecklist.FileSent && !fileSenderConnection.FileSenderCommunicationChecklist.FileReceivedBytesConfirmed)
-            {
-                if (FirstLine.Contains("<BytesReceived="))
+                LogMessage(FirstLine);
+
+                #region file sending
+
+                if (fileSenderConnection.FileSenderCommunicationChecklist.SendingFileMarkerSent &&
+                    !fileSenderConnection.FileSenderCommunicationChecklist.SendingFileMarkerSentConfirmed)
                 {
-                    string ReceivedBytesReportedStr = FirstLine.Replace("<BytesReceived=", "").Replace(">", "");
-                    int ReceivedBytesReported = Convert.ToInt32(ReceivedBytesReportedStr);
-                    if (ReceivedBytesReported == bytesToSendFileSize)
+                    if (FirstLine == "OK")
                     {
+                        Thread.Sleep(100);
+                        fileSenderConnection.FileSenderCommunicationChecklist.SendingFileMarkerSentConfirmed = true;
+                        return;
+                    }
+                }
+
+
+                if (fileSenderConnection.FileSenderCommunicationChecklist.SendingFile &&
+                    fileSenderConnection.FileSenderCommunicationChecklist.FileSent &&
+                    !fileSenderConnection.FileSenderCommunicationChecklist.FileReceivedBytesConfirmed)
+                {
+                    if (FirstLine == "OK")
+                    {
+                        Thread.Sleep(100);
                         fileSenderConnection.FileSenderCommunicationChecklist.FileReceivedBytesConfirmed = true;
                     }
+                    return;
                 }
-                return;
+
+
+                if (fileSenderConnection.FileSenderCommunicationChecklist.FileSendingFinishedMarkerSent &&
+                    !fileSenderConnection.FileSenderCommunicationChecklist.FileSendingFinishedMarkerSentConfirmed)
+                {
+                    if (FirstLine == "OK")
+                    {
+                        Thread.Sleep(100);
+                        fileSenderConnection.FileSenderCommunicationChecklist.FileSendingFinishedMarkerSentConfirmed =
+                            true;
+                        return;
+                    }
+                }
+
+                #endregion file sending
+
+
+
+                #region filename sending
+
+                if (fileSenderConnection.FileSenderCommunicationChecklist.FilenameSendingMarkerSent &&
+                    !fileSenderConnection.FileSenderCommunicationChecklist.FilenameSendingMarkerSentConfirmed)
+                {
+                    if (FirstLine == "OK")
+                    {
+                        Thread.Sleep(100);
+                        fileSenderConnection.FileSenderCommunicationChecklist.FilenameSendingMarkerSentConfirmed = true;
+                        return;
+                    }
+                }
+
+
+
+                if (fileSenderConnection.FileSenderCommunicationChecklist.FilenameSent &&
+                    !fileSenderConnection.FileSenderCommunicationChecklist.FilenameSentConfirmed)
+                {
+                    if (FirstLine == "OK")
+                    {
+                        Thread.Sleep(100);
+                        fileSenderConnection.FileSenderCommunicationChecklist.FilenameSentConfirmed = true;
+                        return;
+                    }
+                }
+
+                #endregion filename sending
+
+
+
+                #region MD5 hash sending
+
+                if (fileSenderConnection.FileSenderCommunicationChecklist.MD5hashSendingMarkerSent &&
+                    !fileSenderConnection.FileSenderCommunicationChecklist.MD5hashSendingMarkerSentConfirmed)
+                {
+                    if (FirstLine == "OK")
+                    {
+                        Thread.Sleep(100);
+                        fileSenderConnection.FileSenderCommunicationChecklist.MD5hashSendingMarkerSentConfirmed = true;
+                        return;
+                    }
+                }
+
+
+
+                if (fileSenderConnection.FileSenderCommunicationChecklist.MD5hashSent &&
+                    !fileSenderConnection.FileSenderCommunicationChecklist.MD5hashSentConfirmed)
+                {
+                    if (FirstLine == "OK")
+                    {
+                        Thread.Sleep(100);
+                        fileSenderConnection.FileSenderCommunicationChecklist.MD5hashSentConfirmed = true;
+                        return;
+                    }
+                }
+
+                #endregion MD5 hash sending
+
+
+
+                #region  check if MD5 hash equality confirmed
+
+                if (fileSenderConnection.FileSenderCommunicationChecklist.MD5EqualityConfirmationRequestSent &&
+                    !fileSenderConnection.FileSenderCommunicationChecklist.MD5EqualityReplied)
+                {
+                    if (FirstLine == "MD5OK")
+                    {
+                        Thread.Sleep(100);
+                        fileSenderConnection.FileSenderCommunicationChecklist.MD5EqualityOK = true;
+                        fileSenderConnection.FileSenderCommunicationChecklist.MD5EqualityReplied = true;
+                        
+                        return;
+                    }
+                    else if (FirstLine == "MD5failed")
+                    {
+                        Thread.Sleep(100);
+                        fileSenderConnection.FileSenderCommunicationChecklist.MD5EqualityOK = false;
+                        fileSenderConnection.FileSenderCommunicationChecklist.MD5EqualityReplied = true;
+                        
+                        return;
+                    }
+                }
+
+                #endregion  check if MD5 hash equality confirmed
+
+                #endregion file sending behaviour
+
             }
-
-
-            if (fileSenderConnection.FileSenderCommunicationChecklist.FileSendingFinishedMarkerSent && !fileSenderConnection.FileSenderCommunicationChecklist.FileSendingFinishedMarkerSentConfirmed)
+            else
             {
-                if (FirstLine == "OK")
+
+                #region file receiver behaviour
+
+                #region receiving file
+
+                if (!fileReceiverConnection.FileReceiverCommunicationChecklist.SendingFileMarkerReceived)
                 {
-                    Thread.Sleep(100);
-                    fileSenderConnection.FileSenderCommunicationChecklist.FileSendingFinishedMarkerSentConfirmed = true;
+                    if (FirstLine.Contains("<SendingFile="))
+                    {
+                        LogMessage(FirstLine);
+
+                        string IncomingFileSizeStr = FirstLine.Replace("<SendingFile=", "").Replace(">", "");
+                        fileReceiverConnection.IncomingFileSize = Convert.ToInt32(IncomingFileSizeStr);
+
+                        fileReceiverConnection.FileReceiverCommunicationChecklist.SendingFileMarkerReceived = true;
+                        fileReceiverConnection.incomingFileMemoryStream = new MemoryStream();
+                        ipclient.SendLine("OK");
+                        fileReceiverConnection.FileReceiverCommunicationChecklist.SendingFileMarkerReceivedConfirmed = true;
+                        fileReceiverConnection.incomingFileMemoryStream = new MemoryStream();
+                        fileReceiverConnection.FileReceiverCommunicationChecklist.ReceivingFile = true;
+                        return;
+                    }
+                }
+
+
+                if (fileReceiverConnection.FileReceiverCommunicationChecklist.SendingFileMarkerReceived &&
+                    fileReceiverConnection.FileReceiverCommunicationChecklist.SendingFileMarkerReceivedConfirmed &&
+                    fileReceiverConnection.FileReceiverCommunicationChecklist.ReceivingFile)
+                {
+                    if (FirstLine == "<FileSendingFinished>")
+                    {
+                        LogMessage(FirstLine);
+
+                        //currentConnection.FileReceiverCommunicationChecklist.ImageFileReceived = true;
+                        fileReceiverConnection.FileReceiverCommunicationChecklist.FileSendingFinishedMarkerReceived = true;
+                        ipclient.SendLine("OK");
+                        fileReceiverConnection.FileReceiverCommunicationChecklist.FileSendingFinishedMarkerReceivedConfirmed
+                            = true;
+                        return;
+                    }
+                    else if (!fileReceiverConnection.FileReceiverCommunicationChecklist.FileReceived)
+                    {
+                        fileReceiverConnection.incomingFileMemoryStream.Write(e.TextB, 0, e.TextB.Length);
+                        double perc =
+                            Math.Round(
+                                ((double)fileReceiverConnection.incomingFileMemoryStream.Length /
+                                 (double)fileReceiverConnection.IncomingFileSize) * 100.0d, 2);
+                        LogMessage("bytes received " + perc.ToString("F2") + "% : " +
+                                   fileReceiverConnection.incomingFileMemoryStream.Length + " of " +
+                                   fileReceiverConnection.IncomingFileSize);
+                        if (fileReceiverConnection.incomingFileMemoryStream.Length == fileReceiverConnection.IncomingFileSize)
+                        {
+                            Thread.Sleep(100);
+                            ipclient.SendLine("OK");
+                            fileReceiverConnection.FileReceiverCommunicationChecklist.FileReceived = true;
+                        }
+                        
+                        return;
+                    }
+                }
+
+                #endregion receiving file
+
+
+
+
+                #region receiving filename
+
+                if (fileReceiverConnection.FileReceiverCommunicationChecklist.FileSendingFinishedMarkerReceivedConfirmed &&
+                    !fileReceiverConnection.FileReceiverCommunicationChecklist.FilenameSendingMarkerReceived)
+                {
+                    if (FirstLine == "<SendingFilename>")
+                    {
+                        LogMessage(FirstLine);
+
+                        fileReceiverConnection.FileReceiverCommunicationChecklist.FilenameSendingMarkerReceived = true;
+                        ipclient.SendLine("OK");
+                        fileReceiverConnection.FileReceiverCommunicationChecklist.FilenameSendingMarkerReceivedConfirmed =
+                            true;
+                        return;
+                    }
+                }
+
+
+                if (fileReceiverConnection.FileReceiverCommunicationChecklist.FilenameSendingMarkerReceivedConfirmed &&
+                    !fileReceiverConnection.FileReceiverCommunicationChecklist.FilenameReceived)
+                {
+                    LogMessage(FirstLine);
+
+                    fileReceiverConnection.IncomingFilename = FirstLine;
+                    fileReceiverConnection.FileReceiverCommunicationChecklist.FilenameReceived = true;
+                    ipclient.SendLine("OK");
+                    fileReceiverConnection.FileReceiverCommunicationChecklist.FilenameReceivedConfirmed = true;
+
+
+                    fileReceiverConnection.IncomingFilename = IncomingsFilesBasePath + fileReceiverConnection.IncomingFilename;
+                    FileStream file = new FileStream(fileReceiverConnection.IncomingFilename, FileMode.OpenOrCreate,
+                        FileAccess.Write);
+                    fileReceiverConnection.incomingFileMemoryStream.WriteTo(file);
+                    file.Close();
+                    fileReceiverConnection.incomingFileMemoryStream.Close();
+                    LogMessage("file received: " + fileReceiverConnection.IncomingFilename);
+
+
                     return;
                 }
+
+                #endregion receiving filename
+
+
+
+
+                #region receiving file MD5 hash
+
+                if (fileReceiverConnection.FileReceiverCommunicationChecklist.FilenameReceivedConfirmed &&
+                    !fileReceiverConnection.FileReceiverCommunicationChecklist.MD5hashSendingMarkerReceived)
+                {
+                    if (FirstLine == "<SendingFileMD5Hash>")
+                    {
+                        LogMessage(FirstLine);
+
+                        fileReceiverConnection.FileReceiverCommunicationChecklist.MD5hashSendingMarkerReceived = true;
+                        ipclient.SendLine("OK");
+                        fileReceiverConnection.FileReceiverCommunicationChecklist.MD5hashSendingMarkerReceivedConfirmed =
+                            true;
+                        return;
+                    }
+                }
+
+
+                if (fileReceiverConnection.FileReceiverCommunicationChecklist.MD5hashSendingMarkerReceivedConfirmed &&
+                    !fileReceiverConnection.FileReceiverCommunicationChecklist.MD5hashReceived)
+                {
+                    LogMessage(FirstLine);
+
+                    fileReceiverConnection.IncomingFileMD5hash = FirstLine;
+                    fileReceiverConnection.FileReceiverCommunicationChecklist.MD5hashReceived = true;
+                    ipclient.SendLine("OK");
+                    fileReceiverConnection.FileReceiverCommunicationChecklist.MD5hashReceivedConfirmed = true;
+
+                    return;
+                }
+
+
+                if (fileReceiverConnection.FileReceiverCommunicationChecklist.MD5hashReceivedConfirmed &&
+                    !fileReceiverConnection.FileReceiverCommunicationChecklist.MD5EqualityConfirmationRequestReceived)
+                {
+                    if (FirstLine == "<MD5EqualityConfirmationRequest>")
+                    {
+                        LogMessage(FirstLine);
+
+                        fileReceiverConnection.FileReceiverCommunicationChecklist.MD5EqualityConfirmationRequestReceived =
+                            true;
+
+                        string fileReceivedMD5hashString =
+                            ServiceTools.CalculateMD5hashString(fileReceiverConnection.IncomingFilename);
+                        if (fileReceivedMD5hashString == fileReceiverConnection.IncomingFileMD5hash)
+                        {
+                            ipclient.SendLine("MD5OK");
+                            fileReceiverConnection.FileReceiverCommunicationChecklist.MD5EqualityOK = true;
+                            fileReceiverConnection.FileReceiverCommunicationChecklist.FileSuccessfullyReceived = true;
+                            fileReceiverConnection.FileReceiverCommunicationChecklist.MD5EqualityReplied = true;
+
+                            FileReceivingFinished(this, new FileTransferFinishedEventArgs()
+                            {
+                                fileTransferSuccess = true,
+                                fileTransferredFullName = fileReceiverConnection.IncomingFilename
+                            });
+
+                            return;
+                        }
+                        else
+                        {
+                            ipclient.SendLine("MD5failed");
+                            fileReceiverConnection.FileReceiverCommunicationChecklist.MD5EqualityOK = false;
+                            fileReceiverConnection.FileReceiverCommunicationChecklist.MD5EqualityReplied = true;
+
+                            FileReceivingFinished(this, new FileTransferFinishedEventArgs()
+                            {
+                                fileTransferSuccess = false,
+                                fileTransferredFullName = fileReceiverConnection.IncomingFilename
+                            });
+                        }
+                        return;
+                    }
+                }
+
+                #endregion receiving file MD5 hash
+
+                #endregion file receiver behaviour
+
             }
-
-            #endregion file sending
-
-
-
-            #region filename sending
-
-            if (fileSenderConnection.FileSenderCommunicationChecklist.FilenameSendingMarkerSent && !fileSenderConnection.FileSenderCommunicationChecklist.FilenameSendingMarkerSentConfirmed)
-            {
-                if (FirstLine == "OK")
-                {
-                    Thread.Sleep(100);
-                    fileSenderConnection.FileSenderCommunicationChecklist.FilenameSendingMarkerSentConfirmed = true;
-                    return;
-                }
-            }
-
-
-
-            if (fileSenderConnection.FileSenderCommunicationChecklist.FilenameSent && !fileSenderConnection.FileSenderCommunicationChecklist.FilenameSentConfirmed)
-            {
-                if (FirstLine == "OK")
-                {
-                    Thread.Sleep(100);
-                    fileSenderConnection.FileSenderCommunicationChecklist.FilenameSentConfirmed = true;
-                    return;
-                }
-            }
-
-            #endregion filename sending
-
-
-
-            #region MD5 hash sending
-
-            if (fileSenderConnection.FileSenderCommunicationChecklist.MD5hashSendingMarkerSent && !fileSenderConnection.FileSenderCommunicationChecklist.MD5hashSendingMarkerSentConfirmed)
-            {
-                if (FirstLine == "OK")
-                {
-                    Thread.Sleep(100);
-                    fileSenderConnection.FileSenderCommunicationChecklist.MD5hashSendingMarkerSentConfirmed = true;
-                    return;
-                }
-            }
-
-
-
-            if (fileSenderConnection.FileSenderCommunicationChecklist.MD5hashSent && !fileSenderConnection.FileSenderCommunicationChecklist.MD5hashSentConfirmed)
-            {
-                if (FirstLine == "OK")
-                {
-                    Thread.Sleep(100);
-                    fileSenderConnection.FileSenderCommunicationChecklist.MD5hashSentConfirmed = true;
-                    return;
-                }
-            }
-
-            #endregion MD5 hash sending
-
-
-
-            #region  check if MD5 hash equality confirmed
-
-            if (fileSenderConnection.FileSenderCommunicationChecklist.MD5EqualityConfirmationRequestSent && !fileSenderConnection.FileSenderCommunicationChecklist.MD5EqualityReplied)
-            {
-                if (FirstLine == "MD5OK")
-                {
-                    Thread.Sleep(100);
-                    fileSenderConnection.FileSenderCommunicationChecklist.MD5EqualityReplied = true;
-                    fileSenderConnection.FileSenderCommunicationChecklist.MD5EqualityOK = true;
-                    return;
-                }
-                else if (FirstLine == "MD5failed")
-                {
-                    Thread.Sleep(100);
-                    fileSenderConnection.FileSenderCommunicationChecklist.MD5EqualityReplied = true;
-                    fileSenderConnection.FileSenderCommunicationChecklist.MD5EqualityOK = false;
-                    return;
-                }
-            }
-
-            #endregion  check if MD5 hash equality confirmed
 
         }
 
-
-
-
-
-
-
-        private async Task<bool> WaitForServerResponce()
-        {
-            Stopwatch sw = new Stopwatch();
-            sw.Start();
-
-            if (fileSenderConnection.FileSenderCommunicationChecklist.SendingFileMarkerSent && !fileSenderConnection.FileSenderCommunicationChecklist.SendingFileMarkerSentConfirmed)
-            {
-                while (!fileSenderConnection.FileSenderCommunicationChecklist.SendingFileMarkerSentConfirmed)
-                {
-                    if (sw.Elapsed.TotalSeconds > 60)
-                    {
-                        return false;
-                    }
-                    Thread.Sleep(100);
-                }
-                return true;
-            }
-
-
-            if (fileSenderConnection.FileSenderCommunicationChecklist.SendingFile && fileSenderConnection.FileSenderCommunicationChecklist.FileSent && !fileSenderConnection.FileSenderCommunicationChecklist.FileReceivedBytesConfirmed)
-            {
-                while (!fileSenderConnection.FileSenderCommunicationChecklist.FileReceivedBytesConfirmed)
-                {
-                    if (sw.Elapsed.TotalSeconds > 60)
-                    {
-                        return false;
-                    }
-                    Thread.Sleep(100);
-                }
-                return true;
-            }
-
-
-
-            if (fileSenderConnection.FileSenderCommunicationChecklist.FileSendingFinishedMarkerSent && !fileSenderConnection.FileSenderCommunicationChecklist.FileSendingFinishedMarkerSentConfirmed)
-            {
-                while (!fileSenderConnection.FileSenderCommunicationChecklist.FileSendingFinishedMarkerSentConfirmed)
-                {
-                    if (sw.Elapsed.TotalSeconds > 60)
-                    {
-                        return false;
-                    }
-                    Thread.Sleep(100);
-                }
-                return true;
-            }
-
-
-
-
-            if (fileSenderConnection.FileSenderCommunicationChecklist.FilenameSendingMarkerSent && !fileSenderConnection.FileSenderCommunicationChecklist.FilenameSendingMarkerSentConfirmed)
-            {
-                while (!fileSenderConnection.FileSenderCommunicationChecklist.FilenameSendingMarkerSentConfirmed)
-                {
-                    if (sw.Elapsed.TotalSeconds > 60)
-                    {
-                        return false;
-                    }
-                    Thread.Sleep(100);
-                }
-                return true;
-            }
-
-
-
-            if (fileSenderConnection.FileSenderCommunicationChecklist.FilenameSent && !fileSenderConnection.FileSenderCommunicationChecklist.FilenameSentConfirmed)
-            {
-                while (!fileSenderConnection.FileSenderCommunicationChecklist.FilenameSentConfirmed)
-                {
-                    if (sw.Elapsed.TotalSeconds > 60)
-                    {
-                        return false;
-                    }
-                    Thread.Sleep(100);
-                }
-                return true;
-            }
-
-
-
-            if (fileSenderConnection.FileSenderCommunicationChecklist.MD5hashSendingMarkerSent && !fileSenderConnection.FileSenderCommunicationChecklist.MD5hashSendingMarkerSentConfirmed)
-            {
-                while (!fileSenderConnection.FileSenderCommunicationChecklist.MD5hashSendingMarkerSentConfirmed)
-                {
-                    if (sw.Elapsed.TotalSeconds > 60)
-                    {
-                        return false;
-                    }
-                    Thread.Sleep(100);
-                }
-                return true;
-            }
-
-
-
-            if (fileSenderConnection.FileSenderCommunicationChecklist.MD5hashSent && !fileSenderConnection.FileSenderCommunicationChecklist.MD5hashSentConfirmed)
-            {
-                while (!fileSenderConnection.FileSenderCommunicationChecklist.MD5hashSentConfirmed)
-                {
-                    if (sw.Elapsed.TotalSeconds > 60)
-                    {
-                        return false;
-                    }
-                    Thread.Sleep(100);
-                }
-                return true;
-            }
-
-
-
-
-            if (fileSenderConnection.FileSenderCommunicationChecklist.MD5EqualityConfirmationRequestSent && !fileSenderConnection.FileSenderCommunicationChecklist.MD5EqualityReplied)
-            {
-                while (!fileSenderConnection.FileSenderCommunicationChecklist.MD5EqualityReplied)
-                {
-                    if (sw.Elapsed.TotalSeconds > 60)
-                    {
-                        return false;
-                    }
-                    Thread.Sleep(100);
-                }
-                return true;
-            }
-
-            return false;
-        }
-
-
-
-
-
+        
 
 
         #endregion file transfer methods
