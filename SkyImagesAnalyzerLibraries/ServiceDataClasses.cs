@@ -1367,17 +1367,17 @@ namespace SkyImagesAnalyzerLibraries
 
                 //5950.32
                 double latTrunc = Math.Truncate(latGrad); //5950.0d
-                string strLatTrunc = (Convert.ToInt32(latTrunc)).ToString("D5");// "5950"
+                string strLatTrunc = (Convert.ToInt32(latTrunc)).ToString("D5"); // "5950"
                 double latMinutes = Convert.ToDouble(strLatTrunc.Substring(strLatTrunc.Length - 2, 2)); //50.0d
 
-                double latGrad1 = (latTrunc - latMinutes) / 100.0d; // 59.0d
-                double latGrad2 = latMinutes / 60.0d;               // 50.0d/60.0d
+                double latGrad1 = (latTrunc - latMinutes)/100.0d; // 59.0d
+                double latGrad2 = latMinutes/60.0d; // 50.0d/60.0d
                 //double latGrad3 = (latGrad - latTrunc) / 60.0d;     // 0.32d/60.0d
-                double latGrad3 = (latGrad - latTrunc) / 3.6d;     // 0.32d * 100.0d / 3600.0d
+                double latGrad3 = (latGrad - latTrunc)/3.6d; // 0.32d * 100.0d / 3600.0d
 
                 latGrad = latGrad1 + latGrad2 + latGrad3;
 
-                return latGrad * theSign;
+                return latGrad*theSign;
             }
         }
 
@@ -1404,17 +1404,17 @@ namespace SkyImagesAnalyzerLibraries
 
                 //4050.32
                 double lonTrunc = Math.Truncate(lonGrad); //4050.0d
-                string strlonTrunc = (Convert.ToInt32(lonTrunc)).ToString("D5");// "04050"
+                string strlonTrunc = (Convert.ToInt32(lonTrunc)).ToString("D5"); // "04050"
                 double lonMinutes = Convert.ToDouble(strlonTrunc.Substring(strlonTrunc.Length - 2, 2)); //50.0d
 
-                double lonGrad1 = (lonTrunc - lonMinutes) / 100.0d; // 40.0d
-                double lonGrad2 = lonMinutes / 60.0d;               // 50.0d/60.0d
+                double lonGrad1 = (lonTrunc - lonMinutes)/100.0d; // 40.0d
+                double lonGrad2 = lonMinutes/60.0d; // 50.0d/60.0d
                 //double lonGrad3 = (lonGrad - lonTrunc) / 60.0d;     // 0.32d/60.0d
-                double lonGrad3 = (lonGrad - lonTrunc) / 3.6d;     // 0.32d * 100.0d/3600.0d
+                double lonGrad3 = (lonGrad - lonTrunc)/3.6d; // 0.32d * 100.0d/3600.0d
 
                 lonGrad = lonGrad1 + lonGrad2 + lonGrad3;
 
-                return lonGrad * theSign;
+                return lonGrad*theSign;
             }
         }
 
@@ -1626,16 +1626,17 @@ namespace SkyImagesAnalyzerLibraries
 
             if (dataSource == GPSdatasources.CloudCamArduinoGPS)
             {
-                double[] arr = new double[] { Lat, Lon };
+                double[] arr = new double[] {Lat, Lon};
                 dvRetVect = DenseVector.OfEnumerable(arr);
             }
             else if (dataSource == GPSdatasources.IOFFEvesselDataServer)
             {
-                double[] arr = new double[] { Lat, Lon, IOFFEdataHeadingTrue, IOFFEdataHeadingGyro, IOFFEdataSpeedKnots, IOFFEdataDepth };
+                double[] arr = new double[]
+                {Lat, Lon, IOFFEdataHeadingTrue, IOFFEdataHeadingGyro, IOFFEdataSpeedKnots, IOFFEdataDepth};
                 dvRetVect = DenseVector.OfEnumerable(arr);
             }
 
-            dvRetVect = DenseVector.OfEnumerable(dvRetVect.Concat(new double[] { devID }));
+            dvRetVect = DenseVector.OfEnumerable(dvRetVect.Concat(new double[] {devID}));
 
             return dvRetVect;
         }
@@ -1649,16 +1650,17 @@ namespace SkyImagesAnalyzerLibraries
 
             if (dataSource == GPSdatasources.CloudCamArduinoGPS)
             {
-                double[] arr = new double[] { Lat, Lon };
+                double[] arr = new double[] {Lat, Lon};
                 dvRetVect = DenseVector.OfEnumerable(arr);
             }
             else if (dataSource == GPSdatasources.IOFFEvesselDataServer)
             {
-                double[] arr = new double[] { Lat, Lon, IOFFEdataHeadingTrue, IOFFEdataHeadingGyro, IOFFEdataSpeedKnots, IOFFEdataDepth };
+                double[] arr = new double[]
+                {Lat, Lon, IOFFEdataHeadingTrue, IOFFEdataHeadingGyro, IOFFEdataSpeedKnots, IOFFEdataDepth};
                 dvRetVect = DenseVector.OfEnumerable(arr);
             }
 
-            dvRetVect = DenseVector.OfEnumerable(dvRetVect.Concat(new double[] { devID, dateTimeUTC.Ticks }));
+            dvRetVect = DenseVector.OfEnumerable(dvRetVect.Concat(new double[] {devID, dateTimeUTC.Ticks}));
 
             return dvRetVect;
         }
@@ -1710,17 +1712,18 @@ namespace SkyImagesAnalyzerLibraries
                 lonHemisphere = (doubleLon < 0) ? ("W") : ("E");
                 double doubleLonInternal = Math.Abs(doubleLon);
 
-                int intLat = (int)doubleLatInternal;  // Truncate the decimals
-                double t1 = (doubleLatInternal - intLat) * 60;
-                int minLat = (int)t1;
-                double secLat = (t1 - minLat) * 60;
-                lat = intLat * 100.0d + minLat + secLat / 100.0d;
+                int intLat = (int) doubleLatInternal; // Truncate the decimals
+                double t1 = (doubleLatInternal - intLat)*60;
+                int minLat = (int) t1;
+                double secLat = (t1 - minLat)*60;
+                lat = intLat*100.0d + minLat + secLat/100.0d;
 
-                int intLon = (int)doubleLonInternal;  // Truncate the decimals
-                double t2 = (doubleLonInternal - intLon) * 60;
-                int minLon = (int)t2;
-                double secLon = (t2 - minLon) * 60;
-                lon = intLon * 100.0d + minLon + secLon / 100.0d; // Convert.ToDouble("" + intLon.ToString() + minLon.ToString("d02") + "," + secLon.ToString("F02").Replace(",", ""));
+                int intLon = (int) doubleLonInternal; // Truncate the decimals
+                double t2 = (doubleLonInternal - intLon)*60;
+                int minLon = (int) t2;
+                double secLon = (t2 - minLon)*60;
+                lon = intLon*100.0d + minLon + secLon/100.0d;
+                    // Convert.ToDouble("" + intLon.ToString() + minLon.ToString("d02") + "," + secLon.ToString("F02").Replace(",", ""));
             }
             catch (Exception)
             {
@@ -1908,6 +1911,19 @@ namespace SkyImagesAnalyzerLibraries
             int res = spaCalc.spa_calculate();
             AzimuthZenithAngle sunPositionSPAext = new AzimuthZenithAngle(spaCalc.spa.azimuth,
                 spaCalc.spa.zenith);
+            return sunPositionSPAext;
+        }
+
+
+
+        public AzimuthZenithAngle SunZenithAzimuth(out SPA spaCalcObject)
+        {
+            spaCalcObject = new SPA(dateTimeUTC.Year, dateTimeUTC.Month, dateTimeUTC.Day, dateTimeUTC.Hour,
+                        dateTimeUTC.Minute, dateTimeUTC.Second, (float)LonDec, (float)LatDec,
+                        (float)SPAConst.DeltaT(dateTimeUTC));
+            int res = spaCalcObject.spa_calculate();
+            AzimuthZenithAngle sunPositionSPAext = new AzimuthZenithAngle(spaCalcObject.spa.azimuth,
+                spaCalcObject.spa.zenith);
             return sunPositionSPAext;
         }
     }

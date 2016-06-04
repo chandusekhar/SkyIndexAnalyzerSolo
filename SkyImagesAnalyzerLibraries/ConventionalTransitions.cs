@@ -872,7 +872,7 @@ namespace SkyImagesAnalyzerLibraries
 
             if (fromUri.Scheme != toUri.Scheme) { return toPath; } // path can't be made relative.
 
-            Uri relativeUri = fromUri.MakeRelativeUri(toUri);
+            Uri relativeUri = toUri.MakeRelativeUri(fromUri);
             String relativePath = Uri.UnescapeDataString(relativeUri.ToString());
 
             if (toUri.Scheme.Equals("file", StringComparison.InvariantCultureIgnoreCase))

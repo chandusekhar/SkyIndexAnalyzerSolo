@@ -4,9 +4,11 @@ using Emgu.CV.Structure;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using MathNet.Numerics;
 using MathNet.Numerics.LinearAlgebra.Double;
 using MathNet.Numerics.Statistics;
 using MathNet.Numerics.IntegralTransforms;
+using MathNet.Numerics.LinearAlgebra;
 
 
 //using System.Drawing;
@@ -116,66 +118,126 @@ namespace SkyImagesAnalyzerLibraries
         {
             //Y_lin = 0.2126 R_lin + 0.7152 G_lin + 0.0722 B_lin
 
+            // MathNet.Numerics.Control.UseNativeMKL();
 
             DenseMatrix dmLuminance;
             DenseMatrix dmLin = (DenseMatrix)dmR.Clone();
-            dmLin.MapInplace(new Func<double, double>((val) => val/255.0d));
-            dmLin.MapInplace(new Func<double, double>(sRGBtoLinear));
-            dmLin.MapInplace(new Func<double, double>((val) => 0.2126d*val));
+            //dmLin.MapInplace((val) => val/255.0d);
+            dmLin = (DenseMatrix) dmLin.Divide(255.0d);
+            // dmLin.MapInplace(sRGBtoLinear);
+            dmLin = sRGBtoLinear(dmLin);
+            //dmLin.MapInplace((val) => 0.2126d*val);
+            dmLin = (DenseMatrix) dmLin.Multiply(0.2126d);
             dmLuminance = (DenseMatrix)dmLin.Clone();
 
             ServiceTools.FlushMemory();
 
             dmLin = (DenseMatrix)dmG.Clone();
-            dmLin.MapInplace(new Func<double, double>((val) => val / 255.0d));
-            dmLin.MapInplace(new Func<double, double>(sRGBtoLinear));
-            dmLin.MapInplace(new Func<double, double>((val) => 0.7152d * val));
+            // dmLin.MapInplace((val) => val / 255.0d);
+            dmLin = (DenseMatrix)dmLin.Divide(255.0d);
+            //dmLin.MapInplace(sRGBtoLinear);
+            dmLin = sRGBtoLinear(dmLin);
+            //dmLin.MapInplace((val) => 0.7152d * val);
+            dmLin = (DenseMatrix)dmLin.Multiply(0.7152d);
             dmLuminance = dmLuminance + dmLin;
 
             ServiceTools.FlushMemory();
 
             dmLin = (DenseMatrix)dmB.Clone();
-            dmLin.MapInplace(new Func<double, double>((val) => val / 255.0d));
-            dmLin.MapInplace(new Func<double, double>(sRGBtoLinear));
-            dmLin.MapInplace(new Func<double, double>((val) => 0.0722d * val));
+            // dmLin.MapInplace((val) => val / 255.0d);
+            dmLin = (DenseMatrix)dmLin.Divide(255.0d);
+            //dmLin.MapInplace(sRGBtoLinear);
+            dmLin = sRGBtoLinear(dmLin);
+            //dmLin.MapInplace((val) => 0.0722d * val);
+            dmLin = (DenseMatrix)dmLin.Multiply(0.0722d);
             dmLuminance = dmLuminance + dmLin;
 
             ServiceTools.FlushMemory();
 
-            dmLuminance.MapInplace(new Func<double, double>(LinearTo_sRGB));
-            dmLuminance.MapInplace(new Func<double, double>((val) => val * 255.0d));
+            //dmLuminance.MapInplace(LinearTo_sRGB);
+            dmLuminance = LinearTo_sRGB(dmLuminance);
+            //dmLuminance.MapInplace((val) => val * 255.0d);
+            dmLuminance = (DenseMatrix) dmLuminance.Multiply(255.0d);
 
             return dmLuminance;
         }
 
 
-        public static double sRGBtoLinear(double val)
+
+        #region // sRGBtoLinear - optimized, this one is obsolete
+        //public static double sRGBtoLinear(double val)
+        //{
+        //    if (val <= 0.04045d)
+        //    {
+        //        return val/12.92d;
+        //    }
+        //    else
+        //    {
+        //        return Math.Pow(((val + 0.055d)/1.055d), 2.4d);
+        //    }
+        //}
+        #endregion // sRGBtoLinear - optimized, this one is obsolete
+
+
+
+
+        #region // PowerWithCondition
+        //public static DenseMatrix PowerWithCondition(DenseMatrix dmSrc, double powExponent, Predicate<double> valueCondition)
+        //{
+        //    List<Tuple<int, int, double>> lValues = dmSrc.EnumerateIndexed().ToList();
+        //    lValues.RemoveAll(tpl => !valueCondition(tpl.Item3));
+        //    Vector<double> dvValues = DenseVector.OfEnumerable(lValues.ConvertAll(tpl => tpl.Item3));
+        //    dvValues = dvValues.PointwisePower(powExponent);
+        //    IEnumerable<Tuple<int, int, double>> enumValues = lValues.Zip(dvValues,
+        //        (tpl, val) => new Tuple<int, int, double>(tpl.Item1, tpl.Item2, val));
+
+        //    DenseMatrix dmRetVal = DenseMatrix.OfIndexed(dmSrc.RowCount, dmSrc.ColumnCount, enumValues);
+        //    return dmRetVal;
+        //}
+        #endregion // PowerWithCondition
+
+
+
+
+        public static DenseMatrix sRGBtoLinear(DenseMatrix dmSrc)
         {
-            if (val <= 0.04045d)
-            {
-                return val/12.92d;
-            }
-            else
-            {
-                return Math.Pow(((val + 0.055d)/1.055d), 2.4d);
-            }
+            DenseMatrix dmLessOrEqThanThreshold = (DenseMatrix)(dmSrc.Map(val => (val <= 0.04045d) ? (val) : (0.0d)));
+            dmLessOrEqThanThreshold.MapInplace(val => val/12.92d, Zeros.AllowSkip);
+
+
+            DenseMatrix dmGreaterThanThreshold =
+                (DenseMatrix)(dmSrc.Map(val => (val <= 0.04045d) ? (0.0d) : (val)));
+            DenseMatrix dmGreaterThanThresholdIndexing =
+                (DenseMatrix)(dmSrc.Map(val => (val <= 0.04045d) ? (0.0d) : (1.0d)));
+            dmGreaterThanThreshold.MapInplace(dVal => Math.Pow(((dVal + 0.055d)/1.055d), 2.4d), Zeros.AllowSkip);
+            dmGreaterThanThreshold = (DenseMatrix)dmGreaterThanThreshold.PointwiseMultiply(dmGreaterThanThresholdIndexing);
+
+
+            return dmLessOrEqThanThreshold + dmGreaterThanThreshold;
         }
 
 
-        public static double sRGB255toLinear(double val255)
-        {
-            double val = val255/255.0d;
-            if (val <= 0.04045d)
-            {
-                return 255.0d*val / 12.92d;
-            }
-            else
-            {
-                return 255.0d*Math.Pow(((val + 0.055d) / 1.055d), 2.4d);
-            }
-        }
 
 
+        #region // sRGB255toLinear - not used
+
+        //public static double sRGB255toLinear(double val255)
+        //{
+        //    double val = val255/255.0d;
+        //    if (val <= 0.04045d)
+        //    {
+        //        return 255.0d*val / 12.92d;
+        //    }
+        //    else
+        //    {
+        //        return 255.0d*Math.Pow(((val + 0.055d) / 1.055d), 2.4d);
+        //    }
+        //}
+        #endregion // sRGB255toLinear - not used
+
+
+
+        #region // sRGBtoLinear - not used
         //public static DenseMatrix sRGBtoLinear(DenseMatrix dm_sRGBchannel)
         //{
         //    dm_sRGBchannel.MapInplace()
@@ -188,21 +250,43 @@ namespace SkyImagesAnalyzerLibraries
         //        return Math.Pow(((val + 0.055d) / 1.055d), 2.4d);
         //    }
         //}
+        #endregion // sRGBtoLinear - not used
 
 
 
+        #region // LinearTo_sRGB - optimized, obsolete
+        //public static double LinearTo_sRGB(double val)
+        //{
+        //    if (val <= 0.0031308d)
+        //    {
+        //        return val * 12.92d;
+        //    }
+        //    else
+        //    {
+        //        return (Math.Pow(val, 1.0d/2.4d)*1.055d - 0.055d);
+        //    }
+        //}
+        #endregion // LinearTo_sRGB - optimized, obsolete
 
-        public static double LinearTo_sRGB(double val)
+
+
+        public static DenseMatrix LinearTo_sRGB(DenseMatrix dmSrc)
         {
-            if (val <= 0.0031308d)
-            {
-                return val * 12.92d;
-            }
-            else
-            {
-                return (Math.Pow(val, 1.0d/2.4d)*1.055d - 0.055d);
-            }
+            DenseMatrix dmLessOrEqThanThreshold = (DenseMatrix)(dmSrc.Map(val => (val <= 0.0031308d) ? (val) : (0.0d)));
+            dmLessOrEqThanThreshold.MapInplace(val => val * 12.92d, Zeros.AllowSkip);
+            
+
+            DenseMatrix dmGreaterThanThreshold =
+                (DenseMatrix)(dmSrc.Map(val => (val <= 0.0031308d) ? (0.0d) : (val)));
+            DenseMatrix dmGreaterThanThresholdIndexing =
+                (DenseMatrix)(dmSrc.Map(val => (val <= 0.0031308d) ? (0.0d) : (1.0d)));
+            dmGreaterThanThreshold.MapInplace(dVal => Math.Pow(dVal, 1.0d/2.4d)*1.055d - 0.055d, Zeros.AllowSkip);
+            dmGreaterThanThreshold = (DenseMatrix)dmGreaterThanThreshold.PointwiseMultiply(dmGreaterThanThresholdIndexing);
+
+            return dmLessOrEqThanThreshold + dmGreaterThanThreshold;
         }
+
+
 
 
 
@@ -470,19 +554,19 @@ namespace SkyImagesAnalyzerLibraries
             if ((a.operandType() == OperandTypes.DenseMatrix) && (b.operandType() == OperandTypes.DenseMatrix))
             {
                 DenseMatrix dmTmpMatrix = (DenseMatrix)a.DmImageComponent.Clone();
-                dmTmpMatrix.MapInplace(new Func<double, double>((val) => { return (val == 0.0) ? (1.0) : (val); }));
+                dmTmpMatrix.MapInplace(val => (val == 0.0) ? (1.0) : (val));
                 summ.DmImageComponent = (DenseMatrix)b.DmImageComponent.PointwiseDivide(dmTmpMatrix);
             }
             else if ((a.operandType() == OperandTypes.DenseMatrix) && (b.operandType() == OperandTypes.DoubleValue))
             {
                 DenseMatrix dmTmpMatrix = (DenseMatrix)a.DmImageComponent.Clone();
-                dmTmpMatrix.MapInplace(new Func<double, double>((val) => { return (val == 0.0) ? (1.0) : (val); }));
+                dmTmpMatrix.MapInplace(val => (val == 0.0) ? (1.0) : (val));
                 summ.DmImageComponent = (DenseMatrix)matrixWithValue(a.DmImageComponent, b.dNumber).PointwiseDivide(dmTmpMatrix);
             }
             else if ((b.operandType() == OperandTypes.DenseMatrix) && (a.operandType() == OperandTypes.DoubleValue))
             {
                 DenseMatrix dmTmpMatrix = (DenseMatrix)matrixWithValue(b.DmImageComponent, a.dNumber);
-                dmTmpMatrix.MapInplace(new Func<double, double>((val) => { return (val == 0.0) ? (1.0) : (val); }));
+                dmTmpMatrix.MapInplace((val) => (val == 0.0) ? (1.0) : (val));
                 summ.DmImageComponent = (DenseMatrix)b.DmImageComponent.PointwiseDivide(dmTmpMatrix);
             }
 
@@ -522,7 +606,8 @@ namespace SkyImagesAnalyzerLibraries
             if (a.operandType() == OperandTypes.DenseMatrix)
             {
                 DenseMatrix dmRes = (DenseMatrix)a.DmImageComponent.Clone();
-                dmRes.MapInplace(new Func<double, double>((x) => { return Math.Pow(x, powerExponent); }));
+                //dmRes.MapInplace(new Func<double, double>((x) => { return Math.Pow(x, powerExponent); }));
+                dmRes = (DenseMatrix) dmRes.PointwisePower(powerExponent);
                 res.DmImageComponent = dmRes;
             }
             else
@@ -587,16 +672,7 @@ namespace SkyImagesAnalyzerLibraries
                 double dataMeanTmp = stats.Mean;
                 double standDevTmp = stats.StandardDeviation;
                 double deviationMarginTmp = sigmaCount * standDevTmp;
-                dmTmp.MapInplace(new Func<double, double>((dVal) =>
-                {
-                    if (Math.Abs(dVal - dataMeanTmp) > deviationMarginTmp)
-                    {
-                        //double theSign = (dVal - dataMeanTmp) / Math.Abs(dVal - dataMeanTmp);
-                        // return double.NaN;
-                        return dataMeanTmp;
-                    }
-                    else return dVal;
-                }));
+                dmTmp.MapInplace((dVal) => (Math.Abs(dVal - dataMeanTmp) > deviationMarginTmp ? dataMeanTmp : dVal));
                 
                 //stats = new DescriptiveStatistics(dmTmp.Values);
                 //double dataMean = stats.Mean;
@@ -661,9 +737,10 @@ namespace SkyImagesAnalyzerLibraries
 
                 //DenseMatrix dmRes = DenseMatrix.Create(dmyPlus1.RowCount, dmyPlus1.ColumnCount, new Func<int,int,double>((x, y) => 0.0d));
                 DenseMatrix dmGradY = (dmyPlus1 - dmyMinus1);
-                dmGradY.MapInplace(new Func<double, double>(x => x/2.0d));
+                // dmGradY.MapInplace(new Func<double, double>(x => x/2.0d));
+                dmGradY = (DenseMatrix) dmGradY.Multiply(0.5d);
                 //dmGradY.MapInplace(new Func<double,double>((val) => val/2.0d));
-                
+
                 dmyPlus1 = null;
                 //dmyMinus1 = null;
                 ServiceTools.FlushMemory();
@@ -691,17 +768,21 @@ namespace SkyImagesAnalyzerLibraries
                 }));
 
                 DenseMatrix dmGradX = dmxPlus1 - dmxMinus1;
-                dmGradX.MapInplace(new Func<double, double>(x => x/2.0d));
+                // dmGradX.MapInplace(new Func<double, double>(x => x/2.0d));
+                dmGradX = (DenseMatrix) dmGradX.Multiply(0.5d);
                 //dmGradX.MapInplace(new Func<double, double>((val) => val/2.0d));
 
                 dmxPlus1 = null;
                 //dmxMinus1 = null;
                 ServiceTools.FlushMemory();
 
-                dmGradY.MapInplace(new Func<double, double>((val) => val * val));
-                dmGradX.MapInplace(new Func<double, double>((val) => val * val));
+                //dmGradY.MapInplace(new Func<double, double>((val) => val * val));
+                dmGradY = (DenseMatrix) dmGradY.Power(2);
+                //dmGradX.MapInplace(new Func<double, double>((val) => val * val));
+                dmGradX = (DenseMatrix)dmGradX.Power(2);
                 DenseMatrix dmRes = dmGradX + dmGradY;
-                dmRes.MapInplace(new Func<double, double>(val => Math.Sqrt(val)));
+                // dmRes.MapInplace(new Func<double, double>(val => Math.Sqrt(val)));
+                dmRes = (DenseMatrix) dmRes.PointwisePower(0.5d);
                 //dmRes.MapIndexedInplace(new Func<int,int,double,double>((x, y, val) => { return x+y; }));
                 res.DmImageComponent = dmRes;
                 dmGradY = null;
@@ -771,7 +852,8 @@ namespace SkyImagesAnalyzerLibraries
 
 
                 DenseMatrix dmGradY = dmyMinus2 - 8.0d*dmyMinus1 + 8.0d*dmyPlus1 - dmyPlus2;
-                dmGradY.MapInplace(x => x / 12.0d);
+                //dmGradY.MapInplace(x => x / 12.0d);
+                dmGradY = (DenseMatrix) dmGradY.Divide(12.0d);
 
                 dmyPlus1 = null;
                 dmyMinus1 = null;
@@ -823,7 +905,8 @@ namespace SkyImagesAnalyzerLibraries
                 }));
 
                 DenseMatrix dmGradX = dmxMinus2 - 8.0d*dmxMinus1 + 8.0d*dmxPlus1 - dmxPlus2;
-                dmGradX.MapInplace(x => x / 12.0d);
+                //dmGradX.MapInplace(x => x / 12.0d);
+                dmGradX = (DenseMatrix) dmGradX.Divide(12.0d);
 
                 dmxPlus1 = null;
                 dmxMinus1 = null;
@@ -876,7 +959,8 @@ namespace SkyImagesAnalyzerLibraries
                 }));
 
                 DenseMatrix dmGradX = dmxPlus1 - dmxMinus1;
-                dmGradX.MapInplace(new Func<double, double>(x => x/2.0d));
+                //dmGradX.MapInplace(new Func<double, double>(x => x/2.0d));
+                dmGradX = (DenseMatrix) dmGradX.Multiply(0.5d);
                 dmxPlus1 = null;
                 ServiceTools.FlushMemory();
 
@@ -927,7 +1011,8 @@ namespace SkyImagesAnalyzerLibraries
 
 
                 DenseMatrix dmGradY = dmyPlus1 - dmyMinus1;
-                dmGradY.MapInplace(new Func<double, double>(x => x/2.0d));
+                //dmGradY.MapInplace(new Func<double, double>(x => x/2.0d));
+                dmGradY = (DenseMatrix) dmGradY.Multiply(0.5d);
                 dmyPlus1 = null;
                 ServiceTools.FlushMemory();
 
@@ -953,7 +1038,8 @@ namespace SkyImagesAnalyzerLibraries
             if (a.operandType() == OperandTypes.DenseMatrix)
             {
                 DenseMatrix dmResLocal = (DenseMatrix)a.DmImageComponent.Clone();
-                dmResLocal.MapInplace(new Func<double, double>((val) => Math.Pow(val, 0.5d)));
+                //dmResLocal.MapInplace(new Func<double, double>((val) => Math.Pow(val, 0.5d)));
+                dmResLocal = (DenseMatrix) dmResLocal.PointwisePower(0.5d);
                 res.DmImageComponent = dmResLocal;
                 ServiceTools.FlushMemory();
             }
@@ -1016,7 +1102,7 @@ namespace SkyImagesAnalyzerLibraries
             if (a.operandType() == OperandTypes.DenseMatrix)
             {
                 DenseMatrix dmResLocal = (DenseMatrix)a.DmImageComponent.Clone();
-                dmResLocal.MapInplace(new Func<double, double>((val) => Math.Abs(val)));
+                dmResLocal.MapInplace((val) => Math.Abs(val));
                 res.DmImageComponent = dmResLocal;
                 ServiceTools.FlushMemory();
             }

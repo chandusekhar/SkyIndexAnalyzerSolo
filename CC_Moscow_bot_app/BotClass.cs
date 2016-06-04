@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using Emgu.CV;
 using Emgu.CV.Structure;
 using SkyImagesAnalyzerLibraries;
+using SolarPositioning;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 using File = System.IO.File;
@@ -28,6 +29,8 @@ namespace CC_Moscow_bot_app
         private string R2SLufftUMBappPath = "";
         private string VentusLufftUMBappPath = "";
         private string WSLufftUMBappPath = "";
+
+        private string RadiometersDataPath = "";
 
         private string tgrm_token = "";
         private bool NeedToStopFlag = false;
@@ -140,6 +143,15 @@ namespace CC_Moscow_bot_app
                                         update.Message.MessageId);
 
                         }
+                        //else if (update.Message.Text == "/solar_irradiation")
+                        //{
+                        //    string strCurrentRadiometersString = await ObtainLatestRadiometersParameters();
+                        //    Message sentMessage =
+                        //        await
+                        //            Bot.SendTextMessage(update.Message.Chat.Id, strCurrentRadiometersString, true, false,
+                        //                update.Message.MessageId);
+
+                        //}
                         else if (update.Message.Text == "/start")
                         {
                             string strStartMessage =
@@ -267,6 +279,29 @@ namespace CC_Moscow_bot_app
             GPSdata gps = new GPSdata((string)dictReadXMLfileData["GPSdata"], GPSdatasources.CloudCamArduinoGPS,
                 concurrentDataDateTime);
             strDataToReport += "GPS: " + gps.HRString() + Environment.NewLine;
+            SPA spaCalcObject = null;
+            AzimuthZenithAngle angle = gps.SunZenithAzimuth(out spaCalcObject);
+
+            DateTime dtSunriseUTC = utcNow;
+            TimeOfDay todSunriseUTC = new TimeOfDay(spaCalcObject.spa.sunrise);
+            dtSunriseUTC = new DateTime(dtSunriseUTC.Year, dtSunriseUTC.Month, dtSunriseUTC.Day, todSunriseUTC.hour,
+                todSunriseUTC.minute, todSunriseUTC.second, DateTimeKind.Utc);
+
+            TimeZoneInfo mowTimeZone = TimeZoneInfo.FindSystemTimeZoneById("Russian Standard Time");
+            DateTime dtSunriseMOW = TimeZoneInfo.ConvertTimeFromUtc(dtSunriseUTC, mowTimeZone);
+
+
+            strDataToReport += "Sunrise Moscow time: " + (dtSunriseMOW.TimeOfDay.ToString()) + Environment.NewLine;
+
+            DateTime dtSunsetUTC = utcNow;
+            TimeOfDay todSunsetUTC = new TimeOfDay(spaCalcObject.spa.sunset);
+            dtSunsetUTC = new DateTime(dtSunsetUTC.Year, dtSunsetUTC.Month, dtSunsetUTC.Day, todSunsetUTC.hour,
+                todSunsetUTC.minute, todSunsetUTC.second, DateTimeKind.Utc);
+            DateTime dtSunsetMOW = TimeZoneInfo.ConvertTimeFromUtc(dtSunsetUTC, mowTimeZone);
+
+            strDataToReport += "Sunset Moscow time: " + (dtSunsetMOW.TimeOfDay.ToString()) + Environment.NewLine;
+
+            // strDataToReport += "Light time: " + (spaCalcObject.spa.suntransit) + Environment.NewLine;
 
             return strDataToReport;
         }
@@ -310,7 +345,8 @@ namespace CC_Moscow_bot_app
 
             if (data != null)
             {
-                retStr += "date of snapshot analyzed (UTC): " + data.imageShootingDateTimeUTC.ToString("u") +
+                retStr += "Please note that this finction is still in BETA version!" + Environment.NewLine +
+                          "date of snapshot analyzed (UTC): " + data.imageShootingDateTimeUTC.ToString("u") +
                           Environment.NewLine +
                           "Sun disk condition: " + data.PredictedSDC.ToString() + Environment.NewLine +
                           "Total cloud cover: " + data.PredictedCC.CloudCoverTotal + " (of 8)";
@@ -324,9 +360,60 @@ namespace CC_Moscow_bot_app
 
 
 
+        private async Task<string> ObtainLatestRadiometersParameters()
+        {
+            string retStr = "";
+
+            if (Directory.Exists(RadiometersDataPath))
+            {
+                List<FileInfo> lCSVdataFilesInfoList =
+                    ((new DirectoryInfo(RadiometersDataPath)).GetFiles("*.csv", SearchOption.AllDirectories)).ToList();
+                lCSVdataFilesInfoList.Sort((finfo1, finfo2) => finfo1.CreationTimeUtc.CompareTo(finfo2.CreationTimeUtc));
+                FileInfo lastCSVdataFileInfo = lCSVdataFilesInfoList.Last();
+                List<List<string>> Contents = ServiceTools.ReadDataFromCSV(lastCSVdataFileInfo.FullName, 2, true, ";");
+                List<string> lastRdDataStrings = Contents.Last();
+
+                retStr +=
+                    "Radiometers:" + Environment.NewLine +
+                    "Date,time: " + lastRdDataStrings[0] + Environment.NewLine +
+                    "SW ave.(W/m2): " + lastRdDataStrings[7] + Environment.NewLine +
+                    "LW downward ave.[W/m2]: " + lastRdDataStrings[15] + Environment.NewLine + Environment.NewLine;
+            }
+            else retStr = "";
+
+            return retStr;
+        }
+
+
+
+
+
         private async Task<string> ObtainLatestMeteoParameters()
         {
             string retStr = "";
+
+
+            // WSLufftUMBappPath
+            // Date time ; Temperature [°C] ; Abs. air pressure [hPa] ; Relative humidity [%] ; Abs. humidity [g/m³]
+            if (Directory.Exists(WSLufftUMBappPath))
+            {
+                List<FileInfo> lTXTdataFilesInfoList =
+                    ((new DirectoryInfo(WSLufftUMBappPath)).GetFiles("????-??-??Values.Txt",
+                        SearchOption.AllDirectories)).ToList();
+                lTXTdataFilesInfoList.Sort((finfo1, finfo2) => finfo1.CreationTimeUtc.CompareTo(finfo2.CreationTimeUtc));
+                FileInfo lastTXTdataFileInfo = lTXTdataFilesInfoList.Last();
+                List<List<string>> Contents = ServiceTools.ReadDataFromCSV(lastTXTdataFileInfo.FullName, 2, true, ";");
+                List<string> lastWSdataStrings = Contents.Last();
+                retStr +=
+                    "WS:" + Environment.NewLine +
+                    "Date time: " + lastWSdataStrings[0] + Environment.NewLine +
+                    "Temperature [°C]: " + lastWSdataStrings[1] + Environment.NewLine +
+                    "Abs. air pressure [hPa]: " + lastWSdataStrings[2] + Environment.NewLine +
+                    "Relative humidity [%]: " + lastWSdataStrings[3] + Environment.NewLine +
+                    "Abs. humidity [g/m³]" + lastWSdataStrings[4] + Environment.NewLine + Environment.NewLine;
+                // retStr += string.Join(" ; ", Contents.Last()) + Environment.NewLine;
+            }
+
 
             // R2SLufftUMBappPath
             if (Directory.Exists(R2SLufftUMBappPath))
@@ -337,10 +424,18 @@ namespace CC_Moscow_bot_app
                 lTXTdataFilesInfoList.Sort((finfo1, finfo2) => finfo1.CreationTimeUtc.CompareTo(finfo2.CreationTimeUtc));
                 FileInfo lastTXTdataFileInfo = lTXTdataFilesInfoList.Last();
                 List<List<string>> Contents = ServiceTools.ReadDataFromCSV(lastTXTdataFileInfo.FullName, 2, true, ";");
+
+                List<string> lastR2SdataStrings = Contents.Last();
+
+
                 retStr +=
                     "R2S:" + Environment.NewLine +
-                    "Date time ; Precipitation absol. [mm] ; Precipitation type ; Ambient temperature [°C] ; Precipitat.intensity [mil/h]" + Environment.NewLine;
-                retStr += string.Join(" ; ", Contents.Last()) + Environment.NewLine;
+                    "Date,time:" + lastR2SdataStrings[0] + Environment.NewLine +
+                    "Precipitation absol. [mm]: " + lastR2SdataStrings[1] + Environment.NewLine +
+                    "Precipitation type: " + lastR2SdataStrings[2] + Environment.NewLine +
+                    "Ambient temperature [°C]" + lastR2SdataStrings[3] + Environment.NewLine +
+                    "Precipitat.intensity [mil/h]: " + lastR2SdataStrings[4] + Environment.NewLine + Environment.NewLine;
+                //retStr += string.Join(" ; ", Contents.Last()) + Environment.NewLine;
             }
 
 
@@ -355,31 +450,20 @@ namespace CC_Moscow_bot_app
                 lTXTdataFilesInfoList.Sort((finfo1, finfo2) => finfo1.CreationTimeUtc.CompareTo(finfo2.CreationTimeUtc));
                 FileInfo lastTXTdataFileInfo = lTXTdataFilesInfoList.Last();
                 List<List<string>> Contents = ServiceTools.ReadDataFromCSV(lastTXTdataFileInfo.FullName, 2, true, ";");
+                List<string> lastVentusdataStrings = Contents.Last();
                 retStr +=
                     "Ventus:" + Environment.NewLine +
-                    "Date time ; Virtual temperature [°C] ; Wind speed [m/s] ; Wind speed [m/s] Vect. ; Wind direction [°] ; Wind direction [°] Vect. ; Abs. air pressure [hPa] ; Wind value quality [%]" + Environment.NewLine;
-                retStr += string.Join(" ; ", Contents.Last()) + Environment.NewLine;
+                    "Date,time: " + lastVentusdataStrings[0] + Environment.NewLine +
+                    "Virtual temperature [°C]: " + lastVentusdataStrings[1] + Environment.NewLine +
+                    "Wind speed [m/s]: " + lastVentusdataStrings[2] + Environment.NewLine +
+                    "Wind speed [m/s] Vect.:" + lastVentusdataStrings[3] + Environment.NewLine +
+                    "Wind direction [°]: " + lastVentusdataStrings[4] + Environment.NewLine +
+                    "Wind direction [°] Vect.: " + lastVentusdataStrings[5] + Environment.NewLine +
+                    "Abs. air pressure [hPa]: " + lastVentusdataStrings[6] + Environment.NewLine +
+                    "Wind value quality [%]: " + lastVentusdataStrings[7] + Environment.NewLine + Environment.NewLine;
+                //retStr += string.Join(" ; ", Contents.Last()) + Environment.NewLine;
             }
-
-
-
-            // WSLufftUMBappPath
-            // Date time ; Temperature [°C] ; Abs. air pressure [hPa] ; Relative humidity [%] ; Abs. humidity [g/m³]
-            if (Directory.Exists(WSLufftUMBappPath))
-            {
-                List<FileInfo> lTXTdataFilesInfoList =
-                    ((new DirectoryInfo(WSLufftUMBappPath)).GetFiles("????-??-??Values.Txt",
-                        SearchOption.AllDirectories)).ToList();
-                lTXTdataFilesInfoList.Sort((finfo1, finfo2) => finfo1.CreationTimeUtc.CompareTo(finfo2.CreationTimeUtc));
-                FileInfo lastTXTdataFileInfo = lTXTdataFilesInfoList.Last();
-                List<List<string>> Contents = ServiceTools.ReadDataFromCSV(lastTXTdataFileInfo.FullName, 2, true, ";");
-                retStr +=
-                    "WS:" + Environment.NewLine +
-                    "Date time ; Temperature [°C] ; Abs. air pressure [hPa] ; Relative humidity [%] ; Abs. humidity [g/m³]" + Environment.NewLine;
-                retStr += string.Join(" ; ", Contents.Last()) + Environment.NewLine;
-            }
-
-
+            
             return retStr;
         }
 
@@ -464,6 +548,20 @@ namespace CC_Moscow_bot_app
 
 
 
+            //RadiometersDataPath
+            if (defaultProperties.ContainsKey("RadiometersDataPath"))
+            {
+                RadiometersDataPath = (string)defaultProperties["RadiometersDataPath"];
+            }
+            else
+            {
+                RadiometersDataPath = @"C:\Program Files (x86)\Theodor Friedrichs\Comgraph32\";
+                defaultProperties.Add("RadiometersDataPath", RadiometersDataPath);
+                bDefaultPropertiesHasBeenUpdated = true;
+            }
+
+
+            // tgrm_token
             if (defaultProperties.ContainsKey("tgrm_token"))
             {
                 tgrm_token = (string)defaultProperties["tgrm_token"];

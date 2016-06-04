@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using Emgu.CV;
 using Emgu.CV.Structure;
 using SkyImagesAnalyzerLibraries;
+using MathNet.Numerics;
 
 namespace ImagesStatsCalculatingApp
 {
@@ -69,6 +70,15 @@ namespace ImagesStatsCalculatingApp
                 defaultProperties.Add("SearchImagesTopDirectoryOnly", bSearchImagesTopDirectoryOnly);
             }
 
+
+
+            if (argsList.Find(str => str == "--use-MathNetMKL") != null)
+            {
+                MathNet.Numerics.Control.UseNativeMKL();
+            }
+
+
+
             if (argsList.Find(str => str == "-y") != null)
             {
                 bStartWithoutConfirmation = true;
@@ -100,6 +110,8 @@ namespace ImagesStatsCalculatingApp
 
         }
 
+
+        #region DefaultProperties
 
         private void readDefaultProperties()
         {
@@ -215,60 +227,8 @@ namespace ImagesStatsCalculatingApp
             ServiceTools.WriteDictionaryToXml(defaultProperties, defaultPropertiesXMLfileName, false);
         }
 
+        #endregion DefaultProperties
 
-
-
-        private void CalculateAllVarsStats()
-        {
-            Console.WriteLine("getting files list");
-            EnumerateFilesToProcess();
-
-            totalFilesCountToProcess = lStatsCalculation.Count;
-
-
-#if DEBUG
-            foreach (ImageStatsCollectingData dt in lStatsCalculation)
-            {
-                ProcessImage(dt);
-            }
-#else
-            cts = new CancellationTokenSource();
-            Console.CancelKeyPress += new ConsoleCancelEventHandler((sender, evArgs) =>
-            {
-                Console.WriteLine(
-                    "Processing abort requested by user. Please wait while all currently launched calculations will be finished.");
-                cts.Cancel();
-            });
-            
-            ParallelOptions parOpts = new ParallelOptions()
-            {
-                MaxDegreeOfParallelism = maxConcurrentImagesProcessing,
-                CancellationToken = cts.Token
-            };
-
-
-
-            try
-            {
-                Parallel.ForEach<ImageStatsCollectingData>(lStatsCalculation, parOpts, (srcData) =>
-                {
-                    ProcessImage(srcData);
-                    parOpts.CancellationToken.ThrowIfCancellationRequested();
-                });
-            }
-            catch (OperationCanceledException ex)
-            {
-                Console.WriteLine(ex.Message);
-            }
-            finally
-            {
-                cts.Dispose();
-                Console.WriteLine("===FINISHED===");
-                Console.WriteLine("press any key...");
-                Console.ReadKey();
-            }
-#endif
-        }
 
 
 
@@ -328,18 +288,78 @@ namespace ImagesStatsCalculatingApp
 
                 idx++;
 
-//#if DEBUG
-//                if (idx >= 10)
-//                {
-//                    Console.WriteLine("\n");
-//                    break;
-//                }
-//#endif
+#if DEBUG
+                if (idx >= 10)
+                {
+                    Console.WriteLine("\n");
+                    break;
+                }
+#endif
             }
 
 
             Console.WriteLine("finished enumerating files. Files to process: " + lStatsCalculation.Count);
         }
+
+
+
+
+        private void CalculateAllVarsStats()
+        {
+            Console.WriteLine("getting files list");
+            EnumerateFilesToProcess();
+
+            totalFilesCountToProcess = lStatsCalculation.Count;
+
+
+#if DEBUG
+            foreach (ImageStatsCollectingData dt in lStatsCalculation)
+            {
+                ProcessImage(dt);
+            }
+            Console.WriteLine("===FINISHED===");
+            Console.WriteLine("press any key...");
+            Console.ReadKey();
+#else
+            cts = new CancellationTokenSource();
+            Console.CancelKeyPress += new ConsoleCancelEventHandler((sender, evArgs) =>
+            {
+                Console.WriteLine(
+                    "Processing abort requested by user. Please wait while all currently launched calculations will be finished.");
+                cts.Cancel();
+            });
+            
+            ParallelOptions parOpts = new ParallelOptions()
+            {
+                MaxDegreeOfParallelism = maxConcurrentImagesProcessing,
+                CancellationToken = cts.Token
+            };
+
+
+
+            try
+            {
+                Parallel.ForEach<ImageStatsCollectingData>(lStatsCalculation, parOpts, (srcData) =>
+                {
+                    ProcessImage(srcData);
+                    parOpts.CancellationToken.ThrowIfCancellationRequested();
+                });
+            }
+            catch (OperationCanceledException ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+            finally
+            {
+                cts.Dispose();
+                Console.WriteLine("===FINISHED===");
+                Console.WriteLine("press any key...");
+                Console.ReadKey();
+            }
+#endif
+        }
+
+
 
 
 
@@ -376,11 +396,11 @@ namespace ImagesStatsCalculatingApp
 
 
 
-                string strImageGrIxMedianP5DataFileName =
-                    ConventionalTransitions.ImageGrIxMedianP5DataFileName(currentFullFileName, imageMP5statsXMLdataFilesDirectory);
-                ServiceTools.WriteObjectToXML(currImageProcessingResult.mp5Result, strImageGrIxMedianP5DataFileName);
+                //string strImageGrIxMedianP5DataFileName =
+                //    ConventionalTransitions.ImageGrIxMedianP5DataFileName(currentFullFileName, imageMP5statsXMLdataFilesDirectory);
+                //ServiceTools.WriteObjectToXML(currImageProcessingResult.mp5Result, strImageGrIxMedianP5DataFileName);
                 string strImageGrIxYRGBDataFileName =
-                    ConventionalTransitions.ImageGrIxYRGBstatsDataFileName(currentFullFileName, imageYRGBstatsXMLdataFilesDirectory);
+                    ConventionalTransitions.ImageGrIxYRGBstatsDataFileName(currentFullFileName, imageYRGBstatsXMLdataFilesDirectory, true, currPath2Process);
                 ServiceTools.WriteObjectToXML(currImageProcessingResult.grixyrgbStatsData, strImageGrIxYRGBDataFileName);
 
 
@@ -403,7 +423,7 @@ namespace ImagesStatsCalculatingApp
                 try
                 {
                     //report full error to error log file
-                    #region report error
+#region report error
 #if (DEBUG && MONO)
                     ServiceTools.logToTextFile(errorLogFilename,
                             "Error processing file: " + Environment.NewLine + currentFullFileName +
@@ -428,7 +448,7 @@ namespace ImagesStatsCalculatingApp
                         Environment.StackTrace + Environment.NewLine + Environment.NewLine, true, true);
 #endif
 #endif
-                    #endregion report error
+#endregion report error
 
                 }
                 catch (Exception ex)
