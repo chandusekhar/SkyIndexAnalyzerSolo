@@ -4121,6 +4121,12 @@ namespace DataCollectorAutomator
                 // не нашли нужный файл. ну или еще что-то случилось.
                 return;
             }
+
+            if (concurrentDataXMLfilename == "")
+            {
+                // не нашли нужный файл. ну или еще что-то случилось.
+                return;
+            }
             
             Dictionary<string, object> currDict = ServiceTools.ReadDictionaryFromXML(concurrentDataXMLfilename);
             currDict.Add("XMLfileName", Path.GetFileName(concurrentDataXMLfilename));
