@@ -291,6 +291,9 @@ namespace SortFilesByDates
                 }
                 else
                 {
+                    /// TODO: сделать что-то, если по маске неверно получили строку даты
+                    /// хотя бы чтобы все не падало
+
                     DateTime dt = CommonTools.DateTimeOfString(strDateOfFile);
                     DateTime dateDay = dt.Date;
 

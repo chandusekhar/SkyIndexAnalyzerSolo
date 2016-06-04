@@ -4098,17 +4098,42 @@ namespace DataCollectorAutomator
                 .ConvertAll(
                     strImageFileName =>
                         new FileDatetimeInfo(strImageFileName, ServiceTools.DatetimeExtractionMethod.Filename, "????xxxxxxxxxxxxxxxxxxx*"));
+
+            if (lImagesFilesInfo.Count == 0)
+            {
+                return;
+            }
+
             string lastSnapshotFile =
                 lImagesFilesInfo.Aggregate(
                     (fInfo1, fInfo2) => (fInfo1.datetime <= fInfo2.datetime) ? (fInfo2) : (fInfo1)).filename;
             FileInfo currImageFInfo = new FileInfo(lastSnapshotFile);
 
-            string concurrentDataXMLfilename =
+            string concurrentDataXMLfilename = "";
+            try
+            {
+                concurrentDataXMLfilename =
                     await Task.Run(() => CommonTools.FindConcurrentDataXMLfileAsync(lastSnapshotFile, strOutputConcurrentDataDirectory, true,
                         ServiceTools.DatetimeExtractionMethod.Filename));
+            }
+            catch (Exception)
+            {
+                // не нашли нужный файл. ну или еще что-то случилось.
+                return;
+            }
+            
             Dictionary<string, object> currDict = ServiceTools.ReadDictionaryFromXML(concurrentDataXMLfilename);
             currDict.Add("XMLfileName", Path.GetFileName(concurrentDataXMLfilename));
-            ConcurrentData nearestConcurrentData = new ConcurrentData(currDict);
+            ConcurrentData nearestConcurrentData = null;
+            try
+            {
+                nearestConcurrentData = new ConcurrentData(currDict);
+            }
+            catch (Exception)
+            {
+                return;
+            }
+            
 
 
 
