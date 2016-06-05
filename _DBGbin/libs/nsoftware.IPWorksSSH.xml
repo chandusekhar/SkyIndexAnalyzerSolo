@@ -1,0 +1,2203 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>nsoftware.IPWorksSSH</name>
+    </assembly>
+    <members>
+        <member name="M:nsoftware.core.CSSHPackets.#cctor">
+            
+        </member>
+        <member name="F:nsoftware.core.LoadCertificateForm.components">
+            <summary>
+            Required designer variable.
+            </summary>
+        </member>
+        <member name="M:nsoftware.core.LoadCertificateForm.Dispose(System.Boolean)">
+            <summary>
+            Clean up any resources being used.
+            </summary>
+            <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
+        </member>
+        <member name="M:nsoftware.core.LoadCertificateForm.InitializeComponent">
+            <summary>
+            Required method for Designer support - do not modify
+            the contents of this method with the code editor.
+            </summary>
+        </member>
+        <member name="T:nsoftware.IPWorksSSH.CertmgrCertChainEventArgs">
+            <summary>Event arguments for the CertChain event.</summary>
+        </member>
+        <member name="T:nsoftware.IPWorksSSH.CertmgrCertListEventArgs">
+            <summary>Event arguments for the CertList event.</summary>
+        </member>
+        <member name="T:nsoftware.IPWorksSSH.CertmgrErrorEventArgs">
+            <summary>Event arguments for the Error event.</summary>
+        </member>
+        <member name="T:nsoftware.IPWorksSSH.CertmgrKeyListEventArgs">
+            <summary>Event arguments for the KeyList event.</summary>
+        </member>
+        <member name="T:nsoftware.IPWorksSSH.CertmgrStoreListEventArgs">
+            <summary>Event arguments for the StoreList event.</summary>
+        </member>
+        <member name="M:nsoftware.IPWorksSSH.Certmgr.SetCertStore(System.Byte[],System.Int32,System.Int32)">
+            <summary>The certificate store to search for certificates.</summary>
+        </member>
+        <member name="M:nsoftware.IPWorksSSH.Certmgr.Config(System.String)">
+            <summary>Sets or retrieves a configuration setting .</summary>
+        </member>
+        <member name="M:nsoftware.IPWorksSSH.Certmgr.CreateCertificate(System.String,System.Int32)">
+            <summary>Creates a new self-signed certificate in the current store.</summary>
+        </member>
+        <member name="M:nsoftware.IPWorksSSH.Certmgr.CreateKey(System.String)">
+            <summary>Creates a new keyset associated with the provided name.</summary>
+        </member>
+        <member name="M:nsoftware.IPWorksSSH.Certmgr.DeleteCertificate">
+            <summary>Deletes the currently selected certificate from the store.</summary>
+        </member>
+        <member name="M:nsoftware.IPWorksSSH.Certmgr.DeleteKey(System.String)">
+            <summary>Deletes the keyset associated with the provided name.</summary>
+        </member>
+        <member name="M:nsoftware.IPWorksSSH.Certmgr.ExportCertificate(System.String,System.String)">
+            <summary>Saves the current certificate to a PFX file.</summary>
+        </member>
+        <member name="M:nsoftware.IPWorksSSH.Certmgr.GenerateCSR(System.String,System.String)">
+            <summary>Generates a new CSR to be sent to a signing authority.</summary>
+        </member>
+        <member name="M:nsoftware.IPWorksSSH.Certmgr.ImportCertificate(System.String,System.String,System.String)">
+            <summary>Imports a certificate from a PFX file into the current certificate store.</summary>
+        </member>
+        <member name="M:nsoftware.IPWorksSSH.Certmgr.ImportSignedCSR(System.Byte[],System.String)">
+            <summary>Imports a signed CSR.</summary>
+        </member>
+        <member name="M:nsoftware.IPWorksSSH.Certmgr.IssueCertificate(System.String,System.Int32)">
+            <summary>Creates a new certificate in the current store, signed by the selected certificate.</summary>
+        </member>
+        <member name="M:nsoftware.IPWorksSSH.Certmgr.ListCertificateStores">
+            <summary>Lists certificate stores.</summary>
+        </member>
+        <member name="M:nsoftware.IPWorksSSH.Certmgr.ListKeys">
+            <summary>List keysets in a CSP.</summary>
+        </member>
+        <member name="M:nsoftware.IPWorksSSH.Certmgr.ListMachineStores">
+            <summary>List machine certificate stores.</summary>
+        </member>
+        <member name="M:nsoftware.IPWorksSSH.Certmgr.ListStoreCertificates">
+            <summary>List certificates in a store.</summary>
+        </member>
+        <member name="M:nsoftware.IPWorksSSH.Certmgr.ReadCertificate(System.String)">
+            <summary>Loads a certificate from a file.</summary>
+        </member>
+        <member name="M:nsoftware.IPWorksSSH.Certmgr.Reset">
+            <summary>Resets all certificate properties to their default values.</summary>
+        </member>
+        <member name="M:nsoftware.IPWorksSSH.Certmgr.SaveCertificate(System.String)">
+            <summary>Saves the current certificate to a file.</summary>
+        </member>
+        <member name="M:nsoftware.IPWorksSSH.Certmgr.ShowCertificateChain">
+            <summary>Show certificate chain.</summary>
+        </member>
+        <member name="M:nsoftware.IPWorksSSH.Certmgr.SignCSR(System.Byte[],System.Int32)">
+            <summary>Creates a signed certificate from a CSR.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Certmgr.RuntimeLicense">
+            <summary>Runtime license key (derived from the development license, if any).</summary>
+        </member>
+        <member name="E:nsoftware.IPWorksSSH.Certmgr.OnCertChain">
+            <summary>Shows the certificate chain for the certificate (see the ShowCertificateChain method).</summary>
+        </member>
+        <member name="E:nsoftware.IPWorksSSH.Certmgr.OnCertList">
+            <summary>Lists the certificates in a store (see the ListStoreCertificates method).</summary>
+        </member>
+        <member name="E:nsoftware.IPWorksSSH.Certmgr.OnError">
+            <summary>Information about errors during data delivery.</summary>
+        </member>
+        <member name="E:nsoftware.IPWorksSSH.Certmgr.OnKeyList">
+            <summary>Lists the keysets in a CSP (see the ListKeys method).</summary>
+        </member>
+        <member name="E:nsoftware.IPWorksSSH.Certmgr.OnStoreList">
+            <summary>Lists the system certificate stores (see the ListCertificateStores and ListMachineStores methods).</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Certmgr.Cert">
+            <summary>The current selected certificate.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Certmgr.CertExtensions">
+            <summary>A list of extensions used by the currently selected certificate.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Certmgr.CertStoreB">
+            <summary>The certificate store to search for certificates.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Certmgr.CertStore">
+            <summary>The certificate store to search for certificates.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Certmgr.CertStorePassword">
+            <summary>The password for the certificate store (if any).</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Certmgr.CertStoreType">
+            <summary>The type of certificate store for CertStore .</summary>
+        </member>
+        <member name="T:nsoftware.IPWorksSSH.PsclientConnectedEventArgs">
+            <summary>Event arguments for the Connected event.</summary>
+        </member>
+        <member name="T:nsoftware.IPWorksSSH.PsclientConnectionStatusEventArgs">
+            <summary>Event arguments for the ConnectionStatus event.</summary>
+        </member>
+        <member name="T:nsoftware.IPWorksSSH.PsclientDisconnectedEventArgs">
+            <summary>Event arguments for the Disconnected event.</summary>
+        </member>
+        <member name="T:nsoftware.IPWorksSSH.PsclientErrorEventArgs">
+            <summary>Event arguments for the Error event.</summary>
+        </member>
+        <member name="T:nsoftware.IPWorksSSH.PsclientPSObjectEventArgs">
+            <summary>Event arguments for the PSObject event.</summary>
+        </member>
+        <member name="T:nsoftware.IPWorksSSH.PsclientSSHKeyboardInteractiveEventArgs">
+            <summary>Event arguments for the SSHKeyboardInteractive event.</summary>
+        </member>
+        <member name="T:nsoftware.IPWorksSSH.PsclientSSHServerAuthenticationEventArgs">
+            <summary>Event arguments for the SSHServerAuthentication event.</summary>
+        </member>
+        <member name="T:nsoftware.IPWorksSSH.PsclientSSHStatusEventArgs">
+            <summary>Event arguments for the SSHStatus event.</summary>
+        </member>
+        <member name="M:nsoftware.IPWorksSSH.Psclient.ClearOutput">
+            <summary>Clears the output list.</summary>
+        </member>
+        <member name="M:nsoftware.IPWorksSSH.Psclient.Config(System.String)">
+            <summary>Sets or retrieves a configuration setting .</summary>
+        </member>
+        <member name="M:nsoftware.IPWorksSSH.Psclient.DoEvents">
+            <summary>Processes events from the internal message queue.</summary>
+        </member>
+        <member name="M:nsoftware.IPWorksSSH.Psclient.Execute(System.String)">
+            <summary>Execute a command on the remote PowerShell Server.</summary>
+        </member>
+        <member name="M:nsoftware.IPWorksSSH.Psclient.GetPropertyValue(System.String)">
+            <summary>Looks up a property by name and returns the value.</summary>
+        </member>
+        <member name="M:nsoftware.IPWorksSSH.Psclient.Interrupt">
+            <summary>Stop execution of a running command.</summary>
+        </member>
+        <member name="M:nsoftware.IPWorksSSH.Psclient.SSHLogoff">
+            <summary>Logoff from the SSH server.</summary>
+        </member>
+        <member name="M:nsoftware.IPWorksSSH.Psclient.SSHLogon(System.String,System.Int32)">
+            <summary>Logon to the selected server.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Psclient.RuntimeLicense">
+            <summary>Runtime license key (derived from the development license, if any).</summary>
+        </member>
+        <member name="E:nsoftware.IPWorksSSH.Psclient.OnConnected">
+            <summary>Fired immediately after a connection completes (or fails).</summary>
+        </member>
+        <member name="E:nsoftware.IPWorksSSH.Psclient.OnConnectionStatus">
+            <summary>Fired to indicate changes in connection state.</summary>
+        </member>
+        <member name="E:nsoftware.IPWorksSSH.Psclient.OnDisconnected">
+            <summary>Fired when a connection is closed.</summary>
+        </member>
+        <member name="E:nsoftware.IPWorksSSH.Psclient.OnError">
+            <summary>Information about errors during data delivery.</summary>
+        </member>
+        <member name="E:nsoftware.IPWorksSSH.Psclient.OnPSObject">
+            <summary>Fires when a new object is parsed on the server output.</summary>
+        </member>
+        <member name="E:nsoftware.IPWorksSSH.Psclient.OnSSHKeyboardInteractive">
+            <summary>Fired when the component receives a request for user input from the server.</summary>
+        </member>
+        <member name="E:nsoftware.IPWorksSSH.Psclient.OnSSHServerAuthentication">
+            <summary>Fired after the server presents its public key to the client.</summary>
+        </member>
+        <member name="E:nsoftware.IPWorksSSH.Psclient.OnSSHStatus">
+            <summary>Shows the progress of the secure connection.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Psclient.Firewall">
+            <summary>A set of properties related to firewall access.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Psclient.PSObject">
+            <summary>A collection of properties associated with the current output object selected by PSObjectIndex .</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Psclient.SSHAcceptServerHostKey">
+            <summary>Instructs the component to accept the server host key that matches the supplied key.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Psclient.SSHCert">
+            <summary>A certificate to be used for authenticating the SSHUser .</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Psclient.Connected">
+            <summary>Triggers a connection or disconnection.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Psclient.LocalHost">
+            <summary>The name of the local host or user-assigned IP interface through which connections are initiated or accepted.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Psclient.LocalPort">
+            <summary>The TCP port in the local host where IPPort binds.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Psclient.PSObjectBaseType">
+            <summary>The base type name of the current output object.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Psclient.PSObjectCount">
+            <summary>The number of objects returned by the pipeline execution.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Psclient.PSObjectIndex">
+            <summary>The index of the current object selected in the list of outputs.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Psclient.PSObjectValue">
+            <summary>The value of the current output object.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Psclient.SSHAuthMode">
+            <summary>The authentication method to be used the component when performing an SSHLogon .</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Psclient.SSHCompressionAlgorithms">
+            <summary>A comma-separated list containing all allowable compression algorithms.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Psclient.SSHEncryptionAlgorithms">
+            <summary>A comma-separated list containing all allowable compression algorithms.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Psclient.SSHHost">
+            <summary>The address of the SSH host.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Psclient.SSHKeyExchangeAlgorithms">
+            <summary>A comma-separated list containing all allowable key exchange algorithms.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Psclient.SSHMacAlgorithms">
+            <summary>A comma-separated list containing all allowable message authentication algorithms.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Psclient.SSHPassword">
+            <summary>The password for SSH password-based authentication.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Psclient.SSHPort">
+            <summary>The port on the SSH server where the SSH service is running; by default, 22.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Psclient.SSHPublicKeyAlgorithms">
+            <summary>A comma-separated list containing all allowable public key authentication algorithms.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Psclient.SSHUser">
+            <summary>The username for SSH authentication.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Psclient.Timeout">
+            <summary>A timeout for the component.</summary>
+        </member>
+        <member name="T:nsoftware.IPWorksSSH.ScpConnectedEventArgs">
+            <summary>Event arguments for the Connected event.</summary>
+        </member>
+        <member name="T:nsoftware.IPWorksSSH.ScpConnectionStatusEventArgs">
+            <summary>Event arguments for the ConnectionStatus event.</summary>
+        </member>
+        <member name="T:nsoftware.IPWorksSSH.ScpDisconnectedEventArgs">
+            <summary>Event arguments for the Disconnected event.</summary>
+        </member>
+        <member name="T:nsoftware.IPWorksSSH.ScpEndTransferEventArgs">
+            <summary>Event arguments for the EndTransfer event.</summary>
+        </member>
+        <member name="T:nsoftware.IPWorksSSH.ScpErrorEventArgs">
+            <summary>Event arguments for the Error event.</summary>
+        </member>
+        <member name="T:nsoftware.IPWorksSSH.ScpSSHCustomAuthEventArgs">
+            <summary>Event arguments for the SSHCustomAuth event.</summary>
+        </member>
+        <member name="T:nsoftware.IPWorksSSH.ScpSSHKeyboardInteractiveEventArgs">
+            <summary>Event arguments for the SSHKeyboardInteractive event.</summary>
+        </member>
+        <member name="T:nsoftware.IPWorksSSH.ScpSSHServerAuthenticationEventArgs">
+            <summary>Event arguments for the SSHServerAuthentication event.</summary>
+        </member>
+        <member name="T:nsoftware.IPWorksSSH.ScpSSHStatusEventArgs">
+            <summary>Event arguments for the SSHStatus event.</summary>
+        </member>
+        <member name="T:nsoftware.IPWorksSSH.ScpStartTransferEventArgs">
+            <summary>Event arguments for the StartTransfer event.</summary>
+        </member>
+        <member name="T:nsoftware.IPWorksSSH.ScpTransferEventArgs">
+            <summary>Event arguments for the Transfer event.</summary>
+        </member>
+        <member name="M:nsoftware.IPWorksSSH.Scp.Config(System.String)">
+            <summary>Sets or retrieves a configuration setting .</summary>
+        </member>
+        <member name="M:nsoftware.IPWorksSSH.Scp.DecodePacket(System.String)">
+            <summary>Decodes a hex-encoded SSH packet.</summary>
+        </member>
+        <member name="M:nsoftware.IPWorksSSH.Scp.DoEvents">
+            <summary>Processes events from the internal message queue.</summary>
+        </member>
+        <member name="M:nsoftware.IPWorksSSH.Scp.Download">
+            <summary>Download a RemoteFile from an SCP server.</summary>
+        </member>
+        <member name="M:nsoftware.IPWorksSSH.Scp.EncodePacket(System.Byte[])">
+            <summary>Hex encodes an SSH packet.</summary>
+        </member>
+        <member name="M:nsoftware.IPWorksSSH.Scp.GetSSHParam(System.Byte[],System.String)">
+            <summary>Used to read a field from an SSH packet's payload.</summary>
+        </member>
+        <member name="M:nsoftware.IPWorksSSH.Scp.GetSSHParamBytes(System.Byte[],System.String)">
+            <summary>Used to read a field from an SSH packet's payload.</summary>
+        </member>
+        <member name="M:nsoftware.IPWorksSSH.Scp.Interrupt">
+            <summary>Interrupt the current method.</summary>
+        </member>
+        <member name="M:nsoftware.IPWorksSSH.Scp.SetDownloadStream(System.IO.Stream)">
+            <summary>Sets the stream to which the downloaded data from the server will be written.</summary>
+        </member>
+        <member name="M:nsoftware.IPWorksSSH.Scp.SetSSHParam(System.Byte[],System.String,System.String)">
+            <summary>Used to write a field to the end of a payload.</summary>
+        </member>
+        <member name="M:nsoftware.IPWorksSSH.Scp.SetUploadStream(System.IO.Stream)">
+            <summary>Sets the stream from which the component will read data to upload to the server.</summary>
+        </member>
+        <member name="M:nsoftware.IPWorksSSH.Scp.SSHLogoff">
+            <summary>Logoff from the SSH server.</summary>
+        </member>
+        <member name="M:nsoftware.IPWorksSSH.Scp.SSHLogon(System.String,System.Int32)">
+            <summary>Logon to the SSHHost using the current SSHUser and SSHPassword .</summary>
+        </member>
+        <member name="M:nsoftware.IPWorksSSH.Scp.Upload">
+            <summary>Upload a file specified by LocalFile to an SCP server.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Scp.RuntimeLicense">
+            <summary>Runtime license key (derived from the development license, if any).</summary>
+        </member>
+        <member name="E:nsoftware.IPWorksSSH.Scp.OnConnected">
+            <summary>Fired immediately after a connection completes (or fails).</summary>
+        </member>
+        <member name="E:nsoftware.IPWorksSSH.Scp.OnConnectionStatus">
+            <summary>Fired to indicate changes in connection state.</summary>
+        </member>
+        <member name="E:nsoftware.IPWorksSSH.Scp.OnDisconnected">
+            <summary>Fired when a connection is closed.</summary>
+        </member>
+        <member name="E:nsoftware.IPWorksSSH.Scp.OnEndTransfer">
+            <summary>Fired when a file completes downloading/uploading.</summary>
+        </member>
+        <member name="E:nsoftware.IPWorksSSH.Scp.OnError">
+            <summary>Information about errors during data delivery.</summary>
+        </member>
+        <member name="E:nsoftware.IPWorksSSH.Scp.OnSSHCustomAuth">
+            <summary>Fired when the component is doing custom authentication.</summary>
+        </member>
+        <member name="E:nsoftware.IPWorksSSH.Scp.OnSSHKeyboardInteractive">
+            <summary>Fired when the component receives a request for user input from the server.</summary>
+        </member>
+        <member name="E:nsoftware.IPWorksSSH.Scp.OnSSHServerAuthentication">
+            <summary>Fired after the server presents its public key to the client.</summary>
+        </member>
+        <member name="E:nsoftware.IPWorksSSH.Scp.OnSSHStatus">
+            <summary>Shows the progress of the secure connection.</summary>
+        </member>
+        <member name="E:nsoftware.IPWorksSSH.Scp.OnStartTransfer">
+            <summary>Fired when a file starts downloading/uploading.</summary>
+        </member>
+        <member name="E:nsoftware.IPWorksSSH.Scp.OnTransfer">
+            <summary>Fired during file download/upload.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Scp.Firewall">
+            <summary>A set of properties related to firewall access.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Scp.SSHAcceptServerHostKey">
+            <summary>Instructs the component to accept the server host key that matches the supplied key.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Scp.SSHCert">
+            <summary>A certificate to be used for authenticating the SSHUser .</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Scp.Connected">
+            <summary>Triggers a connection or disconnection.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Scp.FilePermissions">
+            <summary>The file permissions for the RemoteFile .</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Scp.LocalFile">
+            <summary>The path to a local file for download/upload.  If the file exists, it is overwritten.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Scp.LocalHost">
+            <summary>The name of the local host or user-assigned IP interface through which connections are initiated or accepted.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Scp.LocalPort">
+            <summary>The TCP port in the local host where IPPort binds.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Scp.Overwrite">
+            <summary>Whether or not the component should overwrite files during transfer.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Scp.RemoteFile">
+            <summary>The name of the remote file for uploading, downloading, etc.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Scp.RemotePath">
+            <summary>The remote path on the server.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Scp.SSHAuthMode">
+            <summary>The authentication method to be used the component when calling SSHLogon .</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Scp.SSHCompressionAlgorithms">
+            <summary>A comma-separated list containing all allowable compression algorithms.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Scp.SSHEncryptionAlgorithms">
+            <summary>A comma-separated list containing all allowable compression algorithms.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Scp.SSHHost">
+            <summary>The address of the SSH host.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Scp.SSHPassword">
+            <summary>The password for SSH password-based authentication.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Scp.SSHPort">
+            <summary>The port on the SSH server where the SSH service is running; by default, 22.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Scp.SSHUser">
+            <summary>The username for SSH authentication.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Scp.Timeout">
+            <summary>A timeout for the component.</summary>
+        </member>
+        <member name="T:nsoftware.IPWorksSSH.SexecConnectedEventArgs">
+            <summary>Event arguments for the Connected event.</summary>
+        </member>
+        <member name="T:nsoftware.IPWorksSSH.SexecConnectionStatusEventArgs">
+            <summary>Event arguments for the ConnectionStatus event.</summary>
+        </member>
+        <member name="T:nsoftware.IPWorksSSH.SexecDisconnectedEventArgs">
+            <summary>Event arguments for the Disconnected event.</summary>
+        </member>
+        <member name="T:nsoftware.IPWorksSSH.SexecErrorEventArgs">
+            <summary>Event arguments for the Error event.</summary>
+        </member>
+        <member name="T:nsoftware.IPWorksSSH.SexecSSHCustomAuthEventArgs">
+            <summary>Event arguments for the SSHCustomAuth event.</summary>
+        </member>
+        <member name="T:nsoftware.IPWorksSSH.SexecSSHKeyboardInteractiveEventArgs">
+            <summary>Event arguments for the SSHKeyboardInteractive event.</summary>
+        </member>
+        <member name="T:nsoftware.IPWorksSSH.SexecSSHServerAuthenticationEventArgs">
+            <summary>Event arguments for the SSHServerAuthentication event.</summary>
+        </member>
+        <member name="T:nsoftware.IPWorksSSH.SexecSSHStatusEventArgs">
+            <summary>Event arguments for the SSHStatus event.</summary>
+        </member>
+        <member name="T:nsoftware.IPWorksSSH.SexecStderrEventArgs">
+            <summary>Event arguments for the Stderr event.</summary>
+        </member>
+        <member name="T:nsoftware.IPWorksSSH.SexecStdoutEventArgs">
+            <summary>Event arguments for the Stdout event.</summary>
+        </member>
+        <member name="M:nsoftware.IPWorksSSH.Sexec.SetStdin(System.Byte[],System.Int32,System.Int32)">
+            <summary>A string of data to be sent to the remote host while connected.</summary>
+        </member>
+        <member name="M:nsoftware.IPWorksSSH.Sexec.Config(System.String)">
+            <summary>Sets or retrieves a configuration setting .</summary>
+        </member>
+        <member name="M:nsoftware.IPWorksSSH.Sexec.DecodePacket(System.String)">
+            <summary>Decodes a hex-encoded SSH packet.</summary>
+        </member>
+        <member name="M:nsoftware.IPWorksSSH.Sexec.DoEvents">
+            <summary>Processes events from the internal message queue.</summary>
+        </member>
+        <member name="M:nsoftware.IPWorksSSH.Sexec.EncodePacket(System.Byte[])">
+            <summary>Hex encodes an SSH packet.</summary>
+        </member>
+        <member name="M:nsoftware.IPWorksSSH.Sexec.Execute(System.String)">
+            <summary>Execute a Command on the remote host.</summary>
+        </member>
+        <member name="M:nsoftware.IPWorksSSH.Sexec.GetSSHParam(System.Byte[],System.String)">
+            <summary>Used to read a field from an SSH packet's payload.</summary>
+        </member>
+        <member name="M:nsoftware.IPWorksSSH.Sexec.GetSSHParamBytes(System.Byte[],System.String)">
+            <summary>Used to read a field from an SSH packet's payload.</summary>
+        </member>
+        <member name="M:nsoftware.IPWorksSSH.Sexec.Interrupt">
+            <summary>Interrupt the current method.</summary>
+        </member>
+        <member name="M:nsoftware.IPWorksSSH.Sexec.Send(System.Byte[])">
+            <summary>Send standard input to the program executing on the remote host.</summary>
+        </member>
+        <member name="M:nsoftware.IPWorksSSH.Sexec.SetSSHParam(System.Byte[],System.String,System.String)">
+            <summary>Used to write a field to the end of a payload.</summary>
+        </member>
+        <member name="M:nsoftware.IPWorksSSH.Sexec.SSHLogoff">
+            <summary>Logoff from the SSH server.</summary>
+        </member>
+        <member name="M:nsoftware.IPWorksSSH.Sexec.SSHLogon(System.String,System.Int32)">
+            <summary>Logon to the SSHHost using the current SSHUser and SSHPassword .</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Sexec.RuntimeLicense">
+            <summary>Runtime license key (derived from the development license, if any).</summary>
+        </member>
+        <member name="E:nsoftware.IPWorksSSH.Sexec.OnConnected">
+            <summary>Fired immediately after a connection completes (or fails).</summary>
+        </member>
+        <member name="E:nsoftware.IPWorksSSH.Sexec.OnConnectionStatus">
+            <summary>Fired to indicate changes in connection state.</summary>
+        </member>
+        <member name="E:nsoftware.IPWorksSSH.Sexec.OnDisconnected">
+            <summary>Fired when a connection is closed.</summary>
+        </member>
+        <member name="E:nsoftware.IPWorksSSH.Sexec.OnError">
+            <summary>Information about errors during data delivery.</summary>
+        </member>
+        <member name="E:nsoftware.IPWorksSSH.Sexec.OnSSHCustomAuth">
+            <summary>Fired when the component is doing custom authentication.</summary>
+        </member>
+        <member name="E:nsoftware.IPWorksSSH.Sexec.OnSSHKeyboardInteractive">
+            <summary>Fired when the component receives a request for user input from the server.</summary>
+        </member>
+        <member name="E:nsoftware.IPWorksSSH.Sexec.OnSSHServerAuthentication">
+            <summary>Fired after the server presents its public key to the client.</summary>
+        </member>
+        <member name="E:nsoftware.IPWorksSSH.Sexec.OnSSHStatus">
+            <summary>Shows the progress of the secure connection.</summary>
+        </member>
+        <member name="E:nsoftware.IPWorksSSH.Sexec.OnStderr">
+            <summary>Fired when data (complete lines) come in through stderr.</summary>
+        </member>
+        <member name="E:nsoftware.IPWorksSSH.Sexec.OnStdout">
+            <summary>Fired when data (complete lines) come in through stdout.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Sexec.Firewall">
+            <summary>A set of properties related to firewall access.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Sexec.SSHAcceptServerHostKey">
+            <summary>Instructs the component to accept the server host key that matches the supplied key.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Sexec.SSHCert">
+            <summary>A certificate to be used for authenticating the SSHUser .</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Sexec.Command">
+            <summary>The command to be sent to the remote host.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Sexec.Connected">
+            <summary>Triggers a connection or disconnection.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Sexec.ErrorMessage">
+            <summary>The error message returned by the server along with the ExitStatus .</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Sexec.ExitStatus">
+            <summary>The exit code for the last executed command.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Sexec.LocalHost">
+            <summary>The name of the local host or user-assigned IP interface through which connections are initiated or accepted.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Sexec.LocalPort">
+            <summary>The TCP port in the local host where IPPort binds.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Sexec.SSHAuthMode">
+            <summary>The authentication method to be used the component when calling SSHLogon .</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Sexec.SSHCompressionAlgorithms">
+            <summary>A comma-separated list containing all allowable compression algorithms.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Sexec.SSHEncryptionAlgorithms">
+            <summary>A comma-separated list containing all allowable compression algorithms.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Sexec.SSHHost">
+            <summary>The address of the SSH host.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Sexec.SSHPassword">
+            <summary>The password for SSH password-based authentication.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Sexec.SSHPort">
+            <summary>The port on the SSH server where the SSH service is running; by default, 22.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Sexec.SSHUser">
+            <summary>The username for SSH authentication.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Sexec.StdinB">
+            <summary>A string of data to be sent to the remote host while connected.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Sexec.Stdin">
+            <summary>A string of data to be sent to the remote host while connected.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Sexec.Timeout">
+            <summary>A timeout for the component.</summary>
+        </member>
+        <member name="T:nsoftware.IPWorksSSH.SftpConnectedEventArgs">
+            <summary>Event arguments for the Connected event.</summary>
+        </member>
+        <member name="T:nsoftware.IPWorksSSH.SftpConnectionStatusEventArgs">
+            <summary>Event arguments for the ConnectionStatus event.</summary>
+        </member>
+        <member name="T:nsoftware.IPWorksSSH.SftpDirListEventArgs">
+            <summary>Event arguments for the DirList event.</summary>
+        </member>
+        <member name="T:nsoftware.IPWorksSSH.SftpDisconnectedEventArgs">
+            <summary>Event arguments for the Disconnected event.</summary>
+        </member>
+        <member name="T:nsoftware.IPWorksSSH.SftpEndTransferEventArgs">
+            <summary>Event arguments for the EndTransfer event.</summary>
+        </member>
+        <member name="T:nsoftware.IPWorksSSH.SftpErrorEventArgs">
+            <summary>Event arguments for the Error event.</summary>
+        </member>
+        <member name="T:nsoftware.IPWorksSSH.SftpSSHCustomAuthEventArgs">
+            <summary>Event arguments for the SSHCustomAuth event.</summary>
+        </member>
+        <member name="T:nsoftware.IPWorksSSH.SftpSSHKeyboardInteractiveEventArgs">
+            <summary>Event arguments for the SSHKeyboardInteractive event.</summary>
+        </member>
+        <member name="T:nsoftware.IPWorksSSH.SftpSSHServerAuthenticationEventArgs">
+            <summary>Event arguments for the SSHServerAuthentication event.</summary>
+        </member>
+        <member name="T:nsoftware.IPWorksSSH.SftpSSHStatusEventArgs">
+            <summary>Event arguments for the SSHStatus event.</summary>
+        </member>
+        <member name="T:nsoftware.IPWorksSSH.SftpStartTransferEventArgs">
+            <summary>Event arguments for the StartTransfer event.</summary>
+        </member>
+        <member name="T:nsoftware.IPWorksSSH.SftpTransferEventArgs">
+            <summary>Event arguments for the Transfer event.</summary>
+        </member>
+        <member name="M:nsoftware.IPWorksSSH.Sftp.Append">
+            <summary>Append data from LocalFile to a remote file RemoteFile on an SFTP server.</summary>
+        </member>
+        <member name="M:nsoftware.IPWorksSSH.Sftp.Config(System.String)">
+            <summary>Sets or retrieves a configuration setting .</summary>
+        </member>
+        <member name="M:nsoftware.IPWorksSSH.Sftp.DecodePacket(System.String)">
+            <summary>Decodes a hex-encoded SSH packet.</summary>
+        </member>
+        <member name="M:nsoftware.IPWorksSSH.Sftp.DeleteFile(System.String)">
+            <summary>Remove a file specified by FileName from an SFTP server.</summary>
+        </member>
+        <member name="M:nsoftware.IPWorksSSH.Sftp.DoEvents">
+            <summary>Processes events from the internal message queue.</summary>
+        </member>
+        <member name="M:nsoftware.IPWorksSSH.Sftp.Download">
+            <summary>Download a RemoteFile from an SFTP server.</summary>
+        </member>
+        <member name="M:nsoftware.IPWorksSSH.Sftp.EncodePacket(System.Byte[])">
+            <summary>Hex encodes an SSH packet.</summary>
+        </member>
+        <member name="M:nsoftware.IPWorksSSH.Sftp.GetSSHParam(System.Byte[],System.String)">
+            <summary>Used to read a field from an SSH packet's payload.</summary>
+        </member>
+        <member name="M:nsoftware.IPWorksSSH.Sftp.GetSSHParamBytes(System.Byte[],System.String)">
+            <summary>Used to read a field from an SSH packet's payload.</summary>
+        </member>
+        <member name="M:nsoftware.IPWorksSSH.Sftp.Interrupt">
+            <summary>Interrupt the current method.</summary>
+        </member>
+        <member name="M:nsoftware.IPWorksSSH.Sftp.ListDirectory">
+            <summary>List the current directory specified by RemotePath on an SFTP server.</summary>
+        </member>
+        <member name="M:nsoftware.IPWorksSSH.Sftp.MakeDirectory(System.String)">
+            <summary>Create a directory on an SFTP server.</summary>
+        </member>
+        <member name="M:nsoftware.IPWorksSSH.Sftp.QueueFile(System.String,System.String)">
+            <summary>Adds a file to the transfer queue.</summary>
+        </member>
+        <member name="M:nsoftware.IPWorksSSH.Sftp.RemoveDirectory(System.String)">
+            <summary>Remove a directory specified by DirName from an SFTP server.</summary>
+        </member>
+        <member name="M:nsoftware.IPWorksSSH.Sftp.RenameFile(System.String)">
+            <summary>Change the name of RemoteFile to NewName .</summary>
+        </member>
+        <member name="M:nsoftware.IPWorksSSH.Sftp.ResetQueue">
+            <summary>Resets the queue of files to be transferred.</summary>
+        </member>
+        <member name="M:nsoftware.IPWorksSSH.Sftp.SetDownloadStream(System.IO.Stream)">
+            <summary>Sets the stream to which the downloaded data from the server will be written.</summary>
+        </member>
+        <member name="M:nsoftware.IPWorksSSH.Sftp.SetSSHParam(System.Byte[],System.String,System.String)">
+            <summary>Used to write a field to the end of a payload.</summary>
+        </member>
+        <member name="M:nsoftware.IPWorksSSH.Sftp.SetUploadStream(System.IO.Stream)">
+            <summary>Sets the stream from which the component will read data to upload to the server.</summary>
+        </member>
+        <member name="M:nsoftware.IPWorksSSH.Sftp.SSHLogoff">
+            <summary>Logoff from the SSH server.</summary>
+        </member>
+        <member name="M:nsoftware.IPWorksSSH.Sftp.SSHLogon(System.String,System.Int32)">
+            <summary>Logon to the SSHHost using the current SSHUser and SSHPassword .</summary>
+        </member>
+        <member name="M:nsoftware.IPWorksSSH.Sftp.UpdateFileAttributes">
+            <summary>Instructs the component to send the FileAttributes to the server.</summary>
+        </member>
+        <member name="M:nsoftware.IPWorksSSH.Sftp.Upload">
+            <summary>Upload a file specified by LocalFile to an SFTP server.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Sftp.RuntimeLicense">
+            <summary>Runtime license key (derived from the development license, if any).</summary>
+        </member>
+        <member name="E:nsoftware.IPWorksSSH.Sftp.OnConnected">
+            <summary>Fired immediately after a connection completes (or fails).</summary>
+        </member>
+        <member name="E:nsoftware.IPWorksSSH.Sftp.OnConnectionStatus">
+            <summary>Fired to indicate changes in connection state.</summary>
+        </member>
+        <member name="E:nsoftware.IPWorksSSH.Sftp.OnDirList">
+            <summary>Fired when a directory entry is received.</summary>
+        </member>
+        <member name="E:nsoftware.IPWorksSSH.Sftp.OnDisconnected">
+            <summary>Fired when a connection is closed.</summary>
+        </member>
+        <member name="E:nsoftware.IPWorksSSH.Sftp.OnEndTransfer">
+            <summary>Fired when a file completes downloading/uploading.</summary>
+        </member>
+        <member name="E:nsoftware.IPWorksSSH.Sftp.OnError">
+            <summary>Information about errors during data delivery.</summary>
+        </member>
+        <member name="E:nsoftware.IPWorksSSH.Sftp.OnSSHCustomAuth">
+            <summary>Fired when the component is doing custom authentication.</summary>
+        </member>
+        <member name="E:nsoftware.IPWorksSSH.Sftp.OnSSHKeyboardInteractive">
+            <summary>Fired when the component receives a request for user input from the server.</summary>
+        </member>
+        <member name="E:nsoftware.IPWorksSSH.Sftp.OnSSHServerAuthentication">
+            <summary>Fired after the server presents its public key to the client.</summary>
+        </member>
+        <member name="E:nsoftware.IPWorksSSH.Sftp.OnSSHStatus">
+            <summary>Shows the progress of the secure connection.</summary>
+        </member>
+        <member name="E:nsoftware.IPWorksSSH.Sftp.OnStartTransfer">
+            <summary>Fired when a file starts downloading/uploading.</summary>
+        </member>
+        <member name="E:nsoftware.IPWorksSSH.Sftp.OnTransfer">
+            <summary>Fired during file download/upload.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Sftp.DirList">
+            <summary>Collection of entries resulting in the last directory listing.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Sftp.FileAttributes">
+            <summary>The attributes of the RemoteFile .</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Sftp.Firewall">
+            <summary>A set of properties related to firewall access.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Sftp.SSHAcceptServerHostKey">
+            <summary>Instructs the component to accept the server host key that matches the supplied key.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Sftp.SSHCert">
+            <summary>A certificate to be used for authenticating the SSHUser .</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Sftp.Connected">
+            <summary>Triggers a connection or disconnection.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Sftp.FileExists">
+            <summary>Returns true if the file specified by RemoteFile exists on the remote server.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Sftp.Idle">
+            <summary>The current status of the component.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Sftp.LocalFile">
+            <summary>The path to a local file for download/upload.  If the file exists, it is overwritten.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Sftp.LocalHost">
+            <summary>The name of the local host or user-assigned IP interface through which connections are initiated or accepted.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Sftp.LocalPort">
+            <summary>The TCP port in the local host where IPPort binds.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Sftp.Overwrite">
+            <summary>Whether or not the component should overwrite files during transfer.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Sftp.RemoteFile">
+            <summary>The name of the remote file for uploading, downloading, etc.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Sftp.RemotePath">
+            <summary>The current path in the SFTP server.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Sftp.SSHAuthMode">
+            <summary>The authentication method to be used the component when calling SSHLogon .</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Sftp.SSHCompressionAlgorithms">
+            <summary>A comma-separated list containing all allowable compression algorithms.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Sftp.SSHEncryptionAlgorithms">
+            <summary>A comma-separated list containing all allowable compression algorithms.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Sftp.SSHHost">
+            <summary>The address of the SSH host.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Sftp.SSHPassword">
+            <summary>The password for SSH password-based authentication.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Sftp.SSHPort">
+            <summary>The port on the SSH server where the SSH service is running; by default, 22.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Sftp.SSHUser">
+            <summary>The username for SSH authentication.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Sftp.StartByte">
+            <summary>The offset in bytes at which to begin the Upload or Download.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Sftp.Timeout">
+            <summary>A timeout for the component.</summary>
+        </member>
+        <member name="T:nsoftware.IPWorksSSH.SftpserverConnectedEventArgs">
+            <summary>Event arguments for the Connected event.</summary>
+        </member>
+        <member name="T:nsoftware.IPWorksSSH.SftpserverConnectionRequestEventArgs">
+            <summary>Event arguments for the ConnectionRequest event.</summary>
+        </member>
+        <member name="T:nsoftware.IPWorksSSH.SftpserverDirCreateEventArgs">
+            <summary>Event arguments for the DirCreate event.</summary>
+        </member>
+        <member name="T:nsoftware.IPWorksSSH.SftpserverDirListEventArgs">
+            <summary>Event arguments for the DirList event.</summary>
+        </member>
+        <member name="T:nsoftware.IPWorksSSH.SftpserverDirRemoveEventArgs">
+            <summary>Event arguments for the DirRemove event.</summary>
+        </member>
+        <member name="T:nsoftware.IPWorksSSH.SftpserverDisconnectedEventArgs">
+            <summary>Event arguments for the Disconnected event.</summary>
+        </member>
+        <member name="T:nsoftware.IPWorksSSH.SftpserverErrorEventArgs">
+            <summary>Event arguments for the Error event.</summary>
+        </member>
+        <member name="T:nsoftware.IPWorksSSH.SftpserverFileCloseEventArgs">
+            <summary>Event arguments for the FileClose event.</summary>
+        </member>
+        <member name="T:nsoftware.IPWorksSSH.SftpserverFileOpenEventArgs">
+            <summary>Event arguments for the FileOpen event.</summary>
+        </member>
+        <member name="T:nsoftware.IPWorksSSH.SftpserverFileReadEventArgs">
+            <summary>Event arguments for the FileRead event.</summary>
+        </member>
+        <member name="T:nsoftware.IPWorksSSH.SftpserverFileRemoveEventArgs">
+            <summary>Event arguments for the FileRemove event.</summary>
+        </member>
+        <member name="T:nsoftware.IPWorksSSH.SftpserverFileRenameEventArgs">
+            <summary>Event arguments for the FileRename event.</summary>
+        </member>
+        <member name="T:nsoftware.IPWorksSSH.SftpserverFileWriteEventArgs">
+            <summary>Event arguments for the FileWrite event.</summary>
+        </member>
+        <member name="T:nsoftware.IPWorksSSH.SftpserverGetAttributesEventArgs">
+            <summary>Event arguments for the GetAttributes event.</summary>
+        </member>
+        <member name="T:nsoftware.IPWorksSSH.SftpserverResolvePathEventArgs">
+            <summary>Event arguments for the ResolvePath event.</summary>
+        </member>
+        <member name="T:nsoftware.IPWorksSSH.SftpserverSetAttributesEventArgs">
+            <summary>Event arguments for the SetAttributes event.</summary>
+        </member>
+        <member name="T:nsoftware.IPWorksSSH.SftpserverSSHStatusEventArgs">
+            <summary>Event arguments for the SSHStatus event.</summary>
+        </member>
+        <member name="T:nsoftware.IPWorksSSH.SftpserverSSHUserAuthRequestEventArgs">
+            <summary>Event arguments for the SSHUserAuthRequest event.</summary>
+        </member>
+        <member name="M:nsoftware.IPWorksSSH.Sftpserver.Config(System.String)">
+            <summary>Sets or retrieves a configuration setting .</summary>
+        </member>
+        <member name="M:nsoftware.IPWorksSSH.Sftpserver.Disconnect(System.String)">
+            <summary>Disconnect the specified client.</summary>
+        </member>
+        <member name="M:nsoftware.IPWorksSSH.Sftpserver.DoEvents">
+            <summary>Processes events from the internal message queue.</summary>
+        </member>
+        <member name="M:nsoftware.IPWorksSSH.Sftpserver.ExchangeKeys(System.String)">
+            <summary>Causes the component to exchange a new set of session keys on the specified connection.</summary>
+        </member>
+        <member name="M:nsoftware.IPWorksSSH.Sftpserver.SetFileList(System.String,System.String[])">
+            <summary>Sets the file list for a connection during a directory listing request.</summary>
+        </member>
+        <member name="M:nsoftware.IPWorksSSH.Sftpserver.Shutdown">
+            <summary>Shuts down the server.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Sftpserver.RuntimeLicense">
+            <summary>Runtime license key (derived from the development license, if any).</summary>
+        </member>
+        <member name="E:nsoftware.IPWorksSSH.Sftpserver.OnConnected">
+            <summary>Fired immediately after a connection completes (or fails).</summary>
+        </member>
+        <member name="E:nsoftware.IPWorksSSH.Sftpserver.OnConnectionRequest">
+            <summary>Fired when a request for connection comes from a remote host.</summary>
+        </member>
+        <member name="E:nsoftware.IPWorksSSH.Sftpserver.OnDirCreate">
+            <summary>Fires when a client wants to create a new directory.</summary>
+        </member>
+        <member name="E:nsoftware.IPWorksSSH.Sftpserver.OnDirList">
+            <summary>Fires when a client attempts to open a directory for listing.</summary>
+        </member>
+        <member name="E:nsoftware.IPWorksSSH.Sftpserver.OnDirRemove">
+            <summary>Fires when a client wants to delete a directory.</summary>
+        </member>
+        <member name="E:nsoftware.IPWorksSSH.Sftpserver.OnDisconnected">
+            <summary>Fired when a connection is closed.</summary>
+        </member>
+        <member name="E:nsoftware.IPWorksSSH.Sftpserver.OnError">
+            <summary>Information about errors during data delivery.</summary>
+        </member>
+        <member name="E:nsoftware.IPWorksSSH.Sftpserver.OnFileClose">
+            <summary>Fires when a client attempts to close an open file or directory handle.</summary>
+        </member>
+        <member name="E:nsoftware.IPWorksSSH.Sftpserver.OnFileOpen">
+            <summary>Fires when a client wants to open or create a file.</summary>
+        </member>
+        <member name="E:nsoftware.IPWorksSSH.Sftpserver.OnFileRead">
+            <summary>Fires when a client wants to read from an open file.</summary>
+        </member>
+        <member name="E:nsoftware.IPWorksSSH.Sftpserver.OnFileRemove">
+            <summary>Fires when a client wants to delete a file.</summary>
+        </member>
+        <member name="E:nsoftware.IPWorksSSH.Sftpserver.OnFileRename">
+            <summary>Fires when a client wants to rename a file.</summary>
+        </member>
+        <member name="E:nsoftware.IPWorksSSH.Sftpserver.OnFileWrite">
+            <summary>Fires when a client wants to write to an open file.</summary>
+        </member>
+        <member name="E:nsoftware.IPWorksSSH.Sftpserver.OnGetAttributes">
+            <summary>Fires when a client needs to get file information.</summary>
+        </member>
+        <member name="E:nsoftware.IPWorksSSH.Sftpserver.OnResolvePath">
+            <summary>Fires when a client attempts to canonicalize a path.</summary>
+        </member>
+        <member name="E:nsoftware.IPWorksSSH.Sftpserver.OnSetAttributes">
+            <summary>Fires when a client attempts to set file or directory attributes.</summary>
+        </member>
+        <member name="E:nsoftware.IPWorksSSH.Sftpserver.OnSSHStatus">
+            <summary>Shows the progress of the secure connection.</summary>
+        </member>
+        <member name="E:nsoftware.IPWorksSSH.Sftpserver.OnSSHUserAuthRequest">
+            <summary>Fires when a client attempts to authenticate a connection.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Sftpserver.Connections">
+            <summary>A collection of currently connected SFTP clients.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Sftpserver.KeyboardInteractivePrompts">
+            <summary>A collection of prompts to present to the user for keyboard-interactive authentication.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Sftpserver.SSHCert">
+            <summary>A certificate to be used for authenticating the SSHUser .</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Sftpserver.ConnectionBacklog">
+            <summary>The maximum number of pending connections maintained by the TCP/IP subsystem.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Sftpserver.DefaultAuthMethods">
+            <summary>Specifies the supported authentication methods.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Sftpserver.DefaultTimeout">
+            <summary>An initial timeout value to be used by incoming connections.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Sftpserver.KeyboardInteractiveMessage">
+            <summary>The instructions to send to the client during keyboard-interactive authentication.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Sftpserver.Listening">
+            <summary>If True, the component accepts incoming connections on LocalPort.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Sftpserver.LocalHost">
+            <summary>The name of the local host or user-assigned IP interface through which connections are initiated or accepted.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Sftpserver.LocalPort">
+            <summary>The TCP port in the local host where the component listens.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Sftpserver.RootDirectory">
+            <summary>The root directory for the entire SFTP server.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Sftpserver.SSHCompressionAlgorithms">
+            <summary>A comma-separated list containing all allowable compression algorithms.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Sftpserver.SSHEncryptionAlgorithms">
+            <summary>A comma-separated list containing all allowable compression algorithms.</summary>
+        </member>
+        <member name="T:nsoftware.IPWorksSSH.SshclientConnectedEventArgs">
+            <summary>Event arguments for the Connected event.</summary>
+        </member>
+        <member name="T:nsoftware.IPWorksSSH.SshclientConnectionStatusEventArgs">
+            <summary>Event arguments for the ConnectionStatus event.</summary>
+        </member>
+        <member name="T:nsoftware.IPWorksSSH.SshclientDisconnectedEventArgs">
+            <summary>Event arguments for the Disconnected event.</summary>
+        </member>
+        <member name="T:nsoftware.IPWorksSSH.SshclientErrorEventArgs">
+            <summary>Event arguments for the Error event.</summary>
+        </member>
+        <member name="T:nsoftware.IPWorksSSH.SshclientSSHChannelClosedEventArgs">
+            <summary>Event arguments for the SSHChannelClosed event.</summary>
+        </member>
+        <member name="T:nsoftware.IPWorksSSH.SshclientSSHChannelDataEventArgs">
+            <summary>Event arguments for the SSHChannelData event.</summary>
+        </member>
+        <member name="T:nsoftware.IPWorksSSH.SshclientSSHChannelEOFEventArgs">
+            <summary>Event arguments for the SSHChannelEOF event.</summary>
+        </member>
+        <member name="T:nsoftware.IPWorksSSH.SshclientSSHChannelOpenedEventArgs">
+            <summary>Event arguments for the SSHChannelOpened event.</summary>
+        </member>
+        <member name="T:nsoftware.IPWorksSSH.SshclientSSHChannelOpenRequestEventArgs">
+            <summary>Event arguments for the SSHChannelOpenRequest event.</summary>
+        </member>
+        <member name="T:nsoftware.IPWorksSSH.SshclientSSHChannelReadyToSendEventArgs">
+            <summary>Event arguments for the SSHChannelReadyToSend event.</summary>
+        </member>
+        <member name="T:nsoftware.IPWorksSSH.SshclientSSHChannelRequestEventArgs">
+            <summary>Event arguments for the SSHChannelRequest event.</summary>
+        </member>
+        <member name="T:nsoftware.IPWorksSSH.SshclientSSHChannelRequestedEventArgs">
+            <summary>Event arguments for the SSHChannelRequested event.</summary>
+        </member>
+        <member name="T:nsoftware.IPWorksSSH.SshclientSSHCustomAuthEventArgs">
+            <summary>Event arguments for the SSHCustomAuth event.</summary>
+        </member>
+        <member name="T:nsoftware.IPWorksSSH.SshclientSSHKeyboardInteractiveEventArgs">
+            <summary>Event arguments for the SSHKeyboardInteractive event.</summary>
+        </member>
+        <member name="T:nsoftware.IPWorksSSH.SshclientSSHServerAuthenticationEventArgs">
+            <summary>Event arguments for the SSHServerAuthentication event.</summary>
+        </member>
+        <member name="T:nsoftware.IPWorksSSH.SshclientSSHStatusEventArgs">
+            <summary>Event arguments for the SSHStatus event.</summary>
+        </member>
+        <member name="M:nsoftware.IPWorksSSH.Sshclient.CloseChannel(System.String)">
+            <summary>Closes a existing SSHChannel .</summary>
+        </member>
+        <member name="M:nsoftware.IPWorksSSH.Sshclient.Config(System.String)">
+            <summary>Sets or retrieves a configuration setting .</summary>
+        </member>
+        <member name="M:nsoftware.IPWorksSSH.Sshclient.DecodePacket(System.String)">
+            <summary>Decodes a hex-encoded SSH packet.</summary>
+        </member>
+        <member name="M:nsoftware.IPWorksSSH.Sshclient.DoEvents">
+            <summary>Processes events from the internal message queue.</summary>
+        </member>
+        <member name="M:nsoftware.IPWorksSSH.Sshclient.EncodePacket(System.Byte[])">
+            <summary>Hex encodes an SSH packet.</summary>
+        </member>
+        <member name="M:nsoftware.IPWorksSSH.Sshclient.ExchangeKeys">
+            <summary>Causes the component to exchange a new set of session keys with the SSHHost .</summary>
+        </member>
+        <member name="M:nsoftware.IPWorksSSH.Sshclient.GetSSHParam(System.Byte[],System.String)">
+            <summary>Used to read a field from an SSH packet's payload.</summary>
+        </member>
+        <member name="M:nsoftware.IPWorksSSH.Sshclient.GetSSHParamBytes(System.Byte[],System.String)">
+            <summary>Used to read a field from an SSH packet's payload.</summary>
+        </member>
+        <member name="M:nsoftware.IPWorksSSH.Sshclient.OpenChannel(System.String)">
+            <summary>Opens a new SSHChannel .</summary>
+        </member>
+        <member name="M:nsoftware.IPWorksSSH.Sshclient.OpenTcpIpChannel(System.String,System.Int32,System.String,System.Int32)">
+            <summary>Opens a special TCP/IP tunneling SSHChannel .</summary>
+        </member>
+        <member name="M:nsoftware.IPWorksSSH.Sshclient.OpenTerminal(System.String,System.String,System.Int32,System.Int32,System.Boolean,System.String)">
+            <summary>Creates a pseudo-terminal to be used to help display data for a channel.</summary>
+        </member>
+        <member name="M:nsoftware.IPWorksSSH.Sshclient.SendChannelData(System.String,System.Byte[])">
+            <summary>Used to send regular data over an SSH channel.</summary>
+        </member>
+        <member name="M:nsoftware.IPWorksSSH.Sshclient.SendSSHPacket(System.String,System.Int32,System.Byte[])">
+            <summary>Used to send an encoded SSH packet to a connected client.</summary>
+        </member>
+        <member name="M:nsoftware.IPWorksSSH.Sshclient.SetSSHParam(System.Byte[],System.String,System.String)">
+            <summary>Used to write a field to the end of a payload.</summary>
+        </member>
+        <member name="M:nsoftware.IPWorksSSH.Sshclient.SSHLogoff">
+            <summary>Logoff from the SSH server.</summary>
+        </member>
+        <member name="M:nsoftware.IPWorksSSH.Sshclient.SSHLogon(System.String,System.Int32)">
+            <summary>Logon to the SSHHost using the current SSHUser and SSHPassword .</summary>
+        </member>
+        <member name="M:nsoftware.IPWorksSSH.Sshclient.StartService(System.String,System.String,System.String)">
+            <summary>Requests the given service on a target channel.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Sshclient.RuntimeLicense">
+            <summary>Runtime license key (derived from the development license, if any).</summary>
+        </member>
+        <member name="E:nsoftware.IPWorksSSH.Sshclient.OnConnected">
+            <summary>Fired immediately after a connection completes (or fails).</summary>
+        </member>
+        <member name="E:nsoftware.IPWorksSSH.Sshclient.OnConnectionStatus">
+            <summary>Fired to indicate changes in connection state.</summary>
+        </member>
+        <member name="E:nsoftware.IPWorksSSH.Sshclient.OnDisconnected">
+            <summary>Fired when a connection is closed.</summary>
+        </member>
+        <member name="E:nsoftware.IPWorksSSH.Sshclient.OnError">
+            <summary>Information about errors during data delivery.</summary>
+        </member>
+        <member name="E:nsoftware.IPWorksSSH.Sshclient.OnSSHChannelClosed">
+            <summary>Fired when a channel is closed.</summary>
+        </member>
+        <member name="E:nsoftware.IPWorksSSH.Sshclient.OnSSHChannelData">
+            <summary>Fired when the SSHHost sends channel data to the client.</summary>
+        </member>
+        <member name="E:nsoftware.IPWorksSSH.Sshclient.OnSSHChannelEOF">
+            <summary>Fired when the remote peer signals the end of the data stream for the channel.</summary>
+        </member>
+        <member name="E:nsoftware.IPWorksSSH.Sshclient.OnSSHChannelOpened">
+            <summary>Fired when a channel is successfully opened.</summary>
+        </member>
+        <member name="E:nsoftware.IPWorksSSH.Sshclient.OnSSHChannelOpenRequest">
+            <summary>Fired when a host attempts to open a new channel.</summary>
+        </member>
+        <member name="E:nsoftware.IPWorksSSH.Sshclient.OnSSHChannelReadyToSend">
+            <summary>Fired when the component is ready to send data.</summary>
+        </member>
+        <member name="E:nsoftware.IPWorksSSH.Sshclient.OnSSHChannelRequest">
+            <summary>Fired when the SSHHost sends a channel request to the client.</summary>
+        </member>
+        <member name="E:nsoftware.IPWorksSSH.Sshclient.OnSSHChannelRequested">
+            <summary>Fired if the SSHChannelRequest was successful, any further processing for the channel request should be done here.</summary>
+        </member>
+        <member name="E:nsoftware.IPWorksSSH.Sshclient.OnSSHCustomAuth">
+            <summary>Fired when the component is doing custom authentication.</summary>
+        </member>
+        <member name="E:nsoftware.IPWorksSSH.Sshclient.OnSSHKeyboardInteractive">
+            <summary>Fired when the component receives a request for user input from the server.</summary>
+        </member>
+        <member name="E:nsoftware.IPWorksSSH.Sshclient.OnSSHServerAuthentication">
+            <summary>Fired after the server presents its public key to the client.</summary>
+        </member>
+        <member name="E:nsoftware.IPWorksSSH.Sshclient.OnSSHStatus">
+            <summary>Shows the progress of the secure connection.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Sshclient.Channels">
+            <summary>A collection of currently open channels.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Sshclient.Firewall">
+            <summary>A set of properties related to firewall access.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Sshclient.SSHAcceptServerHostKey">
+            <summary>Instructs the component to accept the server host key that matches the supplied key.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Sshclient.SSHCert">
+            <summary>A certificate to be used for authenticating the SSHUser .</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Sshclient.Connected">
+            <summary>Triggers a connection or disconnection.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Sshclient.LocalHost">
+            <summary>The name of the local host or user-assigned IP interface through which connections are initiated or accepted.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Sshclient.LocalPort">
+            <summary>The TCP port in the local host where IPPort binds.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Sshclient.SSHAuthMode">
+            <summary>The authentication method to be used the component when calling SSHLogon .</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Sshclient.SSHCompressionAlgorithms">
+            <summary>A comma-separated list containing all allowable compression algorithms.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Sshclient.SSHEncryptionAlgorithms">
+            <summary>A comma-separated list containing all allowable compression algorithms.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Sshclient.SSHHost">
+            <summary>The address of the SSH host.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Sshclient.SSHKeyExchangeAlgorithms">
+            <summary>A comma-separated list containing all allowable key exchange algorithms.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Sshclient.SSHMacAlgorithms">
+            <summary>A comma-separated list containing all allowable message authentication algorithms.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Sshclient.SSHPassword">
+            <summary>The password for SSH password-based authentication.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Sshclient.SSHPort">
+            <summary>The port on the SSH server where the SSH service is running; by default, 22.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Sshclient.SSHPublicKeyAlgorithms">
+            <summary>A comma-separated list containing all allowable public key authentication algorithms.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Sshclient.SSHUser">
+            <summary>The username for SSH authentication.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Sshclient.Timeout">
+            <summary>A timeout for the component.</summary>
+        </member>
+        <member name="T:nsoftware.IPWorksSSH.SshdaemonConnectedEventArgs">
+            <summary>Event arguments for the Connected event.</summary>
+        </member>
+        <member name="T:nsoftware.IPWorksSSH.SshdaemonConnectionRequestEventArgs">
+            <summary>Event arguments for the ConnectionRequest event.</summary>
+        </member>
+        <member name="T:nsoftware.IPWorksSSH.SshdaemonDisconnectedEventArgs">
+            <summary>Event arguments for the Disconnected event.</summary>
+        </member>
+        <member name="T:nsoftware.IPWorksSSH.SshdaemonErrorEventArgs">
+            <summary>Event arguments for the Error event.</summary>
+        </member>
+        <member name="T:nsoftware.IPWorksSSH.SshdaemonSSHChannelClosedEventArgs">
+            <summary>Event arguments for the SSHChannelClosed event.</summary>
+        </member>
+        <member name="T:nsoftware.IPWorksSSH.SshdaemonSSHChannelDataInEventArgs">
+            <summary>Event arguments for the SSHChannelDataIn event.</summary>
+        </member>
+        <member name="T:nsoftware.IPWorksSSH.SshdaemonSSHChannelEOFEventArgs">
+            <summary>Event arguments for the SSHChannelEOF event.</summary>
+        </member>
+        <member name="T:nsoftware.IPWorksSSH.SshdaemonSSHChannelOpenedEventArgs">
+            <summary>Event arguments for the SSHChannelOpened event.</summary>
+        </member>
+        <member name="T:nsoftware.IPWorksSSH.SshdaemonSSHChannelOpenRequestEventArgs">
+            <summary>Event arguments for the SSHChannelOpenRequest event.</summary>
+        </member>
+        <member name="T:nsoftware.IPWorksSSH.SshdaemonSSHChannelReadyToSendEventArgs">
+            <summary>Event arguments for the SSHChannelReadyToSend event.</summary>
+        </member>
+        <member name="T:nsoftware.IPWorksSSH.SshdaemonSSHChannelRequestEventArgs">
+            <summary>Event arguments for the SSHChannelRequest event.</summary>
+        </member>
+        <member name="T:nsoftware.IPWorksSSH.SshdaemonSSHChannelRequestedEventArgs">
+            <summary>Event arguments for the SSHChannelRequested event.</summary>
+        </member>
+        <member name="T:nsoftware.IPWorksSSH.SshdaemonSSHServiceRequestEventArgs">
+            <summary>Event arguments for the SSHServiceRequest event.</summary>
+        </member>
+        <member name="T:nsoftware.IPWorksSSH.SshdaemonSSHStatusEventArgs">
+            <summary>Event arguments for the SSHStatus event.</summary>
+        </member>
+        <member name="T:nsoftware.IPWorksSSH.SshdaemonSSHUserAuthRequestEventArgs">
+            <summary>Event arguments for the SSHUserAuthRequest event.</summary>
+        </member>
+        <member name="M:nsoftware.IPWorksSSH.Sshdaemon.CloseChannel(System.String)">
+            <summary>Closes a existing SSHChannel .</summary>
+        </member>
+        <member name="M:nsoftware.IPWorksSSH.Sshdaemon.Config(System.String)">
+            <summary>Sets or retrieves a configuration setting .</summary>
+        </member>
+        <member name="M:nsoftware.IPWorksSSH.Sshdaemon.Disconnect(System.String)">
+            <summary>Disconnect the specified client.</summary>
+        </member>
+        <member name="M:nsoftware.IPWorksSSH.Sshdaemon.DoEvents">
+            <summary>Processes events from the internal message queue.</summary>
+        </member>
+        <member name="M:nsoftware.IPWorksSSH.Sshdaemon.ExchangeKeys(System.String)">
+            <summary>Causes the component to exchange a new set of session keys on the specified connection.</summary>
+        </member>
+        <member name="M:nsoftware.IPWorksSSH.Sshdaemon.GetSSHParam(System.Byte[],System.String)">
+            <summary>Used to read a field from an SSH packet's payload.</summary>
+        </member>
+        <member name="M:nsoftware.IPWorksSSH.Sshdaemon.GetSSHParamBytes(System.Byte[],System.String)">
+            <summary>Used to read a field from an SSH packet's payload.</summary>
+        </member>
+        <member name="M:nsoftware.IPWorksSSH.Sshdaemon.OpenChannel(System.String,System.String)">
+            <summary>Opens a new SSHChannel .</summary>
+        </member>
+        <member name="M:nsoftware.IPWorksSSH.Sshdaemon.SendChannelData(System.String,System.Byte[])">
+            <summary>Used to send regular data over an SSH channel.</summary>
+        </member>
+        <member name="M:nsoftware.IPWorksSSH.Sshdaemon.SendSSHPacket(System.String,System.Int32,System.Byte[])">
+            <summary>Used to send an encoded SSH packet to a connected client.</summary>
+        </member>
+        <member name="M:nsoftware.IPWorksSSH.Sshdaemon.SetSSHParam(System.Byte[],System.String,System.String)">
+            <summary>Used to write a field to the end of a payload.</summary>
+        </member>
+        <member name="M:nsoftware.IPWorksSSH.Sshdaemon.Shutdown">
+            <summary>Shuts down the server.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Sshdaemon.RuntimeLicense">
+            <summary>Runtime license key (derived from the development license, if any).</summary>
+        </member>
+        <member name="E:nsoftware.IPWorksSSH.Sshdaemon.OnConnected">
+            <summary>Fired immediately after a connection completes (or fails).</summary>
+        </member>
+        <member name="E:nsoftware.IPWorksSSH.Sshdaemon.OnConnectionRequest">
+            <summary>Fired when a request for connection comes from a remote host.</summary>
+        </member>
+        <member name="E:nsoftware.IPWorksSSH.Sshdaemon.OnDisconnected">
+            <summary>Fired when a connection is closed.</summary>
+        </member>
+        <member name="E:nsoftware.IPWorksSSH.Sshdaemon.OnError">
+            <summary>Information about errors during data delivery.</summary>
+        </member>
+        <member name="E:nsoftware.IPWorksSSH.Sshdaemon.OnSSHChannelClosed">
+            <summary>Fired when a channel is closed.</summary>
+        </member>
+        <member name="E:nsoftware.IPWorksSSH.Sshdaemon.OnSSHChannelDataIn">
+            <summary>Fired when data is received on an SSH channel.</summary>
+        </member>
+        <member name="E:nsoftware.IPWorksSSH.Sshdaemon.OnSSHChannelEOF">
+            <summary>Fired when the remote peer signals the end of the data stream for the channel.</summary>
+        </member>
+        <member name="E:nsoftware.IPWorksSSH.Sshdaemon.OnSSHChannelOpened">
+            <summary>Fired when a channel is successfully opened.</summary>
+        </member>
+        <member name="E:nsoftware.IPWorksSSH.Sshdaemon.OnSSHChannelOpenRequest">
+            <summary>Fired when a client attempts to open a new channel.</summary>
+        </member>
+        <member name="E:nsoftware.IPWorksSSH.Sshdaemon.OnSSHChannelReadyToSend">
+            <summary>Fired when the component is ready to send data.</summary>
+        </member>
+        <member name="E:nsoftware.IPWorksSSH.Sshdaemon.OnSSHChannelRequest">
+            <summary>Fired when the SSHHost sends a channel request to the client.</summary>
+        </member>
+        <member name="E:nsoftware.IPWorksSSH.Sshdaemon.OnSSHChannelRequested">
+            <summary>Fired if the SSHChannelRequest was successful, any further processing for the channel request should be done here.</summary>
+        </member>
+        <member name="E:nsoftware.IPWorksSSH.Sshdaemon.OnSSHServiceRequest">
+            <summary>Fired when a client requests a service to be started.</summary>
+        </member>
+        <member name="E:nsoftware.IPWorksSSH.Sshdaemon.OnSSHStatus">
+            <summary>Shows the progress of the secure connection.</summary>
+        </member>
+        <member name="E:nsoftware.IPWorksSSH.Sshdaemon.OnSSHUserAuthRequest">
+            <summary>Fires when a client attempts to authenticate a connection.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Sshdaemon.Channels">
+            <summary>A collection of currently open channels.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Sshdaemon.Connections">
+            <summary>A collection of currently connected SSH clients.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Sshdaemon.KeyboardInteractivePrompts">
+            <summary>A collection of prompts to present to the user for keyboard-interactive authentication.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Sshdaemon.SSHCert">
+            <summary>A certificate to be used for authenticating the SSHUser .</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Sshdaemon.ConnectionBacklog">
+            <summary>The maximum number of pending connections maintained by the TCP/IP subsystem.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Sshdaemon.DefaultAuthMethods">
+            <summary>Specifies the supported authentication methods.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Sshdaemon.DefaultTimeout">
+            <summary>An initial timeout value to be used by incoming connections.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Sshdaemon.KeyboardInteractiveMessage">
+            <summary>The instructions to send to the client during keyboard-interactive authentication.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Sshdaemon.Listening">
+            <summary>If True, the component accepts incoming connections on LocalPort.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Sshdaemon.LocalHost">
+            <summary>The name of the local host or user-assigned IP interface through which connections are initiated or accepted.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Sshdaemon.LocalPort">
+            <summary>The TCP port in the local host where the component listens.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Sshdaemon.SSHCompressionAlgorithms">
+            <summary>A comma-separated list containing all allowable compression algorithms.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Sshdaemon.SSHEncryptionAlgorithms">
+            <summary>A comma-separated list containing all allowable compression algorithms.</summary>
+        </member>
+        <member name="T:nsoftware.IPWorksSSH.SshellConnectedEventArgs">
+            <summary>Event arguments for the Connected event.</summary>
+        </member>
+        <member name="T:nsoftware.IPWorksSSH.SshellConnectionStatusEventArgs">
+            <summary>Event arguments for the ConnectionStatus event.</summary>
+        </member>
+        <member name="T:nsoftware.IPWorksSSH.SshellDisconnectedEventArgs">
+            <summary>Event arguments for the Disconnected event.</summary>
+        </member>
+        <member name="T:nsoftware.IPWorksSSH.SshellErrorEventArgs">
+            <summary>Event arguments for the Error event.</summary>
+        </member>
+        <member name="T:nsoftware.IPWorksSSH.SshellSSHCustomAuthEventArgs">
+            <summary>Event arguments for the SSHCustomAuth event.</summary>
+        </member>
+        <member name="T:nsoftware.IPWorksSSH.SshellSSHKeyboardInteractiveEventArgs">
+            <summary>Event arguments for the SSHKeyboardInteractive event.</summary>
+        </member>
+        <member name="T:nsoftware.IPWorksSSH.SshellSSHServerAuthenticationEventArgs">
+            <summary>Event arguments for the SSHServerAuthentication event.</summary>
+        </member>
+        <member name="T:nsoftware.IPWorksSSH.SshellSSHStatusEventArgs">
+            <summary>Event arguments for the SSHStatus event.</summary>
+        </member>
+        <member name="T:nsoftware.IPWorksSSH.SshellStderrEventArgs">
+            <summary>Event arguments for the Stderr event.</summary>
+        </member>
+        <member name="T:nsoftware.IPWorksSSH.SshellStdoutEventArgs">
+            <summary>Event arguments for the Stdout event.</summary>
+        </member>
+        <member name="M:nsoftware.IPWorksSSH.Sshell.SetStdin(System.Byte[],System.Int32,System.Int32)">
+            <summary>A string of data to be sent to the remote host while connected.</summary>
+        </member>
+        <member name="M:nsoftware.IPWorksSSH.Sshell.Config(System.String)">
+            <summary>Sets or retrieves a configuration setting .</summary>
+        </member>
+        <member name="M:nsoftware.IPWorksSSH.Sshell.DecodePacket(System.String)">
+            <summary>Decodes a hex-encoded SSH packet.</summary>
+        </member>
+        <member name="M:nsoftware.IPWorksSSH.Sshell.DoEvents">
+            <summary>Processes events from the internal message queue.</summary>
+        </member>
+        <member name="M:nsoftware.IPWorksSSH.Sshell.EncodePacket(System.Byte[])">
+            <summary>Hex encodes an SSH packet.</summary>
+        </member>
+        <member name="M:nsoftware.IPWorksSSH.Sshell.Execute(System.String)">
+            <summary>Execute a Command on the remote host.</summary>
+        </member>
+        <member name="M:nsoftware.IPWorksSSH.Sshell.GetSSHParam(System.Byte[],System.String)">
+            <summary>Used to read a field from an SSH packet's payload.</summary>
+        </member>
+        <member name="M:nsoftware.IPWorksSSH.Sshell.GetSSHParamBytes(System.Byte[],System.String)">
+            <summary>Used to read a field from an SSH packet's payload.</summary>
+        </member>
+        <member name="M:nsoftware.IPWorksSSH.Sshell.Interrupt">
+            <summary>Interrupt the current method.</summary>
+        </member>
+        <member name="M:nsoftware.IPWorksSSH.Sshell.Send(System.Byte[])">
+            <summary>Send standard input to the program executing on the remote host.</summary>
+        </member>
+        <member name="M:nsoftware.IPWorksSSH.Sshell.SetSSHParam(System.Byte[],System.String,System.String)">
+            <summary>Used to write a field to the end of a payload.</summary>
+        </member>
+        <member name="M:nsoftware.IPWorksSSH.Sshell.SSHLogoff">
+            <summary>Logoff from the SSH server.</summary>
+        </member>
+        <member name="M:nsoftware.IPWorksSSH.Sshell.SSHLogon(System.String,System.Int32)">
+            <summary>Logon to the SSHHost using the current SSHUser and SSHPassword .</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Sshell.RuntimeLicense">
+            <summary>Runtime license key (derived from the development license, if any).</summary>
+        </member>
+        <member name="E:nsoftware.IPWorksSSH.Sshell.OnConnected">
+            <summary>Fired immediately after a connection completes (or fails).</summary>
+        </member>
+        <member name="E:nsoftware.IPWorksSSH.Sshell.OnConnectionStatus">
+            <summary>Fired to indicate changes in connection state.</summary>
+        </member>
+        <member name="E:nsoftware.IPWorksSSH.Sshell.OnDisconnected">
+            <summary>Fired when a connection is closed.</summary>
+        </member>
+        <member name="E:nsoftware.IPWorksSSH.Sshell.OnError">
+            <summary>Information about errors during data delivery.</summary>
+        </member>
+        <member name="E:nsoftware.IPWorksSSH.Sshell.OnSSHCustomAuth">
+            <summary>Fired when the component is doing custom authentication.</summary>
+        </member>
+        <member name="E:nsoftware.IPWorksSSH.Sshell.OnSSHKeyboardInteractive">
+            <summary>Fired when the component receives a request for user input from the server.</summary>
+        </member>
+        <member name="E:nsoftware.IPWorksSSH.Sshell.OnSSHServerAuthentication">
+            <summary>Fired after the server presents its public key to the client.</summary>
+        </member>
+        <member name="E:nsoftware.IPWorksSSH.Sshell.OnSSHStatus">
+            <summary>Shows the progress of the secure connection.</summary>
+        </member>
+        <member name="E:nsoftware.IPWorksSSH.Sshell.OnStderr">
+            <summary>Fired when data (complete lines) come in through stderr.</summary>
+        </member>
+        <member name="E:nsoftware.IPWorksSSH.Sshell.OnStdout">
+            <summary>Fired when data (complete lines) come in through stdout.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Sshell.Firewall">
+            <summary>A set of properties related to firewall access.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Sshell.SSHAcceptServerHostKey">
+            <summary>Instructs the component to accept the server host key that matches the supplied key.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Sshell.SSHCert">
+            <summary>A certificate to be used for authenticating the SSHUser .</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Sshell.Command">
+            <summary>The command to be sent to the remote host.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Sshell.Connected">
+            <summary>Triggers a connection or disconnection.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Sshell.ErrorMessage">
+            <summary>The error message returned when any of the steps prior to command execution fail.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Sshell.LocalHost">
+            <summary>The name of the local host or user-assigned IP interface through which connections are initiated or accepted.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Sshell.LocalPort">
+            <summary>The TCP port in the local host where IPPort binds.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Sshell.SSHAuthMode">
+            <summary>The authentication method to be used the component when calling SSHLogon .</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Sshell.SSHCompressionAlgorithms">
+            <summary>A comma-separated list containing all allowable compression algorithms.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Sshell.SSHEncryptionAlgorithms">
+            <summary>A comma-separated list containing all allowable compression algorithms.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Sshell.SSHHost">
+            <summary>The address of the SSH host.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Sshell.SSHPassword">
+            <summary>The password for SSH password-based authentication.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Sshell.SSHPort">
+            <summary>The port on the SSH server where the SSH service is running; by default, 22.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Sshell.SSHUser">
+            <summary>The username for SSH authentication.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Sshell.StdinB">
+            <summary>A string of data to be sent to the remote host while connected.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Sshell.Stdin">
+            <summary>A string of data to be sent to the remote host while connected.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Sshell.Timeout">
+            <summary>A timeout for the component.</summary>
+        </member>
+        <member name="T:nsoftware.IPWorksSSH.SshreversetunnelConnectedEventArgs">
+            <summary>Event arguments for the Connected event.</summary>
+        </member>
+        <member name="T:nsoftware.IPWorksSSH.SshreversetunnelConnectionStatusEventArgs">
+            <summary>Event arguments for the ConnectionStatus event.</summary>
+        </member>
+        <member name="T:nsoftware.IPWorksSSH.SshreversetunnelDisconnectedEventArgs">
+            <summary>Event arguments for the Disconnected event.</summary>
+        </member>
+        <member name="T:nsoftware.IPWorksSSH.SshreversetunnelErrorEventArgs">
+            <summary>Event arguments for the Error event.</summary>
+        </member>
+        <member name="T:nsoftware.IPWorksSSH.SshreversetunnelSSHChannelClosedEventArgs">
+            <summary>Event arguments for the SSHChannelClosed event.</summary>
+        </member>
+        <member name="T:nsoftware.IPWorksSSH.SshreversetunnelSSHChannelDataEventArgs">
+            <summary>Event arguments for the SSHChannelData event.</summary>
+        </member>
+        <member name="T:nsoftware.IPWorksSSH.SshreversetunnelSSHChannelEOFEventArgs">
+            <summary>Event arguments for the SSHChannelEOF event.</summary>
+        </member>
+        <member name="T:nsoftware.IPWorksSSH.SshreversetunnelSSHChannelOpenedEventArgs">
+            <summary>Event arguments for the SSHChannelOpened event.</summary>
+        </member>
+        <member name="T:nsoftware.IPWorksSSH.SshreversetunnelSSHChannelOpenRequestEventArgs">
+            <summary>Event arguments for the SSHChannelOpenRequest event.</summary>
+        </member>
+        <member name="T:nsoftware.IPWorksSSH.SshreversetunnelSSHChannelReadyToSendEventArgs">
+            <summary>Event arguments for the SSHChannelReadyToSend event.</summary>
+        </member>
+        <member name="T:nsoftware.IPWorksSSH.SshreversetunnelSSHChannelRequestedEventArgs">
+            <summary>Event arguments for the SSHChannelRequested event.</summary>
+        </member>
+        <member name="T:nsoftware.IPWorksSSH.SshreversetunnelSSHCustomAuthEventArgs">
+            <summary>Event arguments for the SSHCustomAuth event.</summary>
+        </member>
+        <member name="T:nsoftware.IPWorksSSH.SshreversetunnelSSHKeyboardInteractiveEventArgs">
+            <summary>Event arguments for the SSHKeyboardInteractive event.</summary>
+        </member>
+        <member name="T:nsoftware.IPWorksSSH.SshreversetunnelSSHServerAuthenticationEventArgs">
+            <summary>Event arguments for the SSHServerAuthentication event.</summary>
+        </member>
+        <member name="T:nsoftware.IPWorksSSH.SshreversetunnelSSHStatusEventArgs">
+            <summary>Event arguments for the SSHStatus event.</summary>
+        </member>
+        <member name="M:nsoftware.IPWorksSSH.Sshreversetunnel.CancelTcpIpForwarding(System.String,System.Int32)">
+            <summary>Requests the server to stop forwarding a remote TCP/IP port.</summary>
+        </member>
+        <member name="M:nsoftware.IPWorksSSH.Sshreversetunnel.CloseChannel(System.String)">
+            <summary>Closes a existing SSHChannel .</summary>
+        </member>
+        <member name="M:nsoftware.IPWorksSSH.Sshreversetunnel.Config(System.String)">
+            <summary>Sets or retrieves a configuration setting .</summary>
+        </member>
+        <member name="M:nsoftware.IPWorksSSH.Sshreversetunnel.DecodePacket(System.String)">
+            <summary>Decodes a hex-encoded SSH packet.</summary>
+        </member>
+        <member name="M:nsoftware.IPWorksSSH.Sshreversetunnel.DoEvents">
+            <summary>Processes events from the internal message queue.</summary>
+        </member>
+        <member name="M:nsoftware.IPWorksSSH.Sshreversetunnel.EncodePacket(System.Byte[])">
+            <summary>Hex encodes an SSH packet.</summary>
+        </member>
+        <member name="M:nsoftware.IPWorksSSH.Sshreversetunnel.ExchangeKeys">
+            <summary>Causes the component to exchange a new set of session keys with the SSHHost .</summary>
+        </member>
+        <member name="M:nsoftware.IPWorksSSH.Sshreversetunnel.GetSSHParam(System.Byte[],System.String)">
+            <summary>Used to read a field from an SSH packet's payload.</summary>
+        </member>
+        <member name="M:nsoftware.IPWorksSSH.Sshreversetunnel.GetSSHParamBytes(System.Byte[],System.String)">
+            <summary>Used to read a field from an SSH packet's payload.</summary>
+        </member>
+        <member name="M:nsoftware.IPWorksSSH.Sshreversetunnel.RequestTcpIpForwarding(System.String,System.Int32)">
+            <summary>Requests the server to forward a remote TCP/IP port.</summary>
+        </member>
+        <member name="M:nsoftware.IPWorksSSH.Sshreversetunnel.SendChannelData(System.String,System.Byte[])">
+            <summary>Used to send regular data over an SSH channel.</summary>
+        </member>
+        <member name="M:nsoftware.IPWorksSSH.Sshreversetunnel.SetSSHParam(System.Byte[],System.String,System.String)">
+            <summary>Used to write a field to the end of a payload.</summary>
+        </member>
+        <member name="M:nsoftware.IPWorksSSH.Sshreversetunnel.SSHLogoff">
+            <summary>Logoff from the SSH server.</summary>
+        </member>
+        <member name="M:nsoftware.IPWorksSSH.Sshreversetunnel.SSHLogon(System.String,System.Int32)">
+            <summary>Logon to the SSHHost using the current SSHUser and SSHPassword .</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Sshreversetunnel.RuntimeLicense">
+            <summary>Runtime license key (derived from the development license, if any).</summary>
+        </member>
+        <member name="E:nsoftware.IPWorksSSH.Sshreversetunnel.OnConnected">
+            <summary>Fired immediately after a connection completes (or fails).</summary>
+        </member>
+        <member name="E:nsoftware.IPWorksSSH.Sshreversetunnel.OnConnectionStatus">
+            <summary>Fired to indicate changes in connection state.</summary>
+        </member>
+        <member name="E:nsoftware.IPWorksSSH.Sshreversetunnel.OnDisconnected">
+            <summary>Fired when a connection is closed.</summary>
+        </member>
+        <member name="E:nsoftware.IPWorksSSH.Sshreversetunnel.OnError">
+            <summary>Information about errors during data delivery.</summary>
+        </member>
+        <member name="E:nsoftware.IPWorksSSH.Sshreversetunnel.OnSSHChannelClosed">
+            <summary>Fired when a channel is closed.</summary>
+        </member>
+        <member name="E:nsoftware.IPWorksSSH.Sshreversetunnel.OnSSHChannelData">
+            <summary>Fired when the SSHHost sends channel data to the client.</summary>
+        </member>
+        <member name="E:nsoftware.IPWorksSSH.Sshreversetunnel.OnSSHChannelEOF">
+            <summary>Fired when the remote peer signals the end of the data stream for the channel.</summary>
+        </member>
+        <member name="E:nsoftware.IPWorksSSH.Sshreversetunnel.OnSSHChannelOpened">
+            <summary>Fired when a channel is successfully opened.</summary>
+        </member>
+        <member name="E:nsoftware.IPWorksSSH.Sshreversetunnel.OnSSHChannelOpenRequest">
+            <summary>Fired when the peer attempts to open a new channel.</summary>
+        </member>
+        <member name="E:nsoftware.IPWorksSSH.Sshreversetunnel.OnSSHChannelReadyToSend">
+            <summary>Fired when the component is ready to send data.</summary>
+        </member>
+        <member name="E:nsoftware.IPWorksSSH.Sshreversetunnel.OnSSHChannelRequested">
+            <summary>Fired if the SSHChannelRequest was successful, any further processing for the channel request should be done here.</summary>
+        </member>
+        <member name="E:nsoftware.IPWorksSSH.Sshreversetunnel.OnSSHCustomAuth">
+            <summary>Fired when the component is doing custom authentication.</summary>
+        </member>
+        <member name="E:nsoftware.IPWorksSSH.Sshreversetunnel.OnSSHKeyboardInteractive">
+            <summary>Fired when the component receives a request for user input from the server.</summary>
+        </member>
+        <member name="E:nsoftware.IPWorksSSH.Sshreversetunnel.OnSSHServerAuthentication">
+            <summary>Fired after the server presents its public key to the client.</summary>
+        </member>
+        <member name="E:nsoftware.IPWorksSSH.Sshreversetunnel.OnSSHStatus">
+            <summary>Shows the progress of the secure connection.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Sshreversetunnel.Channels">
+            <summary>A collection of currently open channels.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Sshreversetunnel.Firewall">
+            <summary>A set of properties related to firewall access.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Sshreversetunnel.SSHAcceptServerHostKey">
+            <summary>Instructs the component to accept the server host key that matches the supplied key.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Sshreversetunnel.SSHCert">
+            <summary>A certificate to be used for authenticating the SSHUser .</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Sshreversetunnel.Connected">
+            <summary>Triggers a connection or disconnection.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Sshreversetunnel.LocalHost">
+            <summary>The name of the local host or user-assigned IP interface through which connections are initiated or accepted.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Sshreversetunnel.LocalPort">
+            <summary>The TCP port in the local host where IPPort binds.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Sshreversetunnel.SSHAuthMode">
+            <summary>The authentication method to be used the component when calling SSHLogon .</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Sshreversetunnel.SSHCompressionAlgorithms">
+            <summary>A comma-separated list containing all allowable compression algorithms.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Sshreversetunnel.SSHEncryptionAlgorithms">
+            <summary>A comma-separated list containing all allowable compression algorithms.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Sshreversetunnel.SSHHost">
+            <summary>The address of the SSH host.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Sshreversetunnel.SSHPassword">
+            <summary>The password for SSH password-based authentication.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Sshreversetunnel.SSHPort">
+            <summary>The port on the SSH server where the SSH service is running; by default, 22.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Sshreversetunnel.SSHUser">
+            <summary>The username for SSH authentication.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Sshreversetunnel.Timeout">
+            <summary>A timeout for the component.</summary>
+        </member>
+        <member name="T:nsoftware.IPWorksSSH.SshtunnelConnectedEventArgs">
+            <summary>Event arguments for the Connected event.</summary>
+        </member>
+        <member name="T:nsoftware.IPWorksSSH.SshtunnelConnectionRequestEventArgs">
+            <summary>Event arguments for the ConnectionRequest event.</summary>
+        </member>
+        <member name="T:nsoftware.IPWorksSSH.SshtunnelDataInEventArgs">
+            <summary>Event arguments for the DataIn event.</summary>
+        </member>
+        <member name="T:nsoftware.IPWorksSSH.SshtunnelDisconnectedEventArgs">
+            <summary>Event arguments for the Disconnected event.</summary>
+        </member>
+        <member name="T:nsoftware.IPWorksSSH.SshtunnelErrorEventArgs">
+            <summary>Event arguments for the Error event.</summary>
+        </member>
+        <member name="T:nsoftware.IPWorksSSH.SshtunnelSSHCustomAuthEventArgs">
+            <summary>Event arguments for the SSHCustomAuth event.</summary>
+        </member>
+        <member name="T:nsoftware.IPWorksSSH.SshtunnelSSHKeyboardInteractiveEventArgs">
+            <summary>Event arguments for the SSHKeyboardInteractive event.</summary>
+        </member>
+        <member name="T:nsoftware.IPWorksSSH.SshtunnelSSHServerAuthenticationEventArgs">
+            <summary>Event arguments for the SSHServerAuthentication event.</summary>
+        </member>
+        <member name="T:nsoftware.IPWorksSSH.SshtunnelSSHStatusEventArgs">
+            <summary>Event arguments for the SSHStatus event.</summary>
+        </member>
+        <member name="M:nsoftware.IPWorksSSH.Sshtunnel.SetDefaultEOL(System.Byte[],System.Int32,System.Int32)">
+            <summary>A default EOL value to be used by incoming connections.</summary>
+        </member>
+        <member name="M:nsoftware.IPWorksSSH.Sshtunnel.Config(System.String)">
+            <summary>Sets or retrieves a configuration setting .</summary>
+        </member>
+        <member name="M:nsoftware.IPWorksSSH.Sshtunnel.DecodePacket(System.String)">
+            <summary>Decodes a hex-encoded SSH packet.</summary>
+        </member>
+        <member name="M:nsoftware.IPWorksSSH.Sshtunnel.Disconnect(System.String)">
+            <summary>Disconnect the specified client.</summary>
+        </member>
+        <member name="M:nsoftware.IPWorksSSH.Sshtunnel.DoEvents">
+            <summary>Processes events from the internal message queue.</summary>
+        </member>
+        <member name="M:nsoftware.IPWorksSSH.Sshtunnel.EncodePacket(System.Byte[])">
+            <summary>Hex encodes an SSH packet.</summary>
+        </member>
+        <member name="M:nsoftware.IPWorksSSH.Sshtunnel.GetSSHParam(System.Byte[],System.String)">
+            <summary>Used to read a field from an SSH packet's payload.</summary>
+        </member>
+        <member name="M:nsoftware.IPWorksSSH.Sshtunnel.GetSSHParamBytes(System.Byte[],System.String)">
+            <summary>Used to read a field from an SSH packet's payload.</summary>
+        </member>
+        <member name="M:nsoftware.IPWorksSSH.Sshtunnel.SetSSHParam(System.Byte[],System.String,System.String)">
+            <summary>Used to write a field to the end of a payload.</summary>
+        </member>
+        <member name="M:nsoftware.IPWorksSSH.Sshtunnel.Shutdown">
+            <summary>Shuts down the server.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Sshtunnel.RuntimeLicense">
+            <summary>Runtime license key (derived from the development license, if any).</summary>
+        </member>
+        <member name="E:nsoftware.IPWorksSSH.Sshtunnel.OnConnected">
+            <summary>Fired immediately after a connection completes (or fails).</summary>
+        </member>
+        <member name="E:nsoftware.IPWorksSSH.Sshtunnel.OnConnectionRequest">
+            <summary>Fired when a request for connection comes from a remote host.</summary>
+        </member>
+        <member name="E:nsoftware.IPWorksSSH.Sshtunnel.OnDataIn">
+            <summary>Fired when data comes in.</summary>
+        </member>
+        <member name="E:nsoftware.IPWorksSSH.Sshtunnel.OnDisconnected">
+            <summary>Fired when a connection is closed.</summary>
+        </member>
+        <member name="E:nsoftware.IPWorksSSH.Sshtunnel.OnError">
+            <summary>Information about errors during data delivery.</summary>
+        </member>
+        <member name="E:nsoftware.IPWorksSSH.Sshtunnel.OnSSHCustomAuth">
+            <summary>Fired when the component is doing custom authentication.</summary>
+        </member>
+        <member name="E:nsoftware.IPWorksSSH.Sshtunnel.OnSSHKeyboardInteractive">
+            <summary>Fired when the component receives a request for user input from the server.</summary>
+        </member>
+        <member name="E:nsoftware.IPWorksSSH.Sshtunnel.OnSSHServerAuthentication">
+            <summary>Fired after the server presents its public key to the client.</summary>
+        </member>
+        <member name="E:nsoftware.IPWorksSSH.Sshtunnel.OnSSHStatus">
+            <summary>Shows the progress of the secure connection.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Sshtunnel.Connections">
+            <summary>A collection of currently connected clients.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Sshtunnel.Firewall">
+            <summary>A set of properties related to firewall access.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Sshtunnel.SSHAcceptServerHostKey">
+            <summary>Instructs the component to accept the server host key that matches the supplied key.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Sshtunnel.SSHCert">
+            <summary>A certificate to be used for authenticating the SSHUser .</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Sshtunnel.Connected">
+            <summary>Triggers a connection or disconnection.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Sshtunnel.ConnectionBacklog">
+            <summary>The maximum number of pending connections maintained by the TCP/IP subsystem.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Sshtunnel.DefaultEOLB">
+            <summary>A default EOL value to be used by incoming connections.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Sshtunnel.DefaultEOL">
+            <summary>A default EOL value to be used by incoming connections.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Sshtunnel.DefaultSingleLineMode">
+            <summary>Tells the component whether or not to treat new connections as line-oriented.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Sshtunnel.DefaultTimeout">
+            <summary>An initial timeout value to be used by incoming connections.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Sshtunnel.KeepAlive">
+            <summary>When True, KEEPALIVE packets are enabled (for long connections).</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Sshtunnel.Linger">
+            <summary>When set to True, connections are terminated gracefully.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Sshtunnel.Listening">
+            <summary>If True, the component accepts incoming connections on LocalPort.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Sshtunnel.LocalHost">
+            <summary>The name of the local host or user-assigned IP interface through which connections are initiated or accepted.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Sshtunnel.LocalPort">
+            <summary>The TCP port in the local host where IPPort binds.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Sshtunnel.SSHAuthMode">
+            <summary>The authentication method to be used the component when calling SSHLogon .</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Sshtunnel.SSHCompressionAlgorithms">
+            <summary>A comma-separated list containing all allowable compression algorithms.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Sshtunnel.SSHEncryptionAlgorithms">
+            <summary>A comma-separated list containing all allowable compression algorithms.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Sshtunnel.SSHForwardHost">
+            <summary>The address of the remote host.  Domain names are resolved to IP addresses.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Sshtunnel.SSHForwardPort">
+            <summary>The TCP port in the remote host.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Sshtunnel.SSHHost">
+            <summary>The address of the SSH host.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Sshtunnel.SSHPassword">
+            <summary>The password for SSH password-based authentication.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Sshtunnel.SSHPort">
+            <summary>The port on the SSH server where the SSH service is running; by default, 22.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Sshtunnel.SSHUser">
+            <summary>The username for SSH authentication.</summary>
+        </member>
+        <member name="M:nsoftware.IPWorksSSH.Certificate.#ctor">
+            <summary>The digital certificate being used.</summary>
+        </member>
+        <member name="M:nsoftware.IPWorksSSH.Certificate.#ctor(System.String)">
+            <summary>The digital certificate being used.</summary>
+        </member>
+        <member name="M:nsoftware.IPWorksSSH.Certificate.#ctor(System.Byte[])">
+            <summary>The digital certificate being used.</summary>
+        </member>
+        <member name="M:nsoftware.IPWorksSSH.Certificate.#ctor(nsoftware.IPWorksSSH.CertStoreTypes,System.String,System.String,System.String)">
+            <summary>The digital certificate being used.</summary>
+        </member>
+        <member name="M:nsoftware.IPWorksSSH.Certificate.#ctor(nsoftware.IPWorksSSH.CertStoreTypes,System.String,System.String,System.Byte[])">
+            <summary>The digital certificate being used.</summary>
+        </member>
+        <member name="M:nsoftware.IPWorksSSH.Certificate.#ctor(nsoftware.IPWorksSSH.CertStoreTypes,System.Byte[],System.String,System.String)">
+            <summary>The digital certificate being used.</summary>
+        </member>
+        <member name="M:nsoftware.IPWorksSSH.Certificate.#ctor(nsoftware.IPWorksSSH.CertStoreTypes,System.Byte[],System.String,System.Byte[])">
+            <summary>The digital certificate being used.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Certificate.EffectiveDate">
+            <summary>The date which this certificate becomes valid.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Certificate.EncodedB">
+            <summary>The certificate (PEM/base64 encoded).</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Certificate.Encoded">
+            <summary>The certificate (PEM/base64 encoded).</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Certificate.ExpirationDate">
+            <summary>The date the certificate expires.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Certificate.ExtendedKeyUsage">
+            <summary>A comma-delimited list of extended key usage identifiers.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Certificate.Fingerprint">
+            <summary>The hex-encoded, 16-byte MD5 fingerprint of the certificate.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Certificate.Issuer">
+            <summary>The issuer of the certificate.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Certificate.PrivateKey">
+            <summary>The private key of the certificate (if available).</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Certificate.PrivateKeyAvailable">
+            <summary>Shows whether a PrivateKey is available for the  selected certificate.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Certificate.PrivateKeyContainer">
+            <summary>The name of the PrivateKey container for the  certificate (if available).</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Certificate.PublicKey">
+            <summary>The public key of the certificate.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Certificate.PublicKeyAlgorithm">
+            <summary>Textual description of the public key algorithm of the  certificate.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Certificate.PublicKeyLength">
+            <summary>The length of the certificate public key (in bits).</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Certificate.SerialNumber">
+            <summary>The serial number of the certificate encoded as a  string.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Certificate.SignatureAlgorithm">
+            <summary>Text description of the signature algorithm of the  certificate.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Certificate.StoreB">
+            <summary>The name of the certificate store for the client certificate.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Certificate.Store">
+            <summary>The name of the certificate store for the client certificate.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Certificate.StorePassword">
+            <summary>If the certificate store is of a type that requires  a password, this property is used to specify that  password in order to open the certificate store.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Certificate.StoreType">
+            <summary>The type of certificate store for this certificate.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Certificate.Subject">
+            <summary>The subject of the certificate used for client authentication.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Certificate.SubjectAltNames">
+            <summary>A comma-separated lists of alternative subject names of the certificate.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Certificate.ThumbprintMD5">
+            <summary>MD5 hash of the certificate.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Certificate.ThumbprintSHA1">
+            <summary>SHA1 hash of the certificate.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Certificate.Usage">
+            <summary>Text description of UsageFlags .</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Certificate.UsageFlags">
+            <summary>Flags that show intended use for the certificate.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Certificate.Version">
+            <summary>The certificate's version number.</summary>
+        </member>
+        <member name="M:nsoftware.IPWorksSSH.CertExtension.#ctor(System.String,System.Byte[],System.Boolean)">
+            <summary>Represents an extension for a certificate.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.CertExtension.Critical">
+            <summary>Whether or not the extension is defined as critical.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.CertExtension.OID">
+            <summary>The ASN.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.CertExtension.ValueB">
+            <summary>The raw value of this certificate extension.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.CertExtension.Value">
+            <summary>The raw value of this certificate extension.</summary>
+        </member>
+        <member name="M:nsoftware.IPWorksSSH.Firewall.#ctor">
+            <summary>The firewall the component will connect through.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Firewall.AutoDetect">
+            <summary>This property tells the component whether or not to automatically detect and use firewall system settings, if available.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Firewall.FirewallType">
+            <summary>This property determines the type of firewall to connect through.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Firewall.Host">
+            <summary>This property contains the name or IP address of firewall (optional).</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Firewall.Password">
+            <summary>This property contains a password if authentication is to be used when connecting through the firewall.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Firewall.Port">
+            <summary>This property contains the TCP port for the firewall Host .</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Firewall.User">
+            <summary>This property contains a user name if authentication is to be used connecting through a firewall.</summary>
+        </member>
+        <member name="M:nsoftware.IPWorksSSH.PSProperty.#ctor">
+            <summary>A property in a PowerShell object.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.PSProperty.DataType">
+            <summary>The type of this property Each property has a unique name, a value, a type and a boolean value indicating if it's null.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.PSProperty.IsNull">
+            <summary>True, if the property has a null value Each property has a unique name, a value, a type and a boolean value indicating if it's null.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.PSProperty.Name">
+            <summary>The name of a property Each property has a unique name, a value, a type and a boolean value indicating if it's null.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.PSProperty.Value">
+            <summary>The value of this property Each property has a unique name, a value, a type and a boolean value indicating if it's null.</summary>
+        </member>
+        <member name="M:nsoftware.IPWorksSSH.DirEntry.#ctor">
+            <summary>A listing in a directory returned from the server.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.DirEntry.Entry">
+            <summary>This property contains the raw entry as received from the server.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.DirEntry.FileName">
+            <summary>This property shows the file name in the last directory listing.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.DirEntry.FileSize">
+            <summary>This property shows the file size in the last directory listing.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.DirEntry.FileTime">
+            <summary>This property shows the file time in the last directory listing.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.DirEntry.IsDir">
+            <summary>This property specifies whether entries in the last directory listing are directories.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.SFTPFileAttributes.AccessTime">
+            <summary>The number of milliseconds since 12:00:00 AM January 1, 1970 when this file was last accessed.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.SFTPFileAttributes.AccessTimeNanos">
+            <summary>A subsecond value associated with this file's AccessTime .</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.SFTPFileAttributes.ACL">
+            <summary>A string containing an Access Control List (ACL).</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.SFTPFileAttributes.AllocationSize">
+            <summary>The size, in bytes, that this file consumes on disk.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.SFTPFileAttributes.AttributeBits">
+            <summary>AttributeBits and AttributeBitsValid each contain a bitmask representing attributes of the file on the SFTP server.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.SFTPFileAttributes.AttributeBitsValid">
+            <summary>AttributeBits and AttributeBitsValid each contain a bitmask representing attributes of the file on the SFTP server.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.SFTPFileAttributes.CreationTime">
+            <summary>The number of milliseconds since 12:00:00 AM January 1, 1970 when this file was created.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.SFTPFileAttributes.CreationTimeNanos">
+            <summary>A subsecond value associated with this file's CreationTime .</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.SFTPFileAttributes.FileType">
+            <summary>The type of file.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.SFTPFileAttributes.Flags">
+            <summary>Flags is an integer containing a bitmask that indicates which fields are valid.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.SFTPFileAttributes.GroupId">
+            <summary>The id of the group that has access rights this file.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.SFTPFileAttributes.IsDir">
+            <summary>Whether or not the file represented by these attributes is a directory.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.SFTPFileAttributes.LinkCount">
+            <summary>The number of links that reference this file.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.SFTPFileAttributes.MIMEType">
+            <summary>A value that can be used in the Content-Type header for a MIME entity part containing this file.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.SFTPFileAttributes.ModifiedTime">
+            <summary>The number of milliseconds since 12:00:00 AM January 1, 1970 that this file was last modified.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.SFTPFileAttributes.ModifiedTimeNanos">
+            <summary>A subsecond value associated with this file's ModifiedTime .</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.SFTPFileAttributes.OwnerId">
+            <summary>The user id of this file's owner.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.SFTPFileAttributes.Permissions">
+            <summary>A 32-bit integer containing the a POSIX-compatible file permission bitmask.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.SFTPFileAttributes.Size">
+            <summary>The total size, in bytes, of this file.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.SFTPFileAttributes.TextHint">
+            <summary>Provides a hint for whether or not the file is a text file.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.SFTPFileAttributes.UntranslatedName">
+            <summary>The untranslated name of the file.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.SFTPConnection.Connected">
+            <summary>Used to disconnect individual connections and/or show their status.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.SFTPConnection.ConnectionId">
+            <summary>An id generated by the component to identify each connection.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.SFTPConnection.ErrorMessage">
+            <summary>ErrorMessage is used together with status codes returned from events to send informative errors back to the SFTP client through the SSH_FXP_STATUS message.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.SFTPConnection.FileDataB">
+            <summary>The FileData should be set or read when processing read/write file events.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.SFTPConnection.FileData">
+            <summary>The FileData should be set or read when processing read/write file events.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.SFTPConnection.LocalAddress">
+            <summary>This field shows the IP address of the interface through which the connection is passing.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.SFTPConnection.ProtocolVersion">
+            <summary>The ProtocolVersion shows the SFTP protocol version negotiated with the client when the SFTP connection was established.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.SFTPConnection.RemoteHost">
+            <summary>The RemoteHost shows the IP address of the remote host through which the connection is coming.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.SFTPConnection.RemotePort">
+            <summary>The RemotePort shows the TCP port on the remote host through which the connection is coming.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.SFTPConnection.Timeout">
+            <summary>A timeout for the component.</summary>
+        </member>
+        <member name="M:nsoftware.IPWorksSSH.SSHPrompt.#ctor">
+            <summary>A prompt to provide to the client during keyboard-interactive authentication.</summary>
+        </member>
+        <member name="M:nsoftware.IPWorksSSH.SSHPrompt.#ctor(System.String,System.Boolean)">
+            <summary>A prompt to provide to the client during keyboard-interactive authentication.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.SSHPrompt.Echo">
+            <summary>Specifies if the client should echo the value entered by the user or not.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.SSHPrompt.Prompt">
+            <summary>The prompt label/text the client should present to the user.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.SSHChannel.BytesSent">
+            <summary>The number of bytes actually sent after a sending channel data.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.SSHChannel.ChannelId">
+            <summary>An id generated by the component to identify the current SSH channel.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.SSHChannel.DataToSendB">
+            <summary>A string of data to be sent to the remote host.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.SSHChannel.DataToSend">
+            <summary>A string of data to be sent to the remote host.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.SSHConnection.Connected">
+            <summary>Used to disconnect individual connections and/or show their status.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.SSHConnection.ConnectionId">
+            <summary>An id generated by the component to identify each connection.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.SSHConnection.LocalAddress">
+            <summary>This field shows the IP address of the interface through which the connection is passing.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.SSHConnection.RemoteHost">
+            <summary>The RemoteHost shows the IP address of the remote host through which the connection is coming.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.SSHConnection.RemotePort">
+            <summary>The RemotePort shows the TCP port on the remote host through which the connection is coming.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.SSHConnection.Timeout">
+            <summary>A timeout for the component.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Connection.AcceptData">
+            <summary>Setting this property to False, temporarily disables data reception (and the DataIn event) on the connection.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Connection.BytesSent">
+            <summary>This property shows how many bytes were sent after the last assignment to DataToSend .</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Connection.Connected">
+            <summary>This property is used to disconnect individual connections and/or show their status.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Connection.ConnectionId">
+            <summary>This property contains an identifier generated by the component to identify each connection.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Connection.DataToSendB">
+            <summary>This property contains a string of data to be sent to the remote host.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Connection.DataToSend">
+            <summary>This property contains a string of data to be sent to the remote host.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Connection.EOLB">
+            <summary>The EOL property is used to define boundaries in the input stream using the value of the property.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Connection.EOL">
+            <summary>The EOL property is used to define boundaries in the input stream using the value of the property.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Connection.LocalAddress">
+            <summary>This property shows the IP address of the interface through which the connection is passing.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Connection.MaxLineLength">
+            <summary>This property is the size of an internal buffer which holds received data while waiting for an EOL string.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Connection.RemoteHost">
+            <summary>This property shows the IP address of the remote host through which the connection is coming.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Connection.RemotePort">
+            <summary>This property shows the TCP port on the remote host through which the connection is coming.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Connection.SingleLineMode">
+            <summary>This property shows the special mode for line-oriented protocols.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Connection.Timeout">
+            <summary>This property contains a timeout for the component.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksSSH.Connection.UploadStream">
+            <summary>Setting this property uploads the data in the specified stream to the current connection.</summary>
+        </member>
+    </members>
+</doc>

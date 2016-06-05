@@ -1,0 +1,23 @@
+<?xml version="1.0" standalone="yes"?>
+<DataSet xmlns="NetFrameWork">
+  <table>
+    <key>ImagesBasePath</key>
+    <value>D:\_gulevlab\SkyImagesAnalysis_appData\RV-ANS-31-total\</value>
+  </table>
+  <table>
+    <key>maxConcurrentBackgroundWorkers</key>
+    <value>4</value>
+  </table>
+  <table>
+    <key>SaveControlImagesToPath</key>
+    <value>D:\_gulevlab\SkyImagesAnalysis_appData\RV-ANS-31-total\stats\control\</value>
+  </table>
+  <table>
+    <key>OutputDirectory</key>
+    <value>D:\_gulevlab\SkyImagesAnalysis_appData\RV-ANS-31-test\</value>
+  </table>
+  <table>
+    <key>FilesToProcessMask</key>
+    <value>D:\_gulevlab\SkyImagesAnalysis_appData\RV-ANS-31-total\*.jpg</value>
+  </table>
+</DataSet>

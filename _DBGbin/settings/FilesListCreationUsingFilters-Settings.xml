@@ -1,0 +1,23 @@
+<?xml version="1.0" standalone="yes"?>
+<DataSet xmlns="NetFrameWork">
+  <table>
+    <key>ImagesBaseSourcePath</key>
+    <value>D:\_gulevlab\SkyImagesAnalysis_appData\_RV-ANS-31-total\images\</value>
+  </table>
+  <table>
+    <key>ConcurrentAndStatsXMLfilesDir</key>
+    <value>D:\_gulevlab\SkyImagesAnalysis_appData\_RV-ANS-31-total\concurrentdata\</value>
+  </table>
+  <table>
+    <key>ObservedDataCSVfile</key>
+    <value>D:\_gulevlab\SkyImagesAnalysis_appData\_RV-ANS-31-total\СlCov_observed_data.csv</value>
+  </table>
+  <table>
+    <key>DestinationPath</key>
+    <value>D:\_gulevlab\SkyImagesAnalysis_appData\_RV-ANS-31-total\output\</value>
+  </table>
+  <table>
+    <key>DateTimeFilterTolerance</key>
+    <value>00:05:00</value>
+  </table>
+</DataSet>

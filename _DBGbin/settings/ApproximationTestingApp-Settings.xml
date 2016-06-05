@@ -1,0 +1,7 @@
+<?xml version="1.0" standalone="yes"?>
+<DataSet xmlns="NetFrameWork">
+  <table>
+    <key>ImagesBasePath</key>
+    <value>D:\_gulevlab\SkyImagesAnalysis_appData\AI44\v01-selected\output\</value>
+  </table>
+</DataSet>

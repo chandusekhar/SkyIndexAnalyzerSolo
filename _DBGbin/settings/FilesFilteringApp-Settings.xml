@@ -1,0 +1,23 @@
+<?xml version="1.0" standalone="yes"?>
+<DataSet xmlns="NetFrameWork">
+  <table>
+    <key>CopyImagesAndDataTo_Path</key>
+    <value>D:\_gulevlab\SkyImagesAnalysis_appData\RV-ANS-31-withConcurrentDataAndStats\</value>
+  </table>
+  <table>
+    <key>ConcurrentDataXMLfilesPath</key>
+    <value>D:\_gulevlab\SkyImagesAnalysis_appData\RV-ANS-31-total\concurrentdata\</value>
+  </table>
+  <table>
+    <key>CopyImagesFrom_Path</key>
+    <value>D:\_gulevlab\SkyImagesAnalysis_appData\RV-ANS-31-total\images\</value>
+  </table>
+  <table>
+    <key>GrIxYRGBstatsXMLfilesPath</key>
+    <value>D:\_gulevlab\SkyImagesAnalysis_appData\RV-ANS-31-total\stats\GrIxYRGB\</value>
+  </table>
+  <table>
+    <key>filterTolerance</key>
+    <value>00:02:00</value>
+  </table>
+</DataSet>

@@ -1,0 +1,27 @@
+<?xml version="1.0" standalone="yes"?>
+<DataSet xmlns="NetFrameWork">
+  <table>
+    <key>accID1CalibratedXzero</key>
+    <value>0</value>
+  </table>
+  <table>
+    <key>accID1CalibratedYzero</key>
+    <value>0</value>
+  </table>
+  <table>
+    <key>accID1CalibratedZzero</key>
+    <value>262,0</value>
+  </table>
+  <table>
+    <key>accID2CalibratedXzero</key>
+    <value>0</value>
+  </table>
+  <table>
+    <key>accID2CalibratedYzero</key>
+    <value>0</value>
+  </table>
+  <table>
+    <key>accID2CalibratedZzero</key>
+    <value>262,0</value>
+  </table>
+</DataSet>

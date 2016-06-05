@@ -1,0 +1,19 @@
+<?xml version="1.0" standalone="yes"?>
+<DataSet xmlns="NetFrameWork">
+  <table>
+    <key>NNconfigFile</key>
+    <value>D:\_gulevlab\SkyImagesAnalysis\_DBGbin\settings\NNconfig.csv</value>
+  </table>
+  <table>
+    <key>NNtrainedParametersFile</key>
+    <value>D:\_gulevlab\SkyImagesAnalysis\_DBGbin\settings\NNtrainedParameters.csv</value>
+  </table>
+  <table>
+    <key>NormMeansFile</key>
+    <value>D:\_gulevlab\SkyImagesAnalysis\_DBGbin\settings\NormMeans.csv</value>
+  </table>
+  <table>
+    <key>NormRangeFile</key>
+    <value>D:\_gulevlab\SkyImagesAnalysis\_DBGbin\settings\NormRange.csv</value>
+  </table>
+</DataSet>
