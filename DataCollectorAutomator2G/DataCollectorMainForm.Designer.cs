@@ -85,6 +85,7 @@
             this.btnCCandTCC = new System.Windows.Forms.Button();
             this.lblNextImageProcessingInTitle = new System.Windows.Forms.Label();
             this.lblNextImageProcessingIn = new System.Windows.Forms.Label();
+            this.btnSSHsendPreview = new System.Windows.Forms.Button();
             this.tabPageService = new System.Windows.Forms.TabPage();
             this.tableLayoutPanel2 = new System.Windows.Forms.TableLayoutPanel();
             this.tbMainLog = new System.Windows.Forms.TextBox();
@@ -238,7 +239,7 @@
             this.tableLayoutPanel1.Controls.Add(this.lblSunAzimuth, 18, 17);
             this.tableLayoutPanel1.Controls.Add(this.btnPrefs, 18, 0);
             this.tableLayoutPanel1.Controls.Add(this.btnAccCalibrationData, 15, 0);
-            this.tableLayoutPanel1.Controls.Add(this.lblWhetherRestrictsObtainingDataDueSunElevation, 14, 9);
+            this.tableLayoutPanel1.Controls.Add(this.lblWhetherRestrictsObtainingDataDueSunElevation, 16, 9);
             this.tableLayoutPanel1.Controls.Add(this.lblSDCdetected, 0, 16);
             this.tableLayoutPanel1.Controls.Add(this.lblCCdetected, 7, 16);
             this.tableLayoutPanel1.Controls.Add(this.lblSDCvalue, 3, 16);
@@ -246,6 +247,7 @@
             this.tableLayoutPanel1.Controls.Add(this.btnCCandTCC, 11, 0);
             this.tableLayoutPanel1.Controls.Add(this.lblNextImageProcessingInTitle, 10, 4);
             this.tableLayoutPanel1.Controls.Add(this.lblNextImageProcessingIn, 10, 5);
+            this.tableLayoutPanel1.Controls.Add(this.btnSSHsendPreview, 14, 9);
             this.tableLayoutPanel1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tableLayoutPanel1.Location = new System.Drawing.Point(4, 4);
             this.tableLayoutPanel1.Margin = new System.Windows.Forms.Padding(4);
@@ -984,14 +986,14 @@
             // lblWhetherRestrictsObtainingDataDueSunElevation
             // 
             this.lblWhetherRestrictsObtainingDataDueSunElevation.AutoSize = true;
-            this.tableLayoutPanel1.SetColumnSpan(this.lblWhetherRestrictsObtainingDataDueSunElevation, 6);
+            this.tableLayoutPanel1.SetColumnSpan(this.lblWhetherRestrictsObtainingDataDueSunElevation, 4);
             this.lblWhetherRestrictsObtainingDataDueSunElevation.Dock = System.Windows.Forms.DockStyle.Fill;
             this.lblWhetherRestrictsObtainingDataDueSunElevation.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this.lblWhetherRestrictsObtainingDataDueSunElevation.ForeColor = System.Drawing.Color.OrangeRed;
-            this.lblWhetherRestrictsObtainingDataDueSunElevation.Location = new System.Drawing.Point(858, 330);
+            this.lblWhetherRestrictsObtainingDataDueSunElevation.Location = new System.Drawing.Point(996, 330);
             this.lblWhetherRestrictsObtainingDataDueSunElevation.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.lblWhetherRestrictsObtainingDataDueSunElevation.Name = "lblWhetherRestrictsObtainingDataDueSunElevation";
-            this.lblWhetherRestrictsObtainingDataDueSunElevation.Size = new System.Drawing.Size(411, 37);
+            this.lblWhetherRestrictsObtainingDataDueSunElevation.Size = new System.Drawing.Size(273, 37);
             this.lblWhetherRestrictsObtainingDataDueSunElevation.TabIndex = 116;
             this.lblWhetherRestrictsObtainingDataDueSunElevation.Text = "---";
             this.lblWhetherRestrictsObtainingDataDueSunElevation.TextAlign = System.Drawing.ContentAlignment.BottomCenter;
@@ -1095,6 +1097,18 @@
             this.lblNextImageProcessingIn.TabIndex = 124;
             this.lblNextImageProcessingIn.Text = "00:00:00";
             this.lblNextImageProcessingIn.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
+            // btnSSHsendPreview
+            // 
+            this.tableLayoutPanel1.SetColumnSpan(this.btnSSHsendPreview, 2);
+            this.btnSSHsendPreview.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.btnSSHsendPreview.Location = new System.Drawing.Point(857, 333);
+            this.btnSSHsendPreview.Name = "btnSSHsendPreview";
+            this.btnSSHsendPreview.Size = new System.Drawing.Size(132, 31);
+            this.btnSSHsendPreview.TabIndex = 125;
+            this.btnSSHsendPreview.Text = "ssh";
+            this.btnSSHsendPreview.UseVisualStyleBackColor = true;
+            this.btnSSHsendPreview.Click += new System.EventHandler(this.btnSSHsendPreview_Click);
             // 
             // tabPageService
             // 
@@ -1939,6 +1953,7 @@
         private System.Windows.Forms.Button btnCCandTCC;
         private System.Windows.Forms.Label lblNextImageProcessingInTitle;
         private System.Windows.Forms.Label lblNextImageProcessingIn;
+        private System.Windows.Forms.Button btnSSHsendPreview;
     }
 }
 

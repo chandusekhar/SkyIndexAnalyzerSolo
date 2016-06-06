@@ -90,6 +90,10 @@
       <HintPath>C:\Program Files\nsoftware\IPWorks V9 .NET Edition\lib\nsoftware.IPWorks.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="nsoftware.IPWorksSSH">
+      <HintPath>C:\Program Files\nsoftware\IPWorks SSH V9 .NET Edition\lib\nsoftware.IPWorksSSH.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
     <Reference Include="nsoftware.IPWorksZip">
       <HintPath>C:\Program Files\nsoftware\IPWorks ZIP V9 .NET Edition\lib\nsoftware.IPWorksZip.dll</HintPath>
       <Private>False</Private>

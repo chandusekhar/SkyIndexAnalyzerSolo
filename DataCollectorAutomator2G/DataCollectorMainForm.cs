@@ -30,6 +30,7 @@ using SkyImagesAnalyzerLibraries;
 using SolarPositioning;
 using Timer = System.Threading.Timer;
 using nsoftware.IPWorks;
+using nsoftware.IPWorksSSH;
 using nsoftware.IPWorksZip;
 
 
@@ -216,6 +217,20 @@ namespace DataCollectorAutomator
         //private int intRemoteStatsCalculatingServerPort = 55520;
 
         #endregion
+
+
+        #region CC_Moscow_bot connected properties
+
+        private TimeSpan makeCurrentSnapshotPreviewPicturePeriod = new TimeSpan(0, 1, 0);
+        private bool bSendProcessedDataTo_CC_Moscow_bot_server = false;
+        private string strRemoteBotServerHost = "krinitsky.ru";
+        private int intRemoteBotServerPort = 22;
+        private string strRemoteBotServerHostAuthKeyFile = "";
+        private string strRemoteBotServerSSHusername = "mk";
+        private string strAcceptedSSHhostCertPublicKeyFile = "";
+
+        #endregion CC_Moscow_bot connected properties
+
 
         private string ImagesRoundMasksXMLfilesMappingList = Directory.GetCurrentDirectory() + Path.DirectorySeparatorChar + "settings" +
                                           Path.DirectorySeparatorChar +
@@ -543,7 +558,7 @@ namespace DataCollectorAutomator
             if (defaultProperties.ContainsKey("RestrictDataRegistrationWhenSunElevationLowerThanZero"))
             {
                 restrictDataRegistrationWhenSunElevationLowerThanZero =
-                    ((string) defaultProperties["RestrictDataRegistrationWhenSunElevationLowerThanZero"]).ToLower() ==
+                    ((string)defaultProperties["RestrictDataRegistrationWhenSunElevationLowerThanZero"]).ToLower() ==
                     "true";
             }
             else
@@ -568,9 +583,9 @@ namespace DataCollectorAutomator
                 defaultProperties.Add("CamDeclinationThresholdDegToShoot", angleCamDeclinationThresholdDeg);
                 bDefaultPropertiesHasBeenUpdated = true;
             }
-            
+
             #endregion angleCamDeclinationThresholdDeg
-            
+
 
 
             #region MakeBeepsSilentWhenSunElevationLowerThanZero
@@ -755,7 +770,7 @@ namespace DataCollectorAutomator
             if (defaultProperties.ContainsKey("strSnapshotsProcessingPeriodSeconds"))
             {
                 string strSnapshotsProcessingPeriodSeconds =
-                    (string) (defaultProperties["strSnapshotsProcessingPeriodSeconds"]);
+                    (string)(defaultProperties["strSnapshotsProcessingPeriodSeconds"]);
                 if (strSnapshotsProcessingPeriodSeconds == "0")
                 {
                     snapshotsProcessingPeriod = TimeSpan.MaxValue;
@@ -775,7 +790,37 @@ namespace DataCollectorAutomator
             #endregion snapshotsProcessingPeriod
 
 
-            
+
+
+
+
+            // makeCurrentSnapshotPreviewPicturePeriod
+            #region makeCurrentSnapshotPreviewPicturePeriod
+            //TimeSpan makeCurrentSnapshotPreviewPicturePeriod = new TimeSpan(0, 5, 0);
+            if (defaultProperties.ContainsKey("strmakeCurrentSnapshotPreviewPicturePeriodSeconds"))
+            {
+                string strmakeCurrentSnapshotPreviewPicturePeriodSeconds =
+                    (string)(defaultProperties["strmakeCurrentSnapshotPreviewPicturePeriodSeconds"]);
+                if (strmakeCurrentSnapshotPreviewPicturePeriodSeconds == "0")
+                {
+                    makeCurrentSnapshotPreviewPicturePeriod = TimeSpan.MaxValue;
+                }
+                else
+                {
+                    makeCurrentSnapshotPreviewPicturePeriod = new TimeSpan(0, 0, Convert.ToInt32(strmakeCurrentSnapshotPreviewPicturePeriodSeconds));
+                }
+            }
+            else
+            {
+                int strmakeCurrentSnapshotPreviewPicturePeriodSeconds = 90;
+                makeCurrentSnapshotPreviewPicturePeriod = new TimeSpan(0, 0, Convert.ToInt32(strmakeCurrentSnapshotPreviewPicturePeriodSeconds));
+                defaultProperties.Add("strmakeCurrentSnapshotPreviewPicturePeriodSeconds", strmakeCurrentSnapshotPreviewPicturePeriodSeconds);
+                bDefaultPropertiesHasBeenUpdated = true;
+            }
+            #endregion makeCurrentSnapshotPreviewPicturePeriod
+
+
+
             #region restrictSnapshotsProcessingWhenSunElevationLowerThanZero
             if (defaultProperties.ContainsKey("restrictSnapshotsProcessingWhenSunElevationLowerThanZero"))
             {
@@ -791,8 +836,113 @@ namespace DataCollectorAutomator
 
             #endregion restrictSnapshotsProcessingWhenSunElevationLowerThanZero
 
-            
-            
+
+
+            #region bot server communication properties
+
+            #region bSendProcessedDataTo_CC_Moscow_bot_server
+            //private bool bSendProcessedDataTo_CC_Moscow_bot_server = false;
+            if (defaultProperties.ContainsKey("bSendProcessedDataTo_CC_Moscow_bot_server"))
+            {
+                bSendProcessedDataTo_CC_Moscow_bot_server =
+                    ((string)defaultProperties["bSendProcessedDataTo_CC_Moscow_bot_server"]).ToLower() == "true";
+            }
+            else
+            {
+                bSendProcessedDataTo_CC_Moscow_bot_server = false;
+                defaultProperties.Add("bSendProcessedDataTo_CC_Moscow_bot_server",
+                    bSendProcessedDataTo_CC_Moscow_bot_server);
+                bDefaultPropertiesHasBeenUpdated = true;
+            }
+            #endregion
+
+
+            #region strRemoteBotServerHost
+            //private string strRemoteBotServerHost = "krinitsky.ru";
+            if (defaultProperties.ContainsKey("strRemoteBotServerHost"))
+            {
+                strRemoteBotServerHost = (string)defaultProperties["strRemoteBotServerHost"];
+            }
+            else
+            {
+                strRemoteBotServerHost = "krinitsky.ru";
+                defaultProperties.Add("strRemoteBotServerHost", strRemoteBotServerHost);
+                bDefaultPropertiesHasBeenUpdated = true;
+            }
+
+
+            #endregion
+
+
+            #region intRemoteBotServerPort
+            //private int intRemoteBotServerPort = 22;
+
+            if (defaultProperties.ContainsKey("intRemoteBotServerPort"))
+            {
+                intRemoteBotServerPort = Convert.ToInt32((string)defaultProperties["intRemoteBotServerPort"]);
+            }
+            else
+            {
+                intRemoteBotServerPort = 22;
+                defaultProperties.Add("intRemoteBotServerPort", intRemoteBotServerPort);
+                bDefaultPropertiesHasBeenUpdated = true;
+            }
+
+            #endregion
+
+
+            #region strRemoteBotServerHostAuthKeyFile
+            //private string strRemoteBotServerHostAuthKeyFile = "";
+            if (defaultProperties.ContainsKey("strRemoteBotServerHostAuthKeyFile"))
+            {
+                strRemoteBotServerHostAuthKeyFile = (string)defaultProperties["strRemoteBotServerHostAuthKeyFile"];
+            }
+            else
+            {
+                strRemoteBotServerHostAuthKeyFile = "";
+                defaultProperties.Add("strRemoteBotServerHostAuthKeyFile", "");
+                bDefaultPropertiesHasBeenUpdated = true;
+            }
+
+
+            #endregion strRemoteBotServerHostAuthKeyFile
+
+
+            #region strRemoteBotServerSSHusername
+
+            if (defaultProperties.ContainsKey("strRemoteBotServerSSHusername"))
+            {
+                strRemoteBotServerSSHusername = (string)defaultProperties["strRemoteBotServerSSHusername"];
+            }
+            else
+            {
+                strRemoteBotServerSSHusername = "mk";
+                defaultProperties.Add("strRemoteBotServerSSHusername", strRemoteBotServerSSHusername);
+                bDefaultPropertiesHasBeenUpdated = true;
+            }
+
+            #endregion strRemoteBotServerSSHusername
+
+
+
+            #region strAcceptedSSHhostCertPublicKeyFile
+
+            if (defaultProperties.ContainsKey("strAcceptedSSHhostCertPublicKeyFile"))
+            {
+                strAcceptedSSHhostCertPublicKeyFile = (string)defaultProperties["strAcceptedSSHhostCertPublicKeyFile"];
+            }
+            else
+            {
+                strAcceptedSSHhostCertPublicKeyFile = "";
+                defaultProperties.Add("strAcceptedSSHhostCertPublicKeyFile", strAcceptedSSHhostCertPublicKeyFile);
+                bDefaultPropertiesHasBeenUpdated = true;
+            }
+
+            #endregion
+
+
+
+            #endregion bot server communication properties
 
 
 
@@ -1394,6 +1544,7 @@ namespace DataCollectorAutomator
 
         private Stopwatch stwCamshotTimer = new Stopwatch();
         private Stopwatch stwSnapshotsProcessingTimer = new Stopwatch();
+        //private Stopwatch stwMakeCurrentSnapshotPreviewPictureTimer = new Stopwatch();
 
         //DenseMatrix dmGyroDataMatrix = null;
         //List<long> gyroDateTimeValuesList = new List<long>();
@@ -1421,6 +1572,7 @@ namespace DataCollectorAutomator
 
             stwCamshotTimer.Start();
             stwSnapshotsProcessingTimer.Start();
+            //stwMakeCurrentSnapshotPreviewPictureTimer.Start();
 
 
             TimeSpan labelsUpdatingPeriod = new TimeSpan(0, 0, 1);
@@ -1438,7 +1590,7 @@ namespace DataCollectorAutomator
             Stopwatch stwToEstimateUDPpacketsRecieving = new Stopwatch();
             stwToEstimateUDPpacketsRecieving.Start();
 
-            
+
 
             #region timer for periodical process of UDPpackets Recieving speed estimation
 
@@ -1494,10 +1646,19 @@ namespace DataCollectorAutomator
             {
                 TimerCallback CalculateAndReportSDCandCCcallback = ProcessCurrentSnapshot;
                 tmrCalculateAndReportSDCandCC = new Timer(CalculateAndReportSDCandCCcallback, null, 0,
-                    (int) snapshotsProcessingPeriod.TotalMilliseconds);
+                    (int)snapshotsProcessingPeriod.TotalMilliseconds);
             }
-            
-            
+
+            Timer tmrMakeCurrentSnapshotPreviewPicture = null;
+            if (makeCurrentSnapshotPreviewPicturePeriod < TimeSpan.MaxValue)
+            {
+                // MakeCurrentSnapshotPreviewPicture
+                TimerCallback MakeCurrentSnapshotPreviewPictureCallback = MakeCurrentSnapshotPreviewPicture;
+                tmrMakeCurrentSnapshotPreviewPicture = new Timer(MakeCurrentSnapshotPreviewPictureCallback, null, 0,
+                    (int)makeCurrentSnapshotPreviewPicturePeriod.TotalMilliseconds);
+            }
+
+
             #endregion
 
 
@@ -1663,7 +1824,7 @@ namespace DataCollectorAutomator
                 {
                     updateTimersLabels(stwCamshotTimer, stwSnapshotsProcessingTimer, CamShotPeriod);
                     stwCamshotTimersUpdating.Restart();
-                    
+
                 }
 
 
@@ -1683,8 +1844,15 @@ namespace DataCollectorAutomator
                 tmrCalculateAndReportSDCandCC.Change(Timeout.Infinite, Timeout.Infinite);
                 tmrCalculateAndReportSDCandCC.Dispose();
             }
+            if (tmrMakeCurrentSnapshotPreviewPicture != null)
+            {
+                tmrMakeCurrentSnapshotPreviewPicture.Change(Timeout.Infinite, Timeout.Infinite);
+                tmrMakeCurrentSnapshotPreviewPicture.Dispose();
+            }
+
             stwCamshotTimer.Stop();
             stwSnapshotsProcessingTimer.Stop();
+            //stwMakeCurrentSnapshotPreviewPictureTimer.Stop();
         }
 
 
@@ -1709,7 +1877,7 @@ namespace DataCollectorAutomator
 
 
 
-        
+
         #region Pressure data processing
 
 
@@ -3313,7 +3481,7 @@ namespace DataCollectorAutomator
         }
 
         #endregion service actions
-        
+
 
 
 
@@ -3910,12 +4078,6 @@ namespace DataCollectorAutomator
 
 
 
-
-
-
-
-
-
         //private void PredictAndReportSDCandCC(string serverResponceFile)
         //{
         //    Zip zipExtractor = new Zip();
@@ -3983,12 +4145,6 @@ namespace DataCollectorAutomator
 
 
 
-
-
-
-
-
-
         //private void Ipclient_OnError(object sender, IpportErrorEventArgs e)
         //{
 
@@ -4021,14 +4177,14 @@ namespace DataCollectorAutomator
         //}
 
 
-        #endregion current snapshot processing using server calculations
+        #endregion // current snapshot processing using server calculations
 
 
 
 
 
 
-        #region periodical snapshot processing for SDC and TCC
+        #region periodical snapshot processing for SDC and TCC prediction
 
         private void ProcessCurrentSnapshot(object state)
         {
@@ -4127,7 +4283,7 @@ namespace DataCollectorAutomator
                 // не нашли нужный файл. ну или еще что-то случилось.
                 return;
             }
-            
+
             Dictionary<string, object> currDict = ServiceTools.ReadDictionaryFromXML(concurrentDataXMLfilename);
             currDict.Add("XMLfileName", Path.GetFileName(concurrentDataXMLfilename));
             ConcurrentData nearestConcurrentData = null;
@@ -4139,7 +4295,7 @@ namespace DataCollectorAutomator
             {
                 return;
             }
-            
+
 
 
 
@@ -4268,7 +4424,7 @@ namespace DataCollectorAutomator
                 ConventionalTransitions.ImageProcessedAndPredictedDataFileName(lastSnapshotFile,
                     strOutputConcurrentDataDirectory);
             ServiceTools.WriteObjectToXML(data, processedAndPredictedDataFileName);
-            
+
             #endregion store collected data to HDD
 
 
@@ -4318,7 +4474,484 @@ namespace DataCollectorAutomator
             ThreadSafeOperations.SetText(lblCCvalue, TCC.ToString() + " (/8)", false);
         }
 
-        #endregion periodical snapshot processing for SDC and TCC
+        #endregion periodical snapshot processing for SDC and TCC prediction
+
+
+
+
+
+
+
+
+        #region periodical data processing for bot snapshots
+
+
+
+        private void btnSSHsendPreview_Click(object sender, EventArgs e)
+        {
+            if (theLogWindow == null)
+            {
+                theLogWindow = ServiceTools.LogAText(theLogWindow);
+            }
+
+            lowPriorityTaskFactory.StartNew(() => MakeAndSendSnapshotsPreviewPictures());
+        }
+
+
+
+        private void MakeCurrentSnapshotPreviewPicture(object state)
+        {
+            // stwMakeCurrentSnapshotPreviewPictureTimer.Restart();
+
+            #region проверка на высоту солнца
+            bool sunElevationMoreThanZero = true;
+            if (latestGPSdata.validGPSdata && restrictSnapshotsProcessingWhenSunElevationLowerThanZero)
+            {
+                SPA spaCalc = new SPA(latestGPSdata.dateTimeUTC.Year, latestGPSdata.dateTimeUTC.Month, latestGPSdata.dateTimeUTC.Day, latestGPSdata.dateTimeUTC.Hour,
+                        latestGPSdata.dateTimeUTC.Minute, latestGPSdata.dateTimeUTC.Second, (float)latestGPSdata.LonDec, (float)latestGPSdata.LatDec,
+                        (float)SPAConst.DeltaT(latestGPSdata.dateTimeUTC));
+                int res = spaCalc.spa_calculate();
+                AzimuthZenithAngle sunPositionSPAext = new AzimuthZenithAngle(spaCalc.spa.azimuth,
+                    spaCalc.spa.zenith);
+
+                if (sunPositionSPAext.ElevationAngle <= 0.0d)
+                {
+                    sunElevationMoreThanZero = false;
+                }
+            }
+
+            #endregion проверка на высоту солнца
+
+            if (sunElevationMoreThanZero)
+            {
+                lowPriorityTaskFactory.StartNew(() => MakeAndSendSnapshotsPreviewPictures());
+
+            }
+        }
+
+
+
+
+        private async void MakeAndSendSnapshotsPreviewPictures()
+        {
+
+            if (bSendProcessedDataTo_CC_Moscow_bot_server)
+            {
+                #region make and send snapshots preview and lufft data XML files
+
+                string FilenameToSend = "";
+                Image<Bgr, byte> lastImagesCouple = CurrentImagesCouple(out FilenameToSend);
+                string tmpFNameToSave = Path.GetTempPath();
+                tmpFNameToSave += (tmpFNameToSave.Last() == Path.DirectorySeparatorChar)
+                    ? ("")
+                    : (Path.DirectorySeparatorChar.ToString());
+                tmpFNameToSave += FilenameToSend;
+                lastImagesCouple.Save(tmpFNameToSave);
+                // var fileStream = File.Open(tmpFNameToSave, FileMode.Open);
+                // Message sentMessage = await Bot.SendPhoto(update.Message.Chat.Id, new FileToSend(FilenameToSend, fileStream));
+                // послать файл на сервер бота
+
+
+                string filenameToSend = tmpFNameToSave;
+                string concurrentDataXMLfilename =
+                    await
+                        CommonTools.FindConcurrentDataXMLfileAsync(filenameToSend, strOutputConcurrentDataDirectory,
+                            true,
+                            ServiceTools.DatetimeExtractionMethod.Filename);
+
+                Zip zip = new Zip();
+                string tempZipFilename = Path.GetTempPath();
+                tempZipFilename += (tempZipFilename.Last() == Path.DirectorySeparatorChar)
+                    ? ("")
+                    : (Path.DirectorySeparatorChar.ToString());
+                tempZipFilename += Path.GetFileNameWithoutExtension(filenameToSend) + ".zip";
+                zip.ArchiveFile = tempZipFilename;
+                zip.IncludeFiles(filenameToSend + " | " + concurrentDataXMLfilename);
+                zip.Compress();
+
+                //theLogWindow = ServiceTools.LogAText(theLogWindow,
+                //    "zip file created: " + Environment.NewLine + tempZipFilename);
+
+                Exception retEx = null;
+                bool sendingResult = SendFileToBotServer(tempZipFilename, "~/cc_moscow_bot/" + Path.GetFileName(tempZipFilename), out retEx);
+
+                File.Delete(tmpFNameToSave);
+                File.Delete(tempZipFilename);
+
+                #endregion make and send snapshots preview and lufft data XML files
+
+                #region report error
+                if (!sendingResult)
+                {
+                    if (theLogWindow != null)
+                    {
+                        theLogWindow = ServiceTools.LogAText(theLogWindow,
+                            "ERROR sending file to bot server" + Environment.NewLine + "filename: " + tempZipFilename +
+                            Environment.NewLine + "Exception messages: " + Environment.NewLine +
+                            ServiceTools.GetExceptionMessages(retEx) + "at the code line: " +
+                            ServiceTools.CurrentCodeLineDescription());
+                    }
+                    else
+                    {
+                        ServiceTools.logToTextFile(errorLogFilename,
+                            "ERROR sending file to bot server" + Environment.NewLine + "filename: " + tempZipFilename +
+                            Environment.NewLine + "Exception messages: " + Environment.NewLine +
+                            ServiceTools.GetExceptionMessages(retEx) + "at the code line: " +
+                            ServiceTools.CurrentCodeLineDescription());
+                    }
+
+                    return;
+                }
+                #endregion report error
+
+                List<string> commands = new List<string>();
+                commands.Add("cd ~/cc_moscow_bot/");
+                commands.Add("unzip " + Path.GetFileName(tempZipFilename));
+                commands.Add("rm " + Path.GetFileName(tempZipFilename));
+                commands.Add("ll");
+                bool execResult = ExecSShellCommandsOnBotServer(commands, out retEx);
+
+                #region report error
+
+                if (!execResult)
+                {
+                    if (theLogWindow != null)
+                    {
+                        theLogWindow = ServiceTools.LogAText(theLogWindow,
+                            "ERROR executing commands on bot server" + Environment.NewLine +
+                            Environment.NewLine + "Exception messages: " + Environment.NewLine +
+                            ServiceTools.GetExceptionMessages(retEx) + "at the code line: " +
+                            ServiceTools.CurrentCodeLineDescription());
+                    }
+                    else
+                    {
+                        ServiceTools.logToTextFile(errorLogFilename,
+                            "ERROR executing commands on bot server" + Environment.NewLine +
+                            Environment.NewLine + "Exception messages: " + Environment.NewLine +
+                            ServiceTools.GetExceptionMessages(retEx) + "at the code line: " +
+                            ServiceTools.CurrentCodeLineDescription());
+                    }
+                    return;
+                }
+
+                #endregion
+
+            }
+        }
+
+
+
+
+
+        private async Task<string> ObtainLatestMeteoParameters()
+        {
+            string retStr = "";
+
+
+            // WSLufftUMBappPath
+            // Date time ; Temperature [°C] ; Abs. air pressure [hPa] ; Relative humidity [%] ; Abs. humidity [g/m³]
+            if (Directory.Exists(WSLufftUMBappPath))
+            {
+                List<FileInfo> lTXTdataFilesInfoList =
+                    ((new DirectoryInfo(WSLufftUMBappPath)).GetFiles("????-??-??Values.Txt",
+                        SearchOption.AllDirectories)).ToList();
+                lTXTdataFilesInfoList.Sort((finfo1, finfo2) => finfo1.CreationTimeUtc.CompareTo(finfo2.CreationTimeUtc));
+                FileInfo lastTXTdataFileInfo = lTXTdataFilesInfoList.Last();
+                List<List<string>> Contents = ServiceTools.ReadDataFromCSV(lastTXTdataFileInfo.FullName, 2, true, ";");
+                List<string> lastWSdataStrings = Contents.Last();
+                retStr +=
+                    "WS:" + Environment.NewLine +
+                    "Date time: " + lastWSdataStrings[0] + Environment.NewLine +
+                    "Temperature [°C]: " + lastWSdataStrings[1] + Environment.NewLine +
+                    "Abs. air pressure [hPa]: " + lastWSdataStrings[2] + Environment.NewLine +
+                    "Relative humidity [%]: " + lastWSdataStrings[3] + Environment.NewLine +
+                    "Abs. humidity [g/m³]" + lastWSdataStrings[4] + Environment.NewLine + Environment.NewLine;
+                // retStr += string.Join(" ; ", Contents.Last()) + Environment.NewLine;
+            }
+
+
+            // R2SLufftUMBappPath
+            if (Directory.Exists(R2SLufftUMBappPath))
+            {
+                List<FileInfo> lTXTdataFilesInfoList =
+                    ((new DirectoryInfo(R2SLufftUMBappPath)).GetFiles("????-??-??Values.Txt",
+                        SearchOption.AllDirectories)).ToList();
+                lTXTdataFilesInfoList.Sort((finfo1, finfo2) => finfo1.CreationTimeUtc.CompareTo(finfo2.CreationTimeUtc));
+                FileInfo lastTXTdataFileInfo = lTXTdataFilesInfoList.Last();
+                List<List<string>> Contents = ServiceTools.ReadDataFromCSV(lastTXTdataFileInfo.FullName, 2, true, ";");
+
+                List<string> lastR2SdataStrings = Contents.Last();
+
+
+                retStr +=
+                    "R2S:" + Environment.NewLine +
+                    "Date,time:" + lastR2SdataStrings[0] + Environment.NewLine +
+                    "Precipitation absol. [mm]: " + lastR2SdataStrings[1] + Environment.NewLine +
+                    "Precipitation type: " + lastR2SdataStrings[2] + Environment.NewLine +
+                    "Ambient temperature [°C]" + lastR2SdataStrings[3] + Environment.NewLine +
+                    "Precipitat.intensity [mil/h]: " + lastR2SdataStrings[4] + Environment.NewLine + Environment.NewLine;
+                //retStr += string.Join(" ; ", Contents.Last()) + Environment.NewLine;
+            }
+
+
+
+            // VentusLufftUMBappPath
+            // Date time ; Virtual temperature [°C] ; Wind speed [m/s] ; Wind speed [m/s] Vect. ; Wind direction [°] ; Wind direction [°] Vect. ; Abs. air pressure [hPa] ; Wind value quality [%]
+            if (Directory.Exists(VentusLufftUMBappPath))
+            {
+                List<FileInfo> lTXTdataFilesInfoList =
+                    ((new DirectoryInfo(VentusLufftUMBappPath)).GetFiles("????-??-??Values.Txt",
+                        SearchOption.AllDirectories)).ToList();
+                lTXTdataFilesInfoList.Sort((finfo1, finfo2) => finfo1.CreationTimeUtc.CompareTo(finfo2.CreationTimeUtc));
+                FileInfo lastTXTdataFileInfo = lTXTdataFilesInfoList.Last();
+                List<List<string>> Contents = ServiceTools.ReadDataFromCSV(lastTXTdataFileInfo.FullName, 2, true, ";");
+                List<string> lastVentusdataStrings = Contents.Last();
+                retStr +=
+                    "Ventus:" + Environment.NewLine +
+                    "Date,time: " + lastVentusdataStrings[0] + Environment.NewLine +
+                    "Virtual temperature [°C]: " + lastVentusdataStrings[1] + Environment.NewLine +
+                    "Wind speed [m/s]: " + lastVentusdataStrings[2] + Environment.NewLine +
+                    "Wind speed [m/s] Vect.:" + lastVentusdataStrings[3] + Environment.NewLine +
+                    "Wind direction [°]: " + lastVentusdataStrings[4] + Environment.NewLine +
+                    "Wind direction [°] Vect.: " + lastVentusdataStrings[5] + Environment.NewLine +
+                    "Abs. air pressure [hPa]: " + lastVentusdataStrings[6] + Environment.NewLine +
+                    "Wind value quality [%]: " + lastVentusdataStrings[7] + Environment.NewLine + Environment.NewLine;
+                //retStr += string.Join(" ; ", Contents.Last()) + Environment.NewLine;
+            }
+
+            return retStr;
+        }
+
+
+
+
+
+
+        #region exec Sshell commands methods
+
+        private bool ExecSShellCommandsOnBotServer(List<string> commands, out Exception retEx)
+        {
+            retEx = null;
+
+            Sshell sh = new Sshell()
+            {
+                SSHHost = strRemoteBotServerHost,
+                SSHPort = intRemoteBotServerPort,
+                SSHAuthMode = SshellSSHAuthModes.amPublicKey,
+                SSHUser = strRemoteBotServerSSHusername
+            };
+
+            try
+            {
+                sh.SSHCert = new Certificate(CertStoreTypes.cstPPKFile, strRemoteBotServerHostAuthKeyFile, "", "*");
+            }
+            catch (Exception ex)
+            {
+                retEx = ex;
+                return false;
+            }
+
+            try
+            {
+                sh.SSHAcceptServerHostKey = new Certificate(CertStoreTypes.cstSSHPublicKeyFile,
+                    strAcceptedSSHhostCertPublicKeyFile, "", "*");
+            }
+            catch (Exception ex)
+            {
+                retEx = ex;
+                return false;
+            }
+
+
+            sh.OnSSHServerAuthentication += Sh_OnSSHServerAuthentication;
+            sh.OnStdout += Sh_OnStdout;
+
+            foreach (string command in commands)
+            {
+                sh.Execute(command);
+            }
+
+            return true;
+        }
+
+
+
+        private void Sh_OnStdout(object sender, SshellStdoutEventArgs e)
+        {
+            theLogWindow = ServiceTools.LogAText(theLogWindow, e.Text);
+        }
+
+
+
+        private void Sh_OnSSHServerAuthentication(object sender, SshellSSHServerAuthenticationEventArgs e)
+        {
+            Sshell sh = sender as Sshell;
+            if (!e.Accept)
+            {
+                try
+                {
+                    sh.Interrupt();
+                    sh.SSHLogoff();
+                    sh.Dispose();
+                }
+                catch (Exception ex)
+                {
+                    throw ex;
+                }
+            }
+        }
+
+        #endregion exec Sshell commands methods
+
+
+
+
+        #region scp file methods
+
+        private bool SendFileToBotServer(string localFile, string remoteFile, out Exception retEx)
+        {
+            retEx = null;
+            if (!File.Exists(strRemoteBotServerHostAuthKeyFile))
+            {
+                retEx =
+                    new FileNotFoundException("unable to locate bot server auth key file: " +
+                                              strRemoteBotServerHostAuthKeyFile);
+                return false;
+            }
+
+            if (!File.Exists(strAcceptedSSHhostCertPublicKeyFile))
+            {
+                retEx =
+                    new FileNotFoundException("unable to locate bot server accepted host key file: " +
+                                              strAcceptedSSHhostCertPublicKeyFile);
+                return false;
+            }
+
+
+
+            Scp scp = new Scp()
+            {
+                SSHHost = strRemoteBotServerHost,
+                SSHPort = intRemoteBotServerPort,
+                SSHAuthMode = ScpSSHAuthModes.amPublicKey,
+                SSHUser = strRemoteBotServerSSHusername
+            };
+
+
+            try
+            {
+                scp.SSHCert = new Certificate(CertStoreTypes.cstPPKFile, strRemoteBotServerHostAuthKeyFile, "", "*");
+            }
+            catch (Exception ex)
+            {
+                retEx = ex;
+                return false;
+            }
+            
+
+
+            try
+            {
+                scp.SSHAcceptServerHostKey = new Certificate(CertStoreTypes.cstSSHPublicKeyFile,
+                    strAcceptedSSHhostCertPublicKeyFile, "", "*");
+            }
+            catch (Exception ex)
+            {
+                retEx = ex;
+                return false;
+            }
+            
+
+            scp.OnSSHServerAuthentication += Scp_OnSSHServerAuthentication;
+            scp.RemoteFile = remoteFile;
+            scp.LocalFile = localFile;
+            scp.OnEndTransfer += Scp_OnEndTransfer;
+
+            try
+            {
+                scp.Upload();
+            }
+            catch (Exception ex)
+            {
+                retEx = ex;
+                return false;
+            }
+            
+            return true;
+
+        }
+
+
+        private void Scp_OnEndTransfer(object sender, ScpEndTransferEventArgs e)
+        {
+            if (theLogWindow != null)
+            {
+                theLogWindow = ServiceTools.LogAText(theLogWindow, "file " + e.LocalFile + " transfer finished");
+            }
+        }
+
+
+
+        private void Scp_OnSSHServerAuthentication(object sender, ScpSSHServerAuthenticationEventArgs e)
+        {
+            Scp scpSender = sender as Scp;
+            if (!e.Accept)
+            {
+                try
+                {
+                    scpSender.Interrupt();
+                    scpSender.SSHLogoff();
+                    scpSender.Dispose();
+                }
+                catch (Exception ex)
+                {
+                    throw ex;
+                }
+            }
+        }
+
+        #endregion scp file methods
+
+
+
+
+        private Image<Bgr, byte> CurrentImagesCouple(out string FilenameToSend)
+        {
+            DirectoryInfo dir = new DirectoryInfo(outputSnapshotsDirectory);
+            List<FileInfo> lImagesFilesID1 = dir.GetFiles("*devID1.jpg", SearchOption.AllDirectories).ToList();
+            lImagesFilesID1.Sort((finfo1, finfo2) => finfo1.CreationTimeUtc.CompareTo(finfo2.CreationTimeUtc));
+            string strLastImageID1Fname = lImagesFilesID1.Last().FullName;
+
+            FilenameToSend = strLastImageID1Fname.Replace("devID1", "");
+            FilenameToSend = Path.GetFileName(FilenameToSend);
+
+            List<FileInfo> lImagesFilesID2 = dir.GetFiles("*devID2.jpg", SearchOption.AllDirectories).ToList();
+            lImagesFilesID2.Sort((finfo1, finfo2) => finfo1.CreationTimeUtc.CompareTo(finfo2.CreationTimeUtc));
+            string strLastImageID2Fname = lImagesFilesID2.Last().FullName;
+
+            Image<Bgr, byte> img1 = new Image<Bgr, byte>(strLastImageID1Fname);
+            Image<Bgr, byte> img2 = new Image<Bgr, byte>(strLastImageID2Fname);
+
+            Size img1Size = img1.Size;
+            Size resimgSize = new Size(img1Size.Width * 2, img1Size.Height);
+
+            Image<Bgr, byte> resImg = new Image<Bgr, byte>(resimgSize);
+            Graphics g = Graphics.FromImage(resImg.Bitmap);
+            g.DrawImage(img1.Bitmap, new Point(0, 0));
+            g.DrawImage(img2.Bitmap, new Point(img1Size.Width, 0));
+
+            resImg = resImg.Resize(0.25d, Emgu.CV.CvEnum.INTER.CV_INTER_CUBIC);
+
+            return resImg;
+        }
+
+
+
+
+        #endregion periodical data processing for bot snapshots
+
+
+
 
     }
 
