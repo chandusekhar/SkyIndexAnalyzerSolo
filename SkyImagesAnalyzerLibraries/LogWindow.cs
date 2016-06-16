@@ -22,6 +22,18 @@ namespace SkyImagesAnalyzerLibraries
 
         private ConcurrentQueue<LinesToDisplay> cqLinesToLog = new ConcurrentQueue<LinesToDisplay>();
         private BackgroundWorker bgwQueueOutputWorker = new BackgroundWorker();
+        private string _title = "Log window";
+
+
+        public string title
+        {
+            get { return _title; }
+            set
+            {
+                _title = value;
+                Text = _title;
+            }
+        }
 
 
         public LogWindow()
@@ -100,6 +112,10 @@ namespace SkyImagesAnalyzerLibraries
             {
                 bgwQueueOutputWorker.CancelAsync();
                 this.Close();
+            }
+            if (e.KeyChar == 'c')
+            {
+                ClearLog(0);
             }
         }
 

@@ -1,0 +1,329 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>nsoftware.IPWorksIPC</name>
+    </assembly>
+    <members>
+        <member name="T:nsoftware.IPWorksIPC.PipeclientConnectedEventArgs">
+            <summary>Event arguments for the Connected event.</summary>
+        </member>
+        <member name="T:nsoftware.IPWorksIPC.PipeclientDataInEventArgs">
+            <summary>Event arguments for the DataIn event.</summary>
+        </member>
+        <member name="T:nsoftware.IPWorksIPC.PipeclientDisconnectedEventArgs">
+            <summary>Event arguments for the Disconnected event.</summary>
+        </member>
+        <member name="T:nsoftware.IPWorksIPC.PipeclientErrorEventArgs">
+            <summary>Event arguments for the Error event.</summary>
+        </member>
+        <member name="T:nsoftware.IPWorksIPC.PipeclientReadyToSendEventArgs">
+            <summary>Event arguments for the ReadyToSend event.</summary>
+        </member>
+        <member name="M:nsoftware.IPWorksIPC.Pipeclient.SetDataToSend(System.Byte[],System.Int32,System.Int32)">
+            <summary>A string of data to be sent over the connected pipe.</summary>
+        </member>
+        <member name="M:nsoftware.IPWorksIPC.Pipeclient.SetEOL(System.Byte[],System.Int32,System.Int32)">
+            <summary>Used to break the incoming data stream into chunks separated by EOL.</summary>
+        </member>
+        <member name="M:nsoftware.IPWorksIPC.Pipeclient.Config(System.String)">
+            <summary>Sets or retrieves a configuration setting .</summary>
+        </member>
+        <member name="M:nsoftware.IPWorksIPC.Pipeclient.Connect">
+            <summary>Connects to a named pipe.</summary>
+        </member>
+        <member name="M:nsoftware.IPWorksIPC.Pipeclient.Disconnect">
+            <summary>Disconnects from the named pipe.</summary>
+        </member>
+        <member name="M:nsoftware.IPWorksIPC.Pipeclient.DoEvents">
+            <summary>Processes events from the internal message queue.</summary>
+        </member>
+        <member name="M:nsoftware.IPWorksIPC.Pipeclient.GetLine">
+            <summary>Gets a line of text from the server.</summary>
+        </member>
+        <member name="M:nsoftware.IPWorksIPC.Pipeclient.Interrupt">
+            <summary>Interrupts the current action.</summary>
+        </member>
+        <member name="M:nsoftware.IPWorksIPC.Pipeclient.Send(System.Byte[])">
+            <summary>Sends data over the connected pipe.</summary>
+        </member>
+        <member name="M:nsoftware.IPWorksIPC.Pipeclient.SendFile(System.String)">
+            <summary>Sends the file over the connected pipe.</summary>
+        </member>
+        <member name="M:nsoftware.IPWorksIPC.Pipeclient.SendLine(System.String)">
+            <summary>Sends a string followed by a newline.</summary>
+        </member>
+        <member name="M:nsoftware.IPWorksIPC.Pipeclient.SetReceiveStream(System.IO.Stream)">
+            <summary>Sets the stream to which received data will be written.</summary>
+        </member>
+        <member name="M:nsoftware.IPWorksIPC.Pipeclient.SetSendStream(System.IO.Stream)">
+            <summary>Reads content from the stream and sends it to the server.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksIPC.Pipeclient.RuntimeLicense">
+            <summary>Runtime license key (derived from the development license, if any).</summary>
+        </member>
+        <member name="E:nsoftware.IPWorksIPC.Pipeclient.OnConnected">
+            <summary>Fired immediately after a connection completes.</summary>
+        </member>
+        <member name="E:nsoftware.IPWorksIPC.Pipeclient.OnDataIn">
+            <summary>Fired when data (complete lines) comes in.</summary>
+        </member>
+        <member name="E:nsoftware.IPWorksIPC.Pipeclient.OnDisconnected">
+            <summary>Fired when a connection is closed.</summary>
+        </member>
+        <member name="E:nsoftware.IPWorksIPC.Pipeclient.OnError">
+            <summary>Information about errors during data delivery.</summary>
+        </member>
+        <member name="E:nsoftware.IPWorksIPC.Pipeclient.OnReadyToSend">
+            <summary>Fired when the component is ready to send data.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksIPC.Pipeclient.AcceptData">
+            <summary>Enables or disables data reception (the DataIn event).</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksIPC.Pipeclient.BytesSent">
+            <summary>The number of bytes actually sent after an assignment to DataToSend .</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksIPC.Pipeclient.Connected">
+            <summary>Triggers a connection or disconnection.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksIPC.Pipeclient.DataToSendB">
+            <summary>A string of data to be sent over the connected pipe.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksIPC.Pipeclient.DataToSend">
+            <summary>A string of data to be sent over the connected pipe.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksIPC.Pipeclient.EOLB">
+            <summary>Used to break the incoming data stream into chunks separated by EOL.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksIPC.Pipeclient.EOL">
+            <summary>Used to break the incoming data stream into chunks separated by EOL.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksIPC.Pipeclient.PipeName">
+            <summary>The name of the pipe.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksIPC.Pipeclient.RecordLength">
+            <summary>The length of received data records.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksIPC.Pipeclient.SingleLineMode">
+            <summary>Special mode for line-oriented protocols.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksIPC.Pipeclient.Timeout">
+            <summary>A timeout for the component.</summary>
+        </member>
+        <member name="T:nsoftware.IPWorksIPC.PipeexecErrorEventArgs">
+            <summary>Event arguments for the Error event.</summary>
+        </member>
+        <member name="T:nsoftware.IPWorksIPC.PipeexecReadyToSendEventArgs">
+            <summary>Event arguments for the ReadyToSend event.</summary>
+        </member>
+        <member name="T:nsoftware.IPWorksIPC.PipeexecStderrEventArgs">
+            <summary>Event arguments for the Stderr event.</summary>
+        </member>
+        <member name="T:nsoftware.IPWorksIPC.PipeexecStdoutEventArgs">
+            <summary>Event arguments for the Stdout event.</summary>
+        </member>
+        <member name="M:nsoftware.IPWorksIPC.Pipeexec.SetEOL(System.Byte[],System.Int32,System.Int32)">
+            <summary>Used to break the incoming data stream into chunks separated by EOL.</summary>
+        </member>
+        <member name="M:nsoftware.IPWorksIPC.Pipeexec.SetStdin(System.Byte[],System.Int32,System.Int32)">
+            <summary>A string of data to be sent over the connected pipe.</summary>
+        </member>
+        <member name="M:nsoftware.IPWorksIPC.Pipeexec.Config(System.String)">
+            <summary>Sets or retrieves a configuration setting .</summary>
+        </member>
+        <member name="M:nsoftware.IPWorksIPC.Pipeexec.DoEvents">
+            <summary>Processes events from the internal message queue.</summary>
+        </member>
+        <member name="M:nsoftware.IPWorksIPC.Pipeexec.GetLine">
+            <summary>Gets a line of text from the server.</summary>
+        </member>
+        <member name="M:nsoftware.IPWorksIPC.Pipeexec.Interrupt">
+            <summary>Interrupts the current action.</summary>
+        </member>
+        <member name="M:nsoftware.IPWorksIPC.Pipeexec.Send(System.Byte[])">
+            <summary>Sends data over the connected pipe.</summary>
+        </member>
+        <member name="M:nsoftware.IPWorksIPC.Pipeexec.SendFile(System.String)">
+            <summary>Sends the file over the connected pipe.</summary>
+        </member>
+        <member name="M:nsoftware.IPWorksIPC.Pipeexec.SendLine(System.String)">
+            <summary>Sends a string followed by a newline.</summary>
+        </member>
+        <member name="M:nsoftware.IPWorksIPC.Pipeexec.StartProcess">
+            <summary>Starts the process.</summary>
+        </member>
+        <member name="M:nsoftware.IPWorksIPC.Pipeexec.StopProcess">
+            <summary>Stops the process.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksIPC.Pipeexec.RuntimeLicense">
+            <summary>Runtime license key (derived from the development license, if any).</summary>
+        </member>
+        <member name="E:nsoftware.IPWorksIPC.Pipeexec.OnError">
+            <summary>Information about errors during data delivery.</summary>
+        </member>
+        <member name="E:nsoftware.IPWorksIPC.Pipeexec.OnReadyToSend">
+            <summary>Fired when the component is ready to send data.</summary>
+        </member>
+        <member name="E:nsoftware.IPWorksIPC.Pipeexec.OnStderr">
+            <summary>Fired when data come in through stderr.</summary>
+        </member>
+        <member name="E:nsoftware.IPWorksIPC.Pipeexec.OnStdout">
+            <summary>Fired when data come in through stdout.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksIPC.Pipeexec.AcceptData">
+            <summary>Enables or disables data reception (the Stdout and Stderr events).</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksIPC.Pipeexec.BytesSent">
+            <summary>The number of bytes actually sent after an assignment to Stdin.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksIPC.Pipeexec.EOLB">
+            <summary>Used to break the incoming data stream into chunks separated by EOL.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksIPC.Pipeexec.EOL">
+            <summary>Used to break the incoming data stream into chunks separated by EOL.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksIPC.Pipeexec.ProcessArgs">
+            <summary>The arguments to pass to the process.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksIPC.Pipeexec.ProcessFileName">
+            <summary>The path to the file on disk to execute.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksIPC.Pipeexec.ProcessRunning">
+            <summary>Whether the process is running.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksIPC.Pipeexec.ProcessWorkingDir">
+            <summary>The working directory of the process.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksIPC.Pipeexec.SingleLineMode">
+            <summary>Special mode for line-oriented protocols.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksIPC.Pipeexec.StdinB">
+            <summary>A string of data to be sent over the connected pipe.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksIPC.Pipeexec.Stdin">
+            <summary>A string of data to be sent over the connected pipe.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksIPC.Pipeexec.Timeout">
+            <summary>A timeout for the component.</summary>
+        </member>
+        <member name="T:nsoftware.IPWorksIPC.PipeserverConnectedEventArgs">
+            <summary>Event arguments for the Connected event.</summary>
+        </member>
+        <member name="T:nsoftware.IPWorksIPC.PipeserverDataInEventArgs">
+            <summary>Event arguments for the DataIn event.</summary>
+        </member>
+        <member name="T:nsoftware.IPWorksIPC.PipeserverDisconnectedEventArgs">
+            <summary>Event arguments for the Disconnected event.</summary>
+        </member>
+        <member name="T:nsoftware.IPWorksIPC.PipeserverErrorEventArgs">
+            <summary>Event arguments for the Error event.</summary>
+        </member>
+        <member name="T:nsoftware.IPWorksIPC.PipeserverReadyToSendEventArgs">
+            <summary>Event arguments for the ReadyToSend event.</summary>
+        </member>
+        <member name="M:nsoftware.IPWorksIPC.Pipeserver.SetDefaultEOL(System.Byte[],System.Int32,System.Int32)">
+            <summary>A default EOL value to be used by incoming connections.</summary>
+        </member>
+        <member name="M:nsoftware.IPWorksIPC.Pipeserver.Config(System.String)">
+            <summary>Sets or retrieves a configuration setting .</summary>
+        </member>
+        <member name="M:nsoftware.IPWorksIPC.Pipeserver.Disconnect(System.String)">
+            <summary>Disconnect the specified client.</summary>
+        </member>
+        <member name="M:nsoftware.IPWorksIPC.Pipeserver.DoEvents">
+            <summary>Processes events from the internal message queue.</summary>
+        </member>
+        <member name="M:nsoftware.IPWorksIPC.Pipeserver.Interrupt(System.String)">
+            <summary>Interrupts a synchronous send to the remote host.</summary>
+        </member>
+        <member name="M:nsoftware.IPWorksIPC.Pipeserver.Send(System.String,System.Byte[])">
+            <summary>Sends data to the remote host.</summary>
+        </member>
+        <member name="M:nsoftware.IPWorksIPC.Pipeserver.SendFile(System.String,System.String)">
+            <summary>Send file to the remote host.</summary>
+        </member>
+        <member name="M:nsoftware.IPWorksIPC.Pipeserver.SendLine(System.String,System.String)">
+            <summary>Sends a string followed by a newline.</summary>
+        </member>
+        <member name="M:nsoftware.IPWorksIPC.Pipeserver.Shutdown">
+            <summary>Shuts down the server.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksIPC.Pipeserver.RuntimeLicense">
+            <summary>Runtime license key (derived from the development license, if any).</summary>
+        </member>
+        <member name="E:nsoftware.IPWorksIPC.Pipeserver.OnConnected">
+            <summary>Fired immediately after a connection completes.</summary>
+        </member>
+        <member name="E:nsoftware.IPWorksIPC.Pipeserver.OnDataIn">
+            <summary>Fired when data comes in.</summary>
+        </member>
+        <member name="E:nsoftware.IPWorksIPC.Pipeserver.OnDisconnected">
+            <summary>Fires when a client disconnects.</summary>
+        </member>
+        <member name="E:nsoftware.IPWorksIPC.Pipeserver.OnError">
+            <summary>Information about errors during data delivery.</summary>
+        </member>
+        <member name="E:nsoftware.IPWorksIPC.Pipeserver.OnReadyToSend">
+            <summary>Fired when the component is ready to send data.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksIPC.Pipeserver.Connections">
+            <summary>A collection of currently connected clients.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksIPC.Pipeserver.DefaultEOLB">
+            <summary>A default EOL value to be used by incoming connections.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksIPC.Pipeserver.DefaultEOL">
+            <summary>A default EOL value to be used by incoming connections.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksIPC.Pipeserver.DefaultMaxLineLength">
+            <summary>The default maximum line length value for inbound connections.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksIPC.Pipeserver.DefaultSingleLineMode">
+            <summary>Tells the component whether or not to treat new connections as line-oriented.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksIPC.Pipeserver.DefaultTimeout">
+            <summary>An initial timeout value to be used by incoming connections.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksIPC.Pipeserver.Listening">
+            <summary>If True, the component accepts incoming connections.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksIPC.Pipeserver.PipeName">
+            <summary>The name of the pipe.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksIPC.PipeConnection.AcceptData">
+            <summary>Setting this property to False, temporarily disables data reception (and the DataIn event) on the connection.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksIPC.PipeConnection.BytesSent">
+            <summary>This property shows how many bytes were sent after the last assignment to DataToSend .</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksIPC.PipeConnection.ConnectionId">
+            <summary>This property contains an identifier generated by the component to identify each connection.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksIPC.PipeConnection.DataToSendB">
+            <summary>This property contains a string of data to be sent to the remote host.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksIPC.PipeConnection.DataToSend">
+            <summary>This property contains a string of data to be sent to the remote host.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksIPC.PipeConnection.EOLB">
+            <summary>The EOL property is used to define boundaries in the input stream using the value of the property.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksIPC.PipeConnection.EOL">
+            <summary>The EOL property is used to define boundaries in the input stream using the value of the property.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksIPC.PipeConnection.MaxLineLength">
+            <summary>This property is the size of an internal buffer which holds received data while waiting for an EOL string.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksIPC.PipeConnection.SingleLineMode">
+            <summary>This property shows the special mode for line-oriented protocols.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksIPC.PipeConnection.Timeout">
+            <summary>This property contains a timeout for the component.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksIPC.PipeConnection.UploadStream">
+            <summary>Setting this property uploads the data in the specified stream to the current connection.</summary>
+        </member>
+        <member name="P:nsoftware.IPWorksIPC.PipeConnection.Connected">
+            <summary>This property is used to disconnect individual connections and/or show their status.</summary>
+        </member>
+    </members>
+</doc>

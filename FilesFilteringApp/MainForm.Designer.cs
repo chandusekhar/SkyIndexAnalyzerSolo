@@ -45,6 +45,7 @@
             this.btnStatsDirPathSelect = new System.Windows.Forms.Button();
             this.btnProperties = new System.Windows.Forms.Button();
             this.bgwCopier = new System.ComponentModel.BackgroundWorker();
+            this.btnFilterSnapshotsBySunElevation = new System.Windows.Forms.Button();
             this.tableLayoutPanel1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -59,7 +60,7 @@
             this.tableLayoutPanel1.Controls.Add(this.btnFromPathSelect, 2, 1);
             this.tableLayoutPanel1.Controls.Add(this.btnToPathSelect, 2, 5);
             this.tableLayoutPanel1.Controls.Add(this.btnDoWork, 0, 6);
-            this.tableLayoutPanel1.Controls.Add(this.prbUniversalProgress, 0, 7);
+            this.tableLayoutPanel1.Controls.Add(this.prbUniversalProgress, 0, 8);
             this.tableLayoutPanel1.Controls.Add(this.rtbFromPath, 1, 1);
             this.tableLayoutPanel1.Controls.Add(this.rtbToPath, 1, 5);
             this.tableLayoutPanel1.Controls.Add(this.label3, 0, 2);
@@ -69,21 +70,22 @@
             this.tableLayoutPanel1.Controls.Add(this.rtbGrIxYRGBstatsDir, 1, 3);
             this.tableLayoutPanel1.Controls.Add(this.btnStatsDirPathSelect, 2, 3);
             this.tableLayoutPanel1.Controls.Add(this.btnProperties, 2, 0);
+            this.tableLayoutPanel1.Controls.Add(this.btnFilterSnapshotsBySunElevation, 0, 7);
             this.tableLayoutPanel1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tableLayoutPanel1.Location = new System.Drawing.Point(0, 0);
             this.tableLayoutPanel1.Margin = new System.Windows.Forms.Padding(4);
             this.tableLayoutPanel1.Name = "tableLayoutPanel1";
-            this.tableLayoutPanel1.RowCount = 8;
+            this.tableLayoutPanel1.RowCount = 9;
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 60F));
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 40F));
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 40F));
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 40F));
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 20F));
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 40F));
-            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
+            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 50F));
+            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 50F));
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 40F));
-            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 20F));
-            this.tableLayoutPanel1.Size = new System.Drawing.Size(1342, 353);
+            this.tableLayoutPanel1.Size = new System.Drawing.Size(1342, 466);
             this.tableLayoutPanel1.TabIndex = 0;
             // 
             // label1
@@ -144,12 +146,14 @@
             this.tableLayoutPanel1.SetColumnSpan(this.btnDoWork, 3);
             this.btnDoWork.Dock = System.Windows.Forms.DockStyle.Fill;
             this.btnDoWork.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnDoWork.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this.btnDoWork.Location = new System.Drawing.Point(4, 244);
             this.btnDoWork.Margin = new System.Windows.Forms.Padding(4);
             this.btnDoWork.Name = "btnDoWork";
-            this.btnDoWork.Size = new System.Drawing.Size(1334, 65);
+            this.btnDoWork.Size = new System.Drawing.Size(1334, 85);
             this.btnDoWork.TabIndex = 7;
-            this.btnDoWork.Text = "SELECT AND COPY";
+            this.btnDoWork.Text = "SELECT AND COPY (snapshots using observation time, with concurrent data XML files" +
+    ")";
             this.btnDoWork.UseVisualStyleBackColor = false;
             this.btnDoWork.Click += new System.EventHandler(this.btnDoWork_Click);
             // 
@@ -157,7 +161,7 @@
             // 
             this.tableLayoutPanel1.SetColumnSpan(this.prbUniversalProgress, 3);
             this.prbUniversalProgress.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.prbUniversalProgress.Location = new System.Drawing.Point(4, 317);
+            this.prbUniversalProgress.Location = new System.Drawing.Point(4, 430);
             this.prbUniversalProgress.Margin = new System.Windows.Forms.Padding(4);
             this.prbUniversalProgress.Maximum = 1000;
             this.prbUniversalProgress.Name = "prbUniversalProgress";
@@ -278,11 +282,26 @@
             this.bgwCopier.ProgressChanged += new System.ComponentModel.ProgressChangedEventHandler(this.bgwCopier_ProgressChanged);
             this.bgwCopier.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(this.bgwCopier_RunWorkerCompleted);
             // 
+            // btnFilterSnapshotsBySunElevation
+            // 
+            this.btnFilterSnapshotsBySunElevation.BackColor = System.Drawing.Color.Gainsboro;
+            this.tableLayoutPanel1.SetColumnSpan(this.btnFilterSnapshotsBySunElevation, 3);
+            this.btnFilterSnapshotsBySunElevation.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.btnFilterSnapshotsBySunElevation.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnFilterSnapshotsBySunElevation.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.btnFilterSnapshotsBySunElevation.Location = new System.Drawing.Point(3, 336);
+            this.btnFilterSnapshotsBySunElevation.Name = "btnFilterSnapshotsBySunElevation";
+            this.btnFilterSnapshotsBySunElevation.Size = new System.Drawing.Size(1336, 87);
+            this.btnFilterSnapshotsBySunElevation.TabIndex = 18;
+            this.btnFilterSnapshotsBySunElevation.Text = "Remove snapshot images using sun elevation restriction";
+            this.btnFilterSnapshotsBySunElevation.UseVisualStyleBackColor = false;
+            this.btnFilterSnapshotsBySunElevation.Click += new System.EventHandler(this.btnFilterSnapshotsBySunElevation_Click);
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1342, 353);
+            this.ClientSize = new System.Drawing.Size(1342, 466);
             this.Controls.Add(this.tableLayoutPanel1);
             this.KeyPreview = true;
             this.Margin = new System.Windows.Forms.Padding(4);
@@ -316,6 +335,7 @@
         private System.Windows.Forms.RichTextBox rtbGrIxYRGBstatsDir;
         private System.Windows.Forms.Button btnStatsDirPathSelect;
         private System.Windows.Forms.Button btnProperties;
+        private System.Windows.Forms.Button btnFilterSnapshotsBySunElevation;
     }
 }
 

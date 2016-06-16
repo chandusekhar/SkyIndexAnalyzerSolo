@@ -29,12 +29,45 @@ namespace FilesFilteringApp
         private TimeSpan filterTolerance = new TimeSpan(0, 1, 0);
         private LogWindow theLogWindow = null;
 
+        private TimeSpan TimeSpanForConcurrentDataMappingTolerance;
 
+
+
+
+        #region Form behaviour
 
         public MainForm()
         {
             InitializeComponent();
         }
+
+
+
+        private void MainForm_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            if (e.KeyChar == 27)//escape key
+            {
+                this.Close();
+            }
+        }
+
+
+
+
+        private void btnProperties_Click(object sender, EventArgs e)
+        {
+            PropertiesEditor propForm = new PropertiesEditor(defaultProperties, defaultPropertiesXMLfileName);
+            propForm.FormClosed += new FormClosedEventHandler(PropertiesFormClosed);
+            propForm.ShowDialog();
+        }
+
+
+
+        private void PropertiesFormClosed(object sender, FormClosedEventArgs e)
+        {
+            readDefaultProperties();
+        }
+
 
 
 
@@ -96,7 +129,7 @@ namespace FilesFilteringApp
             else
             {
 
-                object[] args = new object[] { rtbFromPath.Text, rtbConcurrentDataDir.Text, rtbToPath.Text, rtbGrIxYRGBstatsDir.Text };
+                object[] args = new object[] { CopyImagesFrom_Path, rtbConcurrentDataDir.Text, rtbToPath.Text, rtbGrIxYRGBstatsDir.Text };
 
                 bgwCopier.RunWorkerAsync(args);
                 ThreadSafeOperations.ToggleButtonState(btnDoWork, true, "CANCEL", true);
@@ -111,66 +144,13 @@ namespace FilesFilteringApp
         }
 
 
-
-        //private void CopierWork()
-        //{
-        //    //ThreadSafeOperations.SetTextTB(tbLog, "#008" + Environment.NewLine, true);
-        //    //System.ComponentModel.BackgroundWorker SelfWorker = sender as System.ComponentModel.BackgroundWorker;
-
-        //    DirectoryInfo dir = new DirectoryInfo(tbFromPath.Text);
-        //    String destDirectory = tbToPath.Text + "\\";
-
-        //    //ThreadSafeOperations.SetTextTB(tbLog, "#009" + Environment.NewLine, true);
-        //    if (!dir.Exists)
-        //    {
-        //        ThreadSafeOperations.SetTextTB(tbLog, "Операция не выполнена. Не найдена директория:" + Environment.NewLine + tbFromPath.Text + Environment.NewLine, true);
-        //        return;
-        //    }
-
-        //    //ThreadSafeOperations.SetTextTB(tbLog, "#010" + Environment.NewLine, true);
-        //    FileInfo[] FileList2Process = dir.GetFiles("*.jpg", SearchOption.AllDirectories);
-        //    int filesCount = FileList2Process.Length;
-        //    ThreadSafeOperations.SetTextTB(tbLog, "searching in directory: " + dir.FullName + Environment.NewLine, true);
-        //    ThreadSafeOperations.SetTextTB(tbLog, "files found count: " + filesCount + Environment.NewLine, true);
-
-        //    String usedDateTimes = "";
-
-        //    int counter = 0;
-        //    foreach (FileInfo fileInfo in FileList2Process)
-        //    {
-        //        //if (SelfWorker.CancellationPending)
-        //        //{
-        //        //    break;
-        //        //}
-        //        //counter++;
-        //        //double percCounter = (double)counter * 1000.0d / (double)filesCount;
-        //        //SelfWorker.ReportProgress(Convert.ToInt32(percCounter));
+        #endregion Form behaviour
 
 
-        //        Image anImage = Image.FromFile(fileInfo.FullName);
-        //        ImageInfo newIInfo = new ImageInfo(anImage);
-        //        ThreadSafeOperations.SetTextTB(tbLog, "processing file " + fileInfo.Name + Environment.NewLine, true);
 
 
-        //        String curDateTime = "";
-        //        int minute = 0;
-        //        String dateTime = (String)newIInfo.getValueByKey("DateTime");
-        //        curDateTime = dateTime;
-        //        minute = Convert.ToInt32(dateTime.Substring(14, 2));
 
-        //        if ((minute == 0) && (!usedDateTimes.Contains(curDateTime.Substring(0, 16))))
-        //        {
-        //            usedDateTimes = usedDateTimes + Environment.NewLine + curDateTime.Substring(0, 16);
-        //            String newFileName = destDirectory + curDateTime.Substring(0, 16).Replace(":", "-").Replace(" ", "-") + "-" + fileInfo.Name;
-        //            File.Copy(fileInfo.FullName, newFileName);
-        //            ThreadSafeOperations.SetTextTB(tbLog, "COPY: " + fileInfo.FullName + "   >>>   " + newFileName + Environment.NewLine, true);
-        //        }
-        //    }
-
-        //    bgwCopier_RunWorkerCompleted(null, null);
-        //}
-
-
+        #region bgwCopier
 
         private void bgwCopier_DoWork(object sender, DoWorkEventArgs e)
         {
@@ -286,7 +266,7 @@ namespace FilesFilteringApp
                 //minute = Convert.ToInt32(strDateTimeEXIF.Substring(14, 2));
 
                 //if ((minute == 0) && (!listUsedHours.Contains(theHour)))
-                if (new TimeSpan(Math.Abs((theHour-curImgDateTime).Ticks)) <= filterTolerance)
+                if (new TimeSpan(Math.Abs((theHour - curImgDateTime).Ticks)) <= filterTolerance)
                 {
                     #region copy the image file itself
                     listUsedHours.Add(theHour);
@@ -297,7 +277,7 @@ namespace FilesFilteringApp
                     {
                         currDateDestDirectory = destDirectory;
                     }
-                    
+
 
 
                     String newFileName = currDateDestDirectory + fileInfo.Name;
@@ -366,7 +346,7 @@ namespace FilesFilteringApp
                         GPSdata gps = new GPSdata();
                         Tuple<string, TimeSpan> nearestConcurrentDataFile = null;
                         int concurrentDataFileIdx = 0;
-                        
+
                         while (!gps.validGPSdata)
                         {
                             nearestConcurrentDataFile = lCurrFileConcurrentDataNearest[concurrentDataFileIdx];
@@ -411,25 +391,6 @@ namespace FilesFilteringApp
 
 
 
-        static DateTime DateTimeOfString(string strDateTime)
-        {
-            // 2014:07:24 01:07:45
-            DateTime dt = new DateTime(
-                Convert.ToInt32(strDateTime.Substring(0, 4)),
-                Convert.ToInt32(strDateTime.Substring(5, 2)),
-                Convert.ToInt32(strDateTime.Substring(8, 2)),
-                Convert.ToInt32(strDateTime.Substring(11, 2)),
-                Convert.ToInt32(strDateTime.Substring(14, 2)),
-                Convert.ToInt32(strDateTime.Substring(17, 2)));
-            return dt;
-        }
-
-        
-
-
-
-
-
         static DateTime RoundToHour(DateTime dt)
         {
             long ticks = dt.Ticks + 18000000000;
@@ -442,6 +403,7 @@ namespace FilesFilteringApp
         {
             ThreadSafeOperations.UpdateProgressBar(prbUniversalProgress, e.ProgressPercentage);
         }
+
 
         private void bgwCopier_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
         {
@@ -461,33 +423,13 @@ namespace FilesFilteringApp
             ThreadSafeOperations.ToggleButtonState(btnDoWork, true, "SELECT", false);
         }
 
-
-
-        private void MainForm_KeyPress(object sender, KeyPressEventArgs e)
-        {
-            if (e.KeyChar == 27)//escape key
-            {
-                this.Close();
-            }
-        }
+        #endregion bgwCopier
 
 
 
 
-        private void btnProperties_Click(object sender, EventArgs e)
-        {
-            PropertiesEditor propForm = new PropertiesEditor(defaultProperties, defaultPropertiesXMLfileName);
-            propForm.FormClosed += new FormClosedEventHandler(PropertiesFormClosed);
-            propForm.ShowDialog();
-        }
 
-
-
-        private void PropertiesFormClosed(object sender, FormClosedEventArgs e)
-        {
-            readDefaultProperties();
-        }
-
+        #region default settings
 
         private void readDefaultProperties()
         {
@@ -496,8 +438,10 @@ namespace FilesFilteringApp
                                            Path.DirectorySeparatorChar + "settings" + Path.DirectorySeparatorChar +
                                            Path.GetFileNameWithoutExtension(Assembly.GetEntryAssembly().Location) +
                                            "-Settings.xml";
-            if (!File.Exists(defaultPropertiesXMLfileName)) return;
-            defaultProperties = ServiceTools.ReadDictionaryFromXML(defaultPropertiesXMLfileName);
+            if (File.Exists(defaultPropertiesXMLfileName))
+            {
+                defaultProperties = ServiceTools.ReadDictionaryFromXML(defaultPropertiesXMLfileName);
+            }
             bool bDefaultPropertiesHasBeenUpdated = false;
 
 
@@ -574,6 +518,21 @@ namespace FilesFilteringApp
 
 
 
+            //TimeSpanForConcurrentDataMappingTolerance
+            if (defaultProperties.ContainsKey("TimeSpanForConcurrentDataMappingTolerance"))
+            {
+                TimeSpanForConcurrentDataMappingTolerance =
+                    TimeSpan.Parse((string)defaultProperties["TimeSpanForConcurrentDataMappingTolerance"]);
+            }
+            else
+            {
+                TimeSpanForConcurrentDataMappingTolerance = new TimeSpan(0, 0, 30);
+                defaultProperties.Add("TimeSpanForConcurrentDataMappingTolerance", TimeSpanForConcurrentDataMappingTolerance.ToString());
+                bDefaultPropertiesHasBeenUpdated = true;
+            }
+
+
+
             if (bDefaultPropertiesHasBeenUpdated)
             {
                 saveDefaultProperties();
@@ -588,6 +547,7 @@ namespace FilesFilteringApp
             ServiceTools.WriteDictionaryToXml(defaultProperties, defaultPropertiesXMLfileName, false);
         }
 
+        #endregion default settings
 
 
 
@@ -632,5 +592,281 @@ namespace FilesFilteringApp
                 saveDefaultProperties();
             }
         }
+
+
+
+
+
+
+
+        #region filter snapshots using sun elevation threshold
+
+        private BackgroundWorker bgwSnapshotsFilteringWithSunElevation = null;
+
+        private void btnFilterSnapshotsBySunElevation_Click(object sender, EventArgs e)
+        {
+            theLogWindow = ServiceTools.LogAText(theLogWindow,
+                "=========== Processing started on " + DateTime.Now.ToString("s") + " ===========");
+
+            if (bgwSnapshotsFilteringWithSunElevation == null)
+            {
+                bgwSnapshotsFilteringWithSunElevation = new BackgroundWorker();
+                bgwSnapshotsFilteringWithSunElevation.WorkerSupportsCancellation = true;
+                bgwSnapshotsFilteringWithSunElevation.WorkerReportsProgress = true;
+                bgwSnapshotsFilteringWithSunElevation.DoWork += BgwSnapshotsFilteringWithSunElevation_DoWork;
+                bgwSnapshotsFilteringWithSunElevation.ProgressChanged += BgwSnapshotsFilteringWithSunElevation_ProgressChanged;
+
+                object[] args = new object[] { CopyImagesFrom_Path, ConcurrentDataXMLfilesPath, CopyImagesAndDataTo_Path };
+                bgwSnapshotsFilteringWithSunElevation.RunWorkerAsync(args);
+                ThreadSafeOperations.ToggleButtonState(btnFilterSnapshotsBySunElevation, true, "CANCEL", true);
+            }
+            else
+            {
+                if (bgwSnapshotsFilteringWithSunElevation.IsBusy)
+                {
+                    bgwSnapshotsFilteringWithSunElevation.CancelAsync();
+                }
+                else
+                {
+                    object[] args = new object[] { CopyImagesFrom_Path, ConcurrentDataXMLfilesPath, CopyImagesAndDataTo_Path };
+
+                    bgwSnapshotsFilteringWithSunElevation.RunWorkerAsync(args);
+                    ThreadSafeOperations.ToggleButtonState(btnFilterSnapshotsBySunElevation, true, "CANCEL", true);
+                }
+            }
+        }
+
+
+        private void BgwSnapshotsFilteringWithSunElevation_ProgressChanged(object sender, ProgressChangedEventArgs e)
+        {
+            ThreadSafeOperations.UpdateProgressBar(prbUniversalProgress, e.ProgressPercentage*10);
+        }
+
+
+        private class FileInfoWithSnapshotDateTime
+        {
+            public DateTime dateTime { get; set; }
+            public FileInfo finfo { get; set; }
+            public ConcurrentData concurrentData { get; set; }
+
+            public FileInfoWithSnapshotDateTime() { }
+
+            public FileInfoWithSnapshotDateTime(FileInfo _fInfo)
+            {
+                finfo = _fInfo;
+                dateTime = ConventionalTransitions.DateTimeOfSkyImageFilename(finfo.Name);
+            }
+        }
+
+
+        private void BgwSnapshotsFilteringWithSunElevation_DoWork(object sender, DoWorkEventArgs e)
+        {
+            BackgroundWorker selfWorker = sender as BackgroundWorker;
+            object[] bgwArgs = e.Argument as object[];
+            string SnapshotsBasePath = bgwArgs[0] as string;
+            string concurrentDataFilesPath = bgwArgs[1] as string;
+            string directoryToMoveFilesTo = bgwArgs[2] as string;
+
+            DirectoryInfo srcDir = new DirectoryInfo(SnapshotsBasePath);
+
+            if (!srcDir.Exists)
+            {
+                theLogWindow = ServiceTools.LogAText(theLogWindow,
+                    "Операция не выполнена. Не найдена директория:" + Environment.NewLine + SnapshotsBasePath +
+                    Environment.NewLine);
+                //ThreadSafeOperations.SetTextTB(tbLog, "Операция не выполнена. Не найдена директория:" + Environment.NewLine + fromPath + Environment.NewLine, true);
+                return;
+            }
+
+
+            List<FileInfo> lFileList2Process = srcDir.GetFiles("*.jpg", SearchOption.AllDirectories).ToList();
+            List<FileInfoWithSnapshotDateTime> lSnapshotsInfos =
+                lFileList2Process.ConvertAll(finfo => new FileInfoWithSnapshotDateTime(finfo));
+
+
+            #region read concurrent data from XML files
+
+            theLogWindow = ServiceTools.LogAText(theLogWindow, "started concurrent data reading");
+
+            List<Tuple<string, ConcurrentData>> lImagesConcurrentData = new List<Tuple<string, ConcurrentData>>();
+
+            List<string> filesListConcurrentData =
+                new List<string>(Directory.EnumerateFiles(concurrentDataFilesPath,
+                    ConventionalTransitions.ImageConcurrentDataFilesNamesPattern(), SearchOption.AllDirectories));
+
+            int totalFilesCountToRead = filesListConcurrentData.Count;
+            int filesRead = 0;
+            int currProgressPerc = 0;
+            selfWorker.ReportProgress(0);
+            List<Dictionary<string, object>> lDictionariesConcurrentData = new List<Dictionary<string, object>>();
+            foreach (string strConcDataXMLFile in filesListConcurrentData)
+            {
+                Dictionary<string, object> currDict = ServiceTools.ReadDictionaryFromXML(strConcDataXMLFile);
+                currDict.Add("XMLfileName", Path.GetFileName(strConcDataXMLFile));
+
+                lDictionariesConcurrentData.Add(currDict);
+
+                #region calculate and report progress
+
+                filesRead++;
+                double progress = 100.0d * (double)filesRead / (double)totalFilesCountToRead;
+                if (progress - (double)currProgressPerc > 1.0d)
+                {
+                    currProgressPerc = Convert.ToInt32(progress);
+                    selfWorker.ReportProgress(currProgressPerc);
+                }
+
+                if (selfWorker.CancellationPending)
+                {
+                    return;
+                }
+
+                #endregion calculate and report progress
+            }
+            lDictionariesConcurrentData.RemoveAll(dict => dict == null);
+
+
+            List<ConcurrentData> lConcurrentData =
+                lDictionariesConcurrentData.ConvertAll<ConcurrentData>(dict =>
+                {
+                    ConcurrentData retVal = null;
+                    try
+                    {
+                        retVal = new ConcurrentData(dict);
+                        GPSdata gpsOfGPSstring = new GPSdata((string) dict["GPSdata"], GPSdatasources.CloudCamArduinoGPS,
+                            retVal.datetimeUTC.Date);
+                        if (!gpsOfGPSstring.validGPSdata)
+                        {
+                            throw new Exception("invalid GPS data");
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        string strError = "couldn`t parse XML file " + dict["XMLfileName"] + " : " +
+                                          Environment.NewLine + ex.Message;
+                        return null;
+                    }
+
+                    if (retVal.gps.validGPSdata)
+                    {
+                        return retVal;
+                    }
+                    else
+                    {
+                        return null;
+                    }
+                });
+            lConcurrentData.RemoveAll(val => val == null);
+
+
+
+            // map obtained concurrent data to images by its datetime
+            theLogWindow = ServiceTools.LogAText(theLogWindow, "started concurrent data mapping");
+            int totalrecordsToMap = lSnapshotsInfos.Count;
+            int recordsMapped = 0;
+            currProgressPerc = 0;
+            selfWorker.ReportProgress(0);
+            foreach (FileInfoWithSnapshotDateTime info in lSnapshotsInfos)
+            {
+                DateTime currImgDT = info.dateTime;
+
+                ConcurrentData nearestConcurrentData = lConcurrentData.Aggregate((cDt1, cDt2) =>
+                {
+                    TimeSpan tspan1 = new TimeSpan(Math.Abs((cDt1.datetimeUTC - currImgDT).Ticks));
+                    TimeSpan tspan2 = new TimeSpan(Math.Abs((cDt2.datetimeUTC - currImgDT).Ticks));
+                    return ((tspan1 <= tspan2) ? (cDt1) : (cDt2));
+                });
+
+
+                if (new TimeSpan(Math.Abs((nearestConcurrentData.datetimeUTC - currImgDT).Ticks)) <=
+                    TimeSpanForConcurrentDataMappingTolerance)
+                {
+                    info.concurrentData = nearestConcurrentData;
+                }
+
+                #region calculate and report progress
+
+                recordsMapped++;
+                double progress = 100.0d * (double)recordsMapped / (double)totalrecordsToMap;
+                if (progress - (double)currProgressPerc > 1.0d)
+                {
+                    currProgressPerc = Convert.ToInt32(progress);
+                    selfWorker.ReportProgress(currProgressPerc);
+                }
+
+                if (selfWorker.CancellationPending)
+                {
+                    return;
+                }
+
+                #endregion calculate and report progress
+            }
+            
+            #endregion read concurrent data from XML files
+
+            List<FileInfo> filesToMove = new List<FileInfo>();
+            filesToMove.AddRange(
+                lSnapshotsInfos.Where(inf => inf.concurrentData == null).ToList().ConvertAll(inf => inf.finfo));
+            lSnapshotsInfos.RemoveAll(inf => inf.concurrentData == null);
+
+            filesToMove.AddRange(lSnapshotsInfos.Where(inf =>
+            {
+                GPSdata currGPS = new GPSdata(inf.concurrentData.GPSdata, GPSdatasources.CloudCamArduinoGPS,
+                    inf.dateTime.Date);
+                var spa = currGPS.SunZenithAzimuth();
+                return (spa.ZenithAngle >= 85.0);
+            }).ToList().ConvertAll(inf => inf.finfo));
+
+
+            totalFilesCountToRead = filesToMove.Count;
+            filesRead = 0;
+            currProgressPerc = 0;
+            selfWorker.ReportProgress(0);
+            foreach (FileInfo inf in filesToMove)
+            {
+                #region calculate and report progress
+
+                filesRead++;
+                double progress = 100.0d * (double)filesRead / (double)totalFilesCountToRead;
+                if (progress - (double)currProgressPerc > 1.0d)
+                {
+                    currProgressPerc = Convert.ToInt32(progress);
+                    selfWorker.ReportProgress(currProgressPerc);
+                }
+
+                if (selfWorker.CancellationPending)
+                {
+                    return;
+                }
+
+                #endregion calculate and report progress
+
+                string strFilenameMoveTo = directoryToMoveFilesTo +
+                                           ((directoryToMoveFilesTo.Last() == Path.DirectorySeparatorChar)
+                    ? ("")
+                    : (Path.DirectorySeparatorChar.ToString()));
+
+                string currImgFilenameRelPath = ConventionalTransitions.MakeRelativePath(inf.FullName, SnapshotsBasePath);
+                strFilenameMoveTo += currImgFilenameRelPath;
+
+                theLogWindow = ServiceTools.LogAText(theLogWindow, "moving " + inf.FullName);
+
+                if (!ServiceTools.CheckIfDirectoryExists(strFilenameMoveTo))
+                {
+                    theLogWindow = ServiceTools.LogAText(theLogWindow,
+                        "Unable to move file " + Environment.NewLine + inf.FullName + Environment.NewLine + "to:" +
+                        Environment.NewLine + strFilenameMoveTo + Environment.NewLine +
+                        "Directory couldn`t be located or created");
+                    continue;
+                }
+
+                File.Move(inf.FullName, strFilenameMoveTo);
+            }
+
+            selfWorker.ReportProgress(0);
+        }
+        
+
+        #endregion filter snapshots using sun elevation threshold
     }
 }

@@ -30,6 +30,7 @@ using SkyImagesAnalyzerLibraries;
 using SolarPositioning;
 using Timer = System.Threading.Timer;
 using nsoftware.IPWorks;
+using nsoftware.IPWorksIPC;
 using nsoftware.IPWorksSSH;
 using nsoftware.IPWorksZip;
 
@@ -219,17 +220,25 @@ namespace DataCollectorAutomator
         #endregion
 
 
-        #region CC_Moscow_bot connected properties
+        #region // CC_Moscow_bot connected properties
 
-        private TimeSpan makeCurrentSnapshotPreviewPicturePeriod = new TimeSpan(0, 1, 0);
-        private bool bSendProcessedDataTo_CC_Moscow_bot_server = false;
-        private string strRemoteBotServerHost = "krinitsky.ru";
-        private int intRemoteBotServerPort = 22;
-        private string strRemoteBotServerHostAuthKeyFile = "";
-        private string strRemoteBotServerSSHusername = "mk";
-        private string strAcceptedSSHhostCertPublicKeyFile = "";
+        //private TimeSpan makeCurrentSnapshotPreviewPicturePeriod = new TimeSpan(0, 1, 0);
+        //private bool bSendProcessedDataTo_CC_Moscow_bot_server = false;
+        //private string strRemoteBotServerHost = "krinitsky.ru";
+        //private int intRemoteBotServerPort = 22;
+        //private string strRemoteBotServerHostAuthKeyFile = "";
+        //private string strRemoteBotServerSSHusername = "mk";
+        //private string strAcceptedSSHhostCertPublicKeyFile = "";
 
-        #endregion CC_Moscow_bot connected properties
+        #endregion // CC_Moscow_bot connected properties
+
+
+        #region pipeserver for IPC broadcasting data
+
+        Pipeserver ipcPipeserver = null;
+
+        #endregion
+
 
 
         private string ImagesRoundMasksXMLfilesMappingList = Directory.GetCurrentDirectory() + Path.DirectorySeparatorChar + "settings" +
@@ -240,7 +249,7 @@ namespace DataCollectorAutomator
 
         #region periodical images processing
 
-        private TimeSpan snapshotsProcessingPeriod = new TimeSpan(0, 5, 0);
+        private TimeSpan SDCandTCCreadAndReportPeriod = new TimeSpan(0, 5, 0);
         private bool restrictSnapshotsProcessingWhenSunElevationLowerThanZero = true;
         ConcurrentExclusiveSchedulerPair scheduler;
         TaskFactory lowPriorityTaskFactory;
@@ -268,6 +277,34 @@ namespace DataCollectorAutomator
             scheduler = new ConcurrentExclusiveSchedulerPair(TaskScheduler.Default, 4);
             lowPriorityTaskFactory = new TaskFactory(scheduler.ConcurrentScheduler);
         }
+
+
+
+
+
+        private void DataCollectorMainForm_Shown(object sender, EventArgs e)
+        {
+            readDefaultProperties();
+
+            theLogWindow = ServiceTools.LogAText(theLogWindow, CommonTools.DictionaryRepresentation(defaultProperties));
+            theLogWindow.title = "Data collector 2G log";
+
+            StartIPCpipeServer();
+
+
+            cquArduinoUDPCatchedMessages.CollectionChanged += cquArduinoUDPCatchedMessages_CollectionChanged;
+
+            accDataAndDTObservableConcurrentQueue.CollectionChanged += accDataAndDTObservableConcurrentQueue_CollectionChanged;
+
+            gyroDataAndDTObservableConcurrentQueue.CollectionChanged += gyroDataAndDTObservableConcurrentQueue_CollectionChanged;
+
+            gpsDataAndDTObservableConcurrentQueue.CollectionChanged += gpsDataAndDTObservableConcurrentQueue_CollectionChanged;
+
+            pressureDataAndDTObservableConcurrentQueue.CollectionChanged += pressureDataAndDTObservableConcurrentQueue_CollectionChanged;
+
+            this.NeedToShootCameraSnapshots += DataCollectorMainForm_NeedToShootCameraSnapshots;
+        }
+
 
 
 
@@ -773,17 +810,17 @@ namespace DataCollectorAutomator
                     (string)(defaultProperties["strSnapshotsProcessingPeriodSeconds"]);
                 if (strSnapshotsProcessingPeriodSeconds == "0")
                 {
-                    snapshotsProcessingPeriod = TimeSpan.MaxValue;
+                    SDCandTCCreadAndReportPeriod = TimeSpan.MaxValue;
                 }
                 else
                 {
-                    snapshotsProcessingPeriod = new TimeSpan(0, 0, Convert.ToInt32(strSnapshotsProcessingPeriodSeconds));
+                    SDCandTCCreadAndReportPeriod = new TimeSpan(0, 0, Convert.ToInt32(strSnapshotsProcessingPeriodSeconds));
                 }
             }
             else
             {
                 int strSnapshotsProcessingPeriodSeconds = 300;
-                snapshotsProcessingPeriod = new TimeSpan(0, 0, Convert.ToInt32(strCamShotPeriod));
+                SDCandTCCreadAndReportPeriod = new TimeSpan(0, 0, Convert.ToInt32(strCamShotPeriod));
                 defaultProperties.Add("strSnapshotsProcessingPeriodSeconds", strSnapshotsProcessingPeriodSeconds);
                 bDefaultPropertiesHasBeenUpdated = true;
             }
@@ -794,30 +831,30 @@ namespace DataCollectorAutomator
 
 
 
-            // makeCurrentSnapshotPreviewPicturePeriod
-            #region makeCurrentSnapshotPreviewPicturePeriod
-            //TimeSpan makeCurrentSnapshotPreviewPicturePeriod = new TimeSpan(0, 5, 0);
-            if (defaultProperties.ContainsKey("strmakeCurrentSnapshotPreviewPicturePeriodSeconds"))
-            {
-                string strmakeCurrentSnapshotPreviewPicturePeriodSeconds =
-                    (string)(defaultProperties["strmakeCurrentSnapshotPreviewPicturePeriodSeconds"]);
-                if (strmakeCurrentSnapshotPreviewPicturePeriodSeconds == "0")
-                {
-                    makeCurrentSnapshotPreviewPicturePeriod = TimeSpan.MaxValue;
-                }
-                else
-                {
-                    makeCurrentSnapshotPreviewPicturePeriod = new TimeSpan(0, 0, Convert.ToInt32(strmakeCurrentSnapshotPreviewPicturePeriodSeconds));
-                }
-            }
-            else
-            {
-                int strmakeCurrentSnapshotPreviewPicturePeriodSeconds = 90;
-                makeCurrentSnapshotPreviewPicturePeriod = new TimeSpan(0, 0, Convert.ToInt32(strmakeCurrentSnapshotPreviewPicturePeriodSeconds));
-                defaultProperties.Add("strmakeCurrentSnapshotPreviewPicturePeriodSeconds", strmakeCurrentSnapshotPreviewPicturePeriodSeconds);
-                bDefaultPropertiesHasBeenUpdated = true;
-            }
-            #endregion makeCurrentSnapshotPreviewPicturePeriod
+            //// makeCurrentSnapshotPreviewPicturePeriod
+            //#region makeCurrentSnapshotPreviewPicturePeriod
+            ////TimeSpan makeCurrentSnapshotPreviewPicturePeriod = new TimeSpan(0, 5, 0);
+            //if (defaultProperties.ContainsKey("strmakeCurrentSnapshotPreviewPicturePeriodSeconds"))
+            //{
+            //    string strmakeCurrentSnapshotPreviewPicturePeriodSeconds =
+            //        (string)(defaultProperties["strmakeCurrentSnapshotPreviewPicturePeriodSeconds"]);
+            //    if (strmakeCurrentSnapshotPreviewPicturePeriodSeconds == "0")
+            //    {
+            //        makeCurrentSnapshotPreviewPicturePeriod = TimeSpan.MaxValue;
+            //    }
+            //    else
+            //    {
+            //        makeCurrentSnapshotPreviewPicturePeriod = new TimeSpan(0, 0, Convert.ToInt32(strmakeCurrentSnapshotPreviewPicturePeriodSeconds));
+            //    }
+            //}
+            //else
+            //{
+            //    int strmakeCurrentSnapshotPreviewPicturePeriodSeconds = 90;
+            //    makeCurrentSnapshotPreviewPicturePeriod = new TimeSpan(0, 0, Convert.ToInt32(strmakeCurrentSnapshotPreviewPicturePeriodSeconds));
+            //    defaultProperties.Add("strmakeCurrentSnapshotPreviewPicturePeriodSeconds", strmakeCurrentSnapshotPreviewPicturePeriodSeconds);
+            //    bDefaultPropertiesHasBeenUpdated = true;
+            //}
+            //#endregion makeCurrentSnapshotPreviewPicturePeriod
 
 
 
@@ -838,111 +875,111 @@ namespace DataCollectorAutomator
 
 
 
-            #region bot server communication properties
+            #region // bot server communication properties
 
-            #region bSendProcessedDataTo_CC_Moscow_bot_server
-            //private bool bSendProcessedDataTo_CC_Moscow_bot_server = false;
-            if (defaultProperties.ContainsKey("bSendProcessedDataTo_CC_Moscow_bot_server"))
-            {
-                bSendProcessedDataTo_CC_Moscow_bot_server =
-                    ((string)defaultProperties["bSendProcessedDataTo_CC_Moscow_bot_server"]).ToLower() == "true";
-            }
-            else
-            {
-                bSendProcessedDataTo_CC_Moscow_bot_server = false;
-                defaultProperties.Add("bSendProcessedDataTo_CC_Moscow_bot_server",
-                    bSendProcessedDataTo_CC_Moscow_bot_server);
-                bDefaultPropertiesHasBeenUpdated = true;
-            }
-            #endregion
-
-
-            #region strRemoteBotServerHost
-            //private string strRemoteBotServerHost = "krinitsky.ru";
-            if (defaultProperties.ContainsKey("strRemoteBotServerHost"))
-            {
-                strRemoteBotServerHost = (string)defaultProperties["strRemoteBotServerHost"];
-            }
-            else
-            {
-                strRemoteBotServerHost = "krinitsky.ru";
-                defaultProperties.Add("strRemoteBotServerHost", strRemoteBotServerHost);
-                bDefaultPropertiesHasBeenUpdated = true;
-            }
+            //#region bSendProcessedDataTo_CC_Moscow_bot_server
+            ////private bool bSendProcessedDataTo_CC_Moscow_bot_server = false;
+            //if (defaultProperties.ContainsKey("bSendProcessedDataTo_CC_Moscow_bot_server"))
+            //{
+            //    bSendProcessedDataTo_CC_Moscow_bot_server =
+            //        ((string)defaultProperties["bSendProcessedDataTo_CC_Moscow_bot_server"]).ToLower() == "true";
+            //}
+            //else
+            //{
+            //    bSendProcessedDataTo_CC_Moscow_bot_server = false;
+            //    defaultProperties.Add("bSendProcessedDataTo_CC_Moscow_bot_server",
+            //        bSendProcessedDataTo_CC_Moscow_bot_server);
+            //    bDefaultPropertiesHasBeenUpdated = true;
+            //}
+            //#endregion
 
 
-            #endregion
+            //#region strRemoteBotServerHost
+            ////private string strRemoteBotServerHost = "krinitsky.ru";
+            //if (defaultProperties.ContainsKey("strRemoteBotServerHost"))
+            //{
+            //    strRemoteBotServerHost = (string)defaultProperties["strRemoteBotServerHost"];
+            //}
+            //else
+            //{
+            //    strRemoteBotServerHost = "krinitsky.ru";
+            //    defaultProperties.Add("strRemoteBotServerHost", strRemoteBotServerHost);
+            //    bDefaultPropertiesHasBeenUpdated = true;
+            //}
 
 
-            #region intRemoteBotServerPort
-            //private int intRemoteBotServerPort = 22;
-
-            if (defaultProperties.ContainsKey("intRemoteBotServerPort"))
-            {
-                intRemoteBotServerPort = Convert.ToInt32((string)defaultProperties["intRemoteBotServerPort"]);
-            }
-            else
-            {
-                intRemoteBotServerPort = 22;
-                defaultProperties.Add("intRemoteBotServerPort", intRemoteBotServerPort);
-                bDefaultPropertiesHasBeenUpdated = true;
-            }
-
-            #endregion
+            //#endregion
 
 
-            #region strRemoteBotServerHostAuthKeyFile
-            //private string strRemoteBotServerHostAuthKeyFile = "";
-            if (defaultProperties.ContainsKey("strRemoteBotServerHostAuthKeyFile"))
-            {
-                strRemoteBotServerHostAuthKeyFile = (string)defaultProperties["strRemoteBotServerHostAuthKeyFile"];
-            }
-            else
-            {
-                strRemoteBotServerHostAuthKeyFile = "";
-                defaultProperties.Add("strRemoteBotServerHostAuthKeyFile", "");
-                bDefaultPropertiesHasBeenUpdated = true;
-            }
+            //#region intRemoteBotServerPort
+            ////private int intRemoteBotServerPort = 22;
+
+            //if (defaultProperties.ContainsKey("intRemoteBotServerPort"))
+            //{
+            //    intRemoteBotServerPort = Convert.ToInt32((string)defaultProperties["intRemoteBotServerPort"]);
+            //}
+            //else
+            //{
+            //    intRemoteBotServerPort = 22;
+            //    defaultProperties.Add("intRemoteBotServerPort", intRemoteBotServerPort);
+            //    bDefaultPropertiesHasBeenUpdated = true;
+            //}
+
+            //#endregion
 
 
-            #endregion strRemoteBotServerHostAuthKeyFile
+            //#region strRemoteBotServerHostAuthKeyFile
+            ////private string strRemoteBotServerHostAuthKeyFile = "";
+            //if (defaultProperties.ContainsKey("strRemoteBotServerHostAuthKeyFile"))
+            //{
+            //    strRemoteBotServerHostAuthKeyFile = (string)defaultProperties["strRemoteBotServerHostAuthKeyFile"];
+            //}
+            //else
+            //{
+            //    strRemoteBotServerHostAuthKeyFile = "";
+            //    defaultProperties.Add("strRemoteBotServerHostAuthKeyFile", "");
+            //    bDefaultPropertiesHasBeenUpdated = true;
+            //}
 
 
-            #region strRemoteBotServerSSHusername
-
-            if (defaultProperties.ContainsKey("strRemoteBotServerSSHusername"))
-            {
-                strRemoteBotServerSSHusername = (string)defaultProperties["strRemoteBotServerSSHusername"];
-            }
-            else
-            {
-                strRemoteBotServerSSHusername = "mk";
-                defaultProperties.Add("strRemoteBotServerSSHusername", strRemoteBotServerSSHusername);
-                bDefaultPropertiesHasBeenUpdated = true;
-            }
-
-            #endregion strRemoteBotServerSSHusername
+            //#endregion strRemoteBotServerHostAuthKeyFile
 
 
+            //#region strRemoteBotServerSSHusername
 
-            #region strAcceptedSSHhostCertPublicKeyFile
+            //if (defaultProperties.ContainsKey("strRemoteBotServerSSHusername"))
+            //{
+            //    strRemoteBotServerSSHusername = (string)defaultProperties["strRemoteBotServerSSHusername"];
+            //}
+            //else
+            //{
+            //    strRemoteBotServerSSHusername = "mk";
+            //    defaultProperties.Add("strRemoteBotServerSSHusername", strRemoteBotServerSSHusername);
+            //    bDefaultPropertiesHasBeenUpdated = true;
+            //}
 
-            if (defaultProperties.ContainsKey("strAcceptedSSHhostCertPublicKeyFile"))
-            {
-                strAcceptedSSHhostCertPublicKeyFile = (string)defaultProperties["strAcceptedSSHhostCertPublicKeyFile"];
-            }
-            else
-            {
-                strAcceptedSSHhostCertPublicKeyFile = "";
-                defaultProperties.Add("strAcceptedSSHhostCertPublicKeyFile", strAcceptedSSHhostCertPublicKeyFile);
-                bDefaultPropertiesHasBeenUpdated = true;
-            }
-
-            #endregion
+            //#endregion strRemoteBotServerSSHusername
 
 
 
-            #endregion bot server communication properties
+            //#region strAcceptedSSHhostCertPublicKeyFile
+
+            //if (defaultProperties.ContainsKey("strAcceptedSSHhostCertPublicKeyFile"))
+            //{
+            //    strAcceptedSSHhostCertPublicKeyFile = (string)defaultProperties["strAcceptedSSHhostCertPublicKeyFile"];
+            //}
+            //else
+            //{
+            //    strAcceptedSSHhostCertPublicKeyFile = "";
+            //    defaultProperties.Add("strAcceptedSSHhostCertPublicKeyFile", strAcceptedSSHhostCertPublicKeyFile);
+            //    bDefaultPropertiesHasBeenUpdated = true;
+            //}
+
+            //#endregion
+
+
+
+            #endregion // bot server communication properties
 
 
 
@@ -1004,26 +1041,7 @@ namespace DataCollectorAutomator
 
 
 
-        private void DataCollectorMainForm_Shown(object sender, EventArgs e)
-        {
-            readDefaultProperties();
-
-            cquArduinoUDPCatchedMessages.CollectionChanged += cquArduinoUDPCatchedMessages_CollectionChanged;
-
-            accDataAndDTObservableConcurrentQueue.CollectionChanged += accDataAndDTObservableConcurrentQueue_CollectionChanged;
-
-            gyroDataAndDTObservableConcurrentQueue.CollectionChanged += gyroDataAndDTObservableConcurrentQueue_CollectionChanged;
-
-            gpsDataAndDTObservableConcurrentQueue.CollectionChanged += gpsDataAndDTObservableConcurrentQueue_CollectionChanged;
-
-            pressureDataAndDTObservableConcurrentQueue.CollectionChanged += pressureDataAndDTObservableConcurrentQueue_CollectionChanged;
-
-            this.NeedToShootCameraSnapshots += DataCollectorMainForm_NeedToShootCameraSnapshots;
-        }
-
-
-
-
+        
         void DataCollectorMainForm_NeedToShootCameraSnapshots(object sender, EventArgs e)
         {
             ServiceTools.ExecMethodInSeparateThread(this, catchCameraImages);
@@ -1566,10 +1584,14 @@ namespace DataCollectorAutomator
 
         #region dataCollector BGW description
 
+        private Timer tmrUDPcatchingJobIsWorkingCheck = null;
+        private Timer tmrUpdateSensorsDataPresentation = null;
+        private Timer tmrUDPpacketsRecievingSpeedEstimation = null;
+        private Timer tmrReadAndReportSDCandCC = null;
+        private Timer tmrOrganizeAndArchiveCollectedDataCheck = null;
+
         private void dataCollector_DoWork(object sender, DoWorkEventArgs e)
         {
-            DateTime datetimeCamshotTimerBegin = DateTime.Now;
-
             stwCamshotTimer.Start();
             stwSnapshotsProcessingTimer.Start();
             //stwMakeCurrentSnapshotPreviewPictureTimer.Start();
@@ -1594,19 +1616,19 @@ namespace DataCollectorAutomator
 
             #region timer for periodical process of UDPpackets Recieving speed estimation
 
-            TimerCallback UDPpacketsRecievingSpeedEstimationCallback =
-                new TimerCallback(EstimateAndReportUDPpacketsRecievingSpeed);
-            Timer tmrUDPpacketsRecievingSpeedEstimation = new Timer(UDPpacketsRecievingSpeedEstimationCallback,
+            tmrUDPpacketsRecievingSpeedEstimation = new Timer(EstimateAndReportUDPpacketsRecievingSpeed,
                 new object[] { stwToEstimateUDPpacketsRecieving }, 0, 1000);
 
             #endregion timer for periodical process of UDPpackets Recieving speed estimation
 
 
+
+
             #region timer for periodical sensors values presentation updating
 
-            TimerCallback UpdateSensorsDataPresentationCallback = UpdateSensorsDataPresentation;
-            Timer tmrUpdateSensorsDataPresentation = new Timer(UpdateSensorsDataPresentationCallback,
+            tmrUpdateSensorsDataPresentation = new Timer(UpdateSensorsDataPresentation,
                 dataToPassToSensorsDataPresentation, 0, 500);
+            // every 500ms
 
             #endregion timer for periodical sensors values presentation updating
 
@@ -1615,23 +1637,17 @@ namespace DataCollectorAutomator
 
             #region timer for periodical udpCatchingJob working check
 
-            TimerCallback udpCatchingJobIsWorkingCheckCallback =
-                new TimerCallback(CheckIfUDPcatchingJobIsWorking);
-            Timer tmrUDPcatchingJobIsWorkingCheck = new Timer(udpCatchingJobIsWorkingCheckCallback,
-                null, 0, 25000);
-            // each 25sec
+            tmrUDPcatchingJobIsWorkingCheck = new Timer(CheckIfUDPcatchingJobIsWorking,
+                null, new TimeSpan(0, 0, 0), new TimeSpan(0, 0, 23));
+            //every 23 seconds
 
             #endregion timer for periodical udpCatchingJob working check
 
 
 
-
-
-
             #region timer for periodical check if its time to organize and archive collectied data
 
-            TimerCallback OrganizeAndArchiveCollectedDataCheckerCallback = OrganizeAndArchiveCollectedDataCheck;
-            Timer tmrOrganizeAndArchiveCollectedDataCheck = new Timer(OrganizeAndArchiveCollectedDataCheckerCallback,
+            tmrOrganizeAndArchiveCollectedDataCheck = new Timer(OrganizeAndArchiveCollectedDataCheck,
                 null, 0, 600000);
 
             // each 10 minutes
@@ -1639,25 +1655,12 @@ namespace DataCollectorAutomator
             #endregion timer for periodical check if its time to organize and archive collectied data
 
 
-            #region timer for periodical SDC and cloud cover calculation
+            #region timer for periodical SDC and TCC check and report
 
-            Timer tmrCalculateAndReportSDCandCC = null;
-            if (snapshotsProcessingPeriod < TimeSpan.MaxValue)
+            if (SDCandTCCreadAndReportPeriod < TimeSpan.MaxValue)
             {
-                TimerCallback CalculateAndReportSDCandCCcallback = ProcessCurrentSnapshot;
-                tmrCalculateAndReportSDCandCC = new Timer(CalculateAndReportSDCandCCcallback, null, 0,
-                    (int)snapshotsProcessingPeriod.TotalMilliseconds);
+                tmrReadAndReportSDCandCC = new Timer(ProcessCurrentSnapshot, null, 0, (int)SDCandTCCreadAndReportPeriod.TotalMilliseconds);
             }
-
-            Timer tmrMakeCurrentSnapshotPreviewPicture = null;
-            if (makeCurrentSnapshotPreviewPicturePeriod < TimeSpan.MaxValue)
-            {
-                // MakeCurrentSnapshotPreviewPicture
-                TimerCallback MakeCurrentSnapshotPreviewPictureCallback = MakeCurrentSnapshotPreviewPicture;
-                tmrMakeCurrentSnapshotPreviewPicture = new Timer(MakeCurrentSnapshotPreviewPictureCallback, null, 0,
-                    (int)makeCurrentSnapshotPreviewPicturePeriod.TotalMilliseconds);
-            }
-
 
             #endregion
 
@@ -1833,22 +1836,27 @@ namespace DataCollectorAutomator
 
             tmrUDPpacketsRecievingSpeedEstimation.Change(Timeout.Infinite, Timeout.Infinite);
             tmrUDPpacketsRecievingSpeedEstimation.Dispose();
+            tmrUDPpacketsRecievingSpeedEstimation = null;
             tmrUpdateSensorsDataPresentation.Change(Timeout.Infinite, Timeout.Infinite);
             tmrUpdateSensorsDataPresentation.Dispose();
+            tmrUpdateSensorsDataPresentation = null;
             tmrUDPcatchingJobIsWorkingCheck.Change(Timeout.Infinite, Timeout.Infinite);
             tmrUDPcatchingJobIsWorkingCheck.Dispose();
+            tmrUDPcatchingJobIsWorkingCheck = null;
             tmrOrganizeAndArchiveCollectedDataCheck.Change(Timeout.Infinite, Timeout.Infinite);
             tmrOrganizeAndArchiveCollectedDataCheck.Dispose();
-            if (tmrCalculateAndReportSDCandCC != null)
+            tmrOrganizeAndArchiveCollectedDataCheck = null;
+            if (tmrReadAndReportSDCandCC != null)
             {
-                tmrCalculateAndReportSDCandCC.Change(Timeout.Infinite, Timeout.Infinite);
-                tmrCalculateAndReportSDCandCC.Dispose();
+                tmrReadAndReportSDCandCC.Change(Timeout.Infinite, Timeout.Infinite);
+                tmrReadAndReportSDCandCC.Dispose();
+                tmrReadAndReportSDCandCC = null;
             }
-            if (tmrMakeCurrentSnapshotPreviewPicture != null)
-            {
-                tmrMakeCurrentSnapshotPreviewPicture.Change(Timeout.Infinite, Timeout.Infinite);
-                tmrMakeCurrentSnapshotPreviewPicture.Dispose();
-            }
+            //if (tmrMakeCurrentSnapshotPreviewPicture != null)
+            //{
+            //    tmrMakeCurrentSnapshotPreviewPicture.Change(Timeout.Infinite, Timeout.Infinite);
+            //    tmrMakeCurrentSnapshotPreviewPicture.Dispose();
+            //}
 
             stwCamshotTimer.Stop();
             stwSnapshotsProcessingTimer.Stop();
@@ -1869,6 +1877,9 @@ namespace DataCollectorAutomator
             }
             ThreadSafeOperations.ToggleButtonState(btnStartStopCollecting, true, "Start collecting data", false);
             dataCollectingState = DataCollectingStates.idle;
+
+
+            StopIPCpipeServer();
         }
 
         #endregion dataCollector BGW description
@@ -3322,7 +3333,7 @@ namespace DataCollectorAutomator
             ThreadSafeOperations.SetText(lblNextShotIn, nextShotIn.RoundToSeconds().ToString("c"), false);
             ThreadSafeOperations.SetText(lblSinceLastShot, stwCamshotTimer.Elapsed.RoundToSeconds().ToString("c"), false);
 
-            TimeSpan nextSnapshotProcessingIn = snapshotsProcessingPeriod - stwSnapshotsProcessingTimer.Elapsed;
+            TimeSpan nextSnapshotProcessingIn = SDCandTCCreadAndReportPeriod - stwSnapshotsProcessingTimer.Elapsed;
             ThreadSafeOperations.SetText(lblNextImageProcessingIn, nextSnapshotProcessingIn.RoundToSeconds().ToString("c"), false);
         }
 
@@ -3832,6 +3843,16 @@ namespace DataCollectorAutomator
                             if (catchedGPSdata.validGPSdata)
                             {
                                 latestGPSdata = catchedGPSdata;
+
+                                lowPriorityTaskFactory.StartNew(() =>
+                                {
+                                    string gpsSerialized = ServiceTools.XmlSerializeToString(latestGPSdata);
+
+                                    BroadcastIPCpipeServerMessage("<gps>");
+                                    BroadcastIPCpipeServerMessage(gpsSerialized);
+                                    BroadcastIPCpipeServerMessage("</gps>");
+                                });
+
                                 latestGPSdata.devID = devID;
                                 gpsDataAndDTObservableConcurrentQueue.Enqueue(
                                     new Tuple<DateTime, GPSdata>(DateTime.UtcNow, latestGPSdata));
@@ -4216,263 +4237,103 @@ namespace DataCollectorAutomator
 
             if (sunElevationMoreThanZero)
             {
-                lowPriorityTaskFactory.StartNew(() => ComputeAndReportCCandTCC());
-
-                //Task.Run(() => ComputeAndReportCCandTCC());
+                lowPriorityTaskFactory.StartNew(ReadAndReportLatestCCandTCC);
             }
         }
 
 
 
 
-        private void btnCCandTCC_Click(object sender, EventArgs e)
+        //private void btnCCandTCC_Click(object sender, EventArgs e)
+        //{
+        //    if (theLogWindow == null)
+        //    {
+        //        theLogWindow = ServiceTools.LogAText(theLogWindow, "");
+        //    }
+        //    // Task.Run(() => ComputeAndReportCCandTCC());
+        //    lowPriorityTaskFactory.StartNew(() => ComputeAndReportCCandTCC());
+        //}
+
+
+
+
+
+        private async void ReadAndReportLatestCCandTCC()
         {
-            if (theLogWindow == null)
-            {
-                theLogWindow = ServiceTools.LogAText(theLogWindow, "");
-            }
-            // Task.Run(() => ComputeAndReportCCandTCC());
-            lowPriorityTaskFactory.StartNew(() => ComputeAndReportCCandTCC());
-        }
+            List<FileInfo> lInfos =
+                new DirectoryInfo(strOutputConcurrentDataDirectory).GetFiles(
+                    ConventionalTransitions.ImageProcessedAndPredictedDataFileNamesPattern(),
+                    SearchOption.AllDirectories).ToList();
 
-
-
-
-
-        private async void ComputeAndReportCCandTCC()
-        {
-            // ProcessCurrentSnapshotWithServerCalculations(null);
-
-            //BackgroundWorker bgwComputeAndReportCCandTCC = new BackgroundWorker();
-            //bgwComputeAndReportCCandTCC.WorkerSupportsCancellation = false;
-            //bgwComputeAndReportCCandTCC.WorkerReportsProgress = false;
-            //bgwComputeAndReportCCandTCC.DoWork += 
-
-            List<FileDatetimeInfo> lImagesFilesInfo = Directory.GetFiles(outputSnapshotsDirectory, "*.jpg",
-                SearchOption.AllDirectories)
-                .ToList()
-                .ConvertAll(
-                    strImageFileName =>
-                        new FileDatetimeInfo(strImageFileName, ServiceTools.DatetimeExtractionMethod.Filename, "????xxxxxxxxxxxxxxxxxxx*"));
-
-            if (lImagesFilesInfo.Count == 0)
+            if (lInfos.Count == 0)
             {
                 return;
             }
 
-            string lastSnapshotFile =
-                lImagesFilesInfo.Aggregate(
-                    (fInfo1, fInfo2) => (fInfo1.datetime <= fInfo2.datetime) ? (fInfo2) : (fInfo1)).filename;
-            FileInfo currImageFInfo = new FileInfo(lastSnapshotFile);
+            lInfos.Sort((finfo1, finfo2) => finfo1.CreationTimeUtc.CompareTo(finfo2.CreationTimeUtc));
+            string lastFilename = lInfos.Last().FullName;
 
-            string concurrentDataXMLfilename = "";
             try
             {
-                concurrentDataXMLfilename =
-                    await Task.Run(() => CommonTools.FindConcurrentDataXMLfileAsync(lastSnapshotFile, strOutputConcurrentDataDirectory, true,
-                        ServiceTools.DatetimeExtractionMethod.Filename));
+                SkyImagesProcessedAndPredictedData data =
+                    (SkyImagesProcessedAndPredictedData)
+                        ServiceTools.ReadObjectFromXML(lastFilename, typeof(SkyImagesProcessedAndPredictedData));
+                ThreadSafeOperations.SetText(lblSDCvalue, data.PredictedSDC.ToString(), false);
+                ThreadSafeOperations.SetText(lblCCvalue, data.PredictedCC.CloudCoverTotal.ToString() + " (/8)", false);
             }
-            catch (Exception)
-            {
-                // не нашли нужный файл. ну или еще что-то случилось.
-                return;
-            }
-
-            if (concurrentDataXMLfilename == "")
-            {
-                // не нашли нужный файл. ну или еще что-то случилось.
-                return;
-            }
-
-            Dictionary<string, object> currDict = ServiceTools.ReadDictionaryFromXML(concurrentDataXMLfilename);
-            currDict.Add("XMLfileName", Path.GetFileName(concurrentDataXMLfilename));
-            ConcurrentData nearestConcurrentData = null;
-            try
-            {
-                nearestConcurrentData = new ConcurrentData(currDict);
-            }
-            catch (Exception)
+            catch (Exception ex)
             {
                 return;
             }
-
-
-
-
-
-
-            #region calculate stats if needed
-
-            SkyImageIndexesStatsData currImageStatsData = null;
-
-
-
-            string strImageGrIxYRGBDataFileName =
-                ConventionalTransitions.ImageGrIxYRGBstatsDataFileName(currImageFInfo.FullName,
-                    imageYRGBstatsXMLdataFilesDirectory);
-
-
-            if (File.Exists(strImageGrIxYRGBDataFileName))
-            {
-                try
-                {
-                    currImageStatsData =
-                        (SkyImageIndexesStatsData)ServiceTools.ReadObjectFromXML(strImageGrIxYRGBDataFileName,
-                            typeof(SkyImageIndexesStatsData));
-                }
-                catch (Exception ex)
-                {
-                    currImageStatsData = null;
-                }
-
-            }
-
-
-            if (currImageStatsData == null)
-            {
-                theLogWindow = ServiceTools.LogAText(theLogWindow,
-                    "obtaining stats data for image " + currImageFInfo.FullName);
-
-                Dictionary<string, object> optionalParameters = new Dictionary<string, object>();
-                optionalParameters.Add("ImagesRoundMasksXMLfilesMappingList", ImagesRoundMasksXMLfilesMappingList);
-                Stopwatch sw = new Stopwatch();
-                sw.Start();
-                optionalParameters.Add("Stopwatch", sw);
-                optionalParameters.Add("logFileName", errorLogFilename);
-
-                ImageStatsDataCalculationResult currImageProcessingResult =
-                    ImageProcessing.CalculateImageStatsData(currImageFInfo.FullName, optionalParameters);
-
-                currImageProcessingResult.stopwatch.Stop();
-
-                if (currImageProcessingResult.calcResult)
-                {
-                    string currentFullFileName = currImageProcessingResult.imgFilename;
-                    string strPerfCountersData = currentFullFileName + ";" +
-                                                 currImageProcessingResult.stopwatch.ElapsedMilliseconds + ";" +
-                                                 (currImageProcessingResult.procTotalProcessorTimeEnd -
-                                                  currImageProcessingResult.procTotalProcessorTimeStart)
-                                                     .TotalMilliseconds +
-                                                 Environment.NewLine;
-                    ServiceTools.logToTextFile(strPerformanceCountersStatsFile, strPerfCountersData, true);
-
-
-
-
-                    //string strImageGrIxYRGBDataFileName =
-                    //    ConventionalTransitions.ImageGrIxYRGBstatsDataFileName(currentFullFileName,
-                    //        imageYRGBstatsXMLdataFilesDirectory);
-                    ServiceTools.WriteObjectToXML(currImageProcessingResult.grixyrgbStatsData,
-                        strImageGrIxYRGBDataFileName);
-
-                    currImageStatsData = currImageProcessingResult.grixyrgbStatsData;
-
-                    theLogWindow = ServiceTools.LogAText(theLogWindow, "finished processing file " + Environment.NewLine + currentFullFileName);
-
-                }
-                else
-                {
-                    #region report error
-
-                    string errorStr = "Error processing file: " + Environment.NewLine + currImageProcessingResult.imgFilename +
-                        Environment.NewLine + "message: " +
-                        ServiceTools.GetExceptionMessages(currImageProcessingResult.exception) + Environment.NewLine +
-                        ServiceTools.CurrentCodeLineDescription() + Environment.NewLine + "Stack trace: " + Environment.NewLine +
-                        Environment.StackTrace + Environment.NewLine + Environment.NewLine;
-
-                    ServiceTools.logToTextFile(errorLogFilename, errorStr, true, true);
-                    theLogWindow = ServiceTools.LogAText(theLogWindow, errorStr);
-
-                    return;
-
-                    #endregion report error
-                }
-
-            }
-
-            #endregion calculate stats if needed
-
-
-            SunDiskCondition sdc;
-            int TCC;
-            PredictAndReportSDCandCC(currImageStatsData, nearestConcurrentData, out sdc, out TCC);
-
-
-            #region store collected data to HDD
-
-            FileDatetimeInfo inf = new FileDatetimeInfo(lastSnapshotFile,
-                ServiceTools.DatetimeExtractionMethod.FileCreation);
-
-            SkyImagesProcessedAndPredictedData data = new SkyImagesProcessedAndPredictedData()
-            {
-                skyImageFullFileName = inf.filename,
-                skyImageFileName = Path.GetFileName(inf.filename),
-                imageShootingDateTimeUTC = inf.datetime,
-                PredictedCC = new PredictedCloudCoverData()
-                {
-                    dateTimeUTC = inf.datetime,
-                    CloudCoverTotal = TCC,
-                    CloudCoverLower = 0
-                },
-                concurrentDataXMLfile = concurrentDataXMLfilename,
-                concurrentData = nearestConcurrentData,
-                grixyrgbStatsXMLfile = strImageGrIxYRGBDataFileName,
-                grixyrgbStats = currImageStatsData,
-                PredictedSDC = sdc
-            };
-            string processedAndPredictedDataFileName =
-                ConventionalTransitions.ImageProcessedAndPredictedDataFileName(lastSnapshotFile,
-                    strOutputConcurrentDataDirectory);
-            ServiceTools.WriteObjectToXML(data, processedAndPredictedDataFileName);
-
-            #endregion store collected data to HDD
-
-
         }
 
 
 
+        #region // PredictAndReportSDCandCC - obsolete (separate app)
 
-        private void PredictAndReportSDCandCC(SkyImageIndexesStatsData statsData, ConcurrentData nearestConcurrentData, out SunDiskCondition sdc, out int TCC)
-        {
-            string CurDir = Directory.GetCurrentDirectory();
-            string SDC_NNconfigFile = CurDir + Path.DirectorySeparatorChar + "settings" + Path.DirectorySeparatorChar + "NNconfig.csv";
-            string SDC_NNtrainedParametersFile = CurDir + Path.DirectorySeparatorChar + "settings" + Path.DirectorySeparatorChar + "NNtrainedParameters.csv";
-            string NormMeansFile = CurDir + Path.DirectorySeparatorChar + "settings" + Path.DirectorySeparatorChar + "NormMeans.csv";
-            string NormRangeFile = CurDir + Path.DirectorySeparatorChar + "settings" + Path.DirectorySeparatorChar + "NormRange.csv";
-            List<double> decisionProbabilities = new List<double>();
+        //private void PredictAndReportSDCandCC(SkyImageIndexesStatsData statsData, ConcurrentData nearestConcurrentData, out SunDiskCondition sdc, out int TCC)
+        //{
+        //    string CurDir = Directory.GetCurrentDirectory();
+        //    string SDC_NNconfigFile = CurDir + Path.DirectorySeparatorChar + "settings" + Path.DirectorySeparatorChar + "NNconfig.csv";
+        //    string SDC_NNtrainedParametersFile = CurDir + Path.DirectorySeparatorChar + "settings" + Path.DirectorySeparatorChar + "NNtrainedParameters.csv";
+        //    string NormMeansFile = CurDir + Path.DirectorySeparatorChar + "settings" + Path.DirectorySeparatorChar + "NormMeans.csv";
+        //    string NormRangeFile = CurDir + Path.DirectorySeparatorChar + "settings" + Path.DirectorySeparatorChar + "NormRange.csv";
+        //    List<double> decisionProbabilities = new List<double>();
 
-            //SunDiskCondition sdc = SDCpredictorNN.CalcSDC_NN(dctCommunicationChecklist.strReturnedStatsDataXMLfilename,
-            //    dctCommunicationChecklist.strConcurrentDataXMLfilename, SDC_NNconfigFile, SDC_NNtrainedParametersFile,
-            //    NormMeansFile, NormRangeFile, out decisionProbabilities);
-            DenseVector dvMeans = (DenseVector)((DenseMatrix)ServiceTools.ReadDataFromCSV(NormMeansFile, 0, ",")).Row(0);
-            DenseVector dvRanges = (DenseVector)((DenseMatrix)ServiceTools.ReadDataFromCSV(NormRangeFile, 0, ",")).Row(0);
-            DenseVector dvThetaValues = (DenseVector)ServiceTools.ReadDataFromCSV(SDC_NNtrainedParametersFile, 0, ",");
-            List<int> NNlayersConfig =
-                new List<double>(((DenseMatrix)ServiceTools.ReadDataFromCSV(SDC_NNconfigFile, 0, ",")).Row(0)).ConvertAll
-                    (dVal => Convert.ToInt32(dVal));
+        //    //SunDiskCondition sdc = SDCpredictorNN.CalcSDC_NN(dctCommunicationChecklist.strReturnedStatsDataXMLfilename,
+        //    //    dctCommunicationChecklist.strConcurrentDataXMLfilename, SDC_NNconfigFile, SDC_NNtrainedParametersFile,
+        //    //    NormMeansFile, NormRangeFile, out decisionProbabilities);
+        //    DenseVector dvMeans = (DenseVector)((DenseMatrix)ServiceTools.ReadDataFromCSV(NormMeansFile, 0, ",")).Row(0);
+        //    DenseVector dvRanges = (DenseVector)((DenseMatrix)ServiceTools.ReadDataFromCSV(NormRangeFile, 0, ",")).Row(0);
+        //    DenseVector dvThetaValues = (DenseVector)ServiceTools.ReadDataFromCSV(SDC_NNtrainedParametersFile, 0, ",");
+        //    List<int> NNlayersConfig =
+        //        new List<double>(((DenseMatrix)ServiceTools.ReadDataFromCSV(SDC_NNconfigFile, 0, ",")).Row(0)).ConvertAll
+        //            (dVal => Convert.ToInt32(dVal));
 
-            sdc = SDCpredictorNN.PredictSDC_NN(statsData, nearestConcurrentData, NNlayersConfig, dvThetaValues, dvMeans,
-                dvRanges, out decisionProbabilities);
+        //    sdc = SDCpredictorNN.PredictSDC_NN(statsData, nearestConcurrentData, NNlayersConfig, dvThetaValues, dvMeans,
+        //        dvRanges, out decisionProbabilities);
 
 
 
-            string CC_NNconfigFile = CurDir + Path.DirectorySeparatorChar + "settings" + Path.DirectorySeparatorChar + "CC_NNconfig.csv";
-            string CC_NNtrainedParametersFile = CurDir + Path.DirectorySeparatorChar + "settings" + Path.DirectorySeparatorChar + "CC_NNtrainedParameters.csv";
-            DenseVector dv_CC_ThetaValues = (DenseVector)ServiceTools.ReadDataFromCSV(CC_NNtrainedParametersFile, 0, ",");
-            List<int> CC_NNlayersConfig =
-                new List<double>(((DenseMatrix)ServiceTools.ReadDataFromCSV(CC_NNconfigFile, 0, ",")).Row(0)).ConvertAll
-                    (dVal => Convert.ToInt32(dVal));
+        //    string CC_NNconfigFile = CurDir + Path.DirectorySeparatorChar + "settings" + Path.DirectorySeparatorChar + "CC_NNconfig.csv";
+        //    string CC_NNtrainedParametersFile = CurDir + Path.DirectorySeparatorChar + "settings" + Path.DirectorySeparatorChar + "CC_NNtrainedParameters.csv";
+        //    DenseVector dv_CC_ThetaValues = (DenseVector)ServiceTools.ReadDataFromCSV(CC_NNtrainedParametersFile, 0, ",");
+        //    List<int> CC_NNlayersConfig =
+        //        new List<double>(((DenseMatrix)ServiceTools.ReadDataFromCSV(CC_NNconfigFile, 0, ",")).Row(0)).ConvertAll
+        //            (dVal => Convert.ToInt32(dVal));
 
-            TCC = CCpredictorNN.PredictCC_NN(statsData, nearestConcurrentData, NNlayersConfig, dvThetaValues, dvMeans,
-                dvRanges, CC_NNlayersConfig, dv_CC_ThetaValues);
+        //    TCC = CCpredictorNN.PredictCC_NN(statsData, nearestConcurrentData, NNlayersConfig, dvThetaValues, dvMeans,
+        //        dvRanges, CC_NNlayersConfig, dv_CC_ThetaValues);
 
-            theLogWindow = ServiceTools.LogAText(theLogWindow,
-                "Detected Sun disk condition: " + sdc + Environment.NewLine + "Detected CC: " + TCC);
+        //    theLogWindow = ServiceTools.LogAText(theLogWindow,
+        //        "Detected Sun disk condition: " + sdc + Environment.NewLine + "Detected CC: " + TCC);
 
-            ThreadSafeOperations.SetText(lblSDCvalue, sdc.ToString(), false);
-            ThreadSafeOperations.SetText(lblCCvalue, TCC.ToString() + " (/8)", false);
-        }
+        //    ThreadSafeOperations.SetText(lblSDCvalue, sdc.ToString(), false);
+        //    ThreadSafeOperations.SetText(lblCCvalue, TCC.ToString() + " (/8)", false);
+        //}
+
+        #endregion // PredictAndReportSDCandCC - obsolete (separate app)
+
 
         #endregion periodical snapshot processing for SDC and TCC prediction
 
@@ -4482,468 +4343,476 @@ namespace DataCollectorAutomator
 
 
 
+        #region // btnSSHsendPreview_Click - obsolete
 
-        #region periodical data processing for bot snapshots
+        //private void btnSSHsendPreview_Click(object sender, EventArgs e)
+        //{
+        //    if (theLogWindow == null)
+        //    {
+        //        theLogWindow = ServiceTools.LogAText(theLogWindow);
+        //    }
 
+        //    lowPriorityTaskFactory.StartNew(() => MakeAndSendSnapshotsPreviewPictures());
+        //}
 
+        #endregion // btnSSHsendPreview_Click - obsolete
 
-        private void btnSSHsendPreview_Click(object sender, EventArgs e)
-        {
-            if (theLogWindow == null)
-            {
-                theLogWindow = ServiceTools.LogAText(theLogWindow);
-            }
-
-            lowPriorityTaskFactory.StartNew(() => MakeAndSendSnapshotsPreviewPictures());
-        }
-
-
-
-        private void MakeCurrentSnapshotPreviewPicture(object state)
-        {
-            // stwMakeCurrentSnapshotPreviewPictureTimer.Restart();
-
-            #region проверка на высоту солнца
-            bool sunElevationMoreThanZero = true;
-            if (latestGPSdata.validGPSdata && restrictSnapshotsProcessingWhenSunElevationLowerThanZero)
-            {
-                SPA spaCalc = new SPA(latestGPSdata.dateTimeUTC.Year, latestGPSdata.dateTimeUTC.Month, latestGPSdata.dateTimeUTC.Day, latestGPSdata.dateTimeUTC.Hour,
-                        latestGPSdata.dateTimeUTC.Minute, latestGPSdata.dateTimeUTC.Second, (float)latestGPSdata.LonDec, (float)latestGPSdata.LatDec,
-                        (float)SPAConst.DeltaT(latestGPSdata.dateTimeUTC));
-                int res = spaCalc.spa_calculate();
-                AzimuthZenithAngle sunPositionSPAext = new AzimuthZenithAngle(spaCalc.spa.azimuth,
-                    spaCalc.spa.zenith);
-
-                if (sunPositionSPAext.ElevationAngle <= 0.0d)
-                {
-                    sunElevationMoreThanZero = false;
-                }
-            }
-
-            #endregion проверка на высоту солнца
-
-            if (sunElevationMoreThanZero)
-            {
-                lowPriorityTaskFactory.StartNew(() => MakeAndSendSnapshotsPreviewPictures());
-
-            }
-        }
-
-
-
-
-        private async void MakeAndSendSnapshotsPreviewPictures()
-        {
-
-            if (bSendProcessedDataTo_CC_Moscow_bot_server)
-            {
-                #region make and send snapshots preview and lufft data XML files
-
-                string FilenameToSend = "";
-                Image<Bgr, byte> lastImagesCouple = CurrentImagesCouple(out FilenameToSend);
-                string tmpFNameToSave = Path.GetTempPath();
-                tmpFNameToSave += (tmpFNameToSave.Last() == Path.DirectorySeparatorChar)
-                    ? ("")
-                    : (Path.DirectorySeparatorChar.ToString());
-                tmpFNameToSave += FilenameToSend;
-                lastImagesCouple.Save(tmpFNameToSave);
-                // var fileStream = File.Open(tmpFNameToSave, FileMode.Open);
-                // Message sentMessage = await Bot.SendPhoto(update.Message.Chat.Id, new FileToSend(FilenameToSend, fileStream));
-                // послать файл на сервер бота
-
-
-                string filenameToSend = tmpFNameToSave;
-                string concurrentDataXMLfilename =
-                    await
-                        CommonTools.FindConcurrentDataXMLfileAsync(filenameToSend, strOutputConcurrentDataDirectory,
-                            true,
-                            ServiceTools.DatetimeExtractionMethod.Filename);
-
-                Zip zip = new Zip();
-                string tempZipFilename = Path.GetTempPath();
-                tempZipFilename += (tempZipFilename.Last() == Path.DirectorySeparatorChar)
-                    ? ("")
-                    : (Path.DirectorySeparatorChar.ToString());
-                tempZipFilename += Path.GetFileNameWithoutExtension(filenameToSend) + ".zip";
-                zip.ArchiveFile = tempZipFilename;
-                zip.IncludeFiles(filenameToSend + " | " + concurrentDataXMLfilename);
-                zip.Compress();
-
-                //theLogWindow = ServiceTools.LogAText(theLogWindow,
-                //    "zip file created: " + Environment.NewLine + tempZipFilename);
-
-                Exception retEx = null;
-                bool sendingResult = SendFileToBotServer(tempZipFilename, "~/cc_moscow_bot/" + Path.GetFileName(tempZipFilename), out retEx);
-
-                File.Delete(tmpFNameToSave);
-                File.Delete(tempZipFilename);
-
-                #endregion make and send snapshots preview and lufft data XML files
-
-                #region report error
-                if (!sendingResult)
-                {
-                    if (theLogWindow != null)
-                    {
-                        theLogWindow = ServiceTools.LogAText(theLogWindow,
-                            "ERROR sending file to bot server" + Environment.NewLine + "filename: " + tempZipFilename +
-                            Environment.NewLine + "Exception messages: " + Environment.NewLine +
-                            ServiceTools.GetExceptionMessages(retEx) + "at the code line: " +
-                            ServiceTools.CurrentCodeLineDescription());
-                    }
-                    else
-                    {
-                        ServiceTools.logToTextFile(errorLogFilename,
-                            "ERROR sending file to bot server" + Environment.NewLine + "filename: " + tempZipFilename +
-                            Environment.NewLine + "Exception messages: " + Environment.NewLine +
-                            ServiceTools.GetExceptionMessages(retEx) + "at the code line: " +
-                            ServiceTools.CurrentCodeLineDescription());
-                    }
-
-                    return;
-                }
-                #endregion report error
-
-                List<string> commands = new List<string>();
-                commands.Add("cd ~/cc_moscow_bot/");
-                commands.Add("unzip " + Path.GetFileName(tempZipFilename));
-                commands.Add("rm " + Path.GetFileName(tempZipFilename));
-                commands.Add("ll");
-                bool execResult = ExecSShellCommandsOnBotServer(commands, out retEx);
-
-                #region report error
-
-                if (!execResult)
-                {
-                    if (theLogWindow != null)
-                    {
-                        theLogWindow = ServiceTools.LogAText(theLogWindow,
-                            "ERROR executing commands on bot server" + Environment.NewLine +
-                            Environment.NewLine + "Exception messages: " + Environment.NewLine +
-                            ServiceTools.GetExceptionMessages(retEx) + "at the code line: " +
-                            ServiceTools.CurrentCodeLineDescription());
-                    }
-                    else
-                    {
-                        ServiceTools.logToTextFile(errorLogFilename,
-                            "ERROR executing commands on bot server" + Environment.NewLine +
-                            Environment.NewLine + "Exception messages: " + Environment.NewLine +
-                            ServiceTools.GetExceptionMessages(retEx) + "at the code line: " +
-                            ServiceTools.CurrentCodeLineDescription());
-                    }
-                    return;
-                }
-
-                #endregion
-
-            }
-        }
-
-
-
-
-
-        private async Task<string> ObtainLatestMeteoParameters()
-        {
-            string retStr = "";
-
-
-            // WSLufftUMBappPath
-            // Date time ; Temperature [°C] ; Abs. air pressure [hPa] ; Relative humidity [%] ; Abs. humidity [g/m³]
-            if (Directory.Exists(WSLufftUMBappPath))
-            {
-                List<FileInfo> lTXTdataFilesInfoList =
-                    ((new DirectoryInfo(WSLufftUMBappPath)).GetFiles("????-??-??Values.Txt",
-                        SearchOption.AllDirectories)).ToList();
-                lTXTdataFilesInfoList.Sort((finfo1, finfo2) => finfo1.CreationTimeUtc.CompareTo(finfo2.CreationTimeUtc));
-                FileInfo lastTXTdataFileInfo = lTXTdataFilesInfoList.Last();
-                List<List<string>> Contents = ServiceTools.ReadDataFromCSV(lastTXTdataFileInfo.FullName, 2, true, ";");
-                List<string> lastWSdataStrings = Contents.Last();
-                retStr +=
-                    "WS:" + Environment.NewLine +
-                    "Date time: " + lastWSdataStrings[0] + Environment.NewLine +
-                    "Temperature [°C]: " + lastWSdataStrings[1] + Environment.NewLine +
-                    "Abs. air pressure [hPa]: " + lastWSdataStrings[2] + Environment.NewLine +
-                    "Relative humidity [%]: " + lastWSdataStrings[3] + Environment.NewLine +
-                    "Abs. humidity [g/m³]" + lastWSdataStrings[4] + Environment.NewLine + Environment.NewLine;
-                // retStr += string.Join(" ; ", Contents.Last()) + Environment.NewLine;
-            }
-
-
-            // R2SLufftUMBappPath
-            if (Directory.Exists(R2SLufftUMBappPath))
-            {
-                List<FileInfo> lTXTdataFilesInfoList =
-                    ((new DirectoryInfo(R2SLufftUMBappPath)).GetFiles("????-??-??Values.Txt",
-                        SearchOption.AllDirectories)).ToList();
-                lTXTdataFilesInfoList.Sort((finfo1, finfo2) => finfo1.CreationTimeUtc.CompareTo(finfo2.CreationTimeUtc));
-                FileInfo lastTXTdataFileInfo = lTXTdataFilesInfoList.Last();
-                List<List<string>> Contents = ServiceTools.ReadDataFromCSV(lastTXTdataFileInfo.FullName, 2, true, ";");
-
-                List<string> lastR2SdataStrings = Contents.Last();
-
-
-                retStr +=
-                    "R2S:" + Environment.NewLine +
-                    "Date,time:" + lastR2SdataStrings[0] + Environment.NewLine +
-                    "Precipitation absol. [mm]: " + lastR2SdataStrings[1] + Environment.NewLine +
-                    "Precipitation type: " + lastR2SdataStrings[2] + Environment.NewLine +
-                    "Ambient temperature [°C]" + lastR2SdataStrings[3] + Environment.NewLine +
-                    "Precipitat.intensity [mil/h]: " + lastR2SdataStrings[4] + Environment.NewLine + Environment.NewLine;
-                //retStr += string.Join(" ; ", Contents.Last()) + Environment.NewLine;
-            }
-
-
-
-            // VentusLufftUMBappPath
-            // Date time ; Virtual temperature [°C] ; Wind speed [m/s] ; Wind speed [m/s] Vect. ; Wind direction [°] ; Wind direction [°] Vect. ; Abs. air pressure [hPa] ; Wind value quality [%]
-            if (Directory.Exists(VentusLufftUMBappPath))
-            {
-                List<FileInfo> lTXTdataFilesInfoList =
-                    ((new DirectoryInfo(VentusLufftUMBappPath)).GetFiles("????-??-??Values.Txt",
-                        SearchOption.AllDirectories)).ToList();
-                lTXTdataFilesInfoList.Sort((finfo1, finfo2) => finfo1.CreationTimeUtc.CompareTo(finfo2.CreationTimeUtc));
-                FileInfo lastTXTdataFileInfo = lTXTdataFilesInfoList.Last();
-                List<List<string>> Contents = ServiceTools.ReadDataFromCSV(lastTXTdataFileInfo.FullName, 2, true, ";");
-                List<string> lastVentusdataStrings = Contents.Last();
-                retStr +=
-                    "Ventus:" + Environment.NewLine +
-                    "Date,time: " + lastVentusdataStrings[0] + Environment.NewLine +
-                    "Virtual temperature [°C]: " + lastVentusdataStrings[1] + Environment.NewLine +
-                    "Wind speed [m/s]: " + lastVentusdataStrings[2] + Environment.NewLine +
-                    "Wind speed [m/s] Vect.:" + lastVentusdataStrings[3] + Environment.NewLine +
-                    "Wind direction [°]: " + lastVentusdataStrings[4] + Environment.NewLine +
-                    "Wind direction [°] Vect.: " + lastVentusdataStrings[5] + Environment.NewLine +
-                    "Abs. air pressure [hPa]: " + lastVentusdataStrings[6] + Environment.NewLine +
-                    "Wind value quality [%]: " + lastVentusdataStrings[7] + Environment.NewLine + Environment.NewLine;
-                //retStr += string.Join(" ; ", Contents.Last()) + Environment.NewLine;
-            }
-
-            return retStr;
-        }
-
-
-
-
-
-
-        #region exec Sshell commands methods
-
-        private bool ExecSShellCommandsOnBotServer(List<string> commands, out Exception retEx)
-        {
-            retEx = null;
-
-            Sshell sh = new Sshell()
-            {
-                SSHHost = strRemoteBotServerHost,
-                SSHPort = intRemoteBotServerPort,
-                SSHAuthMode = SshellSSHAuthModes.amPublicKey,
-                SSHUser = strRemoteBotServerSSHusername
-            };
-
-            try
-            {
-                sh.SSHCert = new Certificate(CertStoreTypes.cstPPKFile, strRemoteBotServerHostAuthKeyFile, "", "*");
-            }
-            catch (Exception ex)
-            {
-                retEx = ex;
-                return false;
-            }
-
-            try
-            {
-                sh.SSHAcceptServerHostKey = new Certificate(CertStoreTypes.cstSSHPublicKeyFile,
-                    strAcceptedSSHhostCertPublicKeyFile, "", "*");
-            }
-            catch (Exception ex)
-            {
-                retEx = ex;
-                return false;
-            }
-
-
-            sh.OnSSHServerAuthentication += Sh_OnSSHServerAuthentication;
-            sh.OnStdout += Sh_OnStdout;
-
-            foreach (string command in commands)
-            {
-                sh.Execute(command);
-            }
-
-            return true;
-        }
-
-
-
-        private void Sh_OnStdout(object sender, SshellStdoutEventArgs e)
-        {
-            theLogWindow = ServiceTools.LogAText(theLogWindow, e.Text);
-        }
-
-
-
-        private void Sh_OnSSHServerAuthentication(object sender, SshellSSHServerAuthenticationEventArgs e)
-        {
-            Sshell sh = sender as Sshell;
-            if (!e.Accept)
-            {
-                try
-                {
-                    sh.Interrupt();
-                    sh.SSHLogoff();
-                    sh.Dispose();
-                }
-                catch (Exception ex)
-                {
-                    throw ex;
-                }
-            }
-        }
+
+
+
+        #region // MakeCurrentSnapshotPreviewPicture = obsolete
+
+        //private void MakeCurrentSnapshotPreviewPicture(object state)
+        //{
+        //    // stwMakeCurrentSnapshotPreviewPictureTimer.Restart();
+
+        //    #region проверка на высоту солнца
+        //    bool sunElevationMoreThanZero = true;
+        //    if (latestGPSdata.validGPSdata && restrictSnapshotsProcessingWhenSunElevationLowerThanZero)
+        //    {
+        //        SPA spaCalc = new SPA(latestGPSdata.dateTimeUTC.Year, latestGPSdata.dateTimeUTC.Month, latestGPSdata.dateTimeUTC.Day, latestGPSdata.dateTimeUTC.Hour,
+        //                latestGPSdata.dateTimeUTC.Minute, latestGPSdata.dateTimeUTC.Second, (float)latestGPSdata.LonDec, (float)latestGPSdata.LatDec,
+        //                (float)SPAConst.DeltaT(latestGPSdata.dateTimeUTC));
+        //        int res = spaCalc.spa_calculate();
+        //        AzimuthZenithAngle sunPositionSPAext = new AzimuthZenithAngle(spaCalc.spa.azimuth,
+        //            spaCalc.spa.zenith);
+
+        //        if (sunPositionSPAext.ElevationAngle <= 0.0d)
+        //        {
+        //            sunElevationMoreThanZero = false;
+        //        }
+        //    }
+
+        //    #endregion проверка на высоту солнца
+
+        //    if (sunElevationMoreThanZero)
+        //    {
+        //        lowPriorityTaskFactory.StartNew(() => MakeAndSendSnapshotsPreviewPictures());
+
+        //    }
+        //}
+
+        #endregion // MakeCurrentSnapshotPreviewPicture = obsolete
+
+
+
+
+
+        #region // MakeAndSendSnapshotsPreviewPictures - obsolete
+
+        //private async void MakeAndSendSnapshotsPreviewPictures()
+        //{
+
+        //    if (bSendProcessedDataTo_CC_Moscow_bot_server)
+        //    {
+        //        #region make and send snapshots preview and lufft data XML files
+
+        //        string FilenameToSend = "";
+        //        Image<Bgr, byte> lastImagesCouple = CurrentImagesCouple(out FilenameToSend);
+        //        string tmpFNameToSave = Path.GetTempPath();
+        //        tmpFNameToSave += (tmpFNameToSave.Last() == Path.DirectorySeparatorChar)
+        //            ? ("")
+        //            : (Path.DirectorySeparatorChar.ToString());
+        //        tmpFNameToSave += FilenameToSend;
+        //        lastImagesCouple.Save(tmpFNameToSave);
+        //        // var fileStream = File.Open(tmpFNameToSave, FileMode.Open);
+        //        // Message sentMessage = await Bot.SendPhoto(update.Message.Chat.Id, new FileToSend(FilenameToSend, fileStream));
+        //        // послать файл на сервер бота
+
+
+        //        string filenameToSend = tmpFNameToSave;
+        //        string concurrentDataXMLfilename =
+        //            await
+        //                CommonTools.FindConcurrentDataXMLfileAsync(filenameToSend, strOutputConcurrentDataDirectory,
+        //                    true,
+        //                    ServiceTools.DatetimeExtractionMethod.Filename);
+
+        //        Zip zip = new Zip();
+        //        string tempZipFilename = Path.GetTempPath();
+        //        tempZipFilename += (tempZipFilename.Last() == Path.DirectorySeparatorChar)
+        //            ? ("")
+        //            : (Path.DirectorySeparatorChar.ToString());
+        //        tempZipFilename += Path.GetFileNameWithoutExtension(filenameToSend) + ".zip";
+        //        zip.ArchiveFile = tempZipFilename;
+        //        zip.IncludeFiles(filenameToSend + " | " + concurrentDataXMLfilename);
+        //        zip.Compress();
+
+        //        //theLogWindow = ServiceTools.LogAText(theLogWindow,
+        //        //    "zip file created: " + Environment.NewLine + tempZipFilename);
+
+        //        Exception retEx = null;
+        //        bool sendingResult = SendFileToBotServer(tempZipFilename, "~/cc_moscow_bot/" + Path.GetFileName(tempZipFilename), out retEx);
+
+        //        File.Delete(tmpFNameToSave);
+        //        File.Delete(tempZipFilename);
+
+        //        #endregion make and send snapshots preview and lufft data XML files
+
+        //        #region report error
+        //        if (!sendingResult)
+        //        {
+        //            if (theLogWindow != null)
+        //            {
+        //                theLogWindow = ServiceTools.LogAText(theLogWindow,
+        //                    "ERROR sending file to bot server" + Environment.NewLine + "filename: " + tempZipFilename +
+        //                    Environment.NewLine + "Exception messages: " + Environment.NewLine +
+        //                    ServiceTools.GetExceptionMessages(retEx) + "at the code line: " +
+        //                    ServiceTools.CurrentCodeLineDescription());
+        //            }
+        //            else
+        //            {
+        //                ServiceTools.logToTextFile(errorLogFilename,
+        //                    "ERROR sending file to bot server" + Environment.NewLine + "filename: " + tempZipFilename +
+        //                    Environment.NewLine + "Exception messages: " + Environment.NewLine +
+        //                    ServiceTools.GetExceptionMessages(retEx) + "at the code line: " +
+        //                    ServiceTools.CurrentCodeLineDescription());
+        //            }
+
+        //            return;
+        //        }
+        //        #endregion report error
+
+        //        List<string> commands = new List<string>();
+        //        commands.Add("cd ~/cc_moscow_bot/");
+        //        commands.Add("unzip " + Path.GetFileName(tempZipFilename));
+        //        commands.Add("rm " + Path.GetFileName(tempZipFilename));
+        //        commands.Add("ll");
+        //        bool execResult = ExecSShellCommandsOnBotServer(commands, out retEx);
+
+        //        #region report error
+
+        //        if (!execResult)
+        //        {
+        //            if (theLogWindow != null)
+        //            {
+        //                theLogWindow = ServiceTools.LogAText(theLogWindow,
+        //                    "ERROR executing commands on bot server" + Environment.NewLine +
+        //                    Environment.NewLine + "Exception messages: " + Environment.NewLine +
+        //                    ServiceTools.GetExceptionMessages(retEx) + "at the code line: " +
+        //                    ServiceTools.CurrentCodeLineDescription());
+        //            }
+        //            else
+        //            {
+        //                ServiceTools.logToTextFile(errorLogFilename,
+        //                    "ERROR executing commands on bot server" + Environment.NewLine +
+        //                    Environment.NewLine + "Exception messages: " + Environment.NewLine +
+        //                    ServiceTools.GetExceptionMessages(retEx) + "at the code line: " +
+        //                    ServiceTools.CurrentCodeLineDescription());
+        //            }
+        //            return;
+        //        }
+
+        //        #endregion
+
+        //    }
+        //}
+
+        #endregion // MakeAndSendSnapshotsPreviewPictures - obsolete
+
+
+        #region // ObtainLatestMeteoParameters - obsolete
+
+        //private async Task<string> ObtainLatestMeteoParameters()
+        //{
+        //    string retStr = "";
+
+
+        //    // WSLufftUMBappPath
+        //    // Date time ; Temperature [°C] ; Abs. air pressure [hPa] ; Relative humidity [%] ; Abs. humidity [g/m³]
+        //    if (Directory.Exists(WSLufftUMBappPath))
+        //    {
+        //        List<FileInfo> lTXTdataFilesInfoList =
+        //            ((new DirectoryInfo(WSLufftUMBappPath)).GetFiles("????-??-??Values.Txt",
+        //                SearchOption.AllDirectories)).ToList();
+        //        lTXTdataFilesInfoList.Sort((finfo1, finfo2) => finfo1.CreationTimeUtc.CompareTo(finfo2.CreationTimeUtc));
+        //        FileInfo lastTXTdataFileInfo = lTXTdataFilesInfoList.Last();
+        //        List<List<string>> Contents = ServiceTools.ReadDataFromCSV(lastTXTdataFileInfo.FullName, 2, true, ";");
+        //        List<string> lastWSdataStrings = Contents.Last();
+        //        retStr +=
+        //            "WS:" + Environment.NewLine +
+        //            "Date time: " + lastWSdataStrings[0] + Environment.NewLine +
+        //            "Temperature [°C]: " + lastWSdataStrings[1] + Environment.NewLine +
+        //            "Abs. air pressure [hPa]: " + lastWSdataStrings[2] + Environment.NewLine +
+        //            "Relative humidity [%]: " + lastWSdataStrings[3] + Environment.NewLine +
+        //            "Abs. humidity [g/m³]" + lastWSdataStrings[4] + Environment.NewLine + Environment.NewLine;
+        //        // retStr += string.Join(" ; ", Contents.Last()) + Environment.NewLine;
+        //    }
+
+
+        //    // R2SLufftUMBappPath
+        //    if (Directory.Exists(R2SLufftUMBappPath))
+        //    {
+        //        List<FileInfo> lTXTdataFilesInfoList =
+        //            ((new DirectoryInfo(R2SLufftUMBappPath)).GetFiles("????-??-??Values.Txt",
+        //                SearchOption.AllDirectories)).ToList();
+        //        lTXTdataFilesInfoList.Sort((finfo1, finfo2) => finfo1.CreationTimeUtc.CompareTo(finfo2.CreationTimeUtc));
+        //        FileInfo lastTXTdataFileInfo = lTXTdataFilesInfoList.Last();
+        //        List<List<string>> Contents = ServiceTools.ReadDataFromCSV(lastTXTdataFileInfo.FullName, 2, true, ";");
+
+        //        List<string> lastR2SdataStrings = Contents.Last();
+
+
+        //        retStr +=
+        //            "R2S:" + Environment.NewLine +
+        //            "Date,time:" + lastR2SdataStrings[0] + Environment.NewLine +
+        //            "Precipitation absol. [mm]: " + lastR2SdataStrings[1] + Environment.NewLine +
+        //            "Precipitation type: " + lastR2SdataStrings[2] + Environment.NewLine +
+        //            "Ambient temperature [°C]" + lastR2SdataStrings[3] + Environment.NewLine +
+        //            "Precipitat.intensity [mil/h]: " + lastR2SdataStrings[4] + Environment.NewLine + Environment.NewLine;
+        //        //retStr += string.Join(" ; ", Contents.Last()) + Environment.NewLine;
+        //    }
+
+
+
+        //    // VentusLufftUMBappPath
+        //    // Date time ; Virtual temperature [°C] ; Wind speed [m/s] ; Wind speed [m/s] Vect. ; Wind direction [°] ; Wind direction [°] Vect. ; Abs. air pressure [hPa] ; Wind value quality [%]
+        //    if (Directory.Exists(VentusLufftUMBappPath))
+        //    {
+        //        List<FileInfo> lTXTdataFilesInfoList =
+        //            ((new DirectoryInfo(VentusLufftUMBappPath)).GetFiles("????-??-??Values.Txt",
+        //                SearchOption.AllDirectories)).ToList();
+        //        lTXTdataFilesInfoList.Sort((finfo1, finfo2) => finfo1.CreationTimeUtc.CompareTo(finfo2.CreationTimeUtc));
+        //        FileInfo lastTXTdataFileInfo = lTXTdataFilesInfoList.Last();
+        //        List<List<string>> Contents = ServiceTools.ReadDataFromCSV(lastTXTdataFileInfo.FullName, 2, true, ";");
+        //        List<string> lastVentusdataStrings = Contents.Last();
+        //        retStr +=
+        //            "Ventus:" + Environment.NewLine +
+        //            "Date,time: " + lastVentusdataStrings[0] + Environment.NewLine +
+        //            "Virtual temperature [°C]: " + lastVentusdataStrings[1] + Environment.NewLine +
+        //            "Wind speed [m/s]: " + lastVentusdataStrings[2] + Environment.NewLine +
+        //            "Wind speed [m/s] Vect.:" + lastVentusdataStrings[3] + Environment.NewLine +
+        //            "Wind direction [°]: " + lastVentusdataStrings[4] + Environment.NewLine +
+        //            "Wind direction [°] Vect.: " + lastVentusdataStrings[5] + Environment.NewLine +
+        //            "Abs. air pressure [hPa]: " + lastVentusdataStrings[6] + Environment.NewLine +
+        //            "Wind value quality [%]: " + lastVentusdataStrings[7] + Environment.NewLine + Environment.NewLine;
+        //        //retStr += string.Join(" ; ", Contents.Last()) + Environment.NewLine;
+        //    }
+
+        //    return retStr;
+        //}
+
+        #endregion
+
+
+
+
+        #region // exec Sshell commands methods
+
+        //private bool ExecSShellCommandsOnBotServer(List<string> commands, out Exception retEx)
+        //{
+        //    retEx = null;
+
+        //    Sshell sh = new Sshell()
+        //    {
+        //        SSHHost = strRemoteBotServerHost,
+        //        SSHPort = intRemoteBotServerPort,
+        //        SSHAuthMode = SshellSSHAuthModes.amPublicKey,
+        //        SSHUser = strRemoteBotServerSSHusername
+        //    };
+
+        //    try
+        //    {
+        //        sh.SSHCert = new Certificate(CertStoreTypes.cstPPKFile, strRemoteBotServerHostAuthKeyFile, "", "*");
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        retEx = ex;
+        //        return false;
+        //    }
+
+        //    try
+        //    {
+        //        sh.SSHAcceptServerHostKey = new Certificate(CertStoreTypes.cstSSHPublicKeyFile,
+        //            strAcceptedSSHhostCertPublicKeyFile, "", "*");
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        retEx = ex;
+        //        return false;
+        //    }
+
+
+        //    sh.OnSSHServerAuthentication += Sh_OnSSHServerAuthentication;
+        //    sh.OnStdout += Sh_OnStdout;
+
+        //    foreach (string command in commands)
+        //    {
+        //        sh.Execute(command);
+        //    }
+
+        //    return true;
+        //}
+
+
+
+        //private void Sh_OnStdout(object sender, SshellStdoutEventArgs e)
+        //{
+        //    theLogWindow = ServiceTools.LogAText(theLogWindow, e.Text);
+        //}
+
+
+
+        //private void Sh_OnSSHServerAuthentication(object sender, SshellSSHServerAuthenticationEventArgs e)
+        //{
+        //    Sshell sh = sender as Sshell;
+        //    if (!e.Accept)
+        //    {
+        //        try
+        //        {
+        //            sh.Interrupt();
+        //            sh.SSHLogoff();
+        //            sh.Dispose();
+        //        }
+        //        catch (Exception ex)
+        //        {
+        //            throw ex;
+        //        }
+        //    }
+        //}
 
         #endregion exec Sshell commands methods
 
 
 
 
-        #region scp file methods
+        #region // scp file methods - obsolete
 
-        private bool SendFileToBotServer(string localFile, string remoteFile, out Exception retEx)
-        {
-            retEx = null;
-            if (!File.Exists(strRemoteBotServerHostAuthKeyFile))
-            {
-                retEx =
-                    new FileNotFoundException("unable to locate bot server auth key file: " +
-                                              strRemoteBotServerHostAuthKeyFile);
-                return false;
-            }
+        //private bool SendFileToBotServer(string localFile, string remoteFile, out Exception retEx)
+        //{
+        //    retEx = null;
+        //    if (!File.Exists(strRemoteBotServerHostAuthKeyFile))
+        //    {
+        //        retEx =
+        //            new FileNotFoundException("unable to locate bot server auth key file: " +
+        //                                      strRemoteBotServerHostAuthKeyFile);
+        //        return false;
+        //    }
 
-            if (!File.Exists(strAcceptedSSHhostCertPublicKeyFile))
-            {
-                retEx =
-                    new FileNotFoundException("unable to locate bot server accepted host key file: " +
-                                              strAcceptedSSHhostCertPublicKeyFile);
-                return false;
-            }
-
-
-
-            Scp scp = new Scp()
-            {
-                SSHHost = strRemoteBotServerHost,
-                SSHPort = intRemoteBotServerPort,
-                SSHAuthMode = ScpSSHAuthModes.amPublicKey,
-                SSHUser = strRemoteBotServerSSHusername
-            };
-
-
-            try
-            {
-                scp.SSHCert = new Certificate(CertStoreTypes.cstPPKFile, strRemoteBotServerHostAuthKeyFile, "", "*");
-            }
-            catch (Exception ex)
-            {
-                retEx = ex;
-                return false;
-            }
-            
-
-
-            try
-            {
-                scp.SSHAcceptServerHostKey = new Certificate(CertStoreTypes.cstSSHPublicKeyFile,
-                    strAcceptedSSHhostCertPublicKeyFile, "", "*");
-            }
-            catch (Exception ex)
-            {
-                retEx = ex;
-                return false;
-            }
-            
-
-            scp.OnSSHServerAuthentication += Scp_OnSSHServerAuthentication;
-            scp.RemoteFile = remoteFile;
-            scp.LocalFile = localFile;
-            scp.OnEndTransfer += Scp_OnEndTransfer;
-
-            try
-            {
-                scp.Upload();
-            }
-            catch (Exception ex)
-            {
-                retEx = ex;
-                return false;
-            }
-            
-            return true;
-
-        }
-
-
-        private void Scp_OnEndTransfer(object sender, ScpEndTransferEventArgs e)
-        {
-            if (theLogWindow != null)
-            {
-                theLogWindow = ServiceTools.LogAText(theLogWindow, "file " + e.LocalFile + " transfer finished");
-            }
-        }
+        //    if (!File.Exists(strAcceptedSSHhostCertPublicKeyFile))
+        //    {
+        //        retEx =
+        //            new FileNotFoundException("unable to locate bot server accepted host key file: " +
+        //                                      strAcceptedSSHhostCertPublicKeyFile);
+        //        return false;
+        //    }
 
 
 
-        private void Scp_OnSSHServerAuthentication(object sender, ScpSSHServerAuthenticationEventArgs e)
-        {
-            Scp scpSender = sender as Scp;
-            if (!e.Accept)
-            {
-                try
-                {
-                    scpSender.Interrupt();
-                    scpSender.SSHLogoff();
-                    scpSender.Dispose();
-                }
-                catch (Exception ex)
-                {
-                    throw ex;
-                }
-            }
-        }
+        //    Scp scp = new Scp()
+        //    {
+        //        SSHHost = strRemoteBotServerHost,
+        //        SSHPort = intRemoteBotServerPort,
+        //        SSHAuthMode = ScpSSHAuthModes.amPublicKey,
+        //        SSHUser = strRemoteBotServerSSHusername
+        //    };
 
-        #endregion scp file methods
 
+        //    try
+        //    {
+        //        scp.SSHCert = new Certificate(CertStoreTypes.cstPPKFile, strRemoteBotServerHostAuthKeyFile, "", "*");
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        retEx = ex;
+        //        return false;
+        //    }
 
 
 
-        private Image<Bgr, byte> CurrentImagesCouple(out string FilenameToSend)
-        {
-            DirectoryInfo dir = new DirectoryInfo(outputSnapshotsDirectory);
-            List<FileInfo> lImagesFilesID1 = dir.GetFiles("*devID1.jpg", SearchOption.AllDirectories).ToList();
-            lImagesFilesID1.Sort((finfo1, finfo2) => finfo1.CreationTimeUtc.CompareTo(finfo2.CreationTimeUtc));
-            string strLastImageID1Fname = lImagesFilesID1.Last().FullName;
+        //    try
+        //    {
+        //        scp.SSHAcceptServerHostKey = new Certificate(CertStoreTypes.cstSSHPublicKeyFile,
+        //            strAcceptedSSHhostCertPublicKeyFile, "", "*");
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        retEx = ex;
+        //        return false;
+        //    }
 
-            FilenameToSend = strLastImageID1Fname.Replace("devID1", "");
-            FilenameToSend = Path.GetFileName(FilenameToSend);
 
-            List<FileInfo> lImagesFilesID2 = dir.GetFiles("*devID2.jpg", SearchOption.AllDirectories).ToList();
-            lImagesFilesID2.Sort((finfo1, finfo2) => finfo1.CreationTimeUtc.CompareTo(finfo2.CreationTimeUtc));
-            string strLastImageID2Fname = lImagesFilesID2.Last().FullName;
+        //    scp.OnSSHServerAuthentication += Scp_OnSSHServerAuthentication;
+        //    scp.RemoteFile = remoteFile;
+        //    scp.LocalFile = localFile;
+        //    scp.OnEndTransfer += Scp_OnEndTransfer;
 
-            Image<Bgr, byte> img1 = new Image<Bgr, byte>(strLastImageID1Fname);
-            Image<Bgr, byte> img2 = new Image<Bgr, byte>(strLastImageID2Fname);
+        //    try
+        //    {
+        //        scp.Upload();
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        retEx = ex;
+        //        return false;
+        //    }
 
-            Size img1Size = img1.Size;
-            Size resimgSize = new Size(img1Size.Width * 2, img1Size.Height);
+        //    return true;
 
-            Image<Bgr, byte> resImg = new Image<Bgr, byte>(resimgSize);
-            Graphics g = Graphics.FromImage(resImg.Bitmap);
-            g.DrawImage(img1.Bitmap, new Point(0, 0));
-            g.DrawImage(img2.Bitmap, new Point(img1Size.Width, 0));
+        //}
 
-            resImg = resImg.Resize(0.25d, Emgu.CV.CvEnum.INTER.CV_INTER_CUBIC);
 
-            return resImg;
-        }
+        //private void Scp_OnEndTransfer(object sender, ScpEndTransferEventArgs e)
+        //{
+        //    if (theLogWindow != null)
+        //    {
+        //        theLogWindow = ServiceTools.LogAText(theLogWindow, "file " + e.LocalFile + " transfer finished");
+        //    }
+        //}
+
+
+
+        //private void Scp_OnSSHServerAuthentication(object sender, ScpSSHServerAuthenticationEventArgs e)
+        //{
+        //    Scp scpSender = sender as Scp;
+        //    if (!e.Accept)
+        //    {
+        //        try
+        //        {
+        //            scpSender.Interrupt();
+        //            scpSender.SSHLogoff();
+        //            scpSender.Dispose();
+        //        }
+        //        catch (Exception ex)
+        //        {
+        //            throw ex;
+        //        }
+        //    }
+        //}
+
+        //#endregion scp file methods
+
+
+
+
+        //private Image<Bgr, byte> CurrentImagesCouple(out string FilenameToSend)
+        //{
+        //    DirectoryInfo dir = new DirectoryInfo(outputSnapshotsDirectory);
+        //    List<FileInfo> lImagesFilesID1 = dir.GetFiles("*devID1.jpg", SearchOption.AllDirectories).ToList();
+        //    lImagesFilesID1.Sort((finfo1, finfo2) => finfo1.CreationTimeUtc.CompareTo(finfo2.CreationTimeUtc));
+        //    string strLastImageID1Fname = lImagesFilesID1.Last().FullName;
+
+        //    FilenameToSend = strLastImageID1Fname.Replace("devID1", "");
+        //    FilenameToSend = Path.GetFileName(FilenameToSend);
+
+        //    List<FileInfo> lImagesFilesID2 = dir.GetFiles("*devID2.jpg", SearchOption.AllDirectories).ToList();
+        //    lImagesFilesID2.Sort((finfo1, finfo2) => finfo1.CreationTimeUtc.CompareTo(finfo2.CreationTimeUtc));
+        //    string strLastImageID2Fname = lImagesFilesID2.Last().FullName;
+
+        //    Image<Bgr, byte> img1 = new Image<Bgr, byte>(strLastImageID1Fname);
+        //    Image<Bgr, byte> img2 = new Image<Bgr, byte>(strLastImageID2Fname);
+
+        //    Size img1Size = img1.Size;
+        //    Size resimgSize = new Size(img1Size.Width * 2, img1Size.Height);
+
+        //    Image<Bgr, byte> resImg = new Image<Bgr, byte>(resimgSize);
+        //    Graphics g = Graphics.FromImage(resImg.Bitmap);
+        //    g.DrawImage(img1.Bitmap, new Point(0, 0));
+        //    g.DrawImage(img2.Bitmap, new Point(img1Size.Width, 0));
+
+        //    resImg = resImg.Resize(0.25d, Emgu.CV.CvEnum.INTER.CV_INTER_CUBIC);
+
+        //    return resImg;
+        //}
 
 
 
@@ -4953,6 +4822,116 @@ namespace DataCollectorAutomator
 
 
 
+
+        #region IPC pipeserver
+
+        private void StartIPCpipeServer()
+        {
+            //Create a PipeServer and bind the events.
+            ipcPipeserver = new Pipeserver();
+            ipcPipeserver.OnDataIn += IpcPipeserver_OnDataIn;
+            ipcPipeserver.OnConnected += IpcPipeserver_OnConnected;
+            ipcPipeserver.OnDisconnected += IpcPipeserver_OnDisconnected;
+
+            //Set the PipeName, DefaultEOL, and start the server.
+            ipcPipeserver.PipeName = "DataCollectorAutomator2G_IPCpipeserver";
+            ipcPipeserver.DefaultEOL = Environment.NewLine; //optional
+            ipcPipeserver.Listening = true;
+
+            ThreadSafeOperations.SetText(lblIPCpipeServerStatus, "ON", false);
+        }
+
+
+
+        private void IpcPipeserver_OnDisconnected(object sender, PipeserverDisconnectedEventArgs e)
+        {
+            if (theLogWindow != null)
+            {
+                theLogWindow = ServiceTools.LogAText(theLogWindow, "Client " + e.ConnectionId + " connected.");
+            }
+
+            ThreadSafeOperations.SetText(lblIPCpipeServerStatus, "ON (" + ((Pipeserver)sender).Connections.Count + ")",
+                false);
+        }
+
+
+
+        private void IpcPipeserver_OnConnected(object sender, PipeserverConnectedEventArgs e)
+        {
+            if (theLogWindow != null)
+            {
+                theLogWindow = ServiceTools.LogAText(theLogWindow, "Client " + e.ConnectionId + " connected.");
+            }
+
+            ThreadSafeOperations.SetText(lblIPCpipeServerStatus, "ON (" + ((Pipeserver) sender).Connections.Count + ")",
+                false);
+        }
+
+
+
+        private void StopIPCpipeServer()
+        {
+            if (ipcPipeserver != null)
+            {
+                if (ipcPipeserver.Listening)
+                {
+                    ipcPipeserver.Shutdown();
+
+                    ThreadSafeOperations.SetText(lblIPCpipeServerStatus, "OFF", false);
+                }
+            }
+        }
+
+
+
+        private void IpcPipeserver_OnDataIn(object sender, PipeserverDataInEventArgs e)
+        {
+            if (theLogWindow != null)
+            {
+                theLogWindow = ServiceTools.LogAText(theLogWindow, "Echo '" + e.Text + "' from " + e.ConnectionId);
+            }
+            
+        }
+
+
+
+        private async void BroadcastIPCpipeServerMessage(string strBroadcast)
+        {
+            //To broadcast a message to all connected clients, iterate through the
+            //Connections collection and set DataToSend for each connection.
+            if (CheckIfIPCpipeServerIsOn())
+            {
+                foreach (PipeConnection connection in ipcPipeserver.Connections.Values)
+                {
+                    connection.DataToSend = strBroadcast + Environment.NewLine;
+                }
+            }
+        }
+
+
+
+        private bool CheckIfIPCpipeServerIsOn()
+        {
+            if (ipcPipeserver == null) return false;
+            if (!ipcPipeserver.Listening) return false;
+            if (ipcPipeserver.Connections.Count == 0) return false;
+
+            return true;
+        }
+
+
+        #endregion
+
+
+
+        private void btnTestGPSsending_Click(object sender, EventArgs e)
+        {
+            string gpsSerialized = ServiceTools.XmlSerializeToString(new GPSdata(45.0d, 55.0d));
+
+            BroadcastIPCpipeServerMessage("<gps>");
+            BroadcastIPCpipeServerMessage(gpsSerialized);
+            BroadcastIPCpipeServerMessage("</gps>");
+        }
     }
 
     #endregion the form class

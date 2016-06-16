@@ -41,7 +41,7 @@ namespace SunPresenceCollectingApp
         private string currPath2Process = "";
         private string SunDiskConditionXMLdataFilesDirectory = "";
         private string imageYRGBstatsXMLdataFilesDirectory = "";
-        private string imageMP5statsXMLdataFilesDirectory = "";
+        // private string imageMP5statsXMLdataFilesDirectory = "";
         private Image<Bgr, byte> currImage = null;
         private AbortableBackgroundWorkerWithParameters bgwCurrImageProcessing = null;
         private SunDiskConditionData currImageSunDiskConditionData;
@@ -192,18 +192,20 @@ namespace SunPresenceCollectingApp
             }
 
 
-            //imageMP5statsXMLdataFilesDirectory
-            if (defaultProperties.ContainsKey("imageMP5statsXMLdataFilesDirectory"))
-            {
-                imageMP5statsXMLdataFilesDirectory = (string)defaultProperties["imageMP5statsXMLdataFilesDirectory"];
-            }
-            else
-            {
-                imageMP5statsXMLdataFilesDirectory = CurDir;
-                defaultProperties.Add("imageMP5statsXMLdataFilesDirectory", imageMP5statsXMLdataFilesDirectory);
-                bDefaultPropertiesHasBeenUpdated = true;
-                //saveDefaultProperties();
-            }
+            #region //imageMP5statsXMLdataFilesDirectory
+            ////imageMP5statsXMLdataFilesDirectory
+            //if (defaultProperties.ContainsKey("imageMP5statsXMLdataFilesDirectory"))
+            //{
+            //    imageMP5statsXMLdataFilesDirectory = (string)defaultProperties["imageMP5statsXMLdataFilesDirectory"];
+            //}
+            //else
+            //{
+            //    imageMP5statsXMLdataFilesDirectory = CurDir;
+            //    defaultProperties.Add("imageMP5statsXMLdataFilesDirectory", imageMP5statsXMLdataFilesDirectory);
+            //    bDefaultPropertiesHasBeenUpdated = true;
+            //    //saveDefaultProperties();
+            //}
+            #endregion
 
 
             if (defaultProperties.ContainsKey("CalculateGrIxStatsOnline"))
@@ -253,7 +255,7 @@ namespace SunPresenceCollectingApp
             }
             else
             {
-                rtbOutputDirectory.Text = "";
+                rtbSDCdataCSVfile.Text = "";
                 defaultProperties.Add("SDCdataCSVfile", "");
                 bDefaultPropertiesHasBeenUpdated = true;
             }
@@ -622,9 +624,12 @@ namespace SunPresenceCollectingApp
 
             if (calcResult)
             {
-                string strImageGrIxMedianP5DataFileName =
-                    ConventionalTransitions.ImageGrIxMedianP5DataFileName(currentFullFileName, imageMP5statsXMLdataFilesDirectory);
-                ServiceTools.WriteObjectToXML(resStats, strImageGrIxMedianP5DataFileName);
+                #region // MP5 is obsolete
+                //string strImageGrIxMedianP5DataFileName =
+                //    ConventionalTransitions.ImageGrIxMedianP5DataFileName(currentFullFileName, imageMP5statsXMLdataFilesDirectory);
+                //ServiceTools.WriteObjectToXML(resStats, strImageGrIxMedianP5DataFileName);
+                #endregion // MP5 is obsolete
+
                 string strImageGrIxYRGBDataFileName =
                     ConventionalTransitions.ImageGrIxYRGBstatsDataFileName(currentFullFileName, imageYRGBstatsXMLdataFilesDirectory);
                 ServiceTools.WriteObjectToXML(GrIxYRGBstats, strImageGrIxYRGBDataFileName);
@@ -721,7 +726,7 @@ namespace SunPresenceCollectingApp
 
             LoadExistingSunDiskConditionData();
 
-            if (!LoadExistingMedianPerc5Data())
+            if (!LoadExistingStatsData())
             {
                 if (cbCalculateGrIxStatsOnline.Checked)
                 {
@@ -1053,8 +1058,11 @@ namespace SunPresenceCollectingApp
                 if (!bPermitRepeats)
                 {
                     filesList.RemoveAll(strFName => strFName == currImageFileName);
+
+
+                    /// TODO: исправить фильтрацию: сейчас файлы раскидываются по поддиректориям согласно расположению изображений-источников
                     filesList.RemoveAll(
-                        strFName => File.Exists(ConventionalTransitions.ImageGrIxMedianP5DataFileName(strFName, imageMP5statsXMLdataFilesDirectory)));
+                        strFName => File.Exists(ConventionalTransitions.ImageGrIxYRGBstatsDataFileName(strFName, imageYRGBstatsXMLdataFilesDirectory)));
                 }
 
                 if (!filesList.Any())
@@ -1135,8 +1143,11 @@ namespace SunPresenceCollectingApp
                 if (!bPermitRepeats)
                 {
                     filesList.RemoveAll(strFName => strFName == currImageFileName);
+
+
+                    /// TODO: Исправить. Сейчас файлы результатов раскидываются по поддиректориям согласно расположению файлов изображений-источников
                     filesList.RemoveAll(
-                        strFName => File.Exists(ConventionalTransitions.ImageGrIxMedianP5DataFileName(strFName, imageMP5statsXMLdataFilesDirectory)));
+                        strFName => File.Exists(ConventionalTransitions.ImageGrIxYRGBstatsDataFileName(strFName, imageYRGBstatsXMLdataFilesDirectory)));
                 }
 
                 if (!filesList.Any())
@@ -1155,30 +1166,33 @@ namespace SunPresenceCollectingApp
 
 
 
-        private bool LoadExistingMedianPerc5Data()
+        private bool LoadExistingStatsData()
         {
             bool bExistingDataLoaded = true;
-            string strImageGrIxMedianP5DataFileName =
-                ConventionalTransitions.ImageGrIxMedianP5DataFileName(currImageFInfo, imageMP5statsXMLdataFilesDirectory);
 
-            if (File.Exists(strImageGrIxMedianP5DataFileName))
+            /// TODO: Исправить. Сейчас файлы результатов раскидываются по поддиректориям согласно расположению файлов изображений-источников
+            string strImageStatsDataFileName =
+                ConventionalTransitions.ImageGrIxYRGBstatsDataFileName(currImageFInfo.Name, imageYRGBstatsXMLdataFilesDirectory);
+
+            if (File.Exists(strImageStatsDataFileName))
             {
-                object currGrIxMedianP5DataObj =
-                    ServiceTools.ReadObjectFromXML(strImageGrIxMedianP5DataFileName, typeof(SkyImageMedianPerc5Data));
-                if (currGrIxMedianP5DataObj != null)
+                try
                 {
-                    SkyImageMedianPerc5Data currGrIxMedianP5Data = (SkyImageMedianPerc5Data)currGrIxMedianP5DataObj;
-
+                    SkyImageIndexesStatsData currStatsData = (SkyImageIndexesStatsData)(ServiceTools.ReadObjectFromXML(strImageStatsDataFileName, typeof(SkyImageIndexesStatsData)));
+                    SkyImageMedianPerc5Data currGrIxMedianP5Data = new SkyImageMedianPerc5Data(currImageFInfo.FullName,
+                        currStatsData.grixStatsData.lTplFieldPercentiles.First(tpl => tpl.percIndex == 50).percValue,
+                        currStatsData.grixStatsData.lTplFieldPercentiles.First(tpl => tpl.percIndex == 5).percValue);
                     UpdateMedianPerc5DataLabels(currGrIxMedianP5Data);
                 }
+                catch (Exception ex)
+                {
+                    bExistingDataLoaded = false;
+                    ThreadSafeOperations.SetText(lblGrIxMedianValue, "---", false);
+                    ThreadSafeOperations.SetText(lblGrIxPerc5Value, "---", false);
+                }
+                
             }
-            else
-            {
-                bExistingDataLoaded = false;
-                ThreadSafeOperations.SetText(lblGrIxMedianValue, "---", false);
-                ThreadSafeOperations.SetText(lblGrIxPerc5Value, "---", false);
-            }
-
+            
             return bExistingDataLoaded;
         }
 
@@ -1784,48 +1798,48 @@ namespace SunPresenceCollectingApp
             List<string> lCorruptedXMLfiles = new List<string>();
 
 
-            #region read GrIx_MP5 stats data from XML files
+            #region // read GrIx_MP5 stats data from XML files
 
-            List<SkyImageMedianPerc5Data> lImagesMP5StatsData = new List<SkyImageMedianPerc5Data>();
-            foreach (string strMP5filename in filesListMP5statsData)
-            {
-                SkyImageMedianPerc5Data currMP5stats =
-                    (SkyImageMedianPerc5Data)
-                        ServiceTools.ReadObjectFromXML(strMP5filename, typeof(SkyImageMedianPerc5Data));
-
-                if (currMP5stats == null)
-                {
-                    lCorruptedXMLfiles.Add(strMP5filename);
-                    continue;
-                }
-
-                lImagesMP5StatsData.Add(currMP5stats);
-
-                filesRead++;
-                double progress = 100.0d * (double)filesRead / (double)totalFilesCountToRead;
-                if (progress - (double)currProgressPerc > 1.0d)
-                {
-                    currProgressPerc = Convert.ToInt32(progress);
-                    selfWorker.ReportProgress(currProgressPerc);
-                }
-
-                if (selfWorker.CancellationPending)
-                {
-                    return;
-                }
-            }
-
-            //foreach (SkyImageMedianPerc5Data statsData in lImagesMP5StatsData)
+            //List<SkyImageMedianPerc5Data> lImagesMP5StatsData = new List<SkyImageMedianPerc5Data>();
+            //foreach (string strMP5filename in filesListMP5statsData)
             //{
-            //    statsData.ShrinkFileName();
-            //}
-            lImagesMP5StatsData = lImagesMP5StatsData.ConvertAll<SkyImageMedianPerc5Data>(simp5dt =>
-            {
-                simp5dt.ShrinkFileName();
-                return simp5dt;
-            });
+            //    SkyImageMedianPerc5Data currMP5stats =
+            //        (SkyImageMedianPerc5Data)
+            //            ServiceTools.ReadObjectFromXML(strMP5filename, typeof(SkyImageMedianPerc5Data));
 
-            #endregion read GrIx_MP5 stats data from XML files
+            //    if (currMP5stats == null)
+            //    {
+            //        lCorruptedXMLfiles.Add(strMP5filename);
+            //        continue;
+            //    }
+
+            //    lImagesMP5StatsData.Add(currMP5stats);
+
+            //    filesRead++;
+            //    double progress = 100.0d * (double)filesRead / (double)totalFilesCountToRead;
+            //    if (progress - (double)currProgressPerc > 1.0d)
+            //    {
+            //        currProgressPerc = Convert.ToInt32(progress);
+            //        selfWorker.ReportProgress(currProgressPerc);
+            //    }
+
+            //    if (selfWorker.CancellationPending)
+            //    {
+            //        return;
+            //    }
+            //}
+
+            ////foreach (SkyImageMedianPerc5Data statsData in lImagesMP5StatsData)
+            ////{
+            ////    statsData.ShrinkFileName();
+            ////}
+            //lImagesMP5StatsData = lImagesMP5StatsData.ConvertAll<SkyImageMedianPerc5Data>(simp5dt =>
+            //{
+            //    simp5dt.ShrinkFileName();
+            //    return simp5dt;
+            //});
+
+            #endregion // read GrIx_MP5 stats data from XML files
 
 
             #region read GrIxYRGB stats data from XML files
@@ -1940,6 +1954,15 @@ namespace SunPresenceCollectingApp
                         try
                         {
                             retVal = new ConcurrentData(dict);
+
+                            #region контроль корректности информации о GPS в файле
+                            GPSdata gpsOfGPSstring = new GPSdata((string) dict["GPSdata"],
+                                GPSdatasources.CloudCamArduinoGPS, retVal.datetimeUTC.Date);
+                            if (!gpsOfGPSstring.validGPSdata)
+                            {
+                                throw new Exception("invalid GPS data");
+                            }
+                            #endregion контроль корректности информации о GPS в файле
                         }
                         catch (Exception ex)
                         {
@@ -2034,36 +2057,9 @@ namespace SunPresenceCollectingApp
                         lStr =>
                         {
                             DateTime dt = DateTime.Parse(lStr[0]);
-                            double dSunAltitudeDeg = Convert.ToDouble(((string)lStr[1]).Replace(".", ","));
-                            SunDiskCondition sdc = SunDiskCondition.Defect;
-                            switch (Convert.ToInt16(lStr[2]))
-                            {
-                                case -1:
-                                    {
-                                        sdc = SunDiskCondition.NoSun;
-                                        break;
-                                    }
-                                case 0:
-                                    {
-                                        sdc = SunDiskCondition.Sun0;
-                                        break;
-                                    }
-                                case 1:
-                                    {
-                                        sdc = SunDiskCondition.Sun1;
-                                        break;
-                                    }
-                                case 2:
-                                    {
-                                        sdc = SunDiskCondition.Sun2;
-                                        break;
-                                    }
-                                default:
-                                    {
-                                        sdc = SunDiskCondition.Defect;
-                                        break;
-                                    }
-                            }
+                            double dSunAltitudeDeg = CommonTools.ParseDouble((string)lStr[1]);
+                            SunDiskCondition sdc =
+                                SunDiskConditionData.MatlabSDCenum(Convert.ToInt16(lStr[2]));
                             return new MeteoObservationsImportedData(dt, dSunAltitudeDeg, sdc);
                         });
 
@@ -2136,187 +2132,191 @@ namespace SunPresenceCollectingApp
 
 
 
-            #region zip SDC data with GrIx MP5 data -> write to file
+            #region // zip SDC data with GrIx MP5 data -> write to file // MP5 is obsolete
 
-            List<SkyImageMP5andSDCdata> lDataSkyImagesMP5andSDCdata = new List<SkyImageMP5andSDCdata>();
-            if (File.Exists(strSDCdataCSVfileName))
-            {
-                lDataSkyImagesMP5andSDCdata = lImagesMP5StatsData
-                    .ConvertAll<SkyImageMP5andSDCdata>(
-                        stats =>
-                        {
-                            int foundSunConditionDatumIdx =
-                                lImagesSunConditionData.FindIndex(scdt => scdt.filename == stats.FileName);
-                            if (foundSunConditionDatumIdx != -1)
-                            {
-                                return new SkyImageMP5andSDCdata(stats,
-                                    lImagesSunConditionData[foundSunConditionDatumIdx]);
-                            }
-                            else return null;
+            //if (lImagesMP5StatsData.Count > 0)
+            //{
+            //    List<SkyImageMP5andSDCdata> lDataSkyImagesMP5andSDCdata = new List<SkyImageMP5andSDCdata>();
+            //    if (File.Exists(strSDCdataCSVfileName))
+            //    {
+            //        lDataSkyImagesMP5andSDCdata = lImagesMP5StatsData
+            //            .ConvertAll<SkyImageMP5andSDCdata>(
+            //                stats =>
+            //                {
+            //                    int foundSunConditionDatumIdx =
+            //                        lImagesSunConditionData.FindIndex(scdt => scdt.filename == stats.FileName);
+            //                    if (foundSunConditionDatumIdx != -1)
+            //                    {
+            //                        return new SkyImageMP5andSDCdata(stats,
+            //                            lImagesSunConditionData[foundSunConditionDatumIdx]);
+            //                    }
+            //                    else return null;
 
-                        });
-                lDataSkyImagesMP5andSDCdata.RemoveAll(val => val == null);
-            }
-            else
-            {
-                lDataSkyImagesMP5andSDCdata = lImagesMP5StatsData
-                    .ConvertAll<SkyImageMP5andSDCdata>(
-                        stats =>
-                            new SkyImageMP5andSDCdata(stats, new SunDiskConditionData("", SunDiskCondition.Undefined)));
-                lDataSkyImagesMP5andSDCdata.RemoveAll(val => val == null);
-            }
-
-
-            List<string> lImagesStatsDataForCSV =
-                    lDataSkyImagesMP5andSDCdata.ConvertAll<string>(dt => dt.mp5Data.ToCSV() + "," + dt.sdcData.ToCSV());
-
-            string csvStringForFile = String.Join(Environment.NewLine, lImagesStatsDataForCSV.ToArray<string>());
-
-            ServiceTools.logToTextFile(outPath + "GrIxMedianP5Stats.csv",
-                lDataSkyImagesMP5andSDCdata[0].mp5Data.CSVHeader() + "," +
-                lDataSkyImagesMP5andSDCdata[0].sdcData.CSVHeader() + Environment.NewLine, false, false);
-            ServiceTools.logToTextFile(outPath + "GrIxMedianP5Stats.csv", csvStringForFile, true, false);
+            //                });
+            //        lDataSkyImagesMP5andSDCdata.RemoveAll(val => val == null);
+            //    }
+            //    else
+            //    {
+            //        lDataSkyImagesMP5andSDCdata = lImagesMP5StatsData
+            //            .ConvertAll<SkyImageMP5andSDCdata>(
+            //                stats =>
+            //                    new SkyImageMP5andSDCdata(stats, new SunDiskConditionData("", SunDiskCondition.Undefined)));
+            //        lDataSkyImagesMP5andSDCdata.RemoveAll(val => val == null);
+            //    }
 
 
+            //    List<string> lImagesStatsDataForCSV =
+            //            lDataSkyImagesMP5andSDCdata.ConvertAll<string>(dt => dt.mp5Data.ToCSV() + "," + dt.sdcData.ToCSV());
+
+            //    string csvStringForFile = String.Join(Environment.NewLine, lImagesStatsDataForCSV.ToArray<string>());
+
+            //    ServiceTools.logToTextFile(outPath + "GrIxMedianP5Stats.csv",
+            //        lDataSkyImagesMP5andSDCdata[0].mp5Data.CSVHeader() + "," +
+            //        lDataSkyImagesMP5andSDCdata[0].sdcData.CSVHeader() + Environment.NewLine, false, false);
+            //    ServiceTools.logToTextFile(outPath + "GrIxMedianP5Stats.csv", csvStringForFile, true, false);
+
+                  #region // zip it with concurrent data and write to one more file
+
+            //    if (bIncludeGPSandSunAltitudeData && lImagesConcurrentData.Any())
+            //    {
+            //        List<SkyImage_MP5_SDC_ConcurrentData> lDt = lDataSkyImagesMP5andSDCdata
+            //            .ConvertAll<SkyImage_MP5_SDC_ConcurrentData>(
+            //                mp5sdc =>
+            //                {
+            //                    SkyImage_MP5_SDC_ConcurrentData retVal = new SkyImage_MP5_SDC_ConcurrentData()
+            //                    {
+            //                        mp5Data = mp5sdc.mp5Data,
+            //                        sdcData = mp5sdc.sdcData
+            //                    };
+
+            //                    int foundConcDatumIdx =
+            //                        lImagesConcurrentData.FindIndex(val => val.Item1 == mp5sdc.mp5Data.FileName);
+            //                    if (foundConcDatumIdx != -1)
+            //                    {
+            //                        retVal.concurrentData = lImagesConcurrentData[foundConcDatumIdx].Item2;
+            //                    }
+            //                    else retVal = null;
+
+            //                    return retVal;
+            //                });
+            //        lDt.RemoveAll(val => val == null);
 
 
-            #region zip it with concurrent data and write to one more file
+            //        List<string> lImagesStatsDataForCSVwithConcurrentData =
+            //            lDt.ConvertAll<string>(
+            //                dt =>
+            //                    dt.mp5Data.ToCSV() + "," + dt.concurrentData.gps.SunZenithAzimuth().ElevationAngle.ToString().Replace(",", ".") + "," +
+            //                    dt.concurrentData.gps.SunZenithAzimuth().Azimuth.ToString().Replace(",", ".") + "," + dt.sdcData.ToCSV());
 
-            if (bIncludeGPSandSunAltitudeData && lImagesConcurrentData.Any())
-            {
-                List<SkyImage_MP5_SDC_ConcurrentData> lDt = lDataSkyImagesMP5andSDCdata
-                    .ConvertAll<SkyImage_MP5_SDC_ConcurrentData>(
-                        mp5sdc =>
-                        {
-                            SkyImage_MP5_SDC_ConcurrentData retVal = new SkyImage_MP5_SDC_ConcurrentData()
-                            {
-                                mp5Data = mp5sdc.mp5Data,
-                                sdcData = mp5sdc.sdcData
-                            };
+            //        csvStringForFile = String.Join(Environment.NewLine, lImagesStatsDataForCSVwithConcurrentData.ToArray<string>());
 
-                            int foundConcDatumIdx =
-                                lImagesConcurrentData.FindIndex(val => val.Item1 == mp5sdc.mp5Data.FileName);
-                            if (foundConcDatumIdx != -1)
-                            {
-                                retVal.concurrentData = lImagesConcurrentData[foundConcDatumIdx].Item2;
-                            }
-                            else retVal = null;
+            //        // write header
+            //        ServiceTools.logToTextFile(outPath + "GrIxMedianP5StatsWithSunPositions.csv",
+            //            lDt[0].mp5Data.CSVHeader() + ",SunElevationDeg,SunAzimuthDeg," +
+            //            lDt[0].sdcData.CSVHeader() + Environment.NewLine, false, false);
+            //        // write content
+            //        ServiceTools.logToTextFile(outPath + "GrIxMedianP5StatsWithSunPositions.csv", csvStringForFile, true, false);
+            //    }
 
-                            return retVal;
-                        });
-                lDt.RemoveAll(val => val == null);
-
-
-                List<string> lImagesStatsDataForCSVwithConcurrentData =
-                    lDt.ConvertAll<string>(
-                        dt =>
-                            dt.mp5Data.ToCSV() + "," + dt.concurrentData.gps.SunZenithAzimuth().ElevationAngle.ToString().Replace(",", ".") + "," +
-                            dt.concurrentData.gps.SunZenithAzimuth().Azimuth.ToString().Replace(",", ".") + "," + dt.sdcData.ToCSV());
-
-                csvStringForFile = String.Join(Environment.NewLine, lImagesStatsDataForCSVwithConcurrentData.ToArray<string>());
-
-                // write header
-                ServiceTools.logToTextFile(outPath + "GrIxMedianP5StatsWithSunPositions.csv",
-                    lDt[0].mp5Data.CSVHeader() + ",SunElevationDeg,SunAzimuthDeg," +
-                    lDt[0].sdcData.CSVHeader() + Environment.NewLine, false, false);
-                // write content
-                ServiceTools.logToTextFile(outPath + "GrIxMedianP5StatsWithSunPositions.csv", csvStringForFile, true, false);
-            }
-
-            #endregion zip it with concurrent data and write to one more file
-
-            #endregion zip SDC data with GrIx MP5 data -> write to file
+                  #endregion // zip it with concurrent data and write to one more file
+            //}
+            
+            #endregion // zip SDC data with GrIx MP5 data -> write to file // MP5 is obsolete
 
 
 
             #region zip SDC data with ALL fields stats data -> write to file
 
-            List<SkyImageGrIxYRGBstatsAndSDCdata> lDataALLstatsTuples = new List<SkyImageGrIxYRGBstatsAndSDCdata>();
-            if (File.Exists(strSDCdataCSVfileName))
+            if (lImagesALLstatsData.Count > 0)
             {
-                lDataALLstatsTuples = lImagesALLstatsData
-                    .ConvertAll<SkyImageGrIxYRGBstatsAndSDCdata>(
-                        stats =>
-                        {
-                            int foundSunConditionDatumIdx =
-                                lImagesSunConditionData.FindIndex(scdt => scdt.filename == stats.FileName);
-                            if (foundSunConditionDatumIdx != -1)
+                List<SkyImageGrIxYRGBstatsAndSDCdata> lALLstatsAndSDCdata = new List<SkyImageGrIxYRGBstatsAndSDCdata>();
+                //if (File.Exists(strSDCdataCSVfileName))
+                if (lImagesSunConditionData.Count > 0)
+                {
+                    lALLstatsAndSDCdata = lImagesALLstatsData
+                        .ConvertAll<SkyImageGrIxYRGBstatsAndSDCdata>(
+                            stats =>
                             {
-                                return new SkyImageGrIxYRGBstatsAndSDCdata(stats,
-                                    lImagesSunConditionData[foundSunConditionDatumIdx]);
-                            }
-                            else return null;
-                        });
+                                int foundSunConditionDatumIdx =
+                                    lImagesSunConditionData.FindIndex(scdt => scdt.filename == stats.FileName);
+                                if (foundSunConditionDatumIdx != -1)
+                                {
+                                    return new SkyImageGrIxYRGBstatsAndSDCdata(stats,
+                                        lImagesSunConditionData[foundSunConditionDatumIdx]);
+                                }
+                                else return null;
+                            });
 
-                lDataALLstatsTuples.RemoveAll(tpl => tpl == null);
-            }
-            else
-            {
-                lDataALLstatsTuples = lImagesALLstatsData
-                    .ConvertAll<SkyImageGrIxYRGBstatsAndSDCdata>(
-                        stats =>
-                            new SkyImageGrIxYRGBstatsAndSDCdata(stats,
-                                new SunDiskConditionData("", SunDiskCondition.Undefined)));
+                    lALLstatsAndSDCdata.RemoveAll(tpl => tpl == null);
+                }
+                else
+                {
+                    lALLstatsAndSDCdata = lImagesALLstatsData
+                        .ConvertAll<SkyImageGrIxYRGBstatsAndSDCdata>(
+                            stats =>
+                                new SkyImageGrIxYRGBstatsAndSDCdata(stats,
+                                    new SunDiskConditionData("", SunDiskCondition.Undefined)));
 
-                lDataALLstatsTuples.RemoveAll(tpl => tpl == null);
-            }
+                    lALLstatsAndSDCdata.RemoveAll(tpl => tpl == null);
+                }
 
-            List<string> lImagesALLstatsDataCSV = lDataALLstatsTuples.ConvertAll<string>(dt => dt.GrIxYRGBstatsData.ToCSV() + "," + dt.sdcData.ToCSV());
+                List<string> lImagesALLstatsDataCSV = lALLstatsAndSDCdata.ConvertAll<string>(dt => dt.GrIxYRGBstatsData.ToCSV() + "," + dt.sdcData.ToCSV());
 
-            string csvStringALLstatsForFile = String.Join(Environment.NewLine, lImagesALLstatsDataCSV.ToArray<string>());
-            ServiceTools.logToTextFile(outPath + "ALLstats.csv",
-                lDataALLstatsTuples[0].GrIxYRGBstatsData.CSVHeader() + "," + lDataALLstatsTuples[0].sdcData.CSVHeader() +
-                Environment.NewLine, false, false);
-            ServiceTools.logToTextFile(outPath + "ALLstats.csv", csvStringALLstatsForFile, true, false);
-
-
-
-            #region zip it with concurrent data and write to one more file
-
-            if (bIncludeGPSandSunAltitudeData && lImagesConcurrentData.Any())
-            {
-                List<SkyImage_GrIxYRGBstats_SDC_ConcurrentData> lDt = lDataALLstatsTuples
-                    .ConvertAll<SkyImage_GrIxYRGBstats_SDC_ConcurrentData>(
-                        statsSDC =>
-                        {
-                            SkyImage_GrIxYRGBstats_SDC_ConcurrentData retVal = new SkyImage_GrIxYRGBstats_SDC_ConcurrentData()
-                            {
-                                statsData = statsSDC.GrIxYRGBstatsData,
-                                sdcData = statsSDC.sdcData
-                            };
-
-                            int foundConcDatumIdx =
-                                lImagesConcurrentData.FindIndex(val => val.Item1 == statsSDC.GrIxYRGBstatsData.FileName);
-                            if (foundConcDatumIdx != -1)
-                            {
-                                retVal.concurrentData = lImagesConcurrentData[foundConcDatumIdx].Item2;
-                            }
-                            else retVal = null;
-
-                            return retVal;
-                        });
-                lDt.RemoveAll(val => val == null);
-
-
-                List<string> lImagesALLstatsDataCSVWithConcurrentData =
-                    lDt.ConvertAll<string>(
-                        dt =>
-                            dt.statsData.ToCSV() + "," +
-                            dt.concurrentData.gps.SunZenithAzimuth().ElevationAngle.ToString().Replace(",", ".") + "," +
-                            dt.concurrentData.gps.SunZenithAzimuth().Azimuth.ToString().Replace(",", ".") + "," + dt.sdcData.ToCSV());
-
-                csvStringALLstatsForFile = String.Join(Environment.NewLine, lImagesALLstatsDataCSVWithConcurrentData.ToArray<string>());
-
-                // write header
-                ServiceTools.logToTextFile(outPath + "ALLstatsWithSunPositions.csv",
-                    lDataALLstatsTuples[0].GrIxYRGBstatsData.CSVHeader() + ",SunElevationDeg,SunAzimuthDeg," + lDataALLstatsTuples[0].sdcData.CSVHeader() +
+                string csvStringALLstatsForFile = String.Join(Environment.NewLine, lImagesALLstatsDataCSV.ToArray<string>());
+                ServiceTools.logToTextFile(outPath + "ALLstats.csv",
+                    lALLstatsAndSDCdata[0].GrIxYRGBstatsData.CSVHeader() + "," + lALLstatsAndSDCdata[0].sdcData.CSVHeader() +
                     Environment.NewLine, false, false);
-                // write content
-                ServiceTools.logToTextFile(outPath + "ALLstatsWithSunPositions.csv", csvStringALLstatsForFile, true, false);
+                ServiceTools.logToTextFile(outPath + "ALLstats.csv", csvStringALLstatsForFile, true, false);
 
+
+
+                #region zip it with concurrent data and write to one more file
+
+                if (bIncludeGPSandSunAltitudeData && lImagesConcurrentData.Any())
+                {
+                    List<SkyImage_GrIxYRGBstats_SDC_ConcurrentData> lDt = lALLstatsAndSDCdata
+                        .ConvertAll<SkyImage_GrIxYRGBstats_SDC_ConcurrentData>(
+                            statsSDC =>
+                            {
+                                SkyImage_GrIxYRGBstats_SDC_ConcurrentData retVal = new SkyImage_GrIxYRGBstats_SDC_ConcurrentData()
+                                {
+                                    statsData = statsSDC.GrIxYRGBstatsData,
+                                    sdcData = statsSDC.sdcData
+                                };
+
+                                int foundConcDatumIdx =
+                                    lImagesConcurrentData.FindIndex(val => val.Item1 == statsSDC.GrIxYRGBstatsData.FileName);
+                                if (foundConcDatumIdx != -1)
+                                {
+                                    retVal.concurrentData = lImagesConcurrentData[foundConcDatumIdx].Item2;
+                                }
+                                else retVal = null;
+
+                                return retVal;
+                            });
+                    lDt.RemoveAll(val => val == null);
+
+
+                    List<string> lImagesALLstatsDataCSVWithConcurrentData =
+                        lDt.ConvertAll<string>(
+                            dt =>
+                                dt.statsData.ToCSV() + "," +
+                                dt.concurrentData.gps.SunZenithAzimuth().ElevationAngle.ToString().Replace(",", ".") + "," +
+                                dt.concurrentData.gps.SunZenithAzimuth().Azimuth.ToString().Replace(",", ".") + "," + dt.sdcData.ToCSV());
+
+                    csvStringALLstatsForFile = String.Join(Environment.NewLine, lImagesALLstatsDataCSVWithConcurrentData.ToArray<string>());
+
+                    // write header
+                    ServiceTools.logToTextFile(outPath + "ALLstatsWithSunPositions.csv",
+                        lALLstatsAndSDCdata[0].GrIxYRGBstatsData.CSVHeader() + ",SunElevationDeg,SunAzimuthDeg," + lALLstatsAndSDCdata[0].sdcData.CSVHeader() +
+                        Environment.NewLine, false, false);
+                    // write content
+                    ServiceTools.logToTextFile(outPath + "ALLstatsWithSunPositions.csv", csvStringALLstatsForFile, true, false);
+
+                }
+
+                #endregion zip it with concurrent data and write to one more file
             }
-
-            #endregion zip it with concurrent data and write to one more file
 
 
 
@@ -2400,7 +2400,7 @@ namespace SunPresenceCollectingApp
         {
             ThreadSafeOperations.UpdateProgressBar(prbConversionProgress, 0);
             theLogWindow = ServiceTools.LogAText(theLogWindow, "conversion finished");
-            ThreadSafeOperations.ToggleButtonState(btnConvert, true, "convert to CSV files (one for (M,P5) predictors and one for all statistical predictors)", true);
+            ThreadSafeOperations.ToggleButtonState(btnConvert, true, "convert to CSV files", true);
         }
 
         #endregion XML files set conversion to one CSV file
@@ -2749,6 +2749,43 @@ namespace SunPresenceCollectingApp
                 saveDefaultProperties();
             }
         }
+
+
+
+
+
+
+        private void rtbSourceDirectory_TextChanged(object sender, EventArgs e)
+        {
+            defaultProperties["ConversionSourceDirectory"] = ((RichTextBox)sender).Text;
+            saveDefaultProperties();
+        }
+
+        private void rtbOutputDirectory_TextChanged(object sender, EventArgs e)
+        {
+            //ConversionOutputDirectory
+            defaultProperties["ConversionOutputDirectory"] = ((RichTextBox)sender).Text;
+            saveDefaultProperties();
+        }
+
+        private void rtbSDCdataCSVfile_TextChanged(object sender, EventArgs e)
+        {
+            //rtbSDCdataCSVfile
+            // SDCdataCSVfile
+            defaultProperties["SDCdataCSVfile"] = ((RichTextBox)sender).Text;
+            saveDefaultProperties();
+        }
+
+        private void rtbConcurrentDataXMLfilesDirectory_TextChanged(object sender, EventArgs e)
+        {
+            // rtbConcurrentDataXMLfilesDirectory
+            // ConcurrentDataXMLfilesDirectory
+            defaultProperties["ConcurrentDataXMLfilesDirectory"] = ((RichTextBox)sender).Text;
+            saveDefaultProperties();
+        }
+
+
+
 
 
         #endregion form behaviour
@@ -3483,9 +3520,11 @@ namespace SunPresenceCollectingApp
                         ServiceTools.logToTextFile(strPerformanceCountersStatsFile, strPerfCountersData, true);
 
 
+
+                        /// TODO: Исправить. Сейчас XML-файлы раскладываются в поддиректории согласно расположению файлов изображений-источников
                         string strImageGrIxMedianP5DataFileName =
-                            ConventionalTransitions.ImageGrIxMedianP5DataFileName(currentFullFileName,
-                                imageMP5statsXMLdataFilesDirectory);
+                            ConventionalTransitions.ImageGrIxYRGBstatsDataFileName(currentFullFileName,
+                                imageYRGBstatsXMLdataFilesDirectory);
                         ServiceTools.WriteObjectToXML(currImageProcessingResult.mp5Result,
                             strImageGrIxMedianP5DataFileName);
 
@@ -3632,6 +3671,8 @@ namespace SunPresenceCollectingApp
 
 
         #endregion
+
+        
     }
 
 }

@@ -12,7 +12,7 @@ namespace MKLwrapper
     internal sealed class SummaryStatisticsNative
     {
         /** VSL vsldSSNewTask native declaration */
-        [DllImport("mkl_rt", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true, SetLastError = false)]
+        [DllImport("mkl_rt.dll", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true, SetLastError = false)]
         internal static extern int vsldSSNewTask(
                                 [In, Out] ref IntPtr task,
                                 [In] ref int p,
@@ -25,7 +25,7 @@ namespace MKLwrapper
 
 
         /** VSL vsldSSEditTask native declaration */
-        [DllImport("mkl_rt", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true, SetLastError = false)]
+        [DllImport("mkl_rt.dll", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true, SetLastError = false)]
         internal static extern int vsldSSEditTask(
                                 [In]  IntPtr task,
                                 [In] int parameter,
@@ -35,7 +35,7 @@ namespace MKLwrapper
 
 
         /** VSL vsldSSEditMoments native declaration */
-        [DllImport("mkl_rt", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true, SetLastError = false)]
+        [DllImport("mkl_rt.dll", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true, SetLastError = false)]
         internal static extern int vsldSSEditMoments(
                                 [In] IntPtr task,
                                 IntPtr means,
@@ -60,7 +60,7 @@ namespace MKLwrapper
 
 
         /** VSL vslsSSCompute native declaration */
-        [DllImport("mkl_rt", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true, SetLastError = false)]
+        [DllImport("mkl_rt.dll", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true, SetLastError = false)]
         internal static extern int vsldSSCompute(
                                 [In]  IntPtr task,
                                 [In] long estimates,
@@ -71,7 +71,7 @@ namespace MKLwrapper
 
 
         /** VSL vslSSDeleteTask native declaration */
-        [DllImport("mkl_rt", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true, SetLastError = false)]
+        [DllImport("mkl_rt.dll", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true, SetLastError = false)]
         internal static extern int vslSSDeleteTask(
                                 [In] ref IntPtr task);
 

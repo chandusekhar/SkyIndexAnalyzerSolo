@@ -1,0 +1,2 @@
+﻿Hello! I`m SAIL (http://sail.msk.ru/) meteo station bot.
+My device set is currently installed at the MSU meteo observatory.

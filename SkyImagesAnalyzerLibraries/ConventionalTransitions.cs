@@ -522,6 +522,111 @@ namespace SkyImagesAnalyzerLibraries
 
 
 
+
+        #region WS UMB data XML filenames
+
+        public static string WSUMBdataFileName(DateTime datetime, string xmlFilesBasePath, bool fullPath = true)
+        {
+
+            string strWSUMBdataFileName = datetime.ToString("s").Replace(":", "-") + "-WSUMBdataFileName.xml";
+
+            if (fullPath)
+            {
+                strWSUMBdataFileName = xmlFilesBasePath +
+                                                           ((xmlFilesBasePath.Last() == Path.DirectorySeparatorChar)
+                                                               ? ("")
+                                                               : (Path.DirectorySeparatorChar.ToString())) +
+                                                        strWSUMBdataFileName;
+            }
+
+            return strWSUMBdataFileName;
+
+        }
+
+
+
+
+        public static string WSUMBdataFileNamePattern()
+        {
+            return "*-WSUMBdataFileName.xml";
+        }
+
+        #endregion WS UMB data XML filenames
+
+
+
+
+
+
+        #region R2S UMB data XML filenames
+
+        public static string R2SUMBdataFileName(DateTime datetime, string xmlFilesBasePath, bool fullPath = true)
+        {
+
+            string strR2SUMBdataFileName = datetime.ToString("s").Replace(":", "-") + "-R2SUMBdataFileName.xml";
+
+            if (fullPath)
+            {
+                strR2SUMBdataFileName = xmlFilesBasePath +
+                                                           ((xmlFilesBasePath.Last() == Path.DirectorySeparatorChar)
+                                                               ? ("")
+                                                               : (Path.DirectorySeparatorChar.ToString())) +
+                                                        strR2SUMBdataFileName;
+            }
+
+            return strR2SUMBdataFileName;
+
+        }
+
+
+
+
+        public static string R2SUMBdataFileNamePattern()
+        {
+            return "*-R2SUMBdataFileName.xml";
+        }
+
+        #endregion R2S UMB data XML filenames
+
+
+
+
+
+        #region Ventus UMB data XML filenames
+
+        public static string VentusUMBdataFileName(DateTime datetime, string xmlFilesBasePath, bool fullPath = true)
+        {
+
+            string strVentusUMBdataFileName = datetime.ToString("s").Replace(":", "-") + "-VentusUMBdataFileName.xml";
+
+            if (fullPath)
+            {
+                strVentusUMBdataFileName = xmlFilesBasePath +
+                                                           ((xmlFilesBasePath.Last() == Path.DirectorySeparatorChar)
+                                                               ? ("")
+                                                               : (Path.DirectorySeparatorChar.ToString())) +
+                                                        strVentusUMBdataFileName;
+            }
+
+            return strVentusUMBdataFileName;
+
+        }
+
+
+
+
+        public static string VentusUMBdataFileNamePattern()
+        {
+            return "*-VentusUMBdataFileName.xml";
+        }
+
+        #endregion Ventus UMB data XML filenames
+
+
+
+
+
+
         public static string SkyImagesDataWithConcurrentStatsCloudCoverAndSDC_FileName(string imageFullPath, string xmlFilesBasePath = "", bool fullPath = true, string PreserveRelativeDirectoriesFromBasePath = "")
         {
             if (xmlFilesBasePath == "")
@@ -760,7 +865,7 @@ namespace SkyImagesAnalyzerLibraries
                 return strConcurrentGPSdataFileName;
             }
         }
-        
+
 
 
         public static string ImageConcurrentDataFilesNamesPattern()
@@ -768,8 +873,7 @@ namespace SkyImagesAnalyzerLibraries
             return "data-????-??-??T??-??-??.???????Z.xml";
         }
 
-
-
+        
 
         public static DateTime DateTimeOfSkyImageFilename(string imgFileName)
         {

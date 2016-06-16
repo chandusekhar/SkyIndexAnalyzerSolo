@@ -42,15 +42,15 @@
   </table>
   <table>
     <key>ConversionSourceDirectory</key>
-    <value />
+    <value>D:\_gulevlab\SkyImagesAnalysis_appData\_RV-ANS-31-total\MKLstats\GrIxYRGB</value>
   </table>
   <table>
     <key>ConversionOutputDirectory</key>
-    <value />
+    <value>D:\_gulevlab\SkyImagesAnalysis_appData\_RV-ANS-31-total\MKLoutput</value>
   </table>
   <table>
     <key>SDCdataCSVfile</key>
-    <value />
+    <value>D:\_gulevlab\SkyImagesAnalysis_appData\_RV-ANS-31-total\sdc_observed_data.csv</value>
   </table>
   <table>
     <key>ConversionSearchInputsTopDirectoryOnly</key>
@@ -58,7 +58,7 @@
   </table>
   <table>
     <key>TimeSpanForSDCdataMappingTolerance</key>
-    <value>00:02:00</value>
+    <value>00:05:00</value>
   </table>
   <table>
     <key>TimeSpanForConcurrentDataMappingTolerance</key>
@@ -66,7 +66,7 @@
   </table>
   <table>
     <key>ConcurrentDataXMLfilesDirectory</key>
-    <value>D:\_gulevlab\SkyImagesAnalysis_appData\Sun-Condition-data-collection\RV-ANS-31-total\concurrentdata\</value>
+    <value>D:\_gulevlab\SkyImagesAnalysis_appData\_RV-ANS-31-total\concurrentdata</value>
   </table>
   <table>
     <key>IncludeGPSandSunAltitudeData</key>
@@ -95,5 +95,9 @@
   <table>
     <key>NormRangeFile</key>
     <value>D:\_gulevlab\SkyImagesAnalysis\_DBGbin\settings\NormRange.csv</value>
+  </table>
+  <table>
+    <key>bForceCalculateionsWithoutMKL</key>
+    <value>False</value>
   </table>
 </DataSet>

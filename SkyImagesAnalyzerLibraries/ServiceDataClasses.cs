@@ -228,9 +228,9 @@ namespace SkyImagesAnalyzerLibraries
             {
                 try
                 {
-                    this.AccDoubleX = Convert.ToDouble(source.ElementAt(0));
-                    this.AccDoubleY = Convert.ToDouble(source.ElementAt(1));
-                    this.AccDoubleZ = Convert.ToDouble(source.ElementAt(2));
+                    this.AccDoubleX = CommonTools.ParseDouble(source.ElementAt(0));
+                    this.AccDoubleY = CommonTools.ParseDouble(source.ElementAt(1));
+                    this.AccDoubleZ = CommonTools.ParseDouble(source.ElementAt(2));
                 }
                 catch (Exception)
                 {
@@ -244,9 +244,9 @@ namespace SkyImagesAnalyzerLibraries
             {
                 try
                 {
-                    this.AccDoubleX = Convert.ToDouble(source.ElementAt(0));
-                    this.AccDoubleY = Convert.ToDouble(source.ElementAt(1));
-                    this.AccDoubleZ = Convert.ToDouble(source.ElementAt(2));
+                    this.AccDoubleX = CommonTools.ParseDouble(source.ElementAt(0));
+                    this.AccDoubleY = CommonTools.ParseDouble(source.ElementAt(1));
+                    this.AccDoubleZ = CommonTools.ParseDouble(source.ElementAt(2));
                     devID = Convert.ToInt32(source.ElementAt(3));
                 }
                 catch (Exception)
@@ -665,9 +665,9 @@ namespace SkyImagesAnalyzerLibraries
 
                 try
                 {
-                    this.GyroDoubleX = Convert.ToDouble(source.ElementAt(0));
-                    this.GyroDoubleY = Convert.ToDouble(source.ElementAt(1));
-                    this.GyroDoubleZ = Convert.ToDouble(source.ElementAt(2));
+                    this.GyroDoubleX = CommonTools.ParseDouble(source.ElementAt(0));
+                    this.GyroDoubleY = CommonTools.ParseDouble(source.ElementAt(1));
+                    this.GyroDoubleZ = CommonTools.ParseDouble(source.ElementAt(2));
                 }
                 catch (Exception ex)
                 {
@@ -1005,9 +1005,9 @@ namespace SkyImagesAnalyzerLibraries
         {
             try
             {
-                this.MagnDoubleX = Convert.ToDouble(source.ElementAt(0));
-                this.MagnDoubleY = Convert.ToDouble(source.ElementAt(1));
-                this.MagnDoubleZ = Convert.ToDouble(source.ElementAt(2));
+                this.MagnDoubleX = CommonTools.ParseDouble(source.ElementAt(0));
+                this.MagnDoubleY = CommonTools.ParseDouble(source.ElementAt(1));
+                this.MagnDoubleZ = CommonTools.ParseDouble(source.ElementAt(2));
             }
             catch (Exception)
             {
@@ -1368,7 +1368,7 @@ namespace SkyImagesAnalyzerLibraries
                 //5950.32
                 double latTrunc = Math.Truncate(latGrad); //5950.0d
                 string strLatTrunc = (Convert.ToInt32(latTrunc)).ToString("D5"); // "5950"
-                double latMinutes = Convert.ToDouble(strLatTrunc.Substring(strLatTrunc.Length - 2, 2)); //50.0d
+                double latMinutes = CommonTools.ParseDouble(strLatTrunc.Substring(strLatTrunc.Length - 2, 2)); //50.0d
 
                 double latGrad1 = (latTrunc - latMinutes)/100.0d; // 59.0d
                 double latGrad2 = latMinutes/60.0d; // 50.0d/60.0d
@@ -1405,7 +1405,7 @@ namespace SkyImagesAnalyzerLibraries
                 //4050.32
                 double lonTrunc = Math.Truncate(lonGrad); //4050.0d
                 string strlonTrunc = (Convert.ToInt32(lonTrunc)).ToString("D5"); // "04050"
-                double lonMinutes = Convert.ToDouble(strlonTrunc.Substring(strlonTrunc.Length - 2, 2)); //50.0d
+                double lonMinutes = CommonTools.ParseDouble(strlonTrunc.Substring(strlonTrunc.Length - 2, 2)); //50.0d
 
                 double lonGrad1 = (lonTrunc - lonMinutes)/100.0d; // 40.0d
                 double lonGrad2 = lonMinutes/60.0d; // 50.0d/60.0d
@@ -1441,9 +1441,18 @@ namespace SkyImagesAnalyzerLibraries
 
 
 
-        public string HRString()
+        public string HRString(int decimals = int.MaxValue)
         {
-            return "" + Math.Abs(Lat) + latHemisphere + ", " + Math.Abs(Lon) + lonHemisphere;
+            if (decimals == int.MaxValue)
+            {
+                return "" + Math.Abs(LatDec) + latHemisphere + ", " + Math.Abs(LonDec) + lonHemisphere;
+            }
+            else
+            {
+                return "" + Math.Round(Math.Abs(LatDec), decimals) + latHemisphere + ", " +
+                       Math.Round(Math.Abs(LonDec), decimals) + lonHemisphere;
+            }
+            
         }
 
 
@@ -1485,7 +1494,7 @@ namespace SkyImagesAnalyzerLibraries
 
                 try
                 {
-                    lat = Convert.ToDouble(strValues[2].Replace(".", ","));
+                    lat = CommonTools.ParseDouble(strValues[2]);
                     latHemisphere = strValues[3];
                 }
                 catch (Exception)
@@ -1497,7 +1506,7 @@ namespace SkyImagesAnalyzerLibraries
 
                 try
                 {
-                    lon = Convert.ToDouble(strValues[4].Replace(".", ","));
+                    lon = CommonTools.ParseDouble(strValues[4]);
                     lonHemisphere = strValues[5];
                 }
                 catch (Exception)
@@ -1539,7 +1548,7 @@ namespace SkyImagesAnalyzerLibraries
 
                 try
                 {
-                    lat = Convert.ToDouble(strValues[3].Replace(".", ","));
+                    lat = CommonTools.ParseDouble(strValues[3]);
                     latHemisphere = strValues[4];
                 }
                 catch (Exception)
@@ -1551,7 +1560,7 @@ namespace SkyImagesAnalyzerLibraries
 
                 try
                 {
-                    lon = Convert.ToDouble(strValues[5].Replace(".", ","));
+                    lon = CommonTools.ParseDouble(strValues[5]);
                     lonHemisphere = strValues[6];
                 }
                 catch (Exception)
@@ -1564,7 +1573,7 @@ namespace SkyImagesAnalyzerLibraries
 
                 try
                 {
-                    IOFFEdataHeadingTrue = Convert.ToDouble(strValues[7].Replace(".", ","));
+                    IOFFEdataHeadingTrue = CommonTools.ParseDouble(strValues[7]);
                 }
                 catch (Exception)
                 {
@@ -1574,7 +1583,7 @@ namespace SkyImagesAnalyzerLibraries
 
                 try
                 {
-                    IOFFEdataHeadingGyro = Convert.ToDouble(strValues[8].Replace(".", ","));
+                    IOFFEdataHeadingGyro = CommonTools.ParseDouble(strValues[8]);
                 }
                 catch (Exception)
                 {
@@ -1585,7 +1594,7 @@ namespace SkyImagesAnalyzerLibraries
 
                 try
                 {
-                    IOFFEdataSpeedKnots = Convert.ToDouble(strValues[9].Replace(".", ","));
+                    IOFFEdataSpeedKnots = CommonTools.ParseDouble(strValues[9]);
                 }
                 catch (Exception)
                 {
@@ -1596,7 +1605,7 @@ namespace SkyImagesAnalyzerLibraries
 
                 try
                 {
-                    IOFFEdataDepth = Convert.ToDouble(strValues[10].Replace(".", ","));
+                    IOFFEdataDepth = CommonTools.ParseDouble(strValues[10]);
                 }
                 catch (Exception)
                 {
@@ -1723,7 +1732,7 @@ namespace SkyImagesAnalyzerLibraries
                 int minLon = (int) t2;
                 double secLon = (t2 - minLon)*60;
                 lon = intLon*100.0d + minLon + secLon/100.0d;
-                    // Convert.ToDouble("" + intLon.ToString() + minLon.ToString("d02") + "," + secLon.ToString("F02").Replace(",", ""));
+                // CommonTools.ParseDouble("" + intLon.ToString() + minLon.ToString("d02") + "," + secLon.ToString("F02"));
             }
             catch (Exception)
             {
@@ -2042,7 +2051,7 @@ namespace SkyImagesAnalyzerLibraries
                     string datumSubstr = strMeteoDatumField.Replace("Temperature:", "").Trim().Replace(".", ",");
                     try
                     {
-                        airTemperature = Convert.ToDouble(datumSubstr);
+                        airTemperature = CommonTools.ParseDouble(datumSubstr);
                     }
                     catch (Exception ex)
                     {
@@ -2055,7 +2064,7 @@ namespace SkyImagesAnalyzerLibraries
                     string datumSubstr = strMeteoDatumField.Replace("Pressure:", "").Trim().Replace(".", ",");
                     try
                     {
-                        pressure = Convert.ToDouble(datumSubstr);
+                        pressure = CommonTools.ParseDouble(datumSubstr);
                     }
                     catch (Exception ex)
                     {
@@ -2068,7 +2077,7 @@ namespace SkyImagesAnalyzerLibraries
                     string datumSubstr = strMeteoDatumField.Replace("Wind speed:", "").Trim().Replace(".", ",");
                     try
                     {
-                        windSpeed = Convert.ToDouble(datumSubstr);
+                        windSpeed = CommonTools.ParseDouble(datumSubstr);
                     }
                     catch (Exception ex)
                     {
@@ -2081,7 +2090,7 @@ namespace SkyImagesAnalyzerLibraries
                     string datumSubstr = strMeteoDatumField.Replace("Wind Dir. :", "").Trim().Replace(".", ",");
                     try
                     {
-                        windDirection = Convert.ToDouble(datumSubstr);
+                        windDirection = CommonTools.ParseDouble(datumSubstr);
                     }
                     catch (Exception ex)
                     {
@@ -2094,7 +2103,7 @@ namespace SkyImagesAnalyzerLibraries
                     string datumSubstr = strMeteoDatumField.Replace("R. humidity:", "").Trim().Replace(".", ",");
                     try
                     {
-                        Rhumidity = Convert.ToDouble(datumSubstr);
+                        Rhumidity = CommonTools.ParseDouble(datumSubstr);
                     }
                     catch (Exception ex)
                     {
@@ -2111,10 +2120,10 @@ namespace SkyImagesAnalyzerLibraries
                         string strWaterConsistency = datumSubstr;
                         int idx1 = strWaterConsistency.IndexOf("<Field0>");
                         int idx2 = strWaterConsistency.IndexOf("</Field0>");
-                        waterTemperature = Convert.ToDouble(strWaterConsistency.Substring(idx1 + 8, idx2 - 8 - idx1).Replace(".", ","));
+                        waterTemperature = CommonTools.ParseDouble(strWaterConsistency.Substring(idx1 + 8, idx2 - 8 - idx1));
                         int idx3 = strWaterConsistency.IndexOf("<Field1>");
                         int idx4 = strWaterConsistency.IndexOf("</Field1>");
-                        waterSalinity = Convert.ToDouble(strWaterConsistency.Substring(idx3 + 8, idx4 - 8 - idx3).Replace(".", ","));
+                        waterSalinity = CommonTools.ParseDouble(strWaterConsistency.Substring(idx3 + 8, idx4 - 8 - idx3));
                     }
                     catch (Exception ex)
                     {
@@ -2132,7 +2141,7 @@ namespace SkyImagesAnalyzerLibraries
             //    string datumString = strValues[1];
             //    string[] sunstrings = datumString.Split(':');
 
-            //    airTemperature = Convert.ToDouble(sunstrings[1].Trim().Replace(".", ","));
+            //    airTemperature = CommonTools.ParseDouble(sunstrings[1].Trim());
             //}
             //catch (Exception)
             //{
@@ -2148,7 +2157,7 @@ namespace SkyImagesAnalyzerLibraries
             //    string datumString = strValues[2];
             //    string[] sunstrings = datumString.Split(':');
             //
-            //    pressure = Convert.ToDouble(sunstrings[1].Trim().Replace(".", ","));
+            //    pressure = CommonTools.ParseDouble(sunstrings[1].Trim());
             //}
             //catch (Exception)
             //{
@@ -2163,7 +2172,7 @@ namespace SkyImagesAnalyzerLibraries
             //    string datumString = strValues[3];
             //    string[] sunstrings = datumString.Split(':');
             //
-            //    windSpeed = Convert.ToDouble(sunstrings[1].Trim().Replace(".", ","));
+            //    windSpeed = CommonTools.ParseDouble(sunstrings[1].Trim());
             //}
             //catch (Exception)
             //{
@@ -2180,7 +2189,7 @@ namespace SkyImagesAnalyzerLibraries
             //    string datumString = strValues[4];
             //    string[] sunstrings = datumString.Split(':');
             //
-            //    windDirection = Convert.ToDouble(sunstrings[1].Trim().Replace(".", ","));
+            //    windDirection = CommonTools.ParseDouble(sunstrings[1].Trim());
             //}
             //catch (Exception)
             //{
@@ -2196,7 +2205,7 @@ namespace SkyImagesAnalyzerLibraries
             //    string datumString = strValues[5];
             //    string[] sunstrings = datumString.Split(':');
             //
-            //    Rhumidity = Convert.ToDouble(sunstrings[1].Trim().Replace(".", ","));
+            //    Rhumidity = CommonTools.ParseDouble(sunstrings[1].Trim());
             //}
             //catch (Exception)
             //{
@@ -2213,10 +2222,10 @@ namespace SkyImagesAnalyzerLibraries
             //    string strWaterConsistency = strValues[6];
             //    int idx1 = strWaterConsistency.IndexOf("<Field0>");
             //    int idx2 = strWaterConsistency.IndexOf("</Field0>");
-            //    waterTemperature = Convert.ToDouble(strWaterConsistency.Substring(idx1 + 8, idx2 - 8 - idx1).Replace(".", ","));
+            //    waterTemperature = CommonTools.ParseDouble(strWaterConsistency.Substring(idx1 + 8, idx2 - 8 - idx1));
             //    int idx3 = strWaterConsistency.IndexOf("<Field1>");
             //    int idx4 = strWaterConsistency.IndexOf("</Field1>");
-            //    waterSalinity = Convert.ToDouble(strWaterConsistency.Substring(idx3 + 8, idx4 - 8 - idx3).Replace(".", ","));
+            //    waterSalinity = CommonTools.ParseDouble(strWaterConsistency.Substring(idx3 + 8, idx4 - 8 - idx3));
             //}
             //catch (Exception)
             //{
@@ -2768,6 +2777,30 @@ namespace SkyImagesAnalyzerLibraries
                     return SunDiskCondition.Sun1;
                     break;
                 case 3:
+                    return SunDiskCondition.Sun2;
+                    break;
+                default:
+                    return SunDiskCondition.Defect;
+            }
+        }
+
+
+
+
+        public static SunDiskCondition NumeralSourceToSDCenum(int sdcInt)
+        {
+            switch (sdcInt)
+            {
+                case -1:
+                    return SunDiskCondition.NoSun;
+                    break;
+                case 0:
+                    return SunDiskCondition.Sun0;
+                    break;
+                case 1:
+                    return SunDiskCondition.Sun1;
+                    break;
+                case 2:
                     return SunDiskCondition.Sun2;
                     break;
                 default:
@@ -3430,25 +3463,25 @@ namespace SkyImagesAnalyzerLibraries
 
             try
             {
-                latNMEA = Convert.ToDouble(observationRecord[1].Replace(".", ","));
-                lonNMEA = Convert.ToDouble(observationRecord[2].Replace(".", ","));
-                heading = Convert.ToDouble(observationRecord[3].Replace(".", ","));
-                headingGyro = Convert.ToDouble(observationRecord[4].Replace(".", ","));
-                speedKt = Convert.ToDouble(observationRecord[5].Replace(".", ","));
-                pressure = Convert.ToDouble(observationRecord[6].Replace(".", ","));
-                T_air = Convert.ToDouble(observationRecord[7].Replace(".", ","));
-                T_water = Convert.ToDouble(observationRecord[8].Replace(".", ","));
-                windSpeed = Convert.ToDouble(observationRecord[9].Replace(".", ","));
-                windDirection = Convert.ToDouble(observationRecord[10].Replace(".", ","));
-                relHumidity = Convert.ToDouble(observationRecord[11].Replace(".", ","));
-                swell = Convert.ToInt32(observationRecord[12].Replace(".", ","));
-                CloudCoverTotal = Convert.ToInt32(observationRecord[13].Replace(".", ","));
-                CloudCoverLower = Convert.ToInt32(observationRecord[14].Replace(".", ","));
+                latNMEA = CommonTools.ParseDouble(observationRecord[1]);
+                lonNMEA = CommonTools.ParseDouble(observationRecord[2]);
+                heading = CommonTools.ParseDouble(observationRecord[3]);
+                headingGyro = CommonTools.ParseDouble(observationRecord[4]);
+                speedKt = CommonTools.ParseDouble(observationRecord[5]);
+                pressure = CommonTools.ParseDouble(observationRecord[6]);
+                T_air = CommonTools.ParseDouble(observationRecord[7]);
+                T_water = CommonTools.ParseDouble(observationRecord[8]);
+                windSpeed = CommonTools.ParseDouble(observationRecord[9]);
+                windDirection = CommonTools.ParseDouble(observationRecord[10]);
+                relHumidity = CommonTools.ParseDouble(observationRecord[11]);
+                swell = Convert.ToInt32(CommonTools.ParseDouble(observationRecord[12]));
+                CloudCoverTotal = Convert.ToInt32(CommonTools.ParseDouble(observationRecord[13]));
+                CloudCoverLower = Convert.ToInt32(CommonTools.ParseDouble(observationRecord[14]));
                 CloudTypesObserved = observationRecord[15];
-                LowerCloudsIndex = Convert.ToInt32(observationRecord[16].Replace(".", ","));
-                MedCloudsIndex = Convert.ToInt32(observationRecord[17].Replace(".", ","));
-                HighCloudsIndex = Convert.ToInt32(observationRecord[18].Replace(".", ","));
-                int SDCint = Convert.ToInt32(observationRecord[19].Replace(".", ","));
+                LowerCloudsIndex = Convert.ToInt32(CommonTools.ParseDouble(observationRecord[16]));
+                MedCloudsIndex = Convert.ToInt32(CommonTools.ParseDouble(observationRecord[17]));
+                HighCloudsIndex = Convert.ToInt32(CommonTools.ParseDouble(observationRecord[18]));
+                int SDCint = Convert.ToInt32(CommonTools.ParseDouble(observationRecord[19]));
                 switch (SDCint)
                 {
                     case 1:

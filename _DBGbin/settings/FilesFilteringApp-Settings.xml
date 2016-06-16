@@ -2,15 +2,15 @@
 <DataSet xmlns="NetFrameWork">
   <table>
     <key>CopyImagesAndDataTo_Path</key>
-    <value>D:\_gulevlab\SkyImagesAnalysis_appData\RV-ANS-31-withConcurrentDataAndStats\</value>
+    <value>D:\_gulevlab\SkyImagesAnalysis_appData\_AI45-total\filtered\</value>
   </table>
   <table>
     <key>ConcurrentDataXMLfilesPath</key>
-    <value>D:\_gulevlab\SkyImagesAnalysis_appData\RV-ANS-31-total\concurrentdata\</value>
+    <value>D:\_gulevlab\SkyImagesAnalysis_appData\_AI45-total\concurrentdata\</value>
   </table>
   <table>
     <key>CopyImagesFrom_Path</key>
-    <value>D:\_gulevlab\SkyImagesAnalysis_appData\RV-ANS-31-total\images\</value>
+    <value>D:\_gulevlab\SkyImagesAnalysis_appData\_AI45-total\snapshots\</value>
   </table>
   <table>
     <key>GrIxYRGBstatsXMLfilesPath</key>
@@ -19,5 +19,9 @@
   <table>
     <key>filterTolerance</key>
     <value>00:02:00</value>
+  </table>
+  <table>
+    <key>TimeSpanForConcurrentDataMappingTolerance</key>
+    <value>00:05:00</value>
   </table>
 </DataSet>
