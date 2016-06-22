@@ -2,11 +2,11 @@
 <DataSet xmlns="NetFrameWork">
   <table>
     <key>inputBasePath</key>
-    <value>D:\_gulevlab\SkyImagesAnalysis_appData\_RV-ANS-31-total\images\</value>
+    <value>D:\_gulevlab\SkyImagesAnalysis_appData\_AI45-total\snapshots\</value>
   </table>
   <table>
     <key>OutputDirectory</key>
-    <value>D:\_gulevlab\SkyImagesAnalysis_appData\_RV-ANS-31-total\output\</value>
+    <value>D:\_gulevlab\SkyImagesAnalysis_appData\_AI45-total\output\</value>
   </table>
   <table>
     <key>NNconfigFile</key>
@@ -26,7 +26,7 @@
   </table>
   <table>
     <key>ObservedCloudCoverDataCSVfile</key>
-    <value>D:\_gulevlab\SkyImagesAnalysis_appData\_RV-ANS-31-total\СlCov_observed_data.csv</value>
+    <value>D:\_gulevlab\SkyImagesAnalysis_appData\_AI45-total\СlCov_observed_data.csv</value>
   </table>
   <table>
     <key>DateTimeFilterTolerance</key>
@@ -34,15 +34,15 @@
   </table>
   <table>
     <key>imageYRGBstatsXMLdataFilesDirectory</key>
-    <value>D:\_gulevlab\SkyImagesAnalysis_appData\_RV-ANS-31-total\stats\GrIxYRGB\</value>
+    <value>D:\_gulevlab\SkyImagesAnalysis_appData\_AI45-total\MKLstats\GrIxYRGB\</value>
   </table>
   <table>
     <key>TimeSpanForConcurrentDataMappingTolerance</key>
-    <value>00:00:30</value>
+    <value>00:01:00</value>
   </table>
   <table>
     <key>ConcurrentDataXMLfilesDirectory</key>
-    <value>D:\_gulevlab\SkyImagesAnalysis_appData\_RV-ANS-31-total\concurrentdata\</value>
+    <value>D:\_gulevlab\SkyImagesAnalysis_appData\_AI45-total\concurrentdata\</value>
   </table>
   <table>
     <key>IncludeGPSandSunAltitudeData</key>

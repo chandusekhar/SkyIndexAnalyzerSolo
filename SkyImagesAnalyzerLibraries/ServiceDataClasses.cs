@@ -3392,6 +3392,7 @@ namespace SkyImagesAnalyzerLibraries
         public string grixyrgbStatsXMLfile { get; set; }
         public SkyImageIndexesStatsData grixyrgbStats { get; set; }
         public SunDiskCondition SDCvalue { get; set; }
+        public List<SDCdecisionProbability> SDCprobabilities { get; set; }
 
 
         public SkyImagesDataWith_Concurrent_Stats_CloudCover_SDC() { }
@@ -3399,6 +3400,12 @@ namespace SkyImagesAnalyzerLibraries
 
 
 
+
+    public class SDCdecisionProbability
+    {
+        public SunDiskCondition sdc { get; set; }
+        public double sdcDecisionProbability { get; set; }
+    }
 
 
     public class SkyImagesProcessedAndPredictedData
@@ -3412,6 +3419,7 @@ namespace SkyImagesAnalyzerLibraries
         public string grixyrgbStatsXMLfile { get; set; }
         public SkyImageIndexesStatsData grixyrgbStats { get; set; }
         public SunDiskCondition PredictedSDC { get; set; }
+        public List<SDCdecisionProbability> sdcDecisionProbabilities { get; set; }
 
 
         public SkyImagesProcessedAndPredictedData() { }

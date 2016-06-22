@@ -408,5 +408,108 @@ namespace SkyImagesAnalyzerLibraries
             decisionProbabilities = lDecisionProbabilities[0];
             return predictedSDClist[0];
         }
+
+
+
+
+
+
+
+        public static List<SunDiskCondition> PredictSDC_NN(List<ImagesProcessingData> lIPDinputData,
+            IEnumerable<int> SDC_NNconfig, IEnumerable<double> SDC_NNtrainedParameters,
+            IEnumerable<double> NNfeturesNormMeans, IEnumerable<double> NNfeaturesNormRange,
+            out List<List<double>> decisionProbabilitiesList)
+        {
+            List<Tuple<SkyImageIndexesStatsData, ConcurrentData>> lTplInputData =
+                lIPDinputData.ConvertAll(
+                    ipd => new Tuple<SkyImageIndexesStatsData, ConcurrentData>(ipd.grixyrgbStats, ipd.concurrentData));
+            return PredictSDC_NN(lTplInputData, SDC_NNconfig, SDC_NNtrainedParameters, NNfeturesNormMeans,
+                NNfeaturesNormRange, out decisionProbabilitiesList);
+        }
+
+
+
+
+
+
+
+        public static List<SunDiskCondition> PredictSDC_NN(
+            List<Tuple<SkyImageIndexesStatsData, ConcurrentData>> lTplInputData, IEnumerable<int> SDC_NNconfig,
+            IEnumerable<double> SDC_NNtrainedParameters,
+            IEnumerable<double> NNfeturesNormMeans, IEnumerable<double> NNfeaturesNormRange,
+            out List<List<double>> decisionProbabilitiesList)
+        {
+
+            List<string> lImagesALLstatsDataCSVWithConcurrentData = lTplInputData.ConvertAll(tpl =>
+            {
+                SkyImageIndexesStatsData imageStats = tpl.Item1;
+                ConcurrentData snapshotConcurrentData = tpl.Item2;
+                return imageStats.ToCSV() + "," +
+                       snapshotConcurrentData.gps.SunZenithAzimuth().ElevationAngle.ToString().Replace(",", ".") + "," +
+                       snapshotConcurrentData.gps.SunZenithAzimuth().Azimuth.ToString().Replace(",", ".");
+            });
+            // string currImageALLstatsDataCSVWithConcurrentData = 
+
+            string csvHeader = lTplInputData.First().Item1.CSVHeader() +
+                               ",SunElevationDeg,SunAzimuthDeg,sunDiskCondition";
+
+            List<string> lCalculatedData = new List<string>();
+            // lCalculatedData.Add(currImageALLstatsDataCSVWithConcurrentData);
+            lCalculatedData.AddRange(lImagesALLstatsDataCSVWithConcurrentData);
+
+            List<List<string>> csvFileContentStrings =
+                lCalculatedData.ConvertAll(str => str.Split(',').ToList()).ToList();
+            List<string> lCSVheader = csvHeader.Split(',').ToList();
+
+            List<int> columnsToDelete =
+                lCSVheader.Select((str, idx) => new Tuple<int, string>(idx, str))
+                    .Where(tpl => tpl.Item2.ToLower().Contains("filename")).ToList().ConvertAll(tpl => tpl.Item1);
+            List<List<string>> csvFileContentStringsFiltered = new List<List<string>>();
+            foreach (List<string> listDataStrings in csvFileContentStrings)
+            {
+                csvFileContentStringsFiltered.Add(
+                    listDataStrings.Where((str, idx) => !columnsToDelete.Contains(idx)).ToList());
+            }
+
+
+
+            List<List<string>> csvFileContentStringsFiltered_wo_sdc = csvFileContentStringsFiltered;
+
+            List<DenseVector> lDV_objects_features =
+                csvFileContentStringsFiltered_wo_sdc.ConvertAll(
+                    list =>
+                        DenseVector.OfEnumerable(list.ConvertAll<double>(str => Convert.ToDouble(str.Replace(".", ",")))));
+
+
+            DenseVector dvMeans = DenseVector.OfEnumerable(NNfeturesNormMeans);
+            DenseVector dvRanges = DenseVector.OfEnumerable(NNfeaturesNormRange);
+            DenseVector dvThetaValues = DenseVector.OfEnumerable(SDC_NNtrainedParameters);
+            List<int> NNlayersConfig = SDC_NNconfig.ToList();
+
+            lDV_objects_features = lDV_objects_features.ConvertAll(dv =>
+            {
+                DenseVector dvShifted = dv - dvMeans;
+                DenseVector dvNormed = (DenseVector)dvShifted.PointwiseDivide(dvRanges);
+                return dvNormed;
+            });
+
+            DenseMatrix dmObjectsFeatures = DenseMatrix.OfRowVectors(lDV_objects_features);
+
+
+
+
+            List<List<double>> lDecisionProbabilities = null;
+
+            List<int> predictedSDC =
+                NNclassificatorPredictor.NNpredict(dmObjectsFeatures, dvThetaValues, NNlayersConfig,
+                    out lDecisionProbabilities).ToList();
+
+            List<SunDiskCondition> predictedSDClist =
+                predictedSDC.ConvertAll(sdcInt => SunDiskConditionData.MatlabSDCenum(sdcInt));
+
+
+            decisionProbabilitiesList = lDecisionProbabilities;
+            return predictedSDClist;
+        }
     }
 }

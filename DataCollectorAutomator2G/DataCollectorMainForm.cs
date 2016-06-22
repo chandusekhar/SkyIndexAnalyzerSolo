@@ -4278,7 +4278,33 @@ namespace DataCollectorAutomator
                 SkyImagesProcessedAndPredictedData data =
                     (SkyImagesProcessedAndPredictedData)
                         ServiceTools.ReadObjectFromXML(lastFilename, typeof(SkyImagesProcessedAndPredictedData));
-                ThreadSafeOperations.SetText(lblSDCvalue, data.PredictedSDC.ToString(), false);
+
+                // ThreadSafeOperations.SetText(lblSDCvalue, data.PredictedSDC.ToString(), false);
+                foreach (SDCdecisionProbability sdcDecisionProbability in data.sdcDecisionProbabilities)
+                {
+                    Label lblToSet = lblNoSunProb;
+                    switch (sdcDecisionProbability.sdc)
+                    {
+                        case SunDiskCondition.NoSun:
+                            lblToSet = lblNoSunProb;
+                            break;
+                        case SunDiskCondition.Sun0:
+                            lblToSet = lblSun0Prob;
+                            break;
+                        case SunDiskCondition.Sun1:
+                            lblToSet = lblSun1Prob;
+                            break;
+                        case SunDiskCondition.Sun2:
+                            lblToSet = lblSun2Prob;
+                            break;
+                        default:
+                            lblToSet = lblNoSunProb;
+                            break;
+                    }
+                    ThreadSafeOperations.SetText(lblToSet,
+                        (sdcDecisionProbability.sdcDecisionProbability*100.0d).ToString("F2") + "%", false);
+                }
+
                 ThreadSafeOperations.SetText(lblCCvalue, data.PredictedCC.CloudCoverTotal.ToString() + " (/8)", false);
             }
             catch (Exception ex)

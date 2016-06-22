@@ -6,19 +6,19 @@
   </table>
   <table>
     <key>ImagesBasePath</key>
-    <value>D:\_gulevlab\SkyImagesAnalysis_appData\_RV-ANS-31-total\images\</value>
+    <value>D:\_gulevlab\SkyImagesAnalysis_appData\Sun-Condition-data-collection\debug-2016-06-17\</value>
   </table>
   <table>
     <key>SunDiskConditionXMLdataFilesDirectory</key>
-    <value>D:\_gulevlab\SkyImagesAnalysis_appData\_RV-ANS-31-total\stats\sdc-data\</value>
+    <value>D:\_gulevlab\SkyImagesAnalysis_appData\Sun-Condition-data-collection\debug-2016-06-17\</value>
   </table>
   <table>
     <key>imageYRGBstatsXMLdataFilesDirectory</key>
-    <value>D:\_gulevlab\SkyImagesAnalysis_appData\_RV-ANS-31-total\MKLstats\GrIxYRGB\</value>
+    <value>D:\_gulevlab\SkyImagesAnalysis_appData\Sun-Condition-data-collection\debug-2016-06-17\</value>
   </table>
   <table>
     <key>imageMP5statsXMLdataFilesDirectory</key>
-    <value>D:\_gulevlab\SkyImagesAnalysis_appData\_RV-ANS-31-total\MKLstats\MP5stats\</value>
+    <value>D:\_gulevlab\SkyImagesAnalysis_appData\Sun-Condition-data-collection\debug-2016-06-17\</value>
   </table>
   <table>
     <key>ShuffleImages</key>
@@ -66,7 +66,7 @@
   </table>
   <table>
     <key>ConcurrentDataXMLfilesDirectory</key>
-    <value>D:\_gulevlab\SkyImagesAnalysis_appData\_AI45-total\concurrentdata\</value>
+    <value>D:\_gulevlab\SkyImagesAnalysis_appData\Sun-Condition-data-collection\debug-2016-06-17\</value>
   </table>
   <table>
     <key>IncludeGPSandSunAltitudeData</key>

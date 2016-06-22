@@ -457,7 +457,10 @@ namespace MeteoObservatoryBotHelperApp
 
             SunDiskCondition sdc;
             int TCC;
-            PredictAndReportSDCandCC(currImageStatsData, nearestConcurrentData, out sdc, out TCC);
+            List<double> SDCdecisionProbabilities = new List<double>();
+            PredictAndReportSDCandCC(currImageStatsData, nearestConcurrentData, out sdc, out TCC,
+                out SDCdecisionProbabilities);
+
 
 
             #region store collected data to HDD
@@ -480,12 +483,44 @@ namespace MeteoObservatoryBotHelperApp
                 concurrentData = nearestConcurrentData,
                 grixyrgbStatsXMLfile = strImageGrIxYRGBDataFileName,
                 grixyrgbStats = currImageStatsData,
-                PredictedSDC = sdc
+                PredictedSDC = sdc,
+                sdcDecisionProbabilities = SDCdecisionProbabilities.Select((dProb,idx) => new SDCdecisionProbability()
+                {
+                    sdc = SunDiskConditionData.MatlabSDCenum(idx+1),
+                    sdcDecisionProbability = dProb
+                }).ToList()
             };
             string processedAndPredictedDataFileName =
                 ConventionalTransitions.ImageProcessedAndPredictedDataFileName(lastSnapshotFile,
                     ConcurrentDataXMLfilesBasePath);
             ServiceTools.WriteObjectToXML(data, processedAndPredictedDataFileName);
+
+
+            if (theLogWindow != null)
+            {
+                string strToShowSDCs = Environment.NewLine +
+                                       "|  NoSun  |  Sun0   |  Sun1   |  Sun2   |" + Environment.NewLine + "" +
+                                       "|" +
+                                       String.Format("{0,9}",
+                                           (data.sdcDecisionProbabilities.First(
+                                               prob => prob.sdc == SunDiskCondition.NoSun).sdcDecisionProbability*100.0d)
+                                               .ToString("F2") + "%") + "|" +
+                                       String.Format("{0,9}",
+                                           (data.sdcDecisionProbabilities.First(
+                                               prob => prob.sdc == SunDiskCondition.Sun0).sdcDecisionProbability*100.0d)
+                                               .ToString("F2") + "%") + "|" +
+                                       String.Format("{0,9}",
+                                           (data.sdcDecisionProbabilities.First(
+                                               prob => prob.sdc == SunDiskCondition.Sun1).sdcDecisionProbability*100.0d)
+                                               .ToString("F2") + "%") + "|" +
+                                       String.Format("{0,9}",
+                                           (data.sdcDecisionProbabilities.First(
+                                               prob => prob.sdc == SunDiskCondition.Sun2).sdcDecisionProbability*100.0d)
+                                               .ToString("F2") + "%") + "|";
+
+                theLogWindow = ServiceTools.LogAText(theLogWindow, strToShowSDCs);
+            }
+
 
             #endregion store collected data to HDD
 
@@ -542,7 +577,7 @@ namespace MeteoObservatoryBotHelperApp
             commands.Add("rm ./" + ConventionalTransitions.ImageProcessedAndPredictedDataFileNamesPattern());
             commands.Add("unzip " + Path.GetFileName(tempZipFilename));
             commands.Add("rm " + Path.GetFileName(tempZipFilename));
-            commands.Add("ll");
+            // commands.Add("ll");
             bool execResult = ExecSShellCommandsOnBotServer(commands, out retEx);
 
             #region report error
@@ -576,12 +611,13 @@ namespace MeteoObservatoryBotHelperApp
 
 
 
-        private void PredictAndReportSDCandCC(SkyImageIndexesStatsData statsData, ConcurrentData nearestConcurrentData, out SunDiskCondition sdc, out int TCC)
+        private void PredictAndReportSDCandCC(SkyImageIndexesStatsData statsData, ConcurrentData nearestConcurrentData, out SunDiskCondition sdc, out int TCC, out List<double> sdcDecisionProbabilities)
         {
             stwCalculateAndReportSDCandTCCtimer.Restart();
 
             sdc = SunDiskCondition.Undefined;
             TCC = 0;
+            sdcDecisionProbabilities = new List<double>();
 
             if (bSendProcessedDataTo_CC_Moscow_bot_server)
             {
@@ -614,7 +650,7 @@ namespace MeteoObservatoryBotHelperApp
                     dvMeans,
                     dvRanges, out decisionProbabilities);
 
-
+                sdcDecisionProbabilities = decisionProbabilities;
 
                 string CC_NNconfigFile = CurDir + Path.DirectorySeparatorChar + "settings" + Path.DirectorySeparatorChar +
                                          "CC_NNconfig.csv";
@@ -847,7 +883,7 @@ namespace MeteoObservatoryBotHelperApp
                 commands.Add("rm ./" + ConventionalTransitions.R2SUMBdataFileNamePattern());
                 commands.Add("unzip " + Path.GetFileName(tempZipFilename));
                 commands.Add("rm " + Path.GetFileName(tempZipFilename));
-                commands.Add("ll");
+                // commands.Add("ll");
                 bool execResult = ExecSShellCommandsOnBotServer(commands, out retEx);
 
                 #region report error
@@ -1014,7 +1050,7 @@ namespace MeteoObservatoryBotHelperApp
                 commands.Add("rm ./" + ConventionalTransitions.ImageConcurrentDataFilesNamesPattern());
                 commands.Add("unzip " + Path.GetFileName(tempZipFilename));
                 commands.Add("rm " + Path.GetFileName(tempZipFilename));
-                commands.Add("ll");
+                // commands.Add("ll");
                 bool execResult = ExecSShellCommandsOnBotServer(commands, out retEx);
 
                 #region report error

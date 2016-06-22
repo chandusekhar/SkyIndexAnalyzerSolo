@@ -71,9 +71,7 @@
             this.lblSunAzimuth = new System.Windows.Forms.Label();
             this.btnPrefs = new System.Windows.Forms.Button();
             this.lblWhetherRestrictsObtainingDataDueSunElevation = new System.Windows.Forms.Label();
-            this.lblSDCdetected = new System.Windows.Forms.Label();
             this.lblCCdetected = new System.Windows.Forms.Label();
-            this.lblSDCvalue = new System.Windows.Forms.Label();
             this.lblCCvalue = new System.Windows.Forms.Label();
             this.lblNextImageProcessingInTitle = new System.Windows.Forms.Label();
             this.lblNextImageProcessingIn = new System.Windows.Forms.Label();
@@ -89,6 +87,13 @@
             this.lblUDPpacketsProcessingSpeedTitle = new System.Windows.Forms.Label();
             this.lblUDPpacketsRecievingSpeedValue = new System.Windows.Forms.Label();
             this.lblUDPpacketsProcessingSpeedValue = new System.Windows.Forms.Label();
+            this.button2 = new System.Windows.Forms.Button();
+            this.tbIP2ListenDevID1 = new System.Windows.Forms.TextBox();
+            this.tbIP2ListenDevID2 = new System.Windows.Forms.TextBox();
+            this.btnFindArduino2 = new System.Windows.Forms.Button();
+            this.btnFindArduino1 = new System.Windows.Forms.Button();
+            this.SearchingArduinoID1ProcessCircle = new MRG.Controls.UI.LoadingCircle();
+            this.SearchingArduinoID2ProcessCircle = new MRG.Controls.UI.LoadingCircle();
             this.SensorsCalibration = new System.Windows.Forms.TabPage();
             this.tableLayoutPanel3 = new System.Windows.Forms.TableLayoutPanel();
             this.label4 = new System.Windows.Forms.Label();
@@ -127,13 +132,15 @@
             this.ArduinoRequestExpectant = new System.ComponentModel.BackgroundWorker();
             this.dataCollector = new System.ComponentModel.BackgroundWorker();
             this.accelCalibrator = new System.ComponentModel.BackgroundWorker();
-            this.button2 = new System.Windows.Forms.Button();
-            this.tbIP2ListenDevID1 = new System.Windows.Forms.TextBox();
-            this.tbIP2ListenDevID2 = new System.Windows.Forms.TextBox();
-            this.btnFindArduino1 = new System.Windows.Forms.Button();
-            this.btnFindArduino2 = new System.Windows.Forms.Button();
-            this.SearchingArduinoID1ProcessCircle = new MRG.Controls.UI.LoadingCircle();
-            this.SearchingArduinoID2ProcessCircle = new MRG.Controls.UI.LoadingCircle();
+            this.lblNoSunTitle = new System.Windows.Forms.Label();
+            this.lblSun0Title = new System.Windows.Forms.Label();
+            this.lblSun1Title = new System.Windows.Forms.Label();
+            this.lblSun2Title = new System.Windows.Forms.Label();
+            this.lblNoSunProb = new System.Windows.Forms.Label();
+            this.lblSun0Prob = new System.Windows.Forms.Label();
+            this.lblSun1Prob = new System.Windows.Forms.Label();
+            this.lblSun2Prob = new System.Windows.Forms.Label();
+            this.lblSDCprobabilitiesTitle = new System.Windows.Forms.Label();
             this.tabControl1.SuspendLayout();
             this.tabPageMain.SuspendLayout();
             this.tableLayoutPanel1.SuspendLayout();
@@ -234,14 +241,21 @@
             this.tableLayoutPanel1.Controls.Add(this.lblSunAzimuth, 18, 17);
             this.tableLayoutPanel1.Controls.Add(this.btnPrefs, 18, 0);
             this.tableLayoutPanel1.Controls.Add(this.lblWhetherRestrictsObtainingDataDueSunElevation, 14, 9);
-            this.tableLayoutPanel1.Controls.Add(this.lblSDCdetected, 0, 16);
-            this.tableLayoutPanel1.Controls.Add(this.lblCCdetected, 7, 16);
-            this.tableLayoutPanel1.Controls.Add(this.lblSDCvalue, 3, 16);
-            this.tableLayoutPanel1.Controls.Add(this.lblCCvalue, 10, 16);
+            this.tableLayoutPanel1.Controls.Add(this.lblCCdetected, 7, 15);
+            this.tableLayoutPanel1.Controls.Add(this.lblCCvalue, 7, 16);
             this.tableLayoutPanel1.Controls.Add(this.lblNextImageProcessingInTitle, 10, 4);
             this.tableLayoutPanel1.Controls.Add(this.lblNextImageProcessingIn, 10, 5);
             this.tableLayoutPanel1.Controls.Add(this.lblIPCpipeServerStatusTitle, 9, 0);
             this.tableLayoutPanel1.Controls.Add(this.lblIPCpipeServerStatus, 9, 1);
+            this.tableLayoutPanel1.Controls.Add(this.lblSun2Title, 5, 15);
+            this.tableLayoutPanel1.Controls.Add(this.lblSun2Prob, 5, 16);
+            this.tableLayoutPanel1.Controls.Add(this.lblSun1Prob, 4, 16);
+            this.tableLayoutPanel1.Controls.Add(this.lblSun1Title, 4, 15);
+            this.tableLayoutPanel1.Controls.Add(this.lblSun0Title, 3, 15);
+            this.tableLayoutPanel1.Controls.Add(this.lblSun0Prob, 3, 16);
+            this.tableLayoutPanel1.Controls.Add(this.lblNoSunProb, 2, 16);
+            this.tableLayoutPanel1.Controls.Add(this.lblNoSunTitle, 2, 15);
+            this.tableLayoutPanel1.Controls.Add(this.lblSDCprobabilitiesTitle, 0, 15);
             this.tableLayoutPanel1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tableLayoutPanel1.Location = new System.Drawing.Point(4, 4);
             this.tableLayoutPanel1.Margin = new System.Windows.Forms.Padding(4);
@@ -278,8 +292,8 @@
             this.pbThumbPreviewCam2.Location = new System.Drawing.Point(431, 254);
             this.pbThumbPreviewCam2.Margin = new System.Windows.Forms.Padding(4);
             this.pbThumbPreviewCam2.Name = "pbThumbPreviewCam2";
-            this.tableLayoutPanel1.SetRowSpan(this.pbThumbPreviewCam2, 9);
-            this.pbThumbPreviewCam2.Size = new System.Drawing.Size(406, 349);
+            this.tableLayoutPanel1.SetRowSpan(this.pbThumbPreviewCam2, 8);
+            this.pbThumbPreviewCam2.Size = new System.Drawing.Size(406, 312);
             this.pbThumbPreviewCam2.TabIndex = 96;
             this.pbThumbPreviewCam2.TabStop = false;
             // 
@@ -496,8 +510,8 @@
             this.pbThumbPreviewCam1.Location = new System.Drawing.Point(4, 254);
             this.pbThumbPreviewCam1.Margin = new System.Windows.Forms.Padding(4);
             this.pbThumbPreviewCam1.Name = "pbThumbPreviewCam1";
-            this.tableLayoutPanel1.SetRowSpan(this.pbThumbPreviewCam1, 9);
-            this.pbThumbPreviewCam1.Size = new System.Drawing.Size(406, 349);
+            this.tableLayoutPanel1.SetRowSpan(this.pbThumbPreviewCam1, 8);
+            this.pbThumbPreviewCam1.Size = new System.Drawing.Size(406, 312);
             this.pbThumbPreviewCam1.TabIndex = 57;
             this.pbThumbPreviewCam1.TabStop = false;
             this.pbThumbPreviewCam1.Click += new System.EventHandler(this.pictureBox1_Click);
@@ -878,61 +892,33 @@
             this.lblWhetherRestrictsObtainingDataDueSunElevation.Text = "---";
             this.lblWhetherRestrictsObtainingDataDueSunElevation.TextAlign = System.Drawing.ContentAlignment.BottomCenter;
             // 
-            // lblSDCdetected
-            // 
-            this.lblSDCdetected.AutoSize = true;
-            this.lblSDCdetected.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.tableLayoutPanel1.SetColumnSpan(this.lblSDCdetected, 3);
-            this.lblSDCdetected.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.lblSDCdetected.Font = new System.Drawing.Font("Microsoft Sans Serif", 10.2F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.lblSDCdetected.Location = new System.Drawing.Point(3, 607);
-            this.lblSDCdetected.Name = "lblSDCdetected";
-            this.lblSDCdetected.Size = new System.Drawing.Size(201, 43);
-            this.lblSDCdetected.TabIndex = 118;
-            this.lblSDCdetected.Text = "SDC detected (BETA!):";
-            this.lblSDCdetected.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
-            // 
             // lblCCdetected
             // 
             this.lblCCdetected.AutoSize = true;
             this.lblCCdetected.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.tableLayoutPanel1.SetColumnSpan(this.lblCCdetected, 3);
+            this.tableLayoutPanel1.SetColumnSpan(this.lblCCdetected, 6);
             this.lblCCdetected.Dock = System.Windows.Forms.DockStyle.Fill;
             this.lblCCdetected.Font = new System.Drawing.Font("Microsoft Sans Serif", 10.2F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.lblCCdetected.Location = new System.Drawing.Point(430, 607);
+            this.lblCCdetected.Location = new System.Drawing.Point(430, 570);
             this.lblCCdetected.Name = "lblCCdetected";
-            this.lblCCdetected.Size = new System.Drawing.Size(201, 43);
+            this.lblCCdetected.Size = new System.Drawing.Size(408, 37);
             this.lblCCdetected.TabIndex = 119;
             this.lblCCdetected.Text = "TCC detected (BETA!):";
             this.lblCCdetected.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
-            // 
-            // lblSDCvalue
-            // 
-            this.lblSDCvalue.AutoSize = true;
-            this.lblSDCvalue.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.tableLayoutPanel1.SetColumnSpan(this.lblSDCvalue, 3);
-            this.lblSDCvalue.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.lblSDCvalue.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.lblSDCvalue.Location = new System.Drawing.Point(210, 607);
-            this.lblSDCvalue.Name = "lblSDCvalue";
-            this.lblSDCvalue.Size = new System.Drawing.Size(201, 43);
-            this.lblSDCvalue.TabIndex = 120;
-            this.lblSDCvalue.Text = "---";
-            this.lblSDCvalue.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // lblCCvalue
             // 
             this.lblCCvalue.AutoSize = true;
             this.lblCCvalue.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.tableLayoutPanel1.SetColumnSpan(this.lblCCvalue, 3);
+            this.tableLayoutPanel1.SetColumnSpan(this.lblCCvalue, 6);
             this.lblCCvalue.Dock = System.Windows.Forms.DockStyle.Fill;
             this.lblCCvalue.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.lblCCvalue.Location = new System.Drawing.Point(637, 607);
+            this.lblCCvalue.Location = new System.Drawing.Point(430, 607);
             this.lblCCvalue.Name = "lblCCvalue";
-            this.lblCCvalue.Size = new System.Drawing.Size(201, 43);
+            this.lblCCvalue.Size = new System.Drawing.Size(408, 43);
             this.lblCCvalue.TabIndex = 121;
             this.lblCCvalue.Text = "---";
-            this.lblCCvalue.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            this.lblCCvalue.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             // 
             // lblNextImageProcessingInTitle
             // 
@@ -1163,6 +1149,108 @@
             this.lblUDPpacketsProcessingSpeedValue.TabIndex = 16;
             this.lblUDPpacketsProcessingSpeedValue.Text = "---";
             this.lblUDPpacketsProcessingSpeedValue.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
+            // button2
+            // 
+            this.button2.BackColor = System.Drawing.Color.Gainsboro;
+            this.tableLayoutPanel2.SetColumnSpan(this.button2, 2);
+            this.button2.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.button2.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.button2.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.button2.Location = new System.Drawing.Point(3, 709);
+            this.button2.Name = "button2";
+            this.button2.Size = new System.Drawing.Size(418, 44);
+            this.button2.TabIndex = 17;
+            this.button2.Text = "send test GPS data";
+            this.button2.UseVisualStyleBackColor = false;
+            this.button2.Click += new System.EventHandler(this.btnTestGPSsending_Click);
+            // 
+            // tbIP2ListenDevID1
+            // 
+            this.tbIP2ListenDevID1.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.tbIP2ListenDevID1.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.tbIP2ListenDevID1.Location = new System.Drawing.Point(4, 4);
+            this.tbIP2ListenDevID1.Margin = new System.Windows.Forms.Padding(4);
+            this.tbIP2ListenDevID1.Name = "tbIP2ListenDevID1";
+            this.tbIP2ListenDevID1.Size = new System.Drawing.Size(204, 30);
+            this.tbIP2ListenDevID1.TabIndex = 41;
+            this.tbIP2ListenDevID1.Text = "192.0.0.101";
+            // 
+            // tbIP2ListenDevID2
+            // 
+            this.tbIP2ListenDevID2.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.tbIP2ListenDevID2.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.tbIP2ListenDevID2.Location = new System.Drawing.Point(3, 52);
+            this.tbIP2ListenDevID2.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
+            this.tbIP2ListenDevID2.Name = "tbIP2ListenDevID2";
+            this.tbIP2ListenDevID2.Size = new System.Drawing.Size(206, 30);
+            this.tbIP2ListenDevID2.TabIndex = 103;
+            this.tbIP2ListenDevID2.Text = "192.0.0.102";
+            // 
+            // btnFindArduino2
+            // 
+            this.btnFindArduino2.BackColor = System.Drawing.Color.Gainsboro;
+            this.btnFindArduino2.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.btnFindArduino2.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnFindArduino2.Font = new System.Drawing.Font("Microsoft Sans Serif", 10.2F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.btnFindArduino2.Location = new System.Drawing.Point(215, 52);
+            this.btnFindArduino2.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
+            this.btnFindArduino2.Name = "btnFindArduino2";
+            this.btnFindArduino2.Size = new System.Drawing.Size(206, 46);
+            this.btnFindArduino2.TabIndex = 105;
+            this.btnFindArduino2.Text = "search for board ID2";
+            this.btnFindArduino2.UseVisualStyleBackColor = false;
+            // 
+            // btnFindArduino1
+            // 
+            this.btnFindArduino1.BackColor = System.Drawing.Color.Gainsboro;
+            this.btnFindArduino1.Cursor = System.Windows.Forms.Cursors.Default;
+            this.btnFindArduino1.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.btnFindArduino1.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnFindArduino1.Font = new System.Drawing.Font("Microsoft Sans Serif", 10.2F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.btnFindArduino1.Location = new System.Drawing.Point(216, 4);
+            this.btnFindArduino1.Margin = new System.Windows.Forms.Padding(4);
+            this.btnFindArduino1.Name = "btnFindArduino1";
+            this.btnFindArduino1.Size = new System.Drawing.Size(204, 42);
+            this.btnFindArduino1.TabIndex = 104;
+            this.btnFindArduino1.Text = "search for board ID1";
+            this.btnFindArduino1.UseVisualStyleBackColor = false;
+            // 
+            // SearchingArduinoID1ProcessCircle
+            // 
+            this.SearchingArduinoID1ProcessCircle.Active = false;
+            this.SearchingArduinoID1ProcessCircle.Color = System.Drawing.Color.DarkGray;
+            this.SearchingArduinoID1ProcessCircle.InnerCircleRadius = 8;
+            this.SearchingArduinoID1ProcessCircle.Location = new System.Drawing.Point(428, 4);
+            this.SearchingArduinoID1ProcessCircle.Margin = new System.Windows.Forms.Padding(4);
+            this.SearchingArduinoID1ProcessCircle.Name = "SearchingArduinoID1ProcessCircle";
+            this.SearchingArduinoID1ProcessCircle.NumberSpoke = 24;
+            this.SearchingArduinoID1ProcessCircle.OuterCircleRadius = 9;
+            this.SearchingArduinoID1ProcessCircle.RotationSpeed = 100;
+            this.SearchingArduinoID1ProcessCircle.Size = new System.Drawing.Size(61, 31);
+            this.SearchingArduinoID1ProcessCircle.SpokeThickness = 4;
+            this.SearchingArduinoID1ProcessCircle.StylePreset = MRG.Controls.UI.LoadingCircle.StylePresets.IE7;
+            this.SearchingArduinoID1ProcessCircle.TabIndex = 106;
+            this.SearchingArduinoID1ProcessCircle.Text = "loadingCircle1";
+            this.SearchingArduinoID1ProcessCircle.Visible = false;
+            // 
+            // SearchingArduinoID2ProcessCircle
+            // 
+            this.SearchingArduinoID2ProcessCircle.Active = false;
+            this.SearchingArduinoID2ProcessCircle.Color = System.Drawing.Color.DarkGray;
+            this.SearchingArduinoID2ProcessCircle.InnerCircleRadius = 8;
+            this.SearchingArduinoID2ProcessCircle.Location = new System.Drawing.Point(428, 54);
+            this.SearchingArduinoID2ProcessCircle.Margin = new System.Windows.Forms.Padding(4);
+            this.SearchingArduinoID2ProcessCircle.Name = "SearchingArduinoID2ProcessCircle";
+            this.SearchingArduinoID2ProcessCircle.NumberSpoke = 24;
+            this.SearchingArduinoID2ProcessCircle.OuterCircleRadius = 9;
+            this.SearchingArduinoID2ProcessCircle.RotationSpeed = 100;
+            this.SearchingArduinoID2ProcessCircle.Size = new System.Drawing.Size(61, 31);
+            this.SearchingArduinoID2ProcessCircle.SpokeThickness = 4;
+            this.SearchingArduinoID2ProcessCircle.StylePreset = MRG.Controls.UI.LoadingCircle.StylePresets.IE7;
+            this.SearchingArduinoID2ProcessCircle.TabIndex = 107;
+            this.SearchingArduinoID2ProcessCircle.Text = "loadingCircle1";
+            this.SearchingArduinoID2ProcessCircle.Visible = false;
             // 
             // SensorsCalibration
             // 
@@ -1731,107 +1819,116 @@
             this.accelCalibrator.DoWork += new System.ComponentModel.DoWorkEventHandler(this.accelCalibrator_DoWork);
             this.accelCalibrator.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(this.accelCalibrator_RunWorkerCompleted);
             // 
-            // button2
+            // lblNoSunTitle
             // 
-            this.button2.BackColor = System.Drawing.Color.Gainsboro;
-            this.tableLayoutPanel2.SetColumnSpan(this.button2, 2);
-            this.button2.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.button2.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.button2.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.button2.Location = new System.Drawing.Point(3, 709);
-            this.button2.Name = "button2";
-            this.button2.Size = new System.Drawing.Size(418, 44);
-            this.button2.TabIndex = 17;
-            this.button2.Text = "send test GPS data";
-            this.button2.UseVisualStyleBackColor = false;
-            this.button2.Click += new System.EventHandler(this.btnTestGPSsending_Click);
+            this.lblNoSunTitle.AutoSize = true;
+            this.lblNoSunTitle.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.lblNoSunTitle.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.lblNoSunTitle.Location = new System.Drawing.Point(141, 570);
+            this.lblNoSunTitle.Name = "lblNoSunTitle";
+            this.lblNoSunTitle.Size = new System.Drawing.Size(63, 37);
+            this.lblNoSunTitle.TabIndex = 127;
+            this.lblNoSunTitle.Text = "No Sun";
+            this.lblNoSunTitle.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
-            // tbIP2ListenDevID1
+            // lblSun0Title
             // 
-            this.tbIP2ListenDevID1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.tbIP2ListenDevID1.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.tbIP2ListenDevID1.Location = new System.Drawing.Point(4, 4);
-            this.tbIP2ListenDevID1.Margin = new System.Windows.Forms.Padding(4);
-            this.tbIP2ListenDevID1.Name = "tbIP2ListenDevID1";
-            this.tbIP2ListenDevID1.Size = new System.Drawing.Size(204, 30);
-            this.tbIP2ListenDevID1.TabIndex = 41;
-            this.tbIP2ListenDevID1.Text = "192.0.0.101";
+            this.lblSun0Title.AutoSize = true;
+            this.lblSun0Title.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.lblSun0Title.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.lblSun0Title.Location = new System.Drawing.Point(210, 570);
+            this.lblSun0Title.Name = "lblSun0Title";
+            this.lblSun0Title.Size = new System.Drawing.Size(63, 37);
+            this.lblSun0Title.TabIndex = 128;
+            this.lblSun0Title.Text = "Sun_0";
+            this.lblSun0Title.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
-            // tbIP2ListenDevID2
+            // lblSun1Title
             // 
-            this.tbIP2ListenDevID2.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.tbIP2ListenDevID2.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.tbIP2ListenDevID2.Location = new System.Drawing.Point(3, 52);
-            this.tbIP2ListenDevID2.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
-            this.tbIP2ListenDevID2.Name = "tbIP2ListenDevID2";
-            this.tbIP2ListenDevID2.Size = new System.Drawing.Size(206, 30);
-            this.tbIP2ListenDevID2.TabIndex = 103;
-            this.tbIP2ListenDevID2.Text = "192.0.0.102";
+            this.lblSun1Title.AutoSize = true;
+            this.lblSun1Title.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.lblSun1Title.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.lblSun1Title.Location = new System.Drawing.Point(279, 570);
+            this.lblSun1Title.Name = "lblSun1Title";
+            this.lblSun1Title.Size = new System.Drawing.Size(63, 37);
+            this.lblSun1Title.TabIndex = 129;
+            this.lblSun1Title.Text = "Sun_1";
+            this.lblSun1Title.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
-            // btnFindArduino1
+            // lblSun2Title
             // 
-            this.btnFindArduino1.BackColor = System.Drawing.Color.Gainsboro;
-            this.btnFindArduino1.Cursor = System.Windows.Forms.Cursors.Default;
-            this.btnFindArduino1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.btnFindArduino1.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnFindArduino1.Font = new System.Drawing.Font("Microsoft Sans Serif", 10.2F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.btnFindArduino1.Location = new System.Drawing.Point(216, 4);
-            this.btnFindArduino1.Margin = new System.Windows.Forms.Padding(4);
-            this.btnFindArduino1.Name = "btnFindArduino1";
-            this.btnFindArduino1.Size = new System.Drawing.Size(204, 42);
-            this.btnFindArduino1.TabIndex = 104;
-            this.btnFindArduino1.Text = "search for board ID1";
-            this.btnFindArduino1.UseVisualStyleBackColor = false;
+            this.lblSun2Title.AutoSize = true;
+            this.lblSun2Title.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.lblSun2Title.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.lblSun2Title.Location = new System.Drawing.Point(348, 570);
+            this.lblSun2Title.Name = "lblSun2Title";
+            this.lblSun2Title.Size = new System.Drawing.Size(63, 37);
+            this.lblSun2Title.TabIndex = 130;
+            this.lblSun2Title.Text = "Sun_2";
+            this.lblSun2Title.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
-            // btnFindArduino2
+            // lblNoSunProb
             // 
-            this.btnFindArduino2.BackColor = System.Drawing.Color.Gainsboro;
-            this.btnFindArduino2.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.btnFindArduino2.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnFindArduino2.Font = new System.Drawing.Font("Microsoft Sans Serif", 10.2F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.btnFindArduino2.Location = new System.Drawing.Point(215, 52);
-            this.btnFindArduino2.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
-            this.btnFindArduino2.Name = "btnFindArduino2";
-            this.btnFindArduino2.Size = new System.Drawing.Size(206, 46);
-            this.btnFindArduino2.TabIndex = 105;
-            this.btnFindArduino2.Text = "search for board ID2";
-            this.btnFindArduino2.UseVisualStyleBackColor = false;
+            this.lblNoSunProb.AutoSize = true;
+            this.lblNoSunProb.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.lblNoSunProb.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.lblNoSunProb.Location = new System.Drawing.Point(141, 607);
+            this.lblNoSunProb.Name = "lblNoSunProb";
+            this.lblNoSunProb.Size = new System.Drawing.Size(63, 43);
+            this.lblNoSunProb.TabIndex = 131;
+            this.lblNoSunProb.Text = "---";
+            this.lblNoSunProb.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
-            // SearchingArduinoID1ProcessCircle
+            // lblSun0Prob
             // 
-            this.SearchingArduinoID1ProcessCircle.Active = false;
-            this.SearchingArduinoID1ProcessCircle.Color = System.Drawing.Color.DarkGray;
-            this.SearchingArduinoID1ProcessCircle.InnerCircleRadius = 8;
-            this.SearchingArduinoID1ProcessCircle.Location = new System.Drawing.Point(428, 4);
-            this.SearchingArduinoID1ProcessCircle.Margin = new System.Windows.Forms.Padding(4);
-            this.SearchingArduinoID1ProcessCircle.Name = "SearchingArduinoID1ProcessCircle";
-            this.SearchingArduinoID1ProcessCircle.NumberSpoke = 24;
-            this.SearchingArduinoID1ProcessCircle.OuterCircleRadius = 9;
-            this.SearchingArduinoID1ProcessCircle.RotationSpeed = 100;
-            this.SearchingArduinoID1ProcessCircle.Size = new System.Drawing.Size(61, 31);
-            this.SearchingArduinoID1ProcessCircle.SpokeThickness = 4;
-            this.SearchingArduinoID1ProcessCircle.StylePreset = MRG.Controls.UI.LoadingCircle.StylePresets.IE7;
-            this.SearchingArduinoID1ProcessCircle.TabIndex = 106;
-            this.SearchingArduinoID1ProcessCircle.Text = "loadingCircle1";
-            this.SearchingArduinoID1ProcessCircle.Visible = false;
+            this.lblSun0Prob.AutoSize = true;
+            this.lblSun0Prob.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.lblSun0Prob.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.lblSun0Prob.Location = new System.Drawing.Point(210, 607);
+            this.lblSun0Prob.Name = "lblSun0Prob";
+            this.lblSun0Prob.Size = new System.Drawing.Size(63, 43);
+            this.lblSun0Prob.TabIndex = 132;
+            this.lblSun0Prob.Text = "---";
+            this.lblSun0Prob.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
-            // SearchingArduinoID2ProcessCircle
+            // lblSun1Prob
             // 
-            this.SearchingArduinoID2ProcessCircle.Active = false;
-            this.SearchingArduinoID2ProcessCircle.Color = System.Drawing.Color.DarkGray;
-            this.SearchingArduinoID2ProcessCircle.InnerCircleRadius = 8;
-            this.SearchingArduinoID2ProcessCircle.Location = new System.Drawing.Point(428, 54);
-            this.SearchingArduinoID2ProcessCircle.Margin = new System.Windows.Forms.Padding(4);
-            this.SearchingArduinoID2ProcessCircle.Name = "SearchingArduinoID2ProcessCircle";
-            this.SearchingArduinoID2ProcessCircle.NumberSpoke = 24;
-            this.SearchingArduinoID2ProcessCircle.OuterCircleRadius = 9;
-            this.SearchingArduinoID2ProcessCircle.RotationSpeed = 100;
-            this.SearchingArduinoID2ProcessCircle.Size = new System.Drawing.Size(61, 31);
-            this.SearchingArduinoID2ProcessCircle.SpokeThickness = 4;
-            this.SearchingArduinoID2ProcessCircle.StylePreset = MRG.Controls.UI.LoadingCircle.StylePresets.IE7;
-            this.SearchingArduinoID2ProcessCircle.TabIndex = 107;
-            this.SearchingArduinoID2ProcessCircle.Text = "loadingCircle1";
-            this.SearchingArduinoID2ProcessCircle.Visible = false;
+            this.lblSun1Prob.AutoSize = true;
+            this.lblSun1Prob.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.lblSun1Prob.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.lblSun1Prob.Location = new System.Drawing.Point(279, 607);
+            this.lblSun1Prob.Name = "lblSun1Prob";
+            this.lblSun1Prob.Size = new System.Drawing.Size(63, 43);
+            this.lblSun1Prob.TabIndex = 133;
+            this.lblSun1Prob.Text = "---";
+            this.lblSun1Prob.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
+            // lblSun2Prob
+            // 
+            this.lblSun2Prob.AutoSize = true;
+            this.lblSun2Prob.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.lblSun2Prob.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.lblSun2Prob.Location = new System.Drawing.Point(348, 607);
+            this.lblSun2Prob.Name = "lblSun2Prob";
+            this.lblSun2Prob.Size = new System.Drawing.Size(63, 43);
+            this.lblSun2Prob.TabIndex = 134;
+            this.lblSun2Prob.Text = "---";
+            this.lblSun2Prob.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
+            // lblSDCprobabilitiesTitle
+            // 
+            this.lblSDCprobabilitiesTitle.AutoSize = true;
+            this.lblSDCprobabilitiesTitle.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.tableLayoutPanel1.SetColumnSpan(this.lblSDCprobabilitiesTitle, 2);
+            this.lblSDCprobabilitiesTitle.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.lblSDCprobabilitiesTitle.Font = new System.Drawing.Font("Microsoft Sans Serif", 10.2F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.lblSDCprobabilitiesTitle.Location = new System.Drawing.Point(3, 570);
+            this.lblSDCprobabilitiesTitle.Name = "lblSDCprobabilitiesTitle";
+            this.tableLayoutPanel1.SetRowSpan(this.lblSDCprobabilitiesTitle, 2);
+            this.lblSDCprobabilitiesTitle.Size = new System.Drawing.Size(132, 80);
+            this.lblSDCprobabilitiesTitle.TabIndex = 135;
+            this.lblSDCprobabilitiesTitle.Text = "SDC prediction probabilities:";
+            this.lblSDCprobabilitiesTitle.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
             // DataCollectorMainForm
             // 
@@ -1958,9 +2055,7 @@
         private System.Windows.Forms.Label lblUDPpacketsRecievingSpeedValue;
         private System.Windows.Forms.Label lblUDPpacketsProcessingSpeedValue;
         private System.Windows.Forms.Label lblWhetherRestrictsObtainingDataDueSunElevation;
-        private System.Windows.Forms.Label lblSDCdetected;
         private System.Windows.Forms.Label lblCCdetected;
-        private System.Windows.Forms.Label lblSDCvalue;
         private System.Windows.Forms.Label lblCCvalue;
         private System.Windows.Forms.Label lblNextImageProcessingInTitle;
         private System.Windows.Forms.Label lblNextImageProcessingIn;
@@ -1974,6 +2069,15 @@
         private System.Windows.Forms.Button btnFindArduino1;
         private MRG.Controls.UI.LoadingCircle SearchingArduinoID1ProcessCircle;
         private MRG.Controls.UI.LoadingCircle SearchingArduinoID2ProcessCircle;
+        private System.Windows.Forms.Label lblSun2Title;
+        private System.Windows.Forms.Label lblSun2Prob;
+        private System.Windows.Forms.Label lblSun1Prob;
+        private System.Windows.Forms.Label lblSun1Title;
+        private System.Windows.Forms.Label lblSun0Title;
+        private System.Windows.Forms.Label lblSun0Prob;
+        private System.Windows.Forms.Label lblNoSunProb;
+        private System.Windows.Forms.Label lblNoSunTitle;
+        private System.Windows.Forms.Label lblSDCprobabilitiesTitle;
     }
 }
 

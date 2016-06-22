@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using MathNet.Numerics.LinearAlgebra.Double;
 
@@ -8,6 +9,7 @@ namespace ANN
     {
         public static IEnumerable<int> NNpredict(DenseMatrix X, IEnumerable<double> ThetaValuesVector, IEnumerable<int> NNlayersConfig, out List<List<double>> lDecisionProbabilities)
         {
+            bool bConsolePresent = console_present();
             List<DenseMatrix> Theta = ThetaMatricesTransformer.RollMatrices(ThetaValuesVector, NNlayersConfig);
             int m = X.RowCount;
             int n = X.ColumnCount;
@@ -20,6 +22,13 @@ namespace ANN
             {
                 if (l == 0)
                 {
+#if DEBUG
+                    if (bConsolePresent)
+                    {
+                        Console.WriteLine("ANN prediction calculating: layer " + l + " of " + L);
+                    }
+#endif
+
                     int m_a = X.RowCount;
                     DenseMatrix a = (DenseMatrix)X.Clone();
                     DenseVector bias = DenseVector.Create(m_a, 1.0d);
@@ -34,6 +43,13 @@ namespace ANN
                 }
                 else
                 {
+#if DEBUG
+                    if (bConsolePresent)
+                    {
+                        Console.WriteLine("ANN prediction calculating: layer " + l + " of " + L);
+                    }
+#endif
+
                     LayersActivations predActivation = activations.Last();
                     DenseMatrix z = predActivation.a_biased*(DenseMatrix) Theta[l - 1].Transpose();
                     DenseMatrix a = Sigmoid.sigmoid(z);
@@ -68,7 +84,14 @@ namespace ANN
 
 
 
+        private static bool console_present()
+        {
+            bool _console_present = true;
+            try { int window_height = Console.WindowHeight; }
+            catch { _console_present = false; }
 
+            return _console_present;
+        }
     }
 
 

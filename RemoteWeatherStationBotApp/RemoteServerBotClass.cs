@@ -275,7 +275,30 @@ namespace RemoteWeatherStationBotApp
                           "date of snapshot analyzed (UTC): " + data.imageShootingDateTimeUTC.ToString("u") +
                           Environment.NewLine +
                           "Sun disk condition: " + data.PredictedSDC.ToString() + Environment.NewLine +
-                          "Total cloud cover: " + data.PredictedCC.CloudCoverTotal + " (of 8)";
+                          "Total cloud cover: " + data.PredictedCC.CloudCoverTotal + " (of 8)" + Environment.NewLine +
+                          Environment.NewLine +
+                          "SDC predictions probabilities:" + Environment.NewLine;
+
+                string strToShowSDCs = Environment.NewLine +
+                                       "|  NoSun  |  Sun0   |  Sun1   |  Sun2   |" + Environment.NewLine + "" +
+                                       "|" +
+                                       String.Format("{0,9}",
+                                           (data.sdcDecisionProbabilities.First(
+                                               prob => prob.sdc == SunDiskCondition.NoSun).sdcDecisionProbability * 100.0d)
+                                               .ToString("F2") + "%") + "|" +
+                                       String.Format("{0,9}",
+                                           (data.sdcDecisionProbabilities.First(
+                                               prob => prob.sdc == SunDiskCondition.Sun0).sdcDecisionProbability * 100.0d)
+                                               .ToString("F2") + "%") + "|" +
+                                       String.Format("{0,9}",
+                                           (data.sdcDecisionProbabilities.First(
+                                               prob => prob.sdc == SunDiskCondition.Sun1).sdcDecisionProbability * 100.0d)
+                                               .ToString("F2") + "%") + "|" +
+                                       String.Format("{0,9}",
+                                           (data.sdcDecisionProbabilities.First(
+                                               prob => prob.sdc == SunDiskCondition.Sun2).sdcDecisionProbability * 100.0d)
+                                               .ToString("F2") + "%") + "|";
+                retStr += strToShowSDCs;
             }
             
 

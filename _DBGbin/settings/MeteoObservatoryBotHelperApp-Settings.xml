@@ -2,11 +2,11 @@
 <DataSet xmlns="NetFrameWork">
   <table>
     <key>ConcurrentDataXMLfilesBasePath</key>
-    <value>D:\_gulevlab\SkyImagesAnalysis\_DBGbin\results\</value>
+    <value>D:\_gulevlab\SkyImagesAnalysis_appData\_AI45-total\concurrentdata\</value>
   </table>
   <table>
     <key>YRGBstatsXMLdataFilesDirectory</key>
-    <value>D:\_gulevlab\SkyImagesAnalysis\_DBGbin\stats\</value>
+    <value>D:\_gulevlab\SkyImagesAnalysis_appData\_AI45-total\MKLstats\GrIxYRGB\</value>
   </table>
   <table>
     <key>R2SLufftUMBappPath</key>
@@ -26,11 +26,11 @@
   </table>
   <table>
     <key>outputSnapshotsDirectory</key>
-    <value>D:\_gulevlab\SkyImagesAnalysis\_DBGbin\snapshots\</value>
+    <value>D:\_gulevlab\SkyImagesAnalysis_appData\_AI45-total\snapshots\</value>
   </table>
   <table>
     <key>bSendProcessedDataTo_CC_Moscow_bot_server</key>
-    <value>false</value>
+    <value>true</value>
   </table>
   <table>
     <key>strRemoteBotServerHost</key>
@@ -63,5 +63,9 @@
   <table>
     <key>strmakeWSdataFilePeriodSeconds</key>
     <value>90</value>
+  </table>
+  <table>
+    <key>strRemoteServerDataUploadingBaseDirectory</key>
+    <value>~/cc_moscow_bot/data/</value>
   </table>
 </DataSet>

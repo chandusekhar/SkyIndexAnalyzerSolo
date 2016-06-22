@@ -561,9 +561,9 @@ namespace MLsetPerMissionCreationApp
                     return retVal;
                 });
 
-#if DEBUG
-                lStatsProcessing = lStatsProcessing.Where((ipd, ind) => ind < 10).ToList();
-#endif
+//#if DEBUG
+//                lStatsProcessing = lStatsProcessing.Where((ipd, ind) => ind < 10).ToList();
+//#endif
 
                 Console.WriteLine("started reading and mapping stats data");
 
@@ -722,107 +722,175 @@ namespace MLsetPerMissionCreationApp
 
             #region Filter by SDC values predicting it using pre-trained NN parameters
 
+            #region //
+            //string csvHeader = lStatsProcessing[0].grixyrgbStats.CSVHeader() +
+            //               ",SunElevationDeg,SunAzimuthDeg,sunDiskCondition";
+            //List<string> lCSVheader = csvHeader.Split(',').ToList();
+            //List<int> columnsToDelete =
+            //    lCSVheader.Select((str, idx) => new Tuple<int, string>(idx, str))
+            //        .Where(tpl => tpl.Item2.ToLower().Contains("filename")).ToList().ConvertAll(tpl => tpl.Item1);
 
-            string csvHeader = lStatsProcessing[0].grixyrgbStats.CSVHeader() +
-                           ",SunElevationDeg,SunAzimuthDeg,sunDiskCondition";
-            List<string> lCSVheader = csvHeader.Split(',').ToList();
-            List<int> columnsToDelete =
-                lCSVheader.Select((str, idx) => new Tuple<int, string>(idx, str))
-                    .Where(tpl => tpl.Item2.ToLower().Contains("filename")).ToList().ConvertAll(tpl => tpl.Item1);
-
-            List<List<string>> lCalculatedData = lStatsProcessing.ConvertAll(dt =>
-            {
-                string currImageALLstatsDataCSVWithConcurrentData = dt.grixyrgbStats.ToCSV() + "," +
-                                                                    dt.concurrentData.gps.SunZenithAzimuth()
-                                                                        .ElevationAngle.ToString()
-                                                                        .Replace(",", ".") + "," +
-                                                                    dt.concurrentData.gps.SunZenithAzimuth()
-                                                                        .Azimuth.ToString()
-                                                                        .Replace(",", ".");
-                List<string> retVal = currImageALLstatsDataCSVWithConcurrentData.Split(',').ToList();
-                retVal = retVal.Where((str, idx) => !columnsToDelete.Contains(idx)).ToList();
-                return retVal;
-            });
+            //List<List<string>> lCalculatedData = lStatsProcessing.ConvertAll(dt =>
+            //{
+            //    string currImageALLstatsDataCSVWithConcurrentData = dt.grixyrgbStats.ToCSV() + "," +
+            //                                                        dt.concurrentData.gps.SunZenithAzimuth()
+            //                                                            .ElevationAngle.ToString()
+            //                                                            .Replace(",", ".") + "," +
+            //                                                        dt.concurrentData.gps.SunZenithAzimuth()
+            //                                                            .Azimuth.ToString()
+            //                                                            .Replace(",", ".");
+            //    List<string> retVal = currImageALLstatsDataCSVWithConcurrentData.Split(',').ToList();
+            //    retVal = retVal.Where((str, idx) => !columnsToDelete.Contains(idx)).ToList();
+            //    return retVal;
+            //});
 
 
-            List<DenseVector> lDV_objects_features =
-                lCalculatedData.ConvertAll(
-                    list =>
-                        DenseVector.OfEnumerable(list.ConvertAll<double>(str => Convert.ToDouble(str.Replace(".", ",")))));
-
+            //List<DenseVector> lDV_objects_features =
+            //    lCalculatedData.ConvertAll(
+            //        list =>
+            //            DenseVector.OfEnumerable(list.ConvertAll<double>(str => Convert.ToDouble(str.Replace(".", ",")))));
+            #endregion
 
             DenseVector dvMeans = (DenseVector)((DenseMatrix)ServiceTools.ReadDataFromCSV(NormMeansFile, 0, ",")).Row(0);
             DenseVector dvRanges = (DenseVector)((DenseMatrix)ServiceTools.ReadDataFromCSV(NormRangeFile, 0, ",")).Row(0);
 
-            lDV_objects_features = lDV_objects_features.ConvertAll(dv =>
-            {
-                DenseVector dvShifted = dv - dvMeans;
-                DenseVector dvNormed = (DenseVector)dvShifted.PointwiseDivide(dvRanges);
-                return dvNormed;
-            });
+            #region //
+            //lDV_objects_features = lDV_objects_features.ConvertAll(dv =>
+            //{
+            //    DenseVector dvShifted = dv - dvMeans;
+            //    DenseVector dvNormed = (DenseVector)dvShifted.PointwiseDivide(dvRanges);
+            //    return dvNormed;
+            //});
 
-            DenseMatrix dmObjectsFeatures = DenseMatrix.OfRowVectors(lDV_objects_features);
+            //DenseMatrix dmObjectsFeatures = DenseMatrix.OfRowVectors(lDV_objects_features);
+            #endregion
 
             DenseVector dvThetaValues = (DenseVector)ServiceTools.ReadDataFromCSV(NNtrainedParametersFile, 0, ",");
             List<int> NNlayersConfig =
                 new List<double>(((DenseMatrix)ServiceTools.ReadDataFromCSV(NNconfigFile, 0, ",")).Row(0)).ConvertAll
                     (dVal => Convert.ToInt32(dVal));
 
+            #region //
+            // List<List<double>> lDecisionProbabilities = null;
+            #endregion
 
-            List<List<double>> lDecisionProbabilities = null;
-
-            List<int> predictedSDC =
-                NNclassificatorPredictor.NNpredict(dmObjectsFeatures, dvThetaValues, NNlayersConfig,
-                    out lDecisionProbabilities).ToList();
+            List<Tuple<ImagesProcessingData, List<SDCdecisionProbability>, SunDiskCondition>> lTplsPredictedSDClist =
+                new List<Tuple<ImagesProcessingData, List<SDCdecisionProbability>, SunDiskCondition>>();
 
 
-            List<SunDiskCondition> predictedSDClist = predictedSDC.ConvertAll(sdcInt =>
-            {
-                switch (sdcInt)
-                {
-                    case 4:
-                        return SunDiskCondition.NoSun;
-                        break;
-                    case 1:
-                        return SunDiskCondition.Sun0;
-                        break;
-                    case 2:
-                        return SunDiskCondition.Sun1;
-                        break;
-                    case 3:
-                        return SunDiskCondition.Sun2;
-                        break;
-                    default:
-                        return SunDiskCondition.Defect;
-                }
-            });
+            List<List<double>> SDCdecisionProbabilitiesListDoubles = new List<List<double>>();
+            List<SunDiskCondition> imagesSDCpredicted = SDCpredictorNN.PredictSDC_NN(lStatsProcessing, NNlayersConfig,
+                dvThetaValues, dvMeans, dvRanges, out SDCdecisionProbabilitiesListDoubles);
+            List<List<SDCdecisionProbability>> SDCdecisionProbabilitiesLists =
+                SDCdecisionProbabilitiesListDoubles.ConvertAll(
+                    currSDCdecisionProbabilities =>
+                        currSDCdecisionProbabilities.Select((dProb, idx) => new SDCdecisionProbability()
+                        {
+                            sdc = SunDiskConditionData.MatlabSDCenum(idx + 1),
+                            sdcDecisionProbability = dProb
+                        }).ToList());
+            lTplsPredictedSDClist =
+                lStatsProcessing.Zip(
+                    SDCdecisionProbabilitiesLists.Zip(imagesSDCpredicted,
+                        (lDecProb, sdcPredicted) =>
+                            new Tuple<List<SDCdecisionProbability>, SunDiskCondition>(lDecProb, sdcPredicted)).ToList(),
+                    (ipd, tpl) =>
+                        new Tuple<ImagesProcessingData, List<SDCdecisionProbability>, SunDiskCondition>(ipd, tpl.Item1,
+                            tpl.Item2)).ToList();
 
-            List<Tuple<ImagesProcessingData, SunDiskCondition>> lTplsPredictedSDClist =
-                predictedSDClist.Zip(lStatsProcessing,
-                    (sdc, ipd) => new Tuple<ImagesProcessingData, SunDiskCondition>(ipd, sdc)).ToList();
+
+
+            #region //
+            //foreach (ImagesProcessingData dt in lStatsProcessing)
+            //{
+            //    List<double> currSDCdecisionProbabilities = new List<double>();
+
+            //    SunDiskCondition currSDC = SDCpredictorNN.PredictSDC_NN(dt.grixyrgbStats, dt.concurrentData,
+            //        NNlayersConfig, dvThetaValues, dvMeans, dvRanges, out currSDCdecisionProbabilities);
+
+            //    List<SDCdecisionProbability> currSDCdecisionProbabilitiesList = currSDCdecisionProbabilities.Select((dProb, idx) => new SDCdecisionProbability()
+            //    {
+            //        sdc = SunDiskConditionData.MatlabSDCenum(idx + 1),
+            //        sdcDecisionProbability = dProb
+            //    }).ToList();
+
+            //    lTplsPredictedSDClist.Add(
+            //        new Tuple<ImagesProcessingData, List<SDCdecisionProbability>, SunDiskCondition>(dt,
+            //            currSDCdecisionProbabilitiesList, currSDC));
+            //}
+            #endregion
+
+            #region //
+            //List<int> predictedSDC =
+            //    NNclassificatorPredictor.NNpredict(dmObjectsFeatures, dvThetaValues, NNlayersConfig,
+            //        out lDecisionProbabilities).ToList();
+
+
+            //List<SunDiskCondition> predictedSDClist = predictedSDC.ConvertAll(sdcInt =>
+            //{
+            //    switch (sdcInt)
+            //    {
+            //        case 4:
+            //            return SunDiskCondition.NoSun;
+            //            break;
+            //        case 1:
+            //            return SunDiskCondition.Sun0;
+            //            break;
+            //        case 2:
+            //            return SunDiskCondition.Sun1;
+            //            break;
+            //        case 3:
+            //            return SunDiskCondition.Sun2;
+            //            break;
+            //        default:
+            //            return SunDiskCondition.Defect;
+            //    }
+            //});
+
+            //List<Tuple<ImagesProcessingData, SunDiskCondition>> lTplsPredictedSDClist =
+            //    predictedSDClist.Zip(lStatsProcessing,
+            //        (sdc, ipd) => new Tuple<ImagesProcessingData, SunDiskCondition>(ipd, sdc)).ToList();
+            #endregion
 
             #region output obtained SDC data to log file
 
             string strToShow = "SDC values probabilities: " + Environment.NewLine +
-                "| No Sun | Sun_0  | Sun_1  | Sun_2  | Detected |" + Environment.NewLine;
-            foreach (List<double> lDecisionProbability in lDecisionProbabilities)
+                "|  NoSun  |  Sun0   |  Sun1   |  Sun2   |" + Environment.NewLine;
+            foreach (Tuple<ImagesProcessingData, List<SDCdecisionProbability>, SunDiskCondition> tpl in lTplsPredictedSDClist)
             {
-                strToShow += "| " + lDecisionProbability[3].ToString("F4") +
-                             " | " + lDecisionProbability[0].ToString("F4") +
-                             " | " + lDecisionProbability[1].ToString("F4") +
-                             " | " + lDecisionProbability[2].ToString("F4") + " |" +
-                             predictedSDClist[lDecisionProbabilities.IndexOf(lDecisionProbability)] + "|" +
-                             Environment.NewLine;
+                List<SDCdecisionProbability> currSDCdecisionProbabilitiesList = tpl.Item2;
+                strToShow += "|" +
+                                       String.Format("{0,9}",
+                                           (currSDCdecisionProbabilitiesList.First(
+                                               prob => prob.sdc == SunDiskCondition.NoSun).sdcDecisionProbability * 100.0d)
+                                               .ToString("F2") + "%") + "|" +
+                                       String.Format("{0,9}",
+                                           (currSDCdecisionProbabilitiesList.First(
+                                               prob => prob.sdc == SunDiskCondition.Sun0).sdcDecisionProbability * 100.0d)
+                                               .ToString("F2") + "%") + "|" +
+                                       String.Format("{0,9}",
+                                           (currSDCdecisionProbabilitiesList.First(
+                                               prob => prob.sdc == SunDiskCondition.Sun1).sdcDecisionProbability * 100.0d)
+                                               .ToString("F2") + "%") + "|" +
+                                       String.Format("{0,9}",
+                                           (currSDCdecisionProbabilitiesList.First(
+                                               prob => prob.sdc == SunDiskCondition.Sun2).sdcDecisionProbability * 100.0d)
+                                               .ToString("F2") + "%") + "|" + Environment.NewLine;
             }
             ServiceTools.logToTextFile(errorLogFilename, strToShow, true, false);
 
             #endregion output obtained SDC data to log file
 
+
+            #region filter by SDC value if needed
+
             if (sdcFilter != SunDiskCondition.Undefined)
             {
-                lStatsProcessing = lStatsProcessing.Where((ipd, idx) => predictedSDClist[idx] == sdcFilter).ToList();
+                lStatsProcessing = lStatsProcessing.Where((ipd, idx) => lTplsPredictedSDClist[idx].Item3 == sdcFilter).ToList();
                 Console.WriteLine("Detected " + lStatsProcessing.Count + " images with SDC = " + sdcFilter.ToString());
             }
+
+            #endregion filter by SDC value if needed
 
             #endregion Filter by SDC values predicting it using pre-trained NN parameters
 
@@ -891,12 +959,13 @@ namespace MLsetPerMissionCreationApp
                             concurrentData = ifd.concurrentData,
                             grixyrgbStatsXMLfile = ifd.grixyrgbStatsXMLfile,
                             grixyrgbStats = ifd.grixyrgbStats,
-                            SDCvalue = lTplsPredictedSDClist.Where(tpl => tpl.Item1 == ifd).ElementAt(0).Item2
+                            SDCvalue = lTplsPredictedSDClist.First(tpl => tpl.Item1 == ifd).Item3,
+                            SDCprobabilities = lTplsPredictedSDClist.First(tpl => tpl.Item1 == ifd).Item2
                         });
 
                     lImagesFilteredByAvailableObservedData.AddRange(lImagesCloseToCurrObservedDatum);
                 }
-
+                
                 #endregion filter images by available observed data using DateTimeFilterTolerance
 
                 if (!lImagesFilteredByAvailableObservedData.Any())
@@ -910,8 +979,8 @@ namespace MLsetPerMissionCreationApp
                 #region Сформируем и запишем данные в CSV-файл
                 // Здесь есть данные по наблюдаемому CloudCover
 
-                csvHeader = lImagesFilteredByAvailableObservedData[0].grixyrgbStats.CSVHeader() +
-                               ",SunElevationDeg,SunAzimuthDeg,ObservedTotalCloudCover,ObservedLowerCloudCover,SDC";
+                string csvHeader = lImagesFilteredByAvailableObservedData[0].grixyrgbStats.CSVHeader() +
+                               ",SunElevationDeg,SunAzimuthDeg,ObservedTotalCloudCover,ObservedLowerCloudCover,SDC,SDCprobabilityNoSun,SDCprobabilitySun0,SDCprobabilitySun1,SDCprobabilitySun2";
                 List<string> lCSVoutputData = lImagesFilteredByAvailableObservedData.ConvertAll(ifd =>
                 {
                     // все стат. предикторы - как для SDC
@@ -924,7 +993,15 @@ namespace MLsetPerMissionCreationApp
                              ifd.concurrentData.gps.SunZenithAzimuth().Azimuth.ToString().Replace(",", ".") + "," +
                              ifd.observedCloudCoverData.CloudCoverTotal.ToString() + "," +
                              ifd.observedCloudCoverData.CloudCoverLower.ToString() + "," +
-                             ifd.SDCvalue.ToString();
+                             ifd.SDCvalue.ToString() + "," +
+                             ifd.SDCprobabilities.First(prob => prob.sdc == SunDiskCondition.NoSun)
+                                 .sdcDecisionProbability.ToString().Replace(",", ".") + "," +
+                             ifd.SDCprobabilities.First(prob => prob.sdc == SunDiskCondition.Sun0)
+                                 .sdcDecisionProbability.ToString().Replace(",", ".") + "," +
+                             ifd.SDCprobabilities.First(prob => prob.sdc == SunDiskCondition.Sun1)
+                                 .sdcDecisionProbability.ToString().Replace(",", ".") + "," +
+                             ifd.SDCprobabilities.First(prob => prob.sdc == SunDiskCondition.Sun2)
+                                 .sdcDecisionProbability.ToString().Replace(",", ".");
                     return retVal;
                 });
                 string strToOutputToCSVfile = string.Join(Environment.NewLine, lCSVoutputData);
