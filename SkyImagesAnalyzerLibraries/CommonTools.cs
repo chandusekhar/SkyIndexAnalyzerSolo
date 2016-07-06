@@ -440,6 +440,13 @@ namespace SkyImagesAnalyzerLibraries
 
 
 
+        public static double ParseDouble(string value)
+        {
+            return ParseDouble(value, 0.0d);
+        }
+
+
+
         public static double ParseDouble(string value, double defaultValue = 0.0d)
         {
             double result;

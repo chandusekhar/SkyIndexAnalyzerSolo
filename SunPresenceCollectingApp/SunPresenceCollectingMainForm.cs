@@ -76,10 +76,16 @@ namespace SunPresenceCollectingApp
         private List<ConcurrentData> lConcurrentDataAlreadyRead = null;
 
         #region ANN trained data filenames
-        private string NNconfigFile = "";
-        private string NNtrainedParametersFile = "";
-        private string NormMeansFile = "";
-        private string NormRangeFile = "";
+        private string SDC_NNconfigFile = "";
+        private string SDC_NNtrainedParametersFile = "";
+        private string SDC_NormMeansFile = "";
+        private string SDC_NormRangeFile = "";
+
+        private string TCC_NNconfigFile = "";
+        private string TCC_NNtrainedParametersFile = "";
+        private string TCC_NormMeansFile = "";
+        private string TCC_NormRangeFile = "";
+        private string TCC_ExcludedVarsFile = "";
         #endregion
 
 
@@ -441,57 +447,143 @@ namespace SunPresenceCollectingApp
 
 
 
+            #region ANN parameters files
+
+            #region SDC_NNconfigFile
             // NNconfigFile
-            if (defaultProperties.ContainsKey("NNconfigFile"))
+            if (defaultProperties.ContainsKey("SDC_NNconfigFile"))
             {
-                NNconfigFile = ((string)defaultProperties["NNconfigFile"]);
+                SDC_NNconfigFile = ((string)defaultProperties["SDC_NNconfigFile"]);
             }
             else
             {
-                NNconfigFile = CurDir + Path.DirectorySeparatorChar + "settings" + Path.DirectorySeparatorChar + "NNconfig.csv";
-                defaultProperties.Add("NNconfigFile", NNconfigFile);
+                SDC_NNconfigFile = CurDir + Path.DirectorySeparatorChar + "settings" + Path.DirectorySeparatorChar + "SDC_NNconfig.csv";
+                defaultProperties.Add("SDC_NNconfigFile", SDC_NNconfigFile);
                 bDefaultPropertiesHasBeenUpdated = true;
             }
+            #endregion
 
 
+            #region SDC_NNtrainedParametersFile
             //NNtrainedParametersFile
-            if (defaultProperties.ContainsKey("NNtrainedParametersFile"))
+            if (defaultProperties.ContainsKey("SDC_NNtrainedParametersFile"))
             {
-                NNtrainedParametersFile = ((string)defaultProperties["NNtrainedParametersFile"]);
+                SDC_NNtrainedParametersFile = ((string)defaultProperties["SDC_NNtrainedParametersFile"]);
             }
             else
             {
-                NNtrainedParametersFile = CurDir + Path.DirectorySeparatorChar + "settings" + Path.DirectorySeparatorChar + "NNtrainedParameters.csv";
-                defaultProperties.Add("NNtrainedParametersFile", NNtrainedParametersFile);
+                SDC_NNtrainedParametersFile = CurDir + Path.DirectorySeparatorChar + "settings" + Path.DirectorySeparatorChar + "SDC_NNtrainedParameters.csv";
+                defaultProperties.Add("SDC_NNtrainedParametersFile", SDC_NNtrainedParametersFile);
                 bDefaultPropertiesHasBeenUpdated = true;
             }
+            #endregion
 
 
-
+            #region SDC_NormMeansFile
             // NormMeansFile
-            if (defaultProperties.ContainsKey("NormMeansFile"))
+            if (defaultProperties.ContainsKey("SDC_NormMeansFile"))
             {
-                NormMeansFile = ((string)defaultProperties["NormMeansFile"]);
+                SDC_NormMeansFile = ((string)defaultProperties["SDC_NormMeansFile"]);
             }
             else
             {
-                NormMeansFile = CurDir + Path.DirectorySeparatorChar + "settings" + Path.DirectorySeparatorChar + "NormMeans.csv";
-                defaultProperties.Add("NormMeansFile", NormMeansFile);
+                SDC_NormMeansFile = CurDir + Path.DirectorySeparatorChar + "settings" + Path.DirectorySeparatorChar + "SDC_NormMeans.csv";
+                defaultProperties.Add("SDC_NormMeansFile", SDC_NormMeansFile);
                 bDefaultPropertiesHasBeenUpdated = true;
             }
+            #endregion
 
 
+            #region SDC_NormRangeFile
             // NormRangeFile
-            if (defaultProperties.ContainsKey("NormRangeFile"))
+            if (defaultProperties.ContainsKey("SDC_NormRangeFile"))
             {
-                NormRangeFile = ((string)defaultProperties["NormRangeFile"]);
+                SDC_NormRangeFile = ((string)defaultProperties["SDC_NormRangeFile"]);
             }
             else
             {
-                NormRangeFile = CurDir + Path.DirectorySeparatorChar + "settings" + Path.DirectorySeparatorChar + "NormRange.csv";
-                defaultProperties.Add("NormRangeFile", NormRangeFile);
+                SDC_NormRangeFile = CurDir + Path.DirectorySeparatorChar + "settings" + Path.DirectorySeparatorChar + "SDC_NormRange.csv";
+                defaultProperties.Add("SDC_NormRangeFile", SDC_NormRangeFile);
                 bDefaultPropertiesHasBeenUpdated = true;
             }
+            #endregion
+
+
+            #region TCC_NNconfigFile
+            if (defaultProperties.ContainsKey("TCC_NNconfigFile"))
+            {
+                TCC_NNconfigFile = ((string)defaultProperties["TCC_NNconfigFile"]);
+            }
+            else
+            {
+                TCC_NNconfigFile = CurDir + Path.DirectorySeparatorChar + "settings" + Path.DirectorySeparatorChar + "TCC_NNconfig.csv";
+                defaultProperties.Add("TCC_NNconfigFile", TCC_NNconfigFile);
+                bDefaultPropertiesHasBeenUpdated = true;
+            }
+            //private string TCC_NNconfigFile = "";
+            #endregion
+
+
+            #region TCC_NNtrainedParametersFile
+            if (defaultProperties.ContainsKey("TCC_NNtrainedParametersFile"))
+            {
+                TCC_NNtrainedParametersFile = ((string)defaultProperties["TCC_NNtrainedParametersFile"]);
+            }
+            else
+            {
+                TCC_NNtrainedParametersFile = CurDir + Path.DirectorySeparatorChar + "settings" + Path.DirectorySeparatorChar + "TCC_NNtrainedParameters.csv";
+                defaultProperties.Add("TCC_NNtrainedParametersFile", TCC_NNtrainedParametersFile);
+                bDefaultPropertiesHasBeenUpdated = true;
+            }
+            //private string TCC_NNtrainedParametersFile = "";
+            #endregion
+
+
+            #region TCC_NormMeansFile
+            if (defaultProperties.ContainsKey("TCC_NormMeansFile"))
+            {
+                TCC_NormMeansFile = ((string)defaultProperties["TCC_NormMeansFile"]);
+            }
+            else
+            {
+                TCC_NormMeansFile = CurDir + Path.DirectorySeparatorChar + "settings" + Path.DirectorySeparatorChar + "TCC_NormMeans.csv";
+                defaultProperties.Add("TCC_NormMeansFile", TCC_NormMeansFile);
+                bDefaultPropertiesHasBeenUpdated = true;
+            }
+            //private string TCC_NormMeansFile = "";
+            #endregion
+
+
+            #region TCC_NormRangeFile
+            if (defaultProperties.ContainsKey("TCC_NormRangeFile"))
+            {
+                TCC_NormRangeFile = ((string)defaultProperties["TCC_NormRangeFile"]);
+            }
+            else
+            {
+                TCC_NormRangeFile = CurDir + Path.DirectorySeparatorChar + "settings" + Path.DirectorySeparatorChar + "TCC_NormRange.csv";
+                defaultProperties.Add("TCC_NormRangeFile", TCC_NormRangeFile);
+                bDefaultPropertiesHasBeenUpdated = true;
+            }
+            //private string TCC_NormRangeFile = "";
+            #endregion
+
+
+            #region TCC_ExcludedVarsFile
+            if (defaultProperties.ContainsKey("TCC_ExcludedVarsFile"))
+            {
+                TCC_ExcludedVarsFile = ((string)defaultProperties["TCC_ExcludedVarsFile"]);
+            }
+            else
+            {
+                TCC_ExcludedVarsFile = CurDir + Path.DirectorySeparatorChar + "settings" + Path.DirectorySeparatorChar + "TCC_ExcludedVars.csv";
+                defaultProperties.Add("TCC_ExcludedVarsFile", TCC_ExcludedVarsFile);
+                bDefaultPropertiesHasBeenUpdated = true;
+            }
+            //private string TCC_ExcludedVarsFile = "";
+            #endregion
+
+            #endregion
 
 
 
@@ -1190,9 +1282,9 @@ namespace SunPresenceCollectingApp
                     ThreadSafeOperations.SetText(lblGrIxMedianValue, "---", false);
                     ThreadSafeOperations.SetText(lblGrIxPerc5Value, "---", false);
                 }
-                
+
             }
-            
+
             return bExistingDataLoaded;
         }
 
@@ -1956,7 +2048,7 @@ namespace SunPresenceCollectingApp
                             retVal = new ConcurrentData(dict);
 
                             #region контроль корректности информации о GPS в файле
-                            GPSdata gpsOfGPSstring = new GPSdata((string) dict["GPSdata"],
+                            GPSdata gpsOfGPSstring = new GPSdata((string)dict["GPSdata"],
                                 GPSdatasources.CloudCamArduinoGPS, retVal.datetimeUTC.Date);
                             if (!gpsOfGPSstring.validGPSdata)
                             {
@@ -2175,7 +2267,7 @@ namespace SunPresenceCollectingApp
             //        lDataSkyImagesMP5andSDCdata[0].sdcData.CSVHeader() + Environment.NewLine, false, false);
             //    ServiceTools.logToTextFile(outPath + "GrIxMedianP5Stats.csv", csvStringForFile, true, false);
 
-                  #region // zip it with concurrent data and write to one more file
+            #region // zip it with concurrent data and write to one more file
 
             //    if (bIncludeGPSandSunAltitudeData && lImagesConcurrentData.Any())
             //    {
@@ -2218,9 +2310,9 @@ namespace SunPresenceCollectingApp
             //        ServiceTools.logToTextFile(outPath + "GrIxMedianP5StatsWithSunPositions.csv", csvStringForFile, true, false);
             //    }
 
-                  #endregion // zip it with concurrent data and write to one more file
+            #endregion // zip it with concurrent data and write to one more file
             //}
-            
+
             #endregion // zip SDC data with GrIx MP5 data -> write to file // MP5 is obsolete
 
 
@@ -3414,7 +3506,7 @@ namespace SunPresenceCollectingApp
 
             currImageSunDiskConditionData = null;
 
-            if (!File.Exists(NNconfigFile) || !File.Exists(NNtrainedParametersFile) || !File.Exists(NormMeansFile) || !File.Exists(NormRangeFile))
+            if (!File.Exists(this.SDC_NNconfigFile) || !File.Exists(this.SDC_NNtrainedParametersFile) || !File.Exists(SDC_NormMeansFile) || !File.Exists(SDC_NormRangeFile))
             {
                 theLogWindow = ServiceTools.LogAText(theLogWindow,
                     "couldn`t find at least one of pre-calculated NN parameters file. Will not proceed");
@@ -3609,30 +3701,46 @@ namespace SunPresenceCollectingApp
                 ConventionalTransitions.ImageGrIxYRGBstatsDataFileName(currImageFInfo.FullName,
                     imageYRGBstatsXMLdataFilesDirectory);
             string CurDir = Directory.GetCurrentDirectory();
-            string SDC_NNconfigFile = NNconfigFile; // CurDir + Path.DirectorySeparatorChar + "settings" + Path.DirectorySeparatorChar + "NNconfig.csv";
-            string SDC_NNtrainedParametersFile = NNtrainedParametersFile; //CurDir + Path.DirectorySeparatorChar + "settings" + Path.DirectorySeparatorChar + "NNtrainedParameters.csv";
+            string SDC_NNconfigFile = this.SDC_NNconfigFile; // CurDir + Path.DirectorySeparatorChar + "settings" + Path.DirectorySeparatorChar + "NNconfig.csv";
+            string SDC_NNtrainedParametersFile = this.SDC_NNtrainedParametersFile; //CurDir + Path.DirectorySeparatorChar + "settings" + Path.DirectorySeparatorChar + "NNtrainedParameters.csv";
             //string NormMeansFile = ; // CurDir + Path.DirectorySeparatorChar + "settings" + Path.DirectorySeparatorChar + "NormMeans.csv";
             //string NormRangeFile = CurDir + Path.DirectorySeparatorChar + "settings" + Path.DirectorySeparatorChar + "NormRange.csv";
-            List<double> lDecisionProbabilities = new List<double>();
+            List<double> sdcDecisionProbabilities = new List<double>();
             SunDiskCondition sdcPredicted = SDCpredictorNN.CalcSDC_NN(imageGrIxYRGBDataFileName,
-                nearestConcurrentDataFilename, SDC_NNconfigFile, SDC_NNtrainedParametersFile, NormMeansFile,
-                NormRangeFile, out lDecisionProbabilities);
+                nearestConcurrentDataFilename, SDC_NNconfigFile, SDC_NNtrainedParametersFile, SDC_NormMeansFile,
+                SDC_NormRangeFile, out sdcDecisionProbabilities);
+            List<SDCdecisionProbability> lSDCdecisionsProbabilities =
+                sdcDecisionProbabilities.Select((dProb, idx) => new SDCdecisionProbability()
+                {
+                    sdc = SunDiskConditionData.MatlabSDCenum(idx + 1),
+                    sdcDecisionProbability = dProb
+                }).ToList();
 
 
 
 
-            string strToShow = "SDC values probabilities: " + Environment.NewLine +
-                "| No Sun | Sun_0  | Sun_1  | Sun_2  |" + Environment.NewLine;
 
-            strToShow += "| " + lDecisionProbabilities[3].ToString("F4") +
-                             " | " + lDecisionProbabilities[0].ToString("F4") +
-                             " | " + lDecisionProbabilities[1].ToString("F4") +
-                             " | " + lDecisionProbabilities[2].ToString("F4") + " |";
+            string strToShowSDCs = Environment.NewLine +
+                                   "|  NoSun  |  Sun0   |  Sun1   |  Sun2   |" + Environment.NewLine + "" +
+                                   "|" +
+                                   String.Format("{0,9}",
+                                       (lSDCdecisionsProbabilities.First(
+                                           prob => prob.sdc == SunDiskCondition.NoSun).sdcDecisionProbability * 100.0d)
+                                           .ToString("F2") + "%") + "|" +
+                                   String.Format("{0,9}",
+                                       (lSDCdecisionsProbabilities.First(
+                                           prob => prob.sdc == SunDiskCondition.Sun0).sdcDecisionProbability * 100.0d)
+                                           .ToString("F2") + "%") + "|" +
+                                   String.Format("{0,9}",
+                                       (lSDCdecisionsProbabilities.First(
+                                           prob => prob.sdc == SunDiskCondition.Sun1).sdcDecisionProbability * 100.0d)
+                                           .ToString("F2") + "%") + "|" +
+                                   String.Format("{0,9}",
+                                       (lSDCdecisionsProbabilities.First(
+                                           prob => prob.sdc == SunDiskCondition.Sun2).sdcDecisionProbability * 100.0d)
+                                           .ToString("F2") + "%") + "|";
 
-            theLogWindow = ServiceTools.LogAText(theLogWindow, strToShow);
-
-            theLogWindow = ServiceTools.LogAText(theLogWindow,
-                Environment.NewLine + Environment.NewLine + "=== detected SDC: " + sdcPredicted + " ===");
+            theLogWindow = ServiceTools.LogAText(theLogWindow, strToShowSDCs);
 
 
             switch (sdcPredicted)
@@ -3670,9 +3778,288 @@ namespace SunPresenceCollectingApp
         }
 
 
+
         #endregion
 
-        
+        private async void btnPredictTCC_Click(object sender, EventArgs e)
+        {
+            if (!File.Exists(currImageFInfo.FullName))
+            {
+                theLogWindow = ServiceTools.LogAText(theLogWindow,
+                    "Image file could not be found. Will not proceed");
+                return;
+            }
+
+            currImageSunDiskConditionData = null;
+
+            if (!File.Exists(TCC_NNconfigFile) || !File.Exists(TCC_NNtrainedParametersFile) ||
+                !File.Exists(TCC_NormMeansFile) || !File.Exists(TCC_NormRangeFile)
+                || (!File.Exists(TCC_ExcludedVarsFile)))
+            {
+                theLogWindow = ServiceTools.LogAText(theLogWindow,
+                    "couldn`t find at least one of pre-calculated NN parameters file for TCC prediction. Will not proceed");
+                return;
+            }
+
+            // read or calculate stats data for the image
+            // trying to find stats XML file
+            SkyImageIndexesStatsData currImageStatsData = null;
+            string imageGrIxYRGBDataFileName = "";
+            ConcurrentData nearestConcurrentData = null;
+
+            if (Directory.Exists(imageYRGBstatsXMLdataFilesDirectory))
+            {
+                List<string> foundXMLfiles = Directory.EnumerateFiles(imageYRGBstatsXMLdataFilesDirectory,
+                    ConventionalTransitions.ImageGrIxYRGBstatsDataFileName(currImageFInfo.FullName, "", false),
+                    SearchOption.AllDirectories).ToList();
+                if (foundXMLfiles.Any())
+                {
+                    // возьмем первый попавшийся
+                    imageGrIxYRGBDataFileName = foundXMLfiles[0];
+
+                    currImageStatsData =
+                        (SkyImageIndexesStatsData)
+                            ServiceTools.ReadObjectFromXML(foundXMLfiles[0], typeof(SkyImageIndexesStatsData));
+                }
+            }
+
+
+            #region calculate stats if needed
+
+            if (currImageStatsData == null)
+            {
+                BackgroundWorker bgwImageStatsCalculation = new BackgroundWorker();
+                bgwImageStatsCalculation.WorkerSupportsCancellation = false;
+                bgwImageStatsCalculation.WorkerReportsProgress = true;
+
+                #region bgwImageStatsCalculation implementation
+
+                #region DoWork
+                bgwImageStatsCalculation.DoWork += (bgwSender, bgwEvArgs) =>
+                {
+                    BackgroundWorker selfWorker = bgwSender as BackgroundWorker;
+                    FileInfo bgwCurrImageFInfo = ((object[])bgwEvArgs.Argument)[0] as FileInfo;
+
+                    Dictionary<string, object> optionalParameters = new Dictionary<string, object>();
+                    optionalParameters.Add("ImagesRoundMasksXMLfilesMappingList", ImagesRoundMasksXMLfilesMappingList);
+                    Stopwatch sw = new Stopwatch();
+                    sw.Start();
+                    optionalParameters.Add("Stopwatch", sw);
+                    optionalParameters.Add("logFileName", errorLogFilename);
+                    optionalParameters.Add("bForceCalculateionsWithoutMKL", bForceCalculateionsWithoutMKL);
+
+
+                    ImageStatsDataCalculationResult currImageProcessingResult =
+                        ImageProcessing.CalculateImageStatsData(bgwCurrImageFInfo.FullName, optionalParameters);
+
+
+                    bgwEvArgs.Result = new object[] { currImageProcessingResult };
+
+                };
+
+                #endregion DoWork
+
+
+                #region ProgressChanged
+
+                bgwImageStatsCalculation.ProgressChanged += (bgwProgressChangedSender, bgwProgressChangedArgs) =>
+                {
+                    ThreadSafeOperations.SetText(lblCalculationProgressPercentage,
+                        "read progress: " + bgwProgressChangedArgs.ProgressPercentage, false);
+                };
+
+                #endregion ProgressChanged
+
+
+                #region RunWorkerCompleted
+                bgwImageStatsCalculation.RunWorkerCompleted += (bgwCompletedSender, bgwCompletedEvArgs) =>
+                {
+                    if (bgwCompletedEvArgs == null)
+                    {
+                        theLogWindow = ServiceTools.LogAText(theLogWindow, "ERROR obtaining stats for image. Will not proceed.");
+                        return;
+                    }
+
+                    if (bgwCompletedEvArgs.Result == null)
+                    {
+                        theLogWindow = ServiceTools.LogAText(theLogWindow, "ERROR obtaining stats for image. Will not proceed.");
+                        return;
+                    }
+
+                    ImageStatsDataCalculationResult currImageProcessingResult =
+                        ((object[])bgwCompletedEvArgs.Result)[0] as ImageStatsDataCalculationResult;
+
+                    currImageProcessingResult.stopwatch.Stop();
+
+                    if (currImageProcessingResult.calcResult)
+                    {
+                        string currentFullFileName = currImageProcessingResult.imgFilename;
+                        string strPerfCountersData = currentFullFileName + ";" +
+                                                     currImageProcessingResult.stopwatch.ElapsedMilliseconds + ";" +
+                                                     (currImageProcessingResult.procTotalProcessorTimeEnd -
+                                                      currImageProcessingResult.procTotalProcessorTimeStart)
+                                                         .TotalMilliseconds +
+                                                     Environment.NewLine;
+                        ServiceTools.logToTextFile(strPerformanceCountersStatsFile, strPerfCountersData, true);
+
+
+
+                        /// TODO: Исправить. Сейчас XML-файлы раскладываются в поддиректории согласно расположению файлов изображений-источников
+                        string strImageGrIxMedianP5DataFileName =
+                            ConventionalTransitions.ImageGrIxYRGBstatsDataFileName(currentFullFileName,
+                                imageYRGBstatsXMLdataFilesDirectory);
+                        ServiceTools.WriteObjectToXML(currImageProcessingResult.mp5Result,
+                            strImageGrIxMedianP5DataFileName);
+
+                        string strImageGrIxYRGBDataFileName =
+                            ConventionalTransitions.ImageGrIxYRGBstatsDataFileName(currentFullFileName,
+                                imageYRGBstatsXMLdataFilesDirectory);
+                        ServiceTools.WriteObjectToXML(currImageProcessingResult.grixyrgbStatsData,
+                            strImageGrIxYRGBDataFileName);
+
+                        currImageStatsData = currImageProcessingResult.grixyrgbStatsData;
+
+                        theLogWindow = ServiceTools.LogAText(theLogWindow, "finished processing file " + Environment.NewLine + currentFullFileName);
+
+                    }
+                    else
+                    {
+                        #region report error
+
+                        string errorStr = "Error processing file: " + Environment.NewLine + currImageProcessingResult.imgFilename +
+                            Environment.NewLine + "message: " +
+                            ServiceTools.GetExceptionMessages(currImageProcessingResult.exception) + Environment.NewLine +
+                            ServiceTools.CurrentCodeLineDescription() + Environment.NewLine + "Stack trace: " + Environment.NewLine +
+                            Environment.StackTrace + Environment.NewLine + Environment.NewLine;
+
+                        ServiceTools.logToTextFile(errorLogFilename, errorStr, true, true);
+                        theLogWindow = ServiceTools.LogAText(theLogWindow, errorStr);
+
+                        return;
+
+                        #endregion report error
+                    }
+                };
+                #endregion RunWorkerCompleted
+
+
+
+                #endregion bgwImageStatsCalculation implementation
+
+                theLogWindow = ServiceTools.LogAText(theLogWindow,
+                    "obtaining stats data for image " + currImageFInfo.FullName + Environment.NewLine +
+                    "Please wait while the process finishes...");
+
+                object[] bgwImageStatsCalculationArgs = new object[] { currImageFInfo };
+
+                bgwImageStatsCalculation.RunWorkerAsync(bgwImageStatsCalculationArgs);
+
+                while (bgwImageStatsCalculation.IsBusy)
+                {
+                    Application.DoEvents();
+                    Thread.Sleep(0);
+                }
+            }
+
+            #endregion calculate stats if needed
+
+            // теперь currImageStatsData должно быть прочитано или просчитано
+            // осталось найти сопутствующие данные, вычислить склонение и азимут солнца
+            // составить строку данных
+            // и применить к ней модель
+
+            #region search for concurrent data
+
+            string nearestConcurrentDataFilename = "";
+            try
+            {
+                nearestConcurrentDataFilename = await CommonTools.FindConcurrentDataXMLfileAsync(currImageFInfo.FullName,
+                    ConcurrentDataXMLfilesDirectory, true, ServiceTools.DatetimeExtractionMethod.Filename);
+                Dictionary<string, object> currDict = ServiceTools.ReadDictionaryFromXML(nearestConcurrentDataFilename);
+                currDict.Add("XMLfileName", Path.GetFileName(nearestConcurrentDataFilename));
+                nearestConcurrentData = new ConcurrentData(currDict);
+            }
+            catch (Exception ex)
+            {
+                theLogWindow = ServiceTools.LogAText(theLogWindow, "ERROR: " + ex.Message);
+                return;
+            }
+
+            #endregion search for concurrent data
+
+
+            //string imageGrIxYRGBDataFileName =
+            //    ConventionalTransitions.ImageGrIxYRGBstatsDataFileName(currImageFInfo.FullName,
+            //        imageYRGBstatsXMLdataFilesDirectory);
+
+            List<double> sdcDecisionProbabilities = new List<double>();
+
+            SunDiskCondition sdcPredicted = SDCpredictorNN.CalcSDC_NN(imageGrIxYRGBDataFileName,
+                nearestConcurrentDataFilename, SDC_NNconfigFile, SDC_NNtrainedParametersFile, SDC_NormMeansFile,
+                SDC_NormRangeFile, out sdcDecisionProbabilities);
+
+            List<SDCdecisionProbability> lSDCdecisionsProbabilities =
+                sdcDecisionProbabilities.Select((dProb, idx) => new SDCdecisionProbability()
+                {
+                    sdc = SunDiskConditionData.MatlabSDCenum(idx + 1),
+                    sdcDecisionProbability = dProb
+                }).ToList();
+
+            List<double> TCCdecisionProbabilities = new List<double>();
+            int TCCpredicted = TCCpredictorNN.CalcTCC_NN(imageGrIxYRGBDataFileName,
+                nearestConcurrentDataFilename, SDC_NNconfigFile, SDC_NNtrainedParametersFile, SDC_NormMeansFile,
+                SDC_NormRangeFile, TCC_NNconfigFile, TCC_NNtrainedParametersFile, TCC_NormMeansFile, TCC_NormRangeFile,
+                TCC_ExcludedVarsFile, out TCCdecisionProbabilities);
+
+
+
+
+
+            if (theLogWindow != null)
+            {
+                string strToShow = Environment.NewLine +
+                                       "|  NoSun  |  Sun0   |  Sun1   |  Sun2   |" + Environment.NewLine + "" +
+                                       "|" +
+                                       String.Format("{0,9}",
+                                           (lSDCdecisionsProbabilities.First(
+                                               prob => prob.sdc == SunDiskCondition.NoSun).sdcDecisionProbability * 100.0d)
+                                               .ToString("F2") + "%") + "|" +
+                                       String.Format("{0,9}",
+                                           (lSDCdecisionsProbabilities.First(
+                                               prob => prob.sdc == SunDiskCondition.Sun0).sdcDecisionProbability * 100.0d)
+                                               .ToString("F2") + "%") + "|" +
+                                       String.Format("{0,9}",
+                                           (lSDCdecisionsProbabilities.First(
+                                               prob => prob.sdc == SunDiskCondition.Sun1).sdcDecisionProbability * 100.0d)
+                                               .ToString("F2") + "%") + "|" +
+                                       String.Format("{0,9}",
+                                           (lSDCdecisionsProbabilities.First(
+                                               prob => prob.sdc == SunDiskCondition.Sun2).sdcDecisionProbability * 100.0d)
+                                               .ToString("F2") + "%") + "|";
+
+
+                List<string> TCCvalues = new List<string>();
+                for (int i = 0; i < 9; i++) { TCCvalues.Add(i.ToString()); }
+
+
+                strToShow += Environment.NewLine + Environment.NewLine +
+                            "|   " + string.Join("   |   ", TCCvalues) + "   |" + Environment.NewLine;
+                strToShow += "|" +
+                                 string.Join("|",
+                                     TCCdecisionProbabilities.ConvertAll(
+                                         dProb => String.Format("{0,6}", (dProb*100.0d).ToString("F2")) + "%")) + "|";
+
+                theLogWindow = ServiceTools.LogAText(theLogWindow, strToShow);
+            }
+
+
+            ThreadSafeOperations.SetText(lblGrIxMedianTitle, "SDC predicted:", false);
+            ThreadSafeOperations.SetText(lblGrIxPerc5Title, "TCC predicted:", false);
+            ThreadSafeOperations.SetText(lblGrIxMedianValue, sdcPredicted.ToString(), false);
+            ThreadSafeOperations.SetText(lblGrIxPerc5Value, TCCpredicted.ToString() + "(/8)", false);
+
+
+        }
     }
 
 }

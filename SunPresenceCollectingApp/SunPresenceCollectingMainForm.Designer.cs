@@ -107,6 +107,7 @@
             this.btnProperties = new System.Windows.Forms.Button();
             this.circBgwProcessingImage = new MRG.Controls.UI.LoadingCircle();
             this.lblCalculationProgressPercentage = new System.Windows.Forms.Label();
+            this.btnPredictTCC = new System.Windows.Forms.Button();
             this.tableLayoutPanel1.SuspendLayout();
             this.tabControl1.SuspendLayout();
             this.tabSunDiskCondition.SuspendLayout();
@@ -183,9 +184,12 @@
             // 
             // tableLayoutPanel6
             // 
-            this.tableLayoutPanel6.ColumnCount = 4;
+            this.tableLayoutPanel6.ColumnCount = 7;
             this.tableLayoutPanel6.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50F));
             this.tableLayoutPanel6.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50F));
+            this.tableLayoutPanel6.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 60F));
+            this.tableLayoutPanel6.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 60F));
+            this.tableLayoutPanel6.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 60F));
             this.tableLayoutPanel6.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 60F));
             this.tableLayoutPanel6.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 63F));
             this.tableLayoutPanel6.Controls.Add(this.currImagePictureBox, 0, 3);
@@ -194,7 +198,8 @@
             this.tableLayoutPanel6.Controls.Add(this.MedianPerc5DataTable, 1, 2);
             this.tableLayoutPanel6.Controls.Add(this.cbCalculateGrIxStatsOnline, 0, 1);
             this.tableLayoutPanel6.Controls.Add(this.btnSwitchModes, 1, 1);
-            this.tableLayoutPanel6.Controls.Add(this.btnPredictSDC, 2, 1);
+            this.tableLayoutPanel6.Controls.Add(this.btnPredictSDC, 5, 1);
+            this.tableLayoutPanel6.Controls.Add(this.btnPredictTCC, 2, 1);
             this.tableLayoutPanel6.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tableLayoutPanel6.Location = new System.Drawing.Point(3, 2);
             this.tableLayoutPanel6.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
@@ -213,7 +218,7 @@
             // currImagePictureBox
             // 
             this.currImagePictureBox.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.tableLayoutPanel6.SetColumnSpan(this.currImagePictureBox, 4);
+            this.tableLayoutPanel6.SetColumnSpan(this.currImagePictureBox, 7);
             this.currImagePictureBox.Dock = System.Windows.Forms.DockStyle.Fill;
             this.currImagePictureBox.Location = new System.Drawing.Point(3, 222);
             this.currImagePictureBox.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
@@ -226,7 +231,7 @@
             // lblImageTitle
             // 
             this.lblImageTitle.AutoSize = true;
-            this.tableLayoutPanel6.SetColumnSpan(this.lblImageTitle, 4);
+            this.tableLayoutPanel6.SetColumnSpan(this.lblImageTitle, 7);
             this.lblImageTitle.Dock = System.Windows.Forms.DockStyle.Fill;
             this.lblImageTitle.Font = new System.Drawing.Font("Microsoft Sans Serif", 10.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lblImageTitle.Location = new System.Drawing.Point(3, 0);
@@ -254,7 +259,7 @@
             this.tableLayoutPanel2.Name = "tableLayoutPanel2";
             this.tableLayoutPanel2.RowCount = 1;
             this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            this.tableLayoutPanel2.Size = new System.Drawing.Size(500, 96);
+            this.tableLayoutPanel2.Size = new System.Drawing.Size(410, 96);
             this.tableLayoutPanel2.TabIndex = 3;
             // 
             // btnMarkNoSun
@@ -267,7 +272,7 @@
             this.btnMarkNoSun.Location = new System.Drawing.Point(3, 2);
             this.btnMarkNoSun.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.btnMarkNoSun.Name = "btnMarkNoSun";
-            this.btnMarkNoSun.Size = new System.Drawing.Size(94, 92);
+            this.btnMarkNoSun.Size = new System.Drawing.Size(76, 92);
             this.btnMarkNoSun.TabIndex = 0;
             this.btnMarkNoSun.UseVisualStyleBackColor = false;
             this.btnMarkNoSun.Click += new System.EventHandler(this.MarkSunCondition_Click);
@@ -279,10 +284,10 @@
             this.btnMarkSun0.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Zoom;
             this.btnMarkSun0.Dock = System.Windows.Forms.DockStyle.Fill;
             this.btnMarkSun0.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnMarkSun0.Location = new System.Drawing.Point(103, 2);
+            this.btnMarkSun0.Location = new System.Drawing.Point(85, 2);
             this.btnMarkSun0.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.btnMarkSun0.Name = "btnMarkSun0";
-            this.btnMarkSun0.Size = new System.Drawing.Size(94, 92);
+            this.btnMarkSun0.Size = new System.Drawing.Size(76, 92);
             this.btnMarkSun0.TabIndex = 1;
             this.btnMarkSun0.UseVisualStyleBackColor = false;
             this.btnMarkSun0.Click += new System.EventHandler(this.MarkSunCondition_Click);
@@ -294,10 +299,10 @@
             this.btnMarkSun1.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Zoom;
             this.btnMarkSun1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.btnMarkSun1.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnMarkSun1.Location = new System.Drawing.Point(203, 2);
+            this.btnMarkSun1.Location = new System.Drawing.Point(167, 2);
             this.btnMarkSun1.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.btnMarkSun1.Name = "btnMarkSun1";
-            this.btnMarkSun1.Size = new System.Drawing.Size(94, 92);
+            this.btnMarkSun1.Size = new System.Drawing.Size(76, 92);
             this.btnMarkSun1.TabIndex = 2;
             this.btnMarkSun1.UseVisualStyleBackColor = false;
             this.btnMarkSun1.Click += new System.EventHandler(this.MarkSunCondition_Click);
@@ -309,10 +314,10 @@
             this.btnMarkSun2.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Zoom;
             this.btnMarkSun2.Dock = System.Windows.Forms.DockStyle.Fill;
             this.btnMarkSun2.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnMarkSun2.Location = new System.Drawing.Point(303, 2);
+            this.btnMarkSun2.Location = new System.Drawing.Point(249, 2);
             this.btnMarkSun2.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.btnMarkSun2.Name = "btnMarkSun2";
-            this.btnMarkSun2.Size = new System.Drawing.Size(94, 92);
+            this.btnMarkSun2.Size = new System.Drawing.Size(76, 92);
             this.btnMarkSun2.TabIndex = 3;
             this.btnMarkSun2.UseVisualStyleBackColor = false;
             this.btnMarkSun2.Click += new System.EventHandler(this.MarkSunCondition_Click);
@@ -324,10 +329,10 @@
             this.btnMarkDefect.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Zoom;
             this.btnMarkDefect.Dock = System.Windows.Forms.DockStyle.Fill;
             this.btnMarkDefect.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnMarkDefect.Location = new System.Drawing.Point(403, 2);
+            this.btnMarkDefect.Location = new System.Drawing.Point(331, 2);
             this.btnMarkDefect.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.btnMarkDefect.Name = "btnMarkDefect";
-            this.btnMarkDefect.Size = new System.Drawing.Size(94, 92);
+            this.btnMarkDefect.Size = new System.Drawing.Size(76, 92);
             this.btnMarkDefect.TabIndex = 4;
             this.btnMarkDefect.UseVisualStyleBackColor = false;
             this.btnMarkDefect.Click += new System.EventHandler(this.MarkSunCondition_Click);
@@ -335,7 +340,7 @@
             // MedianPerc5DataTable
             // 
             this.MedianPerc5DataTable.ColumnCount = 2;
-            this.tableLayoutPanel6.SetColumnSpan(this.MedianPerc5DataTable, 3);
+            this.tableLayoutPanel6.SetColumnSpan(this.MedianPerc5DataTable, 6);
             this.MedianPerc5DataTable.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 35.4251F));
             this.MedianPerc5DataTable.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 64.5749F));
             this.MedianPerc5DataTable.Controls.Add(this.lblGrIxMedianTitle, 0, 0);
@@ -343,13 +348,13 @@
             this.MedianPerc5DataTable.Controls.Add(this.lblGrIxMedianValue, 1, 0);
             this.MedianPerc5DataTable.Controls.Add(this.lblGrIxPerc5Value, 1, 1);
             this.MedianPerc5DataTable.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.MedianPerc5DataTable.Location = new System.Drawing.Point(509, 122);
+            this.MedianPerc5DataTable.Location = new System.Drawing.Point(419, 122);
             this.MedianPerc5DataTable.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.MedianPerc5DataTable.Name = "MedianPerc5DataTable";
             this.MedianPerc5DataTable.RowCount = 2;
             this.MedianPerc5DataTable.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 50F));
             this.MedianPerc5DataTable.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 50F));
-            this.MedianPerc5DataTable.Size = new System.Drawing.Size(623, 96);
+            this.MedianPerc5DataTable.Size = new System.Drawing.Size(713, 96);
             this.MedianPerc5DataTable.TabIndex = 4;
             // 
             // lblGrIxMedianTitle
@@ -360,7 +365,7 @@
             this.lblGrIxMedianTitle.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lblGrIxMedianTitle.Location = new System.Drawing.Point(3, 0);
             this.lblGrIxMedianTitle.Name = "lblGrIxMedianTitle";
-            this.lblGrIxMedianTitle.Size = new System.Drawing.Size(214, 48);
+            this.lblGrIxMedianTitle.Size = new System.Drawing.Size(246, 48);
             this.lblGrIxMedianTitle.TabIndex = 0;
             this.lblGrIxMedianTitle.Text = "GrIx median value";
             this.lblGrIxMedianTitle.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
@@ -373,7 +378,7 @@
             this.lblGrIxPerc5Title.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lblGrIxPerc5Title.Location = new System.Drawing.Point(3, 48);
             this.lblGrIxPerc5Title.Name = "lblGrIxPerc5Title";
-            this.lblGrIxPerc5Title.Size = new System.Drawing.Size(214, 48);
+            this.lblGrIxPerc5Title.Size = new System.Drawing.Size(246, 48);
             this.lblGrIxPerc5Title.TabIndex = 1;
             this.lblGrIxPerc5Title.Text = "GrIx perc(5) value";
             this.lblGrIxPerc5Title.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
@@ -384,9 +389,9 @@
             this.lblGrIxMedianValue.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.lblGrIxMedianValue.Dock = System.Windows.Forms.DockStyle.Fill;
             this.lblGrIxMedianValue.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lblGrIxMedianValue.Location = new System.Drawing.Point(223, 0);
+            this.lblGrIxMedianValue.Location = new System.Drawing.Point(255, 0);
             this.lblGrIxMedianValue.Name = "lblGrIxMedianValue";
-            this.lblGrIxMedianValue.Size = new System.Drawing.Size(397, 48);
+            this.lblGrIxMedianValue.Size = new System.Drawing.Size(455, 48);
             this.lblGrIxMedianValue.TabIndex = 2;
             this.lblGrIxMedianValue.Text = "---";
             this.lblGrIxMedianValue.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
@@ -397,9 +402,9 @@
             this.lblGrIxPerc5Value.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.lblGrIxPerc5Value.Dock = System.Windows.Forms.DockStyle.Fill;
             this.lblGrIxPerc5Value.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lblGrIxPerc5Value.Location = new System.Drawing.Point(223, 48);
+            this.lblGrIxPerc5Value.Location = new System.Drawing.Point(255, 48);
             this.lblGrIxPerc5Value.Name = "lblGrIxPerc5Value";
-            this.lblGrIxPerc5Value.Size = new System.Drawing.Size(397, 48);
+            this.lblGrIxPerc5Value.Size = new System.Drawing.Size(455, 48);
             this.lblGrIxPerc5Value.TabIndex = 3;
             this.lblGrIxPerc5Value.Text = "---";
             this.lblGrIxPerc5Value.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
@@ -412,7 +417,7 @@
             this.cbCalculateGrIxStatsOnline.Location = new System.Drawing.Point(3, 62);
             this.cbCalculateGrIxStatsOnline.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.cbCalculateGrIxStatsOnline.Name = "cbCalculateGrIxStatsOnline";
-            this.cbCalculateGrIxStatsOnline.Size = new System.Drawing.Size(500, 56);
+            this.cbCalculateGrIxStatsOnline.Size = new System.Drawing.Size(410, 56);
             this.cbCalculateGrIxStatsOnline.TabIndex = 6;
             this.cbCalculateGrIxStatsOnline.Text = "Попутно обсчитывать статистику полей";
             this.cbCalculateGrIxStatsOnline.UseVisualStyleBackColor = true;
@@ -424,10 +429,10 @@
             this.btnSwitchModes.Dock = System.Windows.Forms.DockStyle.Fill;
             this.btnSwitchModes.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnSwitchModes.Font = new System.Drawing.Font("Microsoft Sans Serif", 10.2F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnSwitchModes.Location = new System.Drawing.Point(509, 62);
+            this.btnSwitchModes.Location = new System.Drawing.Point(419, 62);
             this.btnSwitchModes.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.btnSwitchModes.Name = "btnSwitchModes";
-            this.btnSwitchModes.Size = new System.Drawing.Size(500, 56);
+            this.btnSwitchModes.Size = new System.Drawing.Size(410, 56);
             this.btnSwitchModes.TabIndex = 9;
             this.btnSwitchModes.Text = "Standard mode";
             this.btnSwitchModes.UseVisualStyleBackColor = false;
@@ -439,6 +444,7 @@
             this.tableLayoutPanel6.SetColumnSpan(this.btnPredictSDC, 2);
             this.btnPredictSDC.Dock = System.Windows.Forms.DockStyle.Fill;
             this.btnPredictSDC.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnPredictSDC.Font = new System.Drawing.Font("Microsoft Sans Serif", 10.2F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this.btnPredictSDC.Location = new System.Drawing.Point(1015, 63);
             this.btnPredictSDC.Name = "btnPredictSDC";
             this.btnPredictSDC.Size = new System.Drawing.Size(117, 54);
@@ -463,7 +469,7 @@
             this.tableLayoutPanel3.ColumnCount = 3;
             this.tableLayoutPanel3.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 26.23574F));
             this.tableLayoutPanel3.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 73.76426F));
-            this.tableLayoutPanel3.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 65F));
+            this.tableLayoutPanel3.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 66F));
             this.tableLayoutPanel3.Controls.Add(this.label1, 0, 1);
             this.tableLayoutPanel3.Controls.Add(this.label2, 0, 2);
             this.tableLayoutPanel3.Controls.Add(this.rtbSourceDirectory, 1, 1);
@@ -536,7 +542,7 @@
             this.rtbSourceDirectory.Location = new System.Drawing.Point(285, 42);
             this.rtbSourceDirectory.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.rtbSourceDirectory.Name = "rtbSourceDirectory";
-            this.rtbSourceDirectory.Size = new System.Drawing.Size(787, 36);
+            this.rtbSourceDirectory.Size = new System.Drawing.Size(786, 36);
             this.rtbSourceDirectory.TabIndex = 2;
             this.rtbSourceDirectory.Text = "";
             this.rtbSourceDirectory.TextChanged += new System.EventHandler(this.rtbSourceDirectory_TextChanged);
@@ -550,7 +556,7 @@
             this.rtbOutputDirectory.Location = new System.Drawing.Point(285, 82);
             this.rtbOutputDirectory.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.rtbOutputDirectory.Name = "rtbOutputDirectory";
-            this.rtbOutputDirectory.Size = new System.Drawing.Size(787, 36);
+            this.rtbOutputDirectory.Size = new System.Drawing.Size(786, 36);
             this.rtbOutputDirectory.TabIndex = 3;
             this.rtbOutputDirectory.Text = "";
             this.rtbOutputDirectory.TextChanged += new System.EventHandler(this.rtbOutputDirectory_TextChanged);
@@ -561,10 +567,10 @@
             this.btnSelectSourceDirectory.Dock = System.Windows.Forms.DockStyle.Fill;
             this.btnSelectSourceDirectory.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnSelectSourceDirectory.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnSelectSourceDirectory.Location = new System.Drawing.Point(1078, 42);
+            this.btnSelectSourceDirectory.Location = new System.Drawing.Point(1077, 42);
             this.btnSelectSourceDirectory.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.btnSelectSourceDirectory.Name = "btnSelectSourceDirectory";
-            this.btnSelectSourceDirectory.Size = new System.Drawing.Size(60, 36);
+            this.btnSelectSourceDirectory.Size = new System.Drawing.Size(61, 36);
             this.btnSelectSourceDirectory.TabIndex = 4;
             this.btnSelectSourceDirectory.Text = "...";
             this.btnSelectSourceDirectory.UseVisualStyleBackColor = false;
@@ -576,10 +582,10 @@
             this.btnSelectOutputDirectory.Dock = System.Windows.Forms.DockStyle.Fill;
             this.btnSelectOutputDirectory.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnSelectOutputDirectory.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnSelectOutputDirectory.Location = new System.Drawing.Point(1078, 82);
+            this.btnSelectOutputDirectory.Location = new System.Drawing.Point(1077, 82);
             this.btnSelectOutputDirectory.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.btnSelectOutputDirectory.Name = "btnSelectOutputDirectory";
-            this.btnSelectOutputDirectory.Size = new System.Drawing.Size(60, 36);
+            this.btnSelectOutputDirectory.Size = new System.Drawing.Size(61, 36);
             this.btnSelectOutputDirectory.TabIndex = 5;
             this.btnSelectOutputDirectory.Text = "...";
             this.btnSelectOutputDirectory.UseVisualStyleBackColor = false;
@@ -630,7 +636,7 @@
             this.tableLayoutPanel10.ColumnCount = 3;
             this.tableLayoutPanel10.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 30F));
             this.tableLayoutPanel10.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 70F));
-            this.tableLayoutPanel10.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 67F));
+            this.tableLayoutPanel10.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 68F));
             this.tableLayoutPanel10.Controls.Add(this.tableLayoutPanel7, 1, 1);
             this.tableLayoutPanel10.Controls.Add(this.btnCalculateAllVarsStats, 0, 1);
             this.tableLayoutPanel10.Controls.Add(this.lblServiceSourceDirectoryTitle, 0, 0);
@@ -732,7 +738,7 @@
             this.rtbServiceSourceDirectory.Location = new System.Drawing.Point(321, 2);
             this.rtbServiceSourceDirectory.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.rtbServiceSourceDirectory.Name = "rtbServiceSourceDirectory";
-            this.rtbServiceSourceDirectory.Size = new System.Drawing.Size(737, 36);
+            this.rtbServiceSourceDirectory.Size = new System.Drawing.Size(736, 36);
             this.rtbServiceSourceDirectory.TabIndex = 8;
             this.rtbServiceSourceDirectory.Text = "";
             // 
@@ -742,10 +748,10 @@
             this.btnServiceInputDirectory.Dock = System.Windows.Forms.DockStyle.Fill;
             this.btnServiceInputDirectory.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnServiceInputDirectory.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnServiceInputDirectory.Location = new System.Drawing.Point(1064, 2);
+            this.btnServiceInputDirectory.Location = new System.Drawing.Point(1063, 2);
             this.btnServiceInputDirectory.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.btnServiceInputDirectory.Name = "btnServiceInputDirectory";
-            this.btnServiceInputDirectory.Size = new System.Drawing.Size(62, 36);
+            this.btnServiceInputDirectory.Size = new System.Drawing.Size(63, 36);
             this.btnServiceInputDirectory.TabIndex = 7;
             this.btnServiceInputDirectory.Text = "...";
             this.btnServiceInputDirectory.UseVisualStyleBackColor = false;
@@ -852,7 +858,7 @@
             this.rtbSDCdataCSVfile.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this.rtbSDCdataCSVfile.Location = new System.Drawing.Point(285, 123);
             this.rtbSDCdataCSVfile.Name = "rtbSDCdataCSVfile";
-            this.rtbSDCdataCSVfile.Size = new System.Drawing.Size(787, 34);
+            this.rtbSDCdataCSVfile.Size = new System.Drawing.Size(786, 34);
             this.rtbSDCdataCSVfile.TabIndex = 18;
             this.rtbSDCdataCSVfile.Text = "";
             this.rtbSDCdataCSVfile.TextChanged += new System.EventHandler(this.rtbSDCdataCSVfile_TextChanged);
@@ -863,9 +869,9 @@
             this.btnSelectSDCdataCSVfile.Dock = System.Windows.Forms.DockStyle.Fill;
             this.btnSelectSDCdataCSVfile.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnSelectSDCdataCSVfile.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.btnSelectSDCdataCSVfile.Location = new System.Drawing.Point(1078, 123);
+            this.btnSelectSDCdataCSVfile.Location = new System.Drawing.Point(1077, 123);
             this.btnSelectSDCdataCSVfile.Name = "btnSelectSDCdataCSVfile";
-            this.btnSelectSDCdataCSVfile.Size = new System.Drawing.Size(60, 34);
+            this.btnSelectSDCdataCSVfile.Size = new System.Drawing.Size(61, 34);
             this.btnSelectSDCdataCSVfile.TabIndex = 19;
             this.btnSelectSDCdataCSVfile.Text = "...";
             this.btnSelectSDCdataCSVfile.UseVisualStyleBackColor = false;
@@ -891,7 +897,7 @@
             this.rtbConcurrentDataXMLfilesDirectory.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this.rtbConcurrentDataXMLfilesDirectory.Location = new System.Drawing.Point(285, 163);
             this.rtbConcurrentDataXMLfilesDirectory.Name = "rtbConcurrentDataXMLfilesDirectory";
-            this.rtbConcurrentDataXMLfilesDirectory.Size = new System.Drawing.Size(787, 34);
+            this.rtbConcurrentDataXMLfilesDirectory.Size = new System.Drawing.Size(786, 34);
             this.rtbConcurrentDataXMLfilesDirectory.TabIndex = 21;
             this.rtbConcurrentDataXMLfilesDirectory.Text = "";
             this.rtbConcurrentDataXMLfilesDirectory.TextChanged += new System.EventHandler(this.rtbConcurrentDataXMLfilesDirectory_TextChanged);
@@ -902,9 +908,9 @@
             this.btnSelectConcurrentDataXMLfilesDirectory.Dock = System.Windows.Forms.DockStyle.Fill;
             this.btnSelectConcurrentDataXMLfilesDirectory.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnSelectConcurrentDataXMLfilesDirectory.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.btnSelectConcurrentDataXMLfilesDirectory.Location = new System.Drawing.Point(1078, 163);
+            this.btnSelectConcurrentDataXMLfilesDirectory.Location = new System.Drawing.Point(1077, 163);
             this.btnSelectConcurrentDataXMLfilesDirectory.Name = "btnSelectConcurrentDataXMLfilesDirectory";
-            this.btnSelectConcurrentDataXMLfilesDirectory.Size = new System.Drawing.Size(60, 34);
+            this.btnSelectConcurrentDataXMLfilesDirectory.Size = new System.Drawing.Size(61, 34);
             this.btnSelectConcurrentDataXMLfilesDirectory.TabIndex = 22;
             this.btnSelectConcurrentDataXMLfilesDirectory.Text = "...";
             this.btnSelectConcurrentDataXMLfilesDirectory.UseVisualStyleBackColor = false;
@@ -1308,6 +1314,21 @@
             this.lblCalculationProgressPercentage.TabIndex = 9;
             this.lblCalculationProgressPercentage.Text = "---";
             // 
+            // btnPredictTCC
+            // 
+            this.btnPredictTCC.BackColor = System.Drawing.Color.Gainsboro;
+            this.tableLayoutPanel6.SetColumnSpan(this.btnPredictTCC, 3);
+            this.btnPredictTCC.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.btnPredictTCC.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnPredictTCC.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.btnPredictTCC.Location = new System.Drawing.Point(835, 63);
+            this.btnPredictTCC.Name = "btnPredictTCC";
+            this.btnPredictTCC.Size = new System.Drawing.Size(174, 54);
+            this.btnPredictTCC.TabIndex = 11;
+            this.btnPredictTCC.Text = "Predict TCC";
+            this.btnPredictTCC.UseVisualStyleBackColor = false;
+            this.btnPredictTCC.Click += new System.EventHandler(this.btnPredictTCC_Click);
+            // 
             // SunPresenceCollectingMainForm
             // 
             this.AllowDrop = true;
@@ -1442,6 +1463,7 @@
         private System.Windows.Forms.Button btnSelectConcurrentDataXMLfilesDirectory;
         private System.Windows.Forms.CheckBox cbIncludeGPSandSunAltitudeData;
         private System.Windows.Forms.Button btnPredictSDC;
+        private System.Windows.Forms.Button btnPredictTCC;
     }
 }
 

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
@@ -9,8 +10,13 @@ using System.Threading.Tasks;
 using SkyImagesAnalyzerLibraries;
 using SolarPositioning;
 using Telegram.Bot;
+using Telegram.Bot.Args;
+using Telegram.Bot.Exceptions;
 using Telegram.Bot.Types;
+using Telegram.Bot.Types.Enums;
+using Telegram.Bot.Types.ReplyMarkups;
 using File = System.IO.File;
+using System.Xml.Serialization;
 
 
 namespace RemoteWeatherStationBotApp
@@ -25,11 +31,28 @@ namespace RemoteWeatherStationBotApp
 
         private string tgrm_token = "";
         private bool NeedToStopFlag = false;
-        private string logFilename = Directory.GetCurrentDirectory() + Path.DirectorySeparatorChar + "logs" +
-                                          Path.DirectorySeparatorChar +
-                                          Path.GetFileNameWithoutExtension(Assembly.GetEntryAssembly().Location) +
-                                          ".log";
 
+        private string logFilename = Directory.GetCurrentDirectory() + Path.DirectorySeparatorChar + "logs" +
+                                     Path.DirectorySeparatorChar +
+                                     Path.GetFileNameWithoutExtension(Assembly.GetEntryAssembly().Location) +
+                                     ".log";
+
+        private string errorFilename = Directory.GetCurrentDirectory() + Path.DirectorySeparatorChar + "logs" +
+                                       Path.DirectorySeparatorChar +
+                                       Path.GetFileNameWithoutExtension(Assembly.GetEntryAssembly().Location) +
+                                       "_error.log";
+
+        private string strUserAllowedSDCfixing_IDs_CSVfilename = Directory.GetCurrentDirectory() +
+                                                                 Path.DirectorySeparatorChar + "settings" +
+                                                                 Path.DirectorySeparatorChar +
+                                                                 "UserAllowedSDCfixing_IDs.csv";
+
+        private string strUserAllowedTCCfixing_IDs_CSVfilename = Directory.GetCurrentDirectory() +
+                                                                 Path.DirectorySeparatorChar + "settings" +
+                                                                 Path.DirectorySeparatorChar +
+                                                                 "UserAllowedTCCfixing_IDs.csv";
+
+        private static TelegramBotClient Bot = null;
 
 
 
@@ -37,14 +60,16 @@ namespace RemoteWeatherStationBotApp
         {
             readDefaultProperties();
 
-            Run().Wait();
+            Task.Run(() => Run()).Wait();
+            // Run().Wait();
         }
 
 
 
 
 
-        private async Task Run()
+        // private async Task Run()
+        private void Run()
         {
             if (tgrm_token == "")
             {
@@ -53,116 +78,153 @@ namespace RemoteWeatherStationBotApp
                 Console.ReadKey();
                 return;
             }
-            var Bot = new Api(tgrm_token);
+            Bot = new TelegramBotClient(tgrm_token);
 
-            var me = await Bot.GetMe();
+            User me = Bot.GetMeAsync().Result;
 
             Console.WriteLine("Hello my name is {0}", me.Username);
 
-            var offset = 0;
+            Bot.OnMessage += Bot_OnMessage;
+            Bot.OnReceiveError += BotOnReceiveError;
+            Bot.OnCallbackQuery += Bot_OnCallbackQuery;
 
-            while (true)
+            Bot.StartReceiving();
+            Console.ReadLine();
+            Bot.StopReceiving();
+        }
+
+
+
+        private void BotOnReceiveError(object sender, ReceiveErrorEventArgs e)
+        {
+            Debugger.Break();
+            ApiRequestException ex = e.ApiRequestException;
+            Console.WriteLine(ex.Message);
+            ServiceTools.logToTextFile(errorFilename,
+                "got API exception: " + ex.Message + Environment.NewLine + "Error code: " + ex.ErrorCode +
+                Environment.NewLine + ex.StackTrace, true, true);
+        }
+
+
+
+
+        private void Bot_OnMessage(object sender, Telegram.Bot.Args.MessageEventArgs e)
+        {
+            Message currMsg = e.Message;
+
+
+            if (currMsg.Type == MessageType.TextMessage)
             {
-                var updates = await Bot.GetUpdates(offset);
+                Console.WriteLine("{0} from {1} ({2})", currMsg.Text, currMsg.Chat.Id, currMsg.Chat.Username);
 
-                foreach (var update in updates)
+
+                if (ServiceTools.CheckIfDirectoryExists(Directory.GetCurrentDirectory() + Path.DirectorySeparatorChar + "logs"))
                 {
-                    if (update.Message.Type == MessageType.TextMessage)
-                    {
-                        Console.WriteLine("{0} from {1} ({2})", update.Message.Text, update.Message.Chat.Id, update.Message.Chat.Username);
-
-
-                        if (ServiceTools.CheckIfDirectoryExists(Directory.GetCurrentDirectory() + Path.DirectorySeparatorChar + "logs"))
-                        {
-                            ServiceTools.logToTextFile(logFilename,
-                                "" + update.Message.Chat.Id + " ("+ update.Message.Chat.Username + ") : " + update.Message.Text + Environment.NewLine, true, true);
-                        }
-
-
-
-                        if (update.Message.Text == "/current_image")
-                        {
-                            Task<string> taskA = Task.Run(() => CurrentImagesCoupleImageFilename());
-                            Task continuation = taskA.ContinueWith(antecedent =>
-                            {
-                                string FilenameToSend = antecedent.Result;
-                                var fileStream = File.Open(FilenameToSend, FileMode.Open, FileAccess.Read, FileShare.Read);
-                                Bot.SendPhoto(update.Message.Chat.Id, new FileToSend(FilenameToSend, fileStream));
-                            });
-                        }
-                        else if (update.Message.Text == "/concurrent_info")
-                        {
-                            Task<string> taskA = Task.Run(() => ReadLastConcurrentInfo());
-                            Task continuation = taskA.ContinueWith(antecedent =>
-                            {
-                                string strReply = antecedent.Result;
-                                Bot.SendTextMessage(update.Message.Chat.Id, strReply, true, false,
-                                    update.Message.MessageId);
-                            });
-                        }
-                        else if (update.Message.Text == "/current_cc")
-                        {
-                            Task<string> taskA = Task.Run(() => ReadCurrentCCinfo());
-                            Task continuation = taskA.ContinueWith(antecedent =>
-                            {
-                                string strReply = antecedent.Result;
-                                Bot.SendTextMessage(update.Message.Chat.Id, strReply, true, false,
-                                    update.Message.MessageId);
-                            });
-                        }
-                        else if (update.Message.Text == "/meteo_info")
-                        {
-                            Task<string> taskA = Task.Run(() => ObtainLatestMeteoParameters());
-                            Task continuation = taskA.ContinueWith(antecedent =>
-                            {
-                                string strReply = antecedent.Result;
-                                Bot.SendTextMessage(update.Message.Chat.Id, strReply, true, false,
-                                        update.Message.MessageId);
-                            });
-                        }
-                        else if (update.Message.Text == "/start")
-                        {
-                            Task taskA = Task.Run(() =>
-                            {
-                                string strStartMessage =
-                                ServiceTools.ReadTextFromFile(Directory.GetCurrentDirectory() +
-                                                              Path.DirectorySeparatorChar + "settings" +
-                                                              Path.DirectorySeparatorChar + "BotStartMessage.txt");
-                                Bot.SendTextMessage(update.Message.Chat.Id, strStartMessage, true, false, update.Message.MessageId);
-                                Console.WriteLine("Echo Message: {0}", update.Message.Text);
-                            });
-                            
-                        }
-                        else
-                        {
-                            // await Bot.SendChatAction(update.Message.Chat.Id, ChatAction.Typing);
-                            // await Task.Delay(200);
-                            var t =
-                                await
-                                    Bot.SendTextMessage(update.Message.Chat.Id,
-                                        "Sorry, I can`t understand you. Please try again using the following list of commands:" +
-                                        Environment.NewLine + "/current_image" +
-                                        Environment.NewLine + "/concurrent_info" +
-                                        Environment.NewLine + "/current_cc" +
-                                        Environment.NewLine + "/meteo_info");
-                        }
-                    }
-                    
-                    offset = update.Id + 1;
+                    ServiceTools.logToTextFile(logFilename,
+                        "" + currMsg.Chat.Id + " (" + currMsg.Chat.Username + ") : " + currMsg.Text + Environment.NewLine, true, true);
                 }
 
-                await Task.Delay(200);
 
-                if (NeedToStopFlag)
+
+                if ((currMsg.Text == "/current_image") || (currMsg.Text == "Image"))
                 {
-                    break;
+                    Task<string> taskA = Task.Run(() => CurrentImagesCoupleImageFilename());
+                    Task continuation = taskA.ContinueWith(antecedent =>
+                    {
+                        string FilenameToSend = antecedent.Result;
+                        var fileStream = File.Open(FilenameToSend, FileMode.Open, FileAccess.Read, FileShare.Read);
+                        Bot.SendPhotoAsync(currMsg.Chat.Id, new FileToSend(FilenameToSend, fileStream));
+                    });
+                }
+                else if ((currMsg.Text == "/concurrent_info") || (currMsg.Text == "Info"))
+                {
+                    Task<string> taskA = Task.Run(() => ReadLastConcurrentInfo());
+                    Task continuation = taskA.ContinueWith(antecedent =>
+                    {
+                        string strReply = antecedent.Result;
+                        Bot.SendTextMessageAsync(currMsg.Chat.Id, strReply, true, false,
+                            currMsg.MessageId, BasicKeyboard());
+                    });
+                }
+                else if ((currMsg.Text == "/current_cc") || (currMsg.Text == "TCC_SDC"))
+                {
+                    Task<string> taskA = Task.Run(ReadCurrentCCinfo);
+                    Task continuation = taskA.ContinueWith(antecedent =>
+                    {
+                        string strReply = antecedent.Result;
+                        Bot.SendTextMessageAsync(currMsg.Chat.Id, strReply, true, false,
+                            currMsg.MessageId, BasicKeyboard());
+                    });
+                }
+                else if ((currMsg.Text == "/meteo_info") || (currMsg.Text == "Meteo"))
+                {
+                    Task<string> taskA = Task.Run(ObtainLatestMeteoParameters);
+                    Task continuation = taskA.ContinueWith(antecedent =>
+                    {
+                        string strReply = antecedent.Result;
+                        Bot.SendTextMessageAsync(currMsg.Chat.Id, strReply, true, false,
+                                currMsg.MessageId, BasicKeyboard());
+                    });
+                }
+                else if (currMsg.Text == "/start")
+                {
+                    Task taskA = Task.Run(() =>
+                    {
+                        string strStartMessage =
+                        ServiceTools.ReadTextFromFile(Directory.GetCurrentDirectory() +
+                                                      Path.DirectorySeparatorChar + "settings" +
+                                                      Path.DirectorySeparatorChar + "BotStartMessage.txt");
+                        Bot.SendTextMessageAsync(currMsg.Chat.Id, strStartMessage, true, false,
+                            currMsg.MessageId, BasicKeyboard());
+                        Console.WriteLine("Echo Message: {0}", currMsg.Text);
+                    });
+
+                }
+                else if (currMsg.Text.Contains("/fix"))
+                {
+                    Console.WriteLine("Echo Message: {0}", currMsg.Text);
+
+                    Task<bool> taskA = Task.Run(() => RegisterFixStage1(currMsg));
+                }
+                else if (currMsg.Text.Contains("/help") || currMsg.Text == "Help")
+                {
+                    Task taskA = Task.Run(() =>
+                    {
+                        string strStartMessage =
+                        ServiceTools.ReadTextFromFile(Directory.GetCurrentDirectory() +
+                                                      Path.DirectorySeparatorChar + "settings" +
+                                                      Path.DirectorySeparatorChar + "BotHelpMessage.txt");
+                        Bot.SendTextMessageAsync(currMsg.Chat.Id, strStartMessage, true, false,
+                            currMsg.MessageId, BasicKeyboard());
+                        Console.WriteLine("Echo Message: {0}", currMsg.Text);
+                    });
+                }
+                else
+                {
+                    // await Bot.SendChatAction(update.Message.Chat.Id, ChatAction.Typing);
+                    // await Task.Delay(200);
+
+                    Task taskA = Task.Run(() =>
+                    {
+                        Bot.SendTextMessageAsync(currMsg.Chat.Id,
+                            "Sorry, I can`t understand you. Please try again using the following list of commands:" +
+                            Environment.NewLine + "/current_image" +
+                            Environment.NewLine + "/concurrent_info" +
+                            Environment.NewLine + "/current_cc" +
+                            Environment.NewLine + "/meteo_info" +
+                            Environment.NewLine + "/fix",
+                            replyMarkup: BasicKeyboard());
+
+                        Console.WriteLine("Echo Message: {0}", currMsg.Text);
+                    });
                 }
             }
         }
 
 
 
-        
+
+
         private string CurrentImagesCoupleImageFilename()
         {
             DirectoryInfo dir = new DirectoryInfo(DataStoreDirectory);
@@ -255,7 +317,7 @@ namespace RemoteWeatherStationBotApp
             }
 
             lXMLFilesInfo.Sort((finfo1, finfo2) => finfo1.CreationTimeUtc.CompareTo(finfo2.CreationTimeUtc));
-            
+
             SkyImagesProcessedAndPredictedData data = null;
             try
             {
@@ -300,7 +362,7 @@ namespace RemoteWeatherStationBotApp
                                                .ToString("F2") + "%") + "|";
                 retStr += strToShowSDCs;
             }
-            
+
 
             return retStr;
         }
@@ -335,7 +397,7 @@ namespace RemoteWeatherStationBotApp
             try
             {
                 WSdata =
-                    (LufftWSdata) ServiceTools.ReadObjectFromXML(lWSxmlFilesInfo.Last().FullName, typeof(LufftWSdata));
+                    (LufftWSdata)ServiceTools.ReadObjectFromXML(lWSxmlFilesInfo.Last().FullName, typeof(LufftWSdata));
             }
             catch (Exception ex)
             {
@@ -348,7 +410,7 @@ namespace RemoteWeatherStationBotApp
             }
 
             #endregion WS
-            
+
 
 
 
@@ -382,7 +444,7 @@ namespace RemoteWeatherStationBotApp
             }
 
             #endregion R2S
-            
+
 
 
 
@@ -422,6 +484,246 @@ namespace RemoteWeatherStationBotApp
 
 
 
+
+
+
+        #region data fixing mechs
+
+        private List<UserDataFixingDialogs> lDialogs = new List<UserDataFixingDialogs>();
+
+
+
+        private async Task<bool> RegisterFixStage1(Message msg)
+        {
+            //check if this user is able to fix SDC
+
+            Chat currChat = msg.Chat;
+
+            InlineKeyboardMarkup kb = new InlineKeyboardMarkup(new[]
+            {
+                new InlineKeyboardButton[]
+                {
+                    new InlineKeyboardButton("SDC", "varnameSDC"),
+                    new InlineKeyboardButton("TCC", "varnameTCC")
+                }
+            });
+
+            UserDataFixingDialogs currDialog = new UserDataFixingDialogs()
+            {
+                origMessage = msg,
+                userID = msg.Chat.Id,
+                userName = msg.Chat.Username,
+                userFirstName = msg.Chat.FirstName,
+                userLastName = msg.Chat.LastName,
+                chatTitle = msg.Chat.Title
+            };
+
+            Message sentMsg = await Bot.SendTextMessageAsync(msg.Chat.Id, "Please choose what would you like to fix",
+                replyMarkup: kb);
+
+            currDialog.varChoosingMessage = sentMsg;
+            lDialogs.Add(currDialog);
+
+            return true;
+        }
+
+
+
+
+        private async void Bot_OnCallbackQuery(object sender, CallbackQueryEventArgs callbackQueryEventArgs)
+        {
+            CallbackQuery currQuery = callbackQueryEventArgs.CallbackQuery;
+
+            //search for dialog var choosing message
+            bool bFoundByVarChoosingMessage =
+                lDialogs.Any(dlg => dlg.varChoosingMessage.MessageId == currQuery.Message.MessageId);
+            List<UserDataFixingDialogs> lDialogsWithValueRequestMessages =
+                lDialogs.Where(dlg => dlg.valueRequestMessage != null).ToList();
+            bool bFoundByValueRequestMessage =
+                lDialogsWithValueRequestMessages.Any(
+                    dlg => dlg.valueRequestMessage.MessageId == currQuery.Message.MessageId);
+
+            if (!bFoundByVarChoosingMessage && !bFoundByValueRequestMessage)
+            {
+                string replMessage = "Извините, кажется, я все забыл." + Environment.NewLine +
+                                     "Попробуйте заново запросить снимок, информацию о нем и исправить эти данные.";
+                await Bot.SendTextMessageAsync(currQuery.Message.Chat.Id, replMessage, true, false,
+                    currQuery.Message.MessageId, BasicKeyboard());
+                return;
+            }
+
+            UserDataFixingDialogs currDialog = null;
+            if (bFoundByVarChoosingMessage)
+            {
+                currDialog =
+                    lDialogs.First(
+                        dlg => dlg.varChoosingMessage.MessageId == currQuery.Message.MessageId);
+            }
+            else if (bFoundByValueRequestMessage)
+            {
+                currDialog =
+                    lDialogs.First(
+                        dlg => dlg.valueRequestMessage.MessageId == currQuery.Message.MessageId);
+            }
+            
+
+
+            if (currDialog.varname == null)
+            {
+                if ((currQuery.Data == "varnameSDC") || (currQuery.Data == "varnameTCC"))
+                {
+                    currDialog.varname = currQuery.Data;
+
+                    if (currDialog.varname == "varnameSDC")
+                    {
+                        InlineKeyboardMarkup kb = new InlineKeyboardMarkup(new[]
+                        {
+                            new InlineKeyboardButton[]
+                            {
+                                new InlineKeyboardButton("Cloudy", "SDC_Cloudy"),
+                                new InlineKeyboardButton("Sun_0", "SDC_Sun_0"),
+                                new InlineKeyboardButton("Sun_1", "SDC_Sun_1"),
+                                new InlineKeyboardButton("Sun_2", "SDC_Sun_2"),
+                            },
+                            new InlineKeyboardButton[]
+                            {
+                                new InlineKeyboardButton("Defect", "SDC_Defect"),
+                            }
+                        });
+
+                        Message sentMsg = await Bot.SendTextMessageAsync(currQuery.Message.Chat.Id, "Please choose value",
+                            replyMarkup: kb);
+
+                        currDialog.valueRequestMessage = sentMsg;
+                        return;
+                    }
+                    else if (currDialog.varname == "varnameTCC")
+                    {
+                        InlineKeyboardMarkup kb = new InlineKeyboardMarkup(new[]
+                        {
+                            new InlineKeyboardButton[]
+                            {
+                                new InlineKeyboardButton("0", "TCC_value_0"),
+                                new InlineKeyboardButton("1", "TCC_value_1"),
+                                new InlineKeyboardButton("2", "TCC_value_2"),
+                                new InlineKeyboardButton("3", "TCC_value_3"),
+                            },
+                            new InlineKeyboardButton[]
+                            {
+                                new InlineKeyboardButton("4", "TCC_value_4"),
+                                new InlineKeyboardButton("5", "TCC_value_5"),
+                                new InlineKeyboardButton("6", "TCC_value_6"),
+                                new InlineKeyboardButton("7", "TCC_value_7"),
+                            },
+                            new InlineKeyboardButton[]
+                            {
+                                new InlineKeyboardButton("8", "TCC_value_8"),
+                                new InlineKeyboardButton("Defect", "TCC_Defect"),
+                            }
+                        });
+
+                        Message sentMsg = await Bot.SendTextMessageAsync(currQuery.Message.Chat.Id, "Please choose value",
+                            replyMarkup: kb);
+
+                        currDialog.valueRequestMessage = sentMsg;
+                        return;
+                    }
+                    return;
+                }
+                else
+                {
+                    string replMessage = "Извините, меня еще не научили разбирать такие сложные команды.";
+                    await Bot.SendTextMessageAsync(currQuery.Message.Chat.Id, replMessage, true, false, currQuery.Message.MessageId, BasicKeyboard());
+                    return;
+                }
+            }
+            else
+            {
+                if (currDialog.varname == "varnameSDC")
+                {
+                    currDialog.varvalue = currQuery.Data;
+
+
+                    string replMessage =
+                        "Благодарим Вас за участие в обучении нашей модели (SDC). Ваше исправление отправлено на ревизию и будет учтено при дообучении.";
+
+                    await
+                        Bot.SendTextMessageAsync(currQuery.Message.Chat.Id, replMessage, true, false,
+                            currQuery.Message.MessageId, BasicKeyboard());
+
+                    ServiceTools.WriteObjectToXML(currDialog, Directory.GetCurrentDirectory() +
+                                                              Path.DirectorySeparatorChar + "logs" +
+                                                              Path.DirectorySeparatorChar +
+                                                              "model_fix_" + currDialog.varname + "_" + currDialog.varChoosingMessage.MessageId +
+                                                              ".xml");
+
+                    lDialogs.Remove(currDialog);
+
+                    return;
+                }
+                else if (currDialog.varname == "varnameTCC")
+                {
+                    currDialog.varvalue = currQuery.Data;
+
+
+                    string replMessage =
+                        "Благодарим Вас за участие в обучении нашей модели (TCC). Ваше исправление отправлено на ревизию и будет учтено при дообучении.";
+
+                    await
+                        Bot.SendTextMessageAsync(currQuery.Message.Chat.Id, replMessage, true, false,
+                            currQuery.Message.MessageId, BasicKeyboard());
+
+                    ServiceTools.WriteObjectToXML(currDialog, Directory.GetCurrentDirectory() +
+                                                              Path.DirectorySeparatorChar + "logs" +
+                                                              Path.DirectorySeparatorChar +
+                                                              "model_fix_" + currDialog.varname + "_" + currDialog.varChoosingMessage.MessageId +
+                                                              ".xml");
+
+                    lDialogs.Remove(currDialog);
+
+                    return;
+                }
+                else
+                {
+                    string replMessage = "Извините, меня еще не научили разбирать такие сложные команды.";
+                    await Bot.SendTextMessageAsync(currQuery.Message.Chat.Id, replMessage, true, false, currQuery.Message.MessageId, BasicKeyboard());
+                    return;
+                }
+            }
+        }
+
+        #endregion data fixing mechs
+
+
+
+
+        #region basic keyboard
+
+        private ReplyKeyboardMarkup BasicKeyboard()
+        {
+            ReplyKeyboardMarkup kb = new ReplyKeyboardMarkup(new KeyboardButton[][]
+            {
+                new KeyboardButton[]
+                {
+                    new KeyboardButton("Image"),
+                    new KeyboardButton("Info"),
+                    new KeyboardButton("TCC_SDC"),
+                },
+                new KeyboardButton[]
+                {
+                    new KeyboardButton("Help"),
+                    new KeyboardButton("Meteo"),
+                }
+            });
+            kb.ResizeKeyboard = true;
+            return kb;
+        }
+
+        #endregion basic keyboard
+
+
+
+
         #region default properties
 
         private void readDefaultProperties()
@@ -451,7 +753,7 @@ namespace RemoteWeatherStationBotApp
 
             if (defaultProperties.ContainsKey("CurrentDataStoreDirectory"))
             {
-                DataStoreDirectory = (string) defaultProperties["CurrentDataStoreDirectory"];
+                DataStoreDirectory = (string)defaultProperties["CurrentDataStoreDirectory"];
             }
             else
             {
@@ -519,7 +821,7 @@ namespace RemoteWeatherStationBotApp
             //    bDefaultPropertiesHasBeenUpdated = true;
             //}
 
-            
+
 
             //// R2SLufftUMBappPath
             //if (defaultProperties.ContainsKey("R2SLufftUMBappPath"))
@@ -595,9 +897,30 @@ namespace RemoteWeatherStationBotApp
         #endregion default properties
 
 
-        public void CancelHandler(object sender, ConsoleCancelEventArgs args)
-        {
-            NeedToStopFlag = true;
-        }
+        //public void CancelHandler(object sender, ConsoleCancelEventArgs args)
+        //{
+        //    NeedToStopFlag = true;
+        //}
+    }
+
+
+
+    public class UserDataFixingDialogs
+    {
+        [XmlIgnore]
+        public Message origMessage { get; set; }
+        [XmlIgnore]
+        public Message varChoosingMessage { get; set; }
+        [XmlIgnore]
+        public Message valueRequestMessage { get; set; }
+        public long userID { get; set; }
+        public string userName { get; set; }
+        public string userFirstName { get; set; }
+        public string userLastName { get; set; }
+        public string chatTitle { get; set; }
+        public string varname { get; set; }
+        public string varvalue { get; set; }
+
+        public UserDataFixingDialogs() { }
     }
 }

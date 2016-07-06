@@ -68,4 +68,40 @@
     <key>strRemoteServerDataUploadingBaseDirectory</key>
     <value>~/cc_moscow_bot/data/</value>
   </table>
+  <table>
+    <key>SDC_NNconfigFile</key>
+    <value>D:\_gulevlab\SkyImagesAnalysis\_DBGbin\settings\SDC_NNconfig.csv</value>
+  </table>
+  <table>
+    <key>SDC_NNtrainedParametersFile</key>
+    <value>D:\_gulevlab\SkyImagesAnalysis\_DBGbin\settings\SDC_NNtrainedParameters.csv</value>
+  </table>
+  <table>
+    <key>SDC_NormMeansFile</key>
+    <value>D:\_gulevlab\SkyImagesAnalysis\_DBGbin\settings\SDC_NormMeans.csv</value>
+  </table>
+  <table>
+    <key>SDC_NormRangeFile</key>
+    <value>D:\_gulevlab\SkyImagesAnalysis\_DBGbin\settings\SDC_NormRange.csv</value>
+  </table>
+  <table>
+    <key>TCC_NNconfigFile</key>
+    <value>D:\_gulevlab\SkyImagesAnalysis\_DBGbin\settings\TCC_NNconfig.csv</value>
+  </table>
+  <table>
+    <key>TCC_NNtrainedParametersFile</key>
+    <value>D:\_gulevlab\SkyImagesAnalysis\_DBGbin\settings\TCC_NNtrainedParameters.csv</value>
+  </table>
+  <table>
+    <key>TCC_NormMeansFile</key>
+    <value>D:\_gulevlab\SkyImagesAnalysis\_DBGbin\settings\TCC_NormMeans.csv</value>
+  </table>
+  <table>
+    <key>TCC_NormRangeFile</key>
+    <value>D:\_gulevlab\SkyImagesAnalysis\_DBGbin\settings\TCC_NormRange.csv</value>
+  </table>
+  <table>
+    <key>TCC_ExcludedVarsFile</key>
+    <value>D:\_gulevlab\SkyImagesAnalysis\_DBGbin\settings\TCC_ExcludedVars.csv</value>
+  </table>
 </DataSet>

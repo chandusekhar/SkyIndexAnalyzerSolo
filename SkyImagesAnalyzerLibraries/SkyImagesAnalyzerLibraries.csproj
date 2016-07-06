@@ -203,7 +203,7 @@
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="ArithmeticsOnImages.cs" />
-    <Compile Include="CCpredictorNN.cs" />
+    <Compile Include="TCCpredictorNN.cs" />
     <Compile Include="ColorScheme.cs" />
     <Compile Include="CommonTools.cs" />
     <Compile Include="CommunicationHelperClasses.cs" />
@@ -251,8 +251,6 @@
     </Compile>
     <Compile Include="MultipleScatterAndFunctionsRepresentation.cs" />
     <Compile Include="NonLinLeastSqProbWithBCandOutliersDetection.cs" />
-    <Compile Include="Point3D.cs" />
-    <Compile Include="PointPolar.cs" />
     <Compile Include="GradientDescentApproximator.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -263,7 +261,6 @@
       <DependentUpon>PropertiesEditor.cs</DependentUpon>
     </Compile>
     <Compile Include="PropertyHelper.cs" />
-    <Compile Include="RoundData.cs" />
     <Compile Include="SDCpredictorNN.cs" />
     <Compile Include="SectionDescription.cs" />
     <Compile Include="SectionRequestForm.cs">
@@ -274,14 +271,12 @@
     </Compile>
     <Compile Include="SequencesDrawingVariants.cs" />
     <Compile Include="ServiceDataClasses.cs" />
-    <Compile Include="SimpleGeometry.cs" />
     <Compile Include="simpleMultipleImagesShow.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="simpleMultipleImagesShow.Designer.cs">
       <DependentUpon>simpleMultipleImagesShow.cs</DependentUpon>
     </Compile>
-    <Compile Include="DataAnalysis.cs" />
     <Compile Include="DataDistributionRepresentingForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -315,7 +310,6 @@
     </Compile>
     <Compile Include="NetCDFoperations.cs" />
     <Compile Include="PictureBoxSelection.cs" />
-    <Compile Include="PointD.cs" />
     <Compile Include="PostfixNotation.cs" />
     <Compile Include="SceneRenderer.cs" />
     <Compile Include="ServiceTools.cs" />
@@ -328,8 +322,6 @@
     <Compile Include="SimpleShowImageForm.Designer.cs">
       <DependentUpon>SimpleShowImageForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="SimpleVectorGraphics2D.cs" />
-    <Compile Include="SizeD.cs" />
     <Compile Include="SkyCloudClassification.cs" />
     <Compile Include="SunDiskRepresentingAndCorrectionForm.cs">
       <SubType>Form</SubType>
@@ -428,6 +420,16 @@
     <ProjectReference Include="..\ANN\ANN.csproj">
       <Project>{257524fd-f280-487a-a4de-23580cce20b5}</Project>
       <Name>ANN</Name>
+      <Private>False</Private>
+    </ProjectReference>
+    <ProjectReference Include="..\DataAnalysis\DataAnalysis.csproj">
+      <Project>{bbf0d349-16c6-4b61-8e92-2f0d94224805}</Project>
+      <Name>DataAnalysis</Name>
+      <Private>False</Private>
+    </ProjectReference>
+    <ProjectReference Include="..\Geometry\Geometry.csproj">
+      <Project>{7cbac75d-650a-4feb-856a-d329bd70ff33}</Project>
+      <Name>Geometry</Name>
       <Private>False</Private>
     </ProjectReference>
     <ProjectReference Include="..\MKLwrapper\MKLwrapper.csproj">

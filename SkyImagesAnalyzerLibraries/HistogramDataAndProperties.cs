@@ -4,6 +4,7 @@ using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Geometry;
 using MathNet.Numerics.LinearAlgebra.Double;
 using MathNet.Numerics.Statistics;
 
@@ -148,12 +149,12 @@ namespace SkyImagesAnalyzerLibraries
                 List<double> listCurrData = new List<double>();
                 if (i == binsCount-1)
                 {
-                    listCurrData = DataAnalysis.DataListedWithCondition(dvData, (dVal => ((dVal >= binMin) && (dVal <= binMax))));
+                    listCurrData = DataAnalysis.DataAnalysisStatic.DataListedWithCondition(dvData, (dVal => ((dVal >= binMin) && (dVal <= binMax))));
                     
                 }
                 else
                 {
-                    listCurrData = DataAnalysis.DataListedWithCondition(dvData, (dVal => ((dVal >= binMin) && (dVal < binMax))));
+                    listCurrData = DataAnalysis.DataAnalysisStatic.DataListedWithCondition(dvData, (dVal => ((dVal >= binMin) && (dVal < binMax))));
                 }
                 
                 if (listCurrData == null) return 0.0d;

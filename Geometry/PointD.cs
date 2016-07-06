@@ -8,7 +8,7 @@ using System.Runtime;
 using System.Runtime.InteropServices;
 using System.Drawing;
 
-namespace SkyImagesAnalyzerLibraries
+namespace Geometry
 {
     /// <summary>
     /// Представляет упорядоченную пару координат Х и Y с плавающей запятой, определяющую точку на двумерной плоскости.

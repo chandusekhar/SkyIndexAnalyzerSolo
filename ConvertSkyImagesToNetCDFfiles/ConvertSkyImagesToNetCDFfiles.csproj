@@ -127,6 +127,11 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Geometry\Geometry.csproj">
+      <Project>{7CBAC75D-650A-4FEB-856A-D329BD70FF33}</Project>
+      <Name>Geometry</Name>
+      <Private>False</Private>
+    </ProjectReference>
     <ProjectReference Include="..\SkyImagesAnalyzerLibraries\SkyImagesAnalyzerLibraries.csproj">
       <Project>{7beac8e4-e53f-466a-b824-1fe69e60d114}</Project>
       <Name>SkyImagesAnalyzerLibraries</Name>

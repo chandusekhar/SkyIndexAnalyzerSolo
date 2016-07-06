@@ -13,10 +13,12 @@ using System.Linq;
 using System.Management.Automation;
 using System.Threading;
 using Emgu.CV.Util;
+using Geometry;
 using MathNet.Numerics.LinearAlgebra;
 using MathNet.Numerics.LinearAlgebra.Double;
 using MathNet.Numerics.Statistics;
 using MKLwrapper;
+using DataAnalysis;
 
 
 namespace SkyImagesAnalyzerLibraries
@@ -684,7 +686,7 @@ namespace SkyImagesAnalyzerLibraries
         {
             dmImageToProcess.MapInplace(
                 new Func<double, double>((x) => { return (x > thresholdValue) ? cutItemsValue : x; }),
-                MathNet.Numerics.LinearAlgebra.Zeros.AllowSkip);
+                Zeros.AllowSkip);
             dmImageToProcess.PointwiseMultiply(DenseMatrixFromImage(maskImageBinary));
         }
 
@@ -700,7 +702,7 @@ namespace SkyImagesAnalyzerLibraries
         {
             dmImageToProcess.MapInplace(
                 new Func<double, double>((x) => { return (x < thresholdValue) ? cutItemsValue : x; }),
-                MathNet.Numerics.LinearAlgebra.Zeros.AllowSkip);
+                Zeros.AllowSkip);
             dmImageToProcess.PointwiseMultiply(DenseMatrixFromImage(maskImageBinary));
         }
 
@@ -852,14 +854,14 @@ namespace SkyImagesAnalyzerLibraries
             Image<Bgr, byte> currImg = new Image<Bgr, byte>(strFullFilePath);
             if (MaxImageSize != 0)
             {
-                currImg = ImageProcessing.ImageResizer(currImg, MaxImageSize);
+                currImg = ImageResizer(currImg, MaxImageSize);
             }
             ImageProcessing imgP = new ImageProcessing(currImg, true);
             DenseMatrix dmGrixData = imgP.eval("grix", null);
             Image<Gray, Byte> maskImageCircled = imgP.imageSignificantMaskCircled();
-            DenseMatrix dmMaskCircled100 = ImageProcessing.DenseMatrixFromImage(maskImageCircled);
+            DenseMatrix dmMaskCircled100 = DenseMatrixFromImage(maskImageCircled);
             dmGrixData = (DenseMatrix)dmGrixData.PointwiseMultiply(dmMaskCircled100);
-            DenseVector dvGrixData = DataAnalysis.DataVectorizedWithCondition(dmGrixData, dval => ((dval > 0.0d) && (dval < 1.0d)));
+            DenseVector dvGrixData = DataAnalysisStatic.DataVectorizedWithCondition(dmGrixData, dval => ((dval > 0.0d) && (dval < 1.0d)));
             DescriptiveStatistics stats = new DescriptiveStatistics(dvGrixData, true);
             double median = dvGrixData.Median();
             double perc5 = dvGrixData.Percentile(5);
@@ -956,7 +958,7 @@ namespace SkyImagesAnalyzerLibraries
 
             if (MaxImageSize != 0)
             {
-                currImg = ImageProcessing.ImageResizer(currImg, MaxImageSize);
+                currImg = ImageResizer(currImg, MaxImageSize);
             }
 
             #region debug report
@@ -1046,7 +1048,7 @@ namespace SkyImagesAnalyzerLibraries
 
 
             Image<Gray, Byte> maskImageCircled = imgP.imageSignificantMaskCircled();
-            DenseMatrix dmMaskCircled100 = ImageProcessing.DenseMatrixFromImage(maskImageCircled);
+            DenseMatrix dmMaskCircled100 = DenseMatrixFromImage(maskImageCircled);
             dmGrixData = (DenseMatrix)dmGrixData.PointwiseMultiply(dmMaskCircled100);
             dmYdata = (DenseMatrix)dmYdata.PointwiseMultiply(dmMaskCircled100);
             dmRdata = (DenseMatrix)dmRdata.PointwiseMultiply(dmMaskCircled100);
@@ -1059,11 +1061,11 @@ namespace SkyImagesAnalyzerLibraries
             //DenseVector dvGData = DataAnalysis.DataVectorizedWithCondition(dmGdata, dval => (dval > 0.0d));
             //DenseVector dvBData = DataAnalysis.DataVectorizedWithCondition(dmBdata, dval => (dval > 0.0d));
 
-            DenseVector dvGrixData = DataAnalysis.DataVectorizedWithCondition(dmGrixData, dmMaskCircled100, dval => (dval > 0.0d));
-            DenseVector dvYData = DataAnalysis.DataVectorizedWithCondition(dmYdata, dmMaskCircled100, dval => (dval > 0.0d));
-            DenseVector dvRData = DataAnalysis.DataVectorizedWithCondition(dmRdata, dmMaskCircled100, dval => (dval > 0.0d));
-            DenseVector dvGData = DataAnalysis.DataVectorizedWithCondition(dmGdata, dmMaskCircled100, dval => (dval > 0.0d));
-            DenseVector dvBData = DataAnalysis.DataVectorizedWithCondition(dmBdata, dmMaskCircled100, dval => (dval > 0.0d));
+            DenseVector dvGrixData = DataAnalysisStatic.DataVectorizedWithCondition(dmGrixData, dmMaskCircled100, dval => (dval > 0.0d));
+            DenseVector dvYData = DataAnalysisStatic.DataVectorizedWithCondition(dmYdata, dmMaskCircled100, dval => (dval > 0.0d));
+            DenseVector dvRData = DataAnalysisStatic.DataVectorizedWithCondition(dmRdata, dmMaskCircled100, dval => (dval > 0.0d));
+            DenseVector dvGData = DataAnalysisStatic.DataVectorizedWithCondition(dmGdata, dmMaskCircled100, dval => (dval > 0.0d));
+            DenseVector dvBData = DataAnalysisStatic.DataVectorizedWithCondition(dmBdata, dmMaskCircled100, dval => (dval > 0.0d));
 
 
 
@@ -1370,7 +1372,7 @@ namespace SkyImagesAnalyzerLibraries
             dmColCh.MapInplace(
                 new Func<double, double>(
                     (dValue) => { return usedColorScheme.GetColorByValueAndRange(dValue, minValue, maxValue).Red; }),
-                MathNet.Numerics.LinearAlgebra.Zeros.AllowSkip);
+                Zeros.AllowSkip);
             //dmColCh = (MathNet.Numerics.LinearAlgebra.Double.DenseMatrix)dmColCh.PointwiseMultiply(dmMask);
 
             double[,] doubleArrDmTmp = dmColCh.ToArray();
@@ -1391,7 +1393,7 @@ namespace SkyImagesAnalyzerLibraries
             dmColCh.MapInplace(
                 new Func<double, double>(
                     (dValue) => { return usedColorScheme.GetColorByValueAndRange(dValue, minValue, maxValue).Green; }),
-                MathNet.Numerics.LinearAlgebra.Zeros.AllowSkip);
+                Zeros.AllowSkip);
             //dmColCh = (MathNet.Numerics.LinearAlgebra.Double.DenseMatrix)dmColCh.PointwiseMultiply(dmMask);
 
             doubleArrDmTmp = dmColCh.ToArray();
@@ -1413,7 +1415,7 @@ namespace SkyImagesAnalyzerLibraries
             dmColCh.MapInplace(
                 new Func<double, double>(
                     (dValue) => { return usedColorScheme.GetColorByValueAndRange(dValue, minValue, maxValue).Blue; }),
-                MathNet.Numerics.LinearAlgebra.Zeros.AllowSkip);
+                Zeros.AllowSkip);
             //dmColCh = (MathNet.Numerics.LinearAlgebra.Double.DenseMatrix)dmColCh.PointwiseMultiply(dmMask);
 
             doubleArrDmTmp = dmColCh.ToArray();
@@ -1460,7 +1462,7 @@ namespace SkyImagesAnalyzerLibraries
             dmColCh.MapInplace(
                 new Func<double, double>(
                     (dValue) => { return usedColorScheme.GetColorByValueAndRange(dValue, minValue, maxValue).Red; }),
-                MathNet.Numerics.LinearAlgebra.Zeros.AllowSkip);
+                Zeros.AllowSkip);
             //dmColCh = (MathNet.Numerics.LinearAlgebra.Double.DenseMatrix)dmColCh.PointwiseMultiply(dmMask);
 
             double[,] doubleArrDmTmp = dmColCh.ToArray();
@@ -1481,7 +1483,7 @@ namespace SkyImagesAnalyzerLibraries
             dmColCh.MapInplace(
                 new Func<double, double>(
                     (dValue) => { return usedColorScheme.GetColorByValueAndRange(dValue, minValue, maxValue).Green; }),
-                MathNet.Numerics.LinearAlgebra.Zeros.AllowSkip);
+                Zeros.AllowSkip);
             //dmColCh = (MathNet.Numerics.LinearAlgebra.Double.DenseMatrix)dmColCh.PointwiseMultiply(dmMask);
 
             doubleArrDmTmp = dmColCh.ToArray();
@@ -1503,7 +1505,7 @@ namespace SkyImagesAnalyzerLibraries
             dmColCh.MapInplace(
                 new Func<double, double>(
                     (dValue) => { return usedColorScheme.GetColorByValueAndRange(dValue, minValue, maxValue).Blue; }),
-                MathNet.Numerics.LinearAlgebra.Zeros.AllowSkip);
+                Zeros.AllowSkip);
             //dmColCh = (MathNet.Numerics.LinearAlgebra.Double.DenseMatrix)dmColCh.PointwiseMultiply(dmMask);
 
             doubleArrDmTmp = dmColCh.ToArray();
@@ -1554,11 +1556,11 @@ namespace SkyImagesAnalyzerLibraries
             if (!invertScale)
                 dmColCh.MapInplace(
                     new Func<double, double>((dValue) => { return 255.0d * ((dValue - minVal) / valuesRange); }),
-                    MathNet.Numerics.LinearAlgebra.Zeros.AllowSkip);
+                    Zeros.AllowSkip);
             else
                 dmColCh.MapInplace(
                     new Func<double, double>((dValue) => { return 255.0d * ((maxVal - dValue) / valuesRange); }),
-                    MathNet.Numerics.LinearAlgebra.Zeros.AllowSkip);
+                    Zeros.AllowSkip);
             //dmColCh = (MathNet.Numerics.LinearAlgebra.Double.DenseMatrix)dmColCh.PointwiseMultiply(dmMask);
 
             double[,] doubleArrDmTmp = dmColCh.ToArray();
@@ -1584,11 +1586,11 @@ namespace SkyImagesAnalyzerLibraries
             if (!invertScale)
                 dmColCh.MapInplace(
                     new Func<double, double>((dValue) => { return 255.0d * ((dValue - minVal) / valuesRange); }),
-                    MathNet.Numerics.LinearAlgebra.Zeros.AllowSkip);
+                    Zeros.AllowSkip);
             else
                 dmColCh.MapInplace(
                     new Func<double, double>((dValue) => { return 255.0d * ((maxVal - dValue) / valuesRange); }),
-                    MathNet.Numerics.LinearAlgebra.Zeros.AllowSkip);
+                    Zeros.AllowSkip);
 
             //dmColCh = (MathNet.Numerics.LinearAlgebra.Double.DenseMatrix)dmColCh.PointwiseMultiply(dmMask);
 
@@ -2053,7 +2055,7 @@ namespace SkyImagesAnalyzerLibraries
                     }
                 }
 
-                SkyImageIndexesStatsData grixyrgbStatsData = ImageProcessing.CalculateImageIndexesStats(currentFullFileName, out imgP, 0, predefinedRoundedMask);
+                SkyImageIndexesStatsData grixyrgbStatsData = CalculateImageIndexesStats(currentFullFileName, out imgP, 0, predefinedRoundedMask);
 
                 SkyImageMedianPerc5Data mp5dt = new SkyImageMedianPerc5Data(currentFullFileName,
                     grixyrgbStatsData.grixStatsData.lTplFieldPercentiles.Find(perc => perc.percIndex == 50).percValue,
@@ -2268,7 +2270,7 @@ namespace SkyImagesAnalyzerLibraries
                     }
                 }
 
-                SkyImageIndexesStatsData grixyrgbStatsData = ImageProcessing.CalculateImageIndexesStats(currentFullFileName, out imgP, 0, predefinedRoundedMask, logFileName, bForceCalculateionsWithoutMKL);
+                SkyImageIndexesStatsData grixyrgbStatsData = CalculateImageIndexesStats(currentFullFileName, out imgP, 0, predefinedRoundedMask, logFileName, bForceCalculateionsWithoutMKL);
 
 
                 SkyImageMedianPerc5Data mp5dt = new SkyImageMedianPerc5Data(currentFullFileName,

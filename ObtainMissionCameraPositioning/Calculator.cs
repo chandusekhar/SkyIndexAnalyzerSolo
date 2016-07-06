@@ -704,31 +704,31 @@ namespace CameraPositioningPerMission
 
             List<List<double>> lDecisionProbabilities = null;
 
-            List<int> predictedSDC =
-                NNclassificatorPredictor.NNpredict(dmObjectsFeatures, dvThetaValues, NNlayersConfig,
-                    out lDecisionProbabilities).ToList();
+            List<SunDiskCondition> predictedSDClist =
+                NNclassificatorPredictor<SunDiskCondition>.NNpredict(dmObjectsFeatures, dvThetaValues, NNlayersConfig,
+                    out lDecisionProbabilities, SunDiskConditionData.MatlabEnumeratedSDCorderedList()).ToList();
 
 
-            List<SunDiskCondition> predictedSDClist = predictedSDC.ConvertAll(sdcInt =>
-            {
-                switch (sdcInt)
-                {
-                    case 4:
-                        return SunDiskCondition.NoSun;
-                        break;
-                    case 1:
-                        return SunDiskCondition.Sun0;
-                        break;
-                    case 2:
-                        return SunDiskCondition.Sun1;
-                        break;
-                    case 3:
-                        return SunDiskCondition.Sun2;
-                        break;
-                    default:
-                        return SunDiskCondition.Defect;
-                }
-            });
+            //List<SunDiskCondition> predictedSDClist = predictedSDC.ConvertAll(sdcInt =>
+            //{
+            //    switch (sdcInt)
+            //    {
+            //        case 4:
+            //            return SunDiskCondition.NoSun;
+            //            break;
+            //        case 1:
+            //            return SunDiskCondition.Sun0;
+            //            break;
+            //        case 2:
+            //            return SunDiskCondition.Sun1;
+            //            break;
+            //        case 3:
+            //            return SunDiskCondition.Sun2;
+            //            break;
+            //        default:
+            //            return SunDiskCondition.Defect;
+            //    }
+            //});
 
             string strToShow = "SDC values probabilities: " + Environment.NewLine +
                 "| No Sun | Sun_0  | Sun_1  | Sun_2  | Detected |" + Environment.NewLine;

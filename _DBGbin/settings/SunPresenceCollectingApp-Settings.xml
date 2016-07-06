@@ -6,15 +6,15 @@
   </table>
   <table>
     <key>ImagesBasePath</key>
-    <value>D:\_gulevlab\SkyImagesAnalysis_appData\Sun-Condition-data-collection\debug-2016-06-17\</value>
+    <value>D:\_gulevlab\SkyImagesAnalysis_appData\_RV-ANS-31-total\images\snapshots-2016-01-03</value>
   </table>
   <table>
     <key>SunDiskConditionXMLdataFilesDirectory</key>
-    <value>D:\_gulevlab\SkyImagesAnalysis_appData\Sun-Condition-data-collection\debug-2016-06-17\</value>
+    <value>D:\_gulevlab\SkyImagesAnalysis_appData\_RV-ANS-31-total\stats\sdc-data\</value>
   </table>
   <table>
     <key>imageYRGBstatsXMLdataFilesDirectory</key>
-    <value>D:\_gulevlab\SkyImagesAnalysis_appData\Sun-Condition-data-collection\debug-2016-06-17\</value>
+    <value>D:\_gulevlab\SkyImagesAnalysis_appData\_RV-ANS-31-total\MKLstats\GrIxYRGB\</value>
   </table>
   <table>
     <key>imageMP5statsXMLdataFilesDirectory</key>
@@ -62,11 +62,11 @@
   </table>
   <table>
     <key>TimeSpanForConcurrentDataMappingTolerance</key>
-    <value>00:05:00</value>
+    <value>00:01:00</value>
   </table>
   <table>
     <key>ConcurrentDataXMLfilesDirectory</key>
-    <value>D:\_gulevlab\SkyImagesAnalysis_appData\Sun-Condition-data-collection\debug-2016-06-17\</value>
+    <value>D:\_gulevlab\SkyImagesAnalysis_appData\_RV-ANS-31-total\concurrentdata\</value>
   </table>
   <table>
     <key>IncludeGPSandSunAltitudeData</key>
@@ -99,5 +99,41 @@
   <table>
     <key>bForceCalculateionsWithoutMKL</key>
     <value>False</value>
+  </table>
+  <table>
+    <key>SDC_NNconfigFile</key>
+    <value>D:\_gulevlab\SkyImagesAnalysis\_DBGbin\settings\SDC_NNconfig.csv</value>
+  </table>
+  <table>
+    <key>SDC_NNtrainedParametersFile</key>
+    <value>D:\_gulevlab\SkyImagesAnalysis\_DBGbin\settings\SDC_NNtrainedParameters.csv</value>
+  </table>
+  <table>
+    <key>SDC_NormMeansFile</key>
+    <value>D:\_gulevlab\SkyImagesAnalysis\_DBGbin\settings\SDC_NormMeans.csv</value>
+  </table>
+  <table>
+    <key>SDC_NormRangeFile</key>
+    <value>D:\_gulevlab\SkyImagesAnalysis\_DBGbin\settings\SDC_NormRange.csv</value>
+  </table>
+  <table>
+    <key>TCC_NNconfigFile</key>
+    <value>D:\_gulevlab\SkyImagesAnalysis\_DBGbin\settings\TCC_NNconfig.csv</value>
+  </table>
+  <table>
+    <key>TCC_NNtrainedParametersFile</key>
+    <value>D:\_gulevlab\SkyImagesAnalysis\_DBGbin\settings\TCC_NNtrainedParameters.csv</value>
+  </table>
+  <table>
+    <key>TCC_NormMeansFile</key>
+    <value>D:\_gulevlab\SkyImagesAnalysis\_DBGbin\settings\TCC_NormMeans.csv</value>
+  </table>
+  <table>
+    <key>TCC_NormRangeFile</key>
+    <value>D:\_gulevlab\SkyImagesAnalysis\_DBGbin\settings\TCC_NormRange.csv</value>
+  </table>
+  <table>
+    <key>TCC_ExcludedVarsFile</key>
+    <value>D:\_gulevlab\SkyImagesAnalysis\_DBGbin\settings\TCC_ExcludedVars.csv</value>
   </table>
 </DataSet>

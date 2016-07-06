@@ -23,6 +23,7 @@ using System.Globalization;
 using System.Security.Cryptography;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using DataAnalysis;
 using MathNet.Numerics.LinearAlgebra;
 using Microsoft.CSharp;
 
@@ -267,7 +268,7 @@ namespace SkyImagesAnalyzerLibraries
 
         public static HistogramCalcAndShowForm RepresentHistogrammedStatsOfDataMarix(DenseMatrix dmToRepresent, Dictionary<string, object> inDefProperties, string description = "", bool showTheWindow = true)
         {
-            DenseVector dvDataToHist = DataAnalysis.DataVectorizedWithCondition(dmToRepresent, dVal => dVal > 0.0d);
+            DenseVector dvDataToHist = DataAnalysisStatic.DataVectorizedWithCondition(dmToRepresent, dVal => dVal > 0.0d);
             HistogramDataAndProperties currenthistData = new HistogramDataAndProperties(dvDataToHist, 100);
             currenthistData.color = Color.Red;
             HistogramCalcAndShowForm histForm = new HistogramCalcAndShowForm(description, inDefProperties);
@@ -284,7 +285,7 @@ namespace SkyImagesAnalyzerLibraries
 
         public static HistogramCalcAndShowForm RepresentHistogrammedStatsOfDataVector(DenseVector dvToRepresent, Dictionary<string, object> inDefProperties, string description = "", bool showTheWindow = true)
         {
-            DenseVector dvDataToHist = DataAnalysis.DataVectorizedWithCondition(dvToRepresent, dVal => dVal > 0.0d);
+            DenseVector dvDataToHist = DataAnalysisStatic.DataVectorizedWithCondition(dvToRepresent, dVal => dVal > 0.0d);
             HistogramDataAndProperties currenthistData = new HistogramDataAndProperties(dvDataToHist, 100);
             currenthistData.color = Color.Red;
             HistogramCalcAndShowForm histForm = new HistogramCalcAndShowForm(description, inDefProperties);

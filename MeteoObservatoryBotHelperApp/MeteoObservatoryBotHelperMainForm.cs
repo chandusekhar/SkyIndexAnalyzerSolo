@@ -102,6 +102,21 @@ namespace MeteoObservatoryBotHelperApp
 
         private bool bAutoMode = false;
 
+        #region SDC and TCC predictions properties
+
+        private string SDC_NormRangeFile = "";
+        private string SDC_NNconfigFile = "";
+        private string SDC_NNtrainedParametersFile = "";
+        private string SDC_NormMeansFile = "";
+
+        private string TCC_NormMeansFile = "";
+        private string TCC_NormRangeFile = "";
+        private string TCC_NNtrainedParametersFile = "";
+        private string TCC_NNconfigFile = "";
+        private string TCC_ExcludedVarsFile = "";
+
+        #endregion
+
 
 
 
@@ -144,6 +159,27 @@ namespace MeteoObservatoryBotHelperApp
 
 
 
+        void LogMessageToLogWindow(string message)
+        {
+            try
+            {
+                if (theLogWindow != null)
+                {
+                    if (!theLogWindow.IsDisposed)
+                    {
+                        theLogWindow = ServiceTools.LogAText(theLogWindow, message);
+                    }
+                }
+
+            }
+            catch (Exception ex)
+            {
+                ;
+            }
+        }
+
+
+
 
 
 
@@ -182,7 +218,7 @@ namespace MeteoObservatoryBotHelperApp
 
         private void IpcPipeClient_OnConnected(object sender, PipeclientConnectedEventArgs e)
         {
-            theLogWindow = ServiceTools.LogAText(theLogWindow, "Connected to pipeserver");
+            LogMessageToLogWindow("Connected to pipeserver");
         }
 
 
@@ -209,10 +245,7 @@ namespace MeteoObservatoryBotHelperApp
                     }
                     catch (Exception ex)
                     {
-                        if (theLogWindow != null)
-                        {
-                            theLogWindow = ServiceTools.LogAText(theLogWindow, ex.Message);
-                        }
+                        LogMessageToLogWindow(ex.Message);
 
                         ServiceTools.logToTextFile(errorLogFilename,
                             "ERROR parsing GPS data XML packet: " + Environment.NewLine +
@@ -254,11 +287,8 @@ namespace MeteoObservatoryBotHelperApp
 
         private void btnCCandTCC_Click(object sender, EventArgs e)
         {
-            if (theLogWindow == null)
-            {
-                theLogWindow = ServiceTools.LogAText(theLogWindow, "");
-            }
-            // Task.Run(() => ComputeAndReportCCandTCC());
+            LogMessageToLogWindow("");
+
             lowPriorityTaskFactory.StartNew(ComputeAndReportCCandTCC);
         }
 
@@ -392,8 +422,8 @@ namespace MeteoObservatoryBotHelperApp
 
             if (currImageStatsData == null)
             {
-                theLogWindow = ServiceTools.LogAText(theLogWindow,
-                    "obtaining stats data for image " + currImageFInfo.FullName);
+                LogMessageToLogWindow("obtaining stats data for image " + currImageFInfo.FullName);
+
 
                 Dictionary<string, object> optionalParameters = new Dictionary<string, object>();
                 optionalParameters.Add("ImagesRoundMasksXMLfilesMappingList", ImagesRoundMasksXMLfilesMappingList);
@@ -429,7 +459,7 @@ namespace MeteoObservatoryBotHelperApp
 
                     currImageStatsData = currImageProcessingResult.grixyrgbStatsData;
 
-                    theLogWindow = ServiceTools.LogAText(theLogWindow, "finished processing file " + Environment.NewLine + currentFullFileName);
+                    LogMessageToLogWindow("finished processing file " + Environment.NewLine + currentFullFileName);
 
                 }
                 else
@@ -443,7 +473,7 @@ namespace MeteoObservatoryBotHelperApp
                         Environment.StackTrace + Environment.NewLine + Environment.NewLine;
 
                     ServiceTools.logToTextFile(errorLogFilename, errorStr, true, true);
-                    theLogWindow = ServiceTools.LogAText(theLogWindow, errorStr);
+                    LogMessageToLogWindow(errorStr);
 
                     return;
 
@@ -458,8 +488,9 @@ namespace MeteoObservatoryBotHelperApp
             SunDiskCondition sdc;
             int TCC;
             List<double> SDCdecisionProbabilities = new List<double>();
+            List<double> TCCdecisionProbabilities = new List<double>();
             PredictAndReportSDCandCC(currImageStatsData, nearestConcurrentData, out sdc, out TCC,
-                out SDCdecisionProbabilities);
+                out SDCdecisionProbabilities, out TCCdecisionProbabilities);
 
 
 
@@ -484,9 +515,9 @@ namespace MeteoObservatoryBotHelperApp
                 grixyrgbStatsXMLfile = strImageGrIxYRGBDataFileName,
                 grixyrgbStats = currImageStatsData,
                 PredictedSDC = sdc,
-                sdcDecisionProbabilities = SDCdecisionProbabilities.Select((dProb,idx) => new SDCdecisionProbability()
+                sdcDecisionProbabilities = SDCdecisionProbabilities.Select((dProb, idx) => new SDCdecisionProbability()
                 {
-                    sdc = SunDiskConditionData.MatlabSDCenum(idx+1),
+                    sdc = SunDiskConditionData.MatlabSDCenum(idx + 1),
                     sdcDecisionProbability = dProb
                 }).ToList()
             };
@@ -496,30 +527,40 @@ namespace MeteoObservatoryBotHelperApp
             ServiceTools.WriteObjectToXML(data, processedAndPredictedDataFileName);
 
 
-            if (theLogWindow != null)
-            {
-                string strToShowSDCs = Environment.NewLine +
-                                       "|  NoSun  |  Sun0   |  Sun1   |  Sun2   |" + Environment.NewLine + "" +
-                                       "|" +
-                                       String.Format("{0,9}",
-                                           (data.sdcDecisionProbabilities.First(
-                                               prob => prob.sdc == SunDiskCondition.NoSun).sdcDecisionProbability*100.0d)
-                                               .ToString("F2") + "%") + "|" +
-                                       String.Format("{0,9}",
-                                           (data.sdcDecisionProbabilities.First(
-                                               prob => prob.sdc == SunDiskCondition.Sun0).sdcDecisionProbability*100.0d)
-                                               .ToString("F2") + "%") + "|" +
-                                       String.Format("{0,9}",
-                                           (data.sdcDecisionProbabilities.First(
-                                               prob => prob.sdc == SunDiskCondition.Sun1).sdcDecisionProbability*100.0d)
-                                               .ToString("F2") + "%") + "|" +
-                                       String.Format("{0,9}",
-                                           (data.sdcDecisionProbabilities.First(
-                                               prob => prob.sdc == SunDiskCondition.Sun2).sdcDecisionProbability*100.0d)
-                                               .ToString("F2") + "%") + "|";
 
-                theLogWindow = ServiceTools.LogAText(theLogWindow, strToShowSDCs);
-            }
+            string strToShow = Environment.NewLine + Environment.NewLine +
+                                   "|  NoSun  |  Sun0   |  Sun1   |  Sun2   |" + Environment.NewLine + "" +
+                                   "|" +
+                                   String.Format("{0,9}",
+                                       (data.sdcDecisionProbabilities.First(
+                                           prob => prob.sdc == SunDiskCondition.NoSun).sdcDecisionProbability * 100.0d)
+                                           .ToString("F2") + "%") + "|" +
+                                   String.Format("{0,9}",
+                                       (data.sdcDecisionProbabilities.First(
+                                           prob => prob.sdc == SunDiskCondition.Sun0).sdcDecisionProbability * 100.0d)
+                                           .ToString("F2") + "%") + "|" +
+                                   String.Format("{0,9}",
+                                       (data.sdcDecisionProbabilities.First(
+                                           prob => prob.sdc == SunDiskCondition.Sun1).sdcDecisionProbability * 100.0d)
+                                           .ToString("F2") + "%") + "|" +
+                                   String.Format("{0,9}",
+                                       (data.sdcDecisionProbabilities.First(
+                                           prob => prob.sdc == SunDiskCondition.Sun2).sdcDecisionProbability * 100.0d)
+                                           .ToString("F2") + "%") + "|";
+
+
+            List<string> TCCvalues = new List<string>();
+            for (int i = 0; i < 9; i++) { TCCvalues.Add(i.ToString()); }
+
+
+            strToShow += Environment.NewLine + Environment.NewLine +
+                        "|   " + string.Join("   |   ", TCCvalues) + "   |" + Environment.NewLine;
+            strToShow += "|" +
+                             string.Join("|",
+                                 TCCdecisionProbabilities.ConvertAll(
+                                     dProb => String.Format("{0,6}", (dProb * 100.0d).ToString("F2")) + "%")) + "|";
+
+            LogMessageToLogWindow(strToShow);
 
 
             #endregion store collected data to HDD
@@ -539,8 +580,7 @@ namespace MeteoObservatoryBotHelperApp
             zip.IncludeFiles(processedAndPredictedDataFileName);
             zip.Compress();
 
-            //theLogWindow = ServiceTools.LogAText(theLogWindow,
-            //    "zip file created: " + Environment.NewLine + tempZipFilename);
+            LogMessageToLogWindow("zip file created: " + Environment.NewLine + tempZipFilename);
 
             Exception retEx = null;
             bool sendingResult = SendFileToBotServer(tempZipFilename,
@@ -550,22 +590,22 @@ namespace MeteoObservatoryBotHelperApp
 
 
             #region report error
+
             if (!sendingResult)
             {
-                if (theLogWindow != null)
-                {
-                    theLogWindow = ServiceTools.LogAText(theLogWindow,
-                        "ERROR sending file to bot server" + Environment.NewLine + "filename: " + tempZipFilename +
-                        Environment.NewLine + "Exception messages: " + Environment.NewLine +
-                        ServiceTools.GetExceptionMessages(retEx) + "at the code line: " +
-                        ServiceTools.CurrentCodeLineDescription());
-                }
 
-                ServiceTools.logToTextFile(errorLogFilename,
-                    "ERROR sending file to bot server" + Environment.NewLine + "filename: " + tempZipFilename +
-                    Environment.NewLine + "Exception messages: " + Environment.NewLine +
-                    ServiceTools.GetExceptionMessages(retEx) + "at the code line: " +
-                    ServiceTools.CurrentCodeLineDescription());
+                LogMessageToLogWindow("ERROR sending file to bot server" + Environment.NewLine + "filename: " +
+                                      tempZipFilename +
+                                      Environment.NewLine + "Exception messages: " + Environment.NewLine +
+                                      ServiceTools.GetExceptionMessages(retEx) + "at the code line: " +
+                                      ServiceTools.CurrentCodeLineDescription());
+
+
+                LogMessageToLogWindow("ERROR sending file to bot server" + Environment.NewLine + "filename: " +
+                                      tempZipFilename +
+                                      Environment.NewLine + "Exception messages: " + Environment.NewLine +
+                                      ServiceTools.GetExceptionMessages(retEx) + "at the code line: " +
+                                      ServiceTools.CurrentCodeLineDescription());
 
 
                 return;
@@ -584,22 +624,17 @@ namespace MeteoObservatoryBotHelperApp
 
             if (!execResult)
             {
-                if (theLogWindow != null)
-                {
-                    theLogWindow = ServiceTools.LogAText(theLogWindow,
-                        "ERROR executing commands on bot server" + Environment.NewLine +
-                        Environment.NewLine + "Exception messages: " + Environment.NewLine +
-                        ServiceTools.GetExceptionMessages(retEx) + "at the code line: " +
-                        ServiceTools.CurrentCodeLineDescription());
-                }
-                else
-                {
-                    ServiceTools.logToTextFile(errorLogFilename,
-                        "ERROR executing commands on bot server" + Environment.NewLine +
-                        Environment.NewLine + "Exception messages: " + Environment.NewLine +
-                        ServiceTools.GetExceptionMessages(retEx) + "at the code line: " +
-                        ServiceTools.CurrentCodeLineDescription());
-                }
+                LogMessageToLogWindow("ERROR executing commands on bot server" + Environment.NewLine +
+                                      Environment.NewLine + "Exception messages: " + Environment.NewLine +
+                                      ServiceTools.GetExceptionMessages(retEx) + "at the code line: " +
+                                      ServiceTools.CurrentCodeLineDescription());
+
+                ServiceTools.logToTextFile(errorLogFilename,
+                    "ERROR executing commands on bot server" + Environment.NewLine +
+                    Environment.NewLine + "Exception messages: " + Environment.NewLine +
+                    ServiceTools.GetExceptionMessages(retEx) + "at the code line: " +
+                    ServiceTools.CurrentCodeLineDescription());
+                
                 return;
             }
 
@@ -611,67 +646,64 @@ namespace MeteoObservatoryBotHelperApp
 
 
 
-        private void PredictAndReportSDCandCC(SkyImageIndexesStatsData statsData, ConcurrentData nearestConcurrentData, out SunDiskCondition sdc, out int TCC, out List<double> sdcDecisionProbabilities)
+        private void PredictAndReportSDCandCC(SkyImageIndexesStatsData statsData, ConcurrentData nearestConcurrentData,
+            out SunDiskCondition sdc, out int TCC, out List<double> sdcDecisionProbabilities,
+            out List<double> TCCdecisionProbabilities)
         {
             stwCalculateAndReportSDCandTCCtimer.Restart();
 
             sdc = SunDiskCondition.Undefined;
             TCC = 0;
             sdcDecisionProbabilities = new List<double>();
+            TCCdecisionProbabilities = new List<double>();
 
             if (bSendProcessedDataTo_CC_Moscow_bot_server)
             {
-                string CurDir = Directory.GetCurrentDirectory();
-                string SDC_NNconfigFile = CurDir + Path.DirectorySeparatorChar + "settings" +
-                                          Path.DirectorySeparatorChar + "NNconfig.csv";
-                string SDC_NNtrainedParametersFile = CurDir + Path.DirectorySeparatorChar + "settings" +
-                                                     Path.DirectorySeparatorChar + "NNtrainedParameters.csv";
-                string NormMeansFile = CurDir + Path.DirectorySeparatorChar + "settings" + Path.DirectorySeparatorChar +
-                                       "NormMeans.csv";
-                string NormRangeFile = CurDir + Path.DirectorySeparatorChar + "settings" + Path.DirectorySeparatorChar +
-                                       "NormRange.csv";
                 List<double> decisionProbabilities = new List<double>();
 
-                //SunDiskCondition sdc = SDCpredictorNN.CalcSDC_NN(dctCommunicationChecklist.strReturnedStatsDataXMLfilename,
-                //    dctCommunicationChecklist.strConcurrentDataXMLfilename, SDC_NNconfigFile, SDC_NNtrainedParametersFile,
-                //    NormMeansFile, NormRangeFile, out decisionProbabilities);
-                DenseVector dvMeans =
-                    (DenseVector)((DenseMatrix)ServiceTools.ReadDataFromCSV(NormMeansFile, 0, ",")).Row(0);
-                DenseVector dvRanges =
-                    (DenseVector)((DenseMatrix)ServiceTools.ReadDataFromCSV(NormRangeFile, 0, ",")).Row(0);
-                DenseVector dvThetaValues =
+                DenseVector SDCdvMeans =
+                    (DenseVector)((DenseMatrix)ServiceTools.ReadDataFromCSV(SDC_NormMeansFile, 0, ",")).Row(0);
+                DenseVector SDCdvRanges =
+                    (DenseVector)((DenseMatrix)ServiceTools.ReadDataFromCSV(SDC_NormRangeFile, 0, ",")).Row(0);
+                DenseVector SDCdvThetaValues =
                     (DenseVector)ServiceTools.ReadDataFromCSV(SDC_NNtrainedParametersFile, 0, ",");
-                List<int> NNlayersConfig =
+                List<int> SDCnnLayersConfig =
                     new List<double>(((DenseMatrix)ServiceTools.ReadDataFromCSV(SDC_NNconfigFile, 0, ",")).Row(0))
                         .ConvertAll
                         (dVal => Convert.ToInt32(dVal));
 
-                sdc = SDCpredictorNN.PredictSDC_NN(statsData, nearestConcurrentData, NNlayersConfig, dvThetaValues,
-                    dvMeans,
-                    dvRanges, out decisionProbabilities);
 
-                sdcDecisionProbabilities = decisionProbabilities;
-
-                string CC_NNconfigFile = CurDir + Path.DirectorySeparatorChar + "settings" + Path.DirectorySeparatorChar +
-                                         "CC_NNconfig.csv";
-                string CC_NNtrainedParametersFile = CurDir + Path.DirectorySeparatorChar + "settings" +
-                                                    Path.DirectorySeparatorChar + "CC_NNtrainedParameters.csv";
-                DenseVector dv_CC_ThetaValues =
-                    (DenseVector)ServiceTools.ReadDataFromCSV(CC_NNtrainedParametersFile, 0, ",");
-                List<int> CC_NNlayersConfig =
-                    new List<double>(((DenseMatrix)ServiceTools.ReadDataFromCSV(CC_NNconfigFile, 0, ",")).Row(0))
+                DenseVector TCCdvMeans =
+                    (DenseVector)((DenseMatrix)ServiceTools.ReadDataFromCSV(TCC_NormMeansFile, 0, ",")).Row(0);
+                DenseVector TCCdvRanges =
+                    (DenseVector)((DenseMatrix)ServiceTools.ReadDataFromCSV(TCC_NormRangeFile, 0, ",")).Row(0);
+                DenseVector TCCdvThetaValues =
+                    (DenseVector)ServiceTools.ReadDataFromCSV(TCC_NNtrainedParametersFile, 0, ",");
+                List<int> TCCnnLayersConfig =
+                    new List<double>(((DenseMatrix)ServiceTools.ReadDataFromCSV(TCC_NNconfigFile, 0, ",")).Row(0))
+                        .ConvertAll
+                        (dVal => Convert.ToInt32(dVal));
+                List<int> TCCnnConfigVarsToExclude =
+                    new List<double>(((DenseMatrix)ServiceTools.ReadDataFromCSV(TCC_ExcludedVarsFile, 0, ",")).Row(0))
                         .ConvertAll
                         (dVal => Convert.ToInt32(dVal));
 
-                TCC = CCpredictorNN.PredictCC_NN(statsData, nearestConcurrentData, NNlayersConfig, dvThetaValues,
-                    dvMeans,
-                    dvRanges, CC_NNlayersConfig, dv_CC_ThetaValues);
+                sdc = SDCpredictorNN.PredictSDC_NN(statsData, nearestConcurrentData, SDCnnLayersConfig, SDCdvThetaValues,
+                    SDCdvMeans,
+                    SDCdvRanges, out decisionProbabilities);
 
-                theLogWindow = ServiceTools.LogAText(theLogWindow,
-                    "Detected Sun disk condition: " + sdc + Environment.NewLine + "Detected CC: " + TCC);
+                sdcDecisionProbabilities = decisionProbabilities;
 
-                //ThreadSafeOperations.SetText(lblSDCvalue, sdc.ToString(), false);
-                //ThreadSafeOperations.SetText(lblCCvalue, TCC.ToString() + " (/8)", false);
+                List<double> outTCCdecisionProbabilities = null;
+
+                TCC = TCCpredictorNN.PredictTCC_NN(statsData, nearestConcurrentData, SDCnnLayersConfig, SDCdvThetaValues,
+                    SDCdvMeans, SDCdvRanges, TCCnnLayersConfig, TCCdvThetaValues, TCCdvMeans, TCCdvRanges,
+                    TCCnnConfigVarsToExclude, out outTCCdecisionProbabilities);
+
+                TCCdecisionProbabilities = outTCCdecisionProbabilities.ToList();
+
+                LogMessageToLogWindow("Detected Sun disk condition: " + sdc + Environment.NewLine + "Detected CC: " +
+                                      TCC);
             }
         }
 
@@ -689,10 +721,8 @@ namespace MeteoObservatoryBotHelperApp
 
         private void btnForceMakeWeatherInfo_Click(object sender, EventArgs e)
         {
-            if (theLogWindow == null)
-            {
-                theLogWindow = ServiceTools.LogAText(theLogWindow, "");
-            }
+            LogMessageToLogWindow("");
+
             lowPriorityTaskFactory.StartNew(MakeWeatherInfo);
         }
 
@@ -841,8 +871,7 @@ namespace MeteoObservatoryBotHelperApp
                 zip.IncludeFiles(string.Join("|", filesToSend));
                 zip.Compress();
 
-                //theLogWindow = ServiceTools.LogAText(theLogWindow,
-                //    "zip file created: " + Environment.NewLine + tempZipFilename);
+                LogMessageToLogWindow("zip file created: " + Environment.NewLine + tempZipFilename);
 
                 Exception retEx = null;
                 bool sendingResult = SendFileToBotServer(tempZipFilename,
@@ -855,14 +884,11 @@ namespace MeteoObservatoryBotHelperApp
 
                 if (!sendingResult)
                 {
-                    if (theLogWindow != null)
-                    {
-                        theLogWindow = ServiceTools.LogAText(theLogWindow,
-                            "ERROR sending file to bot server" + Environment.NewLine + "filename: " + tempZipFilename +
-                            Environment.NewLine + "Exception messages: " + Environment.NewLine +
-                            ServiceTools.GetExceptionMessages(retEx) + "at the code line: " +
-                            ServiceTools.CurrentCodeLineDescription());
-                    }
+                    LogMessageToLogWindow("ERROR sending file to bot server" + Environment.NewLine + "filename: " +
+                                          tempZipFilename +
+                                          Environment.NewLine + "Exception messages: " + Environment.NewLine +
+                                          ServiceTools.GetExceptionMessages(retEx) + "at the code line: " +
+                                          ServiceTools.CurrentCodeLineDescription());
 
                     ServiceTools.logToTextFile(errorLogFilename,
                         "ERROR sending file to bot server" + Environment.NewLine + "filename: " + tempZipFilename +
@@ -890,22 +916,16 @@ namespace MeteoObservatoryBotHelperApp
 
                 if (!execResult)
                 {
-                    if (theLogWindow != null)
-                    {
-                        theLogWindow = ServiceTools.LogAText(theLogWindow,
-                            "ERROR executing commands on bot server" + Environment.NewLine +
-                            Environment.NewLine + "Exception messages: " + Environment.NewLine +
-                            ServiceTools.GetExceptionMessages(retEx) + "at the code line: " +
-                            ServiceTools.CurrentCodeLineDescription());
-                    }
-                    else
-                    {
-                        ServiceTools.logToTextFile(errorLogFilename,
-                            "ERROR executing commands on bot server" + Environment.NewLine +
-                            Environment.NewLine + "Exception messages: " + Environment.NewLine +
-                            ServiceTools.GetExceptionMessages(retEx) + "at the code line: " +
-                            ServiceTools.CurrentCodeLineDescription());
-                    }
+                    LogMessageToLogWindow("ERROR executing commands on bot server" + Environment.NewLine +
+                                          Environment.NewLine + "Exception messages: " + Environment.NewLine +
+                                          ServiceTools.GetExceptionMessages(retEx) + "at the code line: " +
+                                          ServiceTools.CurrentCodeLineDescription());
+
+                    ServiceTools.logToTextFile(errorLogFilename,
+                        "ERROR executing commands on bot server" + Environment.NewLine +
+                        Environment.NewLine + "Exception messages: " + Environment.NewLine +
+                        ServiceTools.GetExceptionMessages(retEx) + "at the code line: " +
+                        ServiceTools.CurrentCodeLineDescription());
                     return;
                 }
 
@@ -1011,8 +1031,7 @@ namespace MeteoObservatoryBotHelperApp
                 zip.IncludeFiles(filenameToSend + " | " + concurrentDataXMLfilename);
                 zip.Compress();
 
-                //theLogWindow = ServiceTools.LogAText(theLogWindow,
-                //    "zip file created: " + Environment.NewLine + tempZipFilename);
+                LogMessageToLogWindow("zip file created: " + Environment.NewLine + tempZipFilename);
 
                 Exception retEx = null;
                 bool sendingResult = SendFileToBotServer(tempZipFilename,
@@ -1024,14 +1043,11 @@ namespace MeteoObservatoryBotHelperApp
                 #region report error
                 if (!sendingResult)
                 {
-                    if (theLogWindow != null)
-                    {
-                        theLogWindow = ServiceTools.LogAText(theLogWindow,
-                            "ERROR sending file to bot server" + Environment.NewLine + "filename: " + tempZipFilename +
-                            Environment.NewLine + "Exception messages: " + Environment.NewLine +
-                            ServiceTools.GetExceptionMessages(retEx) + "at the code line: " +
-                            ServiceTools.CurrentCodeLineDescription());
-                    }
+                    LogMessageToLogWindow("ERROR sending file to bot server" + Environment.NewLine + "filename: " +
+                                          tempZipFilename +
+                                          Environment.NewLine + "Exception messages: " + Environment.NewLine +
+                                          ServiceTools.GetExceptionMessages(retEx) + "at the code line: " +
+                                          ServiceTools.CurrentCodeLineDescription());
 
                     ServiceTools.logToTextFile(errorLogFilename,
                         "ERROR sending file to bot server" + Environment.NewLine + "filename: " + tempZipFilename +
@@ -1057,22 +1073,17 @@ namespace MeteoObservatoryBotHelperApp
 
                 if (!execResult)
                 {
-                    if (theLogWindow != null)
-                    {
-                        theLogWindow = ServiceTools.LogAText(theLogWindow,
-                            "ERROR executing commands on bot server" + Environment.NewLine +
-                            Environment.NewLine + "Exception messages: " + Environment.NewLine +
-                            ServiceTools.GetExceptionMessages(retEx) + "at the code line: " +
-                            ServiceTools.CurrentCodeLineDescription());
-                    }
-                    else
-                    {
-                        ServiceTools.logToTextFile(errorLogFilename,
-                            "ERROR executing commands on bot server" + Environment.NewLine +
-                            Environment.NewLine + "Exception messages: " + Environment.NewLine +
-                            ServiceTools.GetExceptionMessages(retEx) + "at the code line: " +
-                            ServiceTools.CurrentCodeLineDescription());
-                    }
+                    LogMessageToLogWindow("ERROR executing commands on bot server" + Environment.NewLine +
+                                          Environment.NewLine + "Exception messages: " + Environment.NewLine +
+                                          ServiceTools.GetExceptionMessages(retEx) + "at the code line: " +
+                                          ServiceTools.CurrentCodeLineDescription());
+
+                    ServiceTools.logToTextFile(errorLogFilename,
+                        "ERROR executing commands on bot server" + Environment.NewLine +
+                        Environment.NewLine + "Exception messages: " + Environment.NewLine +
+                        ServiceTools.GetExceptionMessages(retEx) + "at the code line: " +
+                        ServiceTools.CurrentCodeLineDescription());
+                
                     return;
                 }
 
@@ -1140,7 +1151,15 @@ namespace MeteoObservatoryBotHelperApp
 
             try
             {
-                sh.SSHCert = new Certificate(CertStoreTypes.cstPPKFile, strRemoteBotServerHostAuthKeyFile, "", "*");
+                if (Path.GetExtension(strRemoteBotServerHostAuthKeyFile) == ".ppk")
+                {
+                    sh.SSHCert = new Certificate(CertStoreTypes.cstPPKFile, strRemoteBotServerHostAuthKeyFile, "", "*");
+                }
+                else
+                {
+                    sh.SSHCert = new Certificate(CertStoreTypes.cstPEMKeyFile, strRemoteBotServerHostAuthKeyFile, "", "*");
+                }
+                
             }
             catch (Exception ex)
             {
@@ -1165,7 +1184,16 @@ namespace MeteoObservatoryBotHelperApp
 
             foreach (string command in commands)
             {
-                sh.Execute(command);
+                try
+                {
+                    sh.Execute(command);
+                }
+                catch (Exception ex)
+                {
+                    retEx = ex;
+                    return false;
+                }
+                
             }
 
             return true;
@@ -1173,10 +1201,15 @@ namespace MeteoObservatoryBotHelperApp
 
 
 
+
+
+
         private void Sh_OnStdout(object sender, SshellStdoutEventArgs e)
         {
-            theLogWindow = ServiceTools.LogAText(theLogWindow, e.Text);
+            LogMessageToLogWindow(e.Text);
         }
+
+
 
 
 
@@ -1282,10 +1315,7 @@ namespace MeteoObservatoryBotHelperApp
 
         private void Scp_OnEndTransfer(object sender, ScpEndTransferEventArgs e)
         {
-            if (theLogWindow != null)
-            {
-                theLogWindow = ServiceTools.LogAText(theLogWindow, "file " + e.LocalFile + " transfer finished");
-            }
+            LogMessageToLogWindow("file " + e.LocalFile + " transfer finished");
         }
 
 
@@ -1569,7 +1599,7 @@ namespace MeteoObservatoryBotHelperApp
             if (defaultProperties.ContainsKey("strRemoteServerDataUploadingBaseDirectory"))
             {
                 strRemoteServerDataUploadingBaseDirectory =
-                    (string) defaultProperties["strRemoteServerDataUploadingBaseDirectory"];
+                    (string)defaultProperties["strRemoteServerDataUploadingBaseDirectory"];
             }
             else
             {
@@ -1665,6 +1695,152 @@ namespace MeteoObservatoryBotHelperApp
 
 
 
+            #region ANN parameters files
+
+            #region SDC_NNconfigFile
+            // NNconfigFile
+            if (defaultProperties.ContainsKey("SDC_NNconfigFile"))
+            {
+                SDC_NNconfigFile = ((string)defaultProperties["SDC_NNconfigFile"]);
+            }
+            else
+            {
+                SDC_NNconfigFile = CurDir + Path.DirectorySeparatorChar + "settings" + Path.DirectorySeparatorChar + "SDC_NNconfig.csv";
+                defaultProperties.Add("SDC_NNconfigFile", SDC_NNconfigFile);
+                bDefaultPropertiesHasBeenUpdated = true;
+            }
+            #endregion
+
+
+            #region SDC_NNtrainedParametersFile
+            //NNtrainedParametersFile
+            if (defaultProperties.ContainsKey("SDC_NNtrainedParametersFile"))
+            {
+                SDC_NNtrainedParametersFile = ((string)defaultProperties["SDC_NNtrainedParametersFile"]);
+            }
+            else
+            {
+                SDC_NNtrainedParametersFile = CurDir + Path.DirectorySeparatorChar + "settings" + Path.DirectorySeparatorChar + "SDC_NNtrainedParameters.csv";
+                defaultProperties.Add("SDC_NNtrainedParametersFile", SDC_NNtrainedParametersFile);
+                bDefaultPropertiesHasBeenUpdated = true;
+            }
+            #endregion
+
+
+            #region SDC_NormMeansFile
+            // NormMeansFile
+            if (defaultProperties.ContainsKey("SDC_NormMeansFile"))
+            {
+                SDC_NormMeansFile = ((string)defaultProperties["SDC_NormMeansFile"]);
+            }
+            else
+            {
+                SDC_NormMeansFile = CurDir + Path.DirectorySeparatorChar + "settings" + Path.DirectorySeparatorChar + "SDC_NormMeans.csv";
+                defaultProperties.Add("SDC_NormMeansFile", SDC_NormMeansFile);
+                bDefaultPropertiesHasBeenUpdated = true;
+            }
+            #endregion
+
+
+            #region SDC_NormRangeFile
+            // NormRangeFile
+            if (defaultProperties.ContainsKey("SDC_NormRangeFile"))
+            {
+                SDC_NormRangeFile = ((string)defaultProperties["SDC_NormRangeFile"]);
+            }
+            else
+            {
+                SDC_NormRangeFile = CurDir + Path.DirectorySeparatorChar + "settings" + Path.DirectorySeparatorChar + "SDC_NormRange.csv";
+                defaultProperties.Add("SDC_NormRangeFile", SDC_NormRangeFile);
+                bDefaultPropertiesHasBeenUpdated = true;
+            }
+            #endregion
+
+
+            #region TCC_NNconfigFile
+            if (defaultProperties.ContainsKey("TCC_NNconfigFile"))
+            {
+                TCC_NNconfigFile = ((string)defaultProperties["TCC_NNconfigFile"]);
+            }
+            else
+            {
+                TCC_NNconfigFile = CurDir + Path.DirectorySeparatorChar + "settings" + Path.DirectorySeparatorChar + "TCC_NNconfig.csv";
+                defaultProperties.Add("TCC_NNconfigFile", TCC_NNconfigFile);
+                bDefaultPropertiesHasBeenUpdated = true;
+            }
+            //private string TCC_NNconfigFile = "";
+            #endregion
+
+
+            #region TCC_NNtrainedParametersFile
+            if (defaultProperties.ContainsKey("TCC_NNtrainedParametersFile"))
+            {
+                TCC_NNtrainedParametersFile = ((string)defaultProperties["TCC_NNtrainedParametersFile"]);
+            }
+            else
+            {
+                TCC_NNtrainedParametersFile = CurDir + Path.DirectorySeparatorChar + "settings" + Path.DirectorySeparatorChar + "TCC_NNtrainedParameters.csv";
+                defaultProperties.Add("TCC_NNtrainedParametersFile", TCC_NNtrainedParametersFile);
+                bDefaultPropertiesHasBeenUpdated = true;
+            }
+            //private string TCC_NNtrainedParametersFile = "";
+            #endregion
+
+
+            #region TCC_NormMeansFile
+            if (defaultProperties.ContainsKey("TCC_NormMeansFile"))
+            {
+                TCC_NormMeansFile = ((string)defaultProperties["TCC_NormMeansFile"]);
+            }
+            else
+            {
+                TCC_NormMeansFile = CurDir + Path.DirectorySeparatorChar + "settings" + Path.DirectorySeparatorChar + "TCC_NormMeans.csv";
+                defaultProperties.Add("TCC_NormMeansFile", TCC_NormMeansFile);
+                bDefaultPropertiesHasBeenUpdated = true;
+            }
+            //private string TCC_NormMeansFile = "";
+            #endregion
+
+
+            #region TCC_NormRangeFile
+            if (defaultProperties.ContainsKey("TCC_NormRangeFile"))
+            {
+                TCC_NormRangeFile = ((string)defaultProperties["TCC_NormRangeFile"]);
+            }
+            else
+            {
+                TCC_NormRangeFile = CurDir + Path.DirectorySeparatorChar + "settings" + Path.DirectorySeparatorChar + "TCC_NormRange.csv";
+                defaultProperties.Add("TCC_NormRangeFile", TCC_NormRangeFile);
+                bDefaultPropertiesHasBeenUpdated = true;
+            }
+            //private string TCC_NormRangeFile = "";
+            #endregion
+
+
+            #region TCC_ExcludedVarsFile
+            if (defaultProperties.ContainsKey("TCC_ExcludedVarsFile"))
+            {
+                TCC_ExcludedVarsFile = ((string)defaultProperties["TCC_ExcludedVarsFile"]);
+            }
+            else
+            {
+                TCC_ExcludedVarsFile = CurDir + Path.DirectorySeparatorChar + "settings" + Path.DirectorySeparatorChar + "TCC_ExcludedVars.csv";
+                defaultProperties.Add("TCC_ExcludedVarsFile", TCC_ExcludedVarsFile);
+                bDefaultPropertiesHasBeenUpdated = true;
+            }
+            //private string TCC_ExcludedVarsFile = "";
+            #endregion
+
+            #endregion
+
+
+
+
+
+
+
+
+
 
             if (bDefaultPropertiesHasBeenUpdated)
             {
@@ -1692,7 +1868,7 @@ namespace MeteoObservatoryBotHelperApp
 
 
 
-
+        #region Form behaviour
 
         private void MeteoObservatoryBotHelperMainForm_FormClosing(object sender, FormClosingEventArgs e)
         {
@@ -1730,6 +1906,9 @@ namespace MeteoObservatoryBotHelperApp
             }
         }
 
+
+
+
         private void btnPrefs_Click(object sender, EventArgs e)
         {
             PropertiesEditor propForm = new PropertiesEditor(defaultProperties, defaultPropertiesXMLfileName);
@@ -1737,10 +1916,14 @@ namespace MeteoObservatoryBotHelperApp
             propForm.ShowDialog();
         }
 
+
+
+
         private void PropertiesFormClosed(object sender, FormClosedEventArgs e)
         {
             readDefaultProperties();
         }
+
 
 
 
@@ -1862,6 +2045,6 @@ namespace MeteoObservatoryBotHelperApp
             }
         }
 
-
+        #endregion Form behaviour
     }
 }

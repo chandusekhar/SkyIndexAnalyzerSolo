@@ -9,20 +9,12 @@ using System.Windows.Forms;
 using Emgu.CV;
 using Emgu.CV.Structure;
 using Emgu.CV.Util;
+using Geometry;
 using MathNet.Numerics.LinearAlgebra.Double;
 
 
 namespace SkyImagesAnalyzerLibraries
 {
-    public enum StandardConvolutionKernels
-    {
-        cos,
-        gauss,
-        flat,
-        linear,
-        bilinear
-    }
-
     public static class Extensions
     {
         public static Gray white = new Gray(255);
@@ -141,265 +133,19 @@ namespace SkyImagesAnalyzerLibraries
 
 
 
-
-        public static DenseMatrix Conv2(this DenseMatrix dmSource, DenseMatrix dmKernel)
-        {
-            int kernelHalfSizeRows = (dmKernel.RowCount - 1) / 2;
-            int kernelHalfSizeCols = (dmKernel.ColumnCount - 1) / 2;
-            DenseMatrix dmRes = DenseMatrix.Create(dmSource.RowCount, dmSource.ColumnCount, (r, c) =>
-            {
-                int startRow = r - kernelHalfSizeRows;
-                int dmSourceStartRow = Math.Max(startRow, 0);
-                int kernelStartRow = (startRow >= 0) ? (0) : (-startRow);
-                int endRow = r + kernelHalfSizeRows;
-                int dmSourceEndRow = Math.Min(endRow, dmSource.RowCount - 1);
-                int rowCount = dmSourceEndRow - dmSourceStartRow + 1;
-                int startCol = c - kernelHalfSizeCols;
-                int dmSourceStartCol = Math.Max(startCol, 0);
-                int kernelStartCol = (startCol >= 0) ? (0) : (-startCol);
-                int endCol = c + kernelHalfSizeCols;
-                int dmSourceEndCol = Math.Min(endCol, dmSource.ColumnCount - 1);
-                int colCount = dmSourceEndCol - dmSourceStartCol + 1;
-
-                DenseMatrix dmSourceSubmatrix = (DenseMatrix)dmSource.SubMatrix(dmSourceStartRow, rowCount, dmSourceStartCol, colCount);
-                DenseMatrix dmKernelSubMatrix =
-                    (DenseMatrix)dmKernel.SubMatrix(kernelStartRow, rowCount, kernelStartCol, colCount);
-                DenseMatrix sumMatrix = (DenseMatrix)(dmSourceSubmatrix.PointwiseMultiply(dmKernelSubMatrix));
-                return sumMatrix.Values.Sum();
-            });
-            return dmRes;
-        }
-
-
-
-
-        public static DenseMatrix Conv2(this DenseMatrix dmSource, StandardConvolutionKernels kernelType, int kernelHalfWidth = 10)
-        {
-            //int kernelHalfLength = Convert.ToInt32(kernelWidth / 2.0d);
-            double maxL = ((double)kernelHalfWidth) * Math.Sqrt(2.0d);
-            DenseMatrix dmKernel = DenseMatrix.Create(2 * kernelHalfWidth + 1, 2 * kernelHalfWidth + 1, 1.0d);
-
-            if (kernelType == StandardConvolutionKernels.cos)
-            {
-                dmKernel = DenseMatrix.Create(2 * kernelHalfWidth + 1, 2 * kernelHalfWidth + 1, (r, c) =>
-                {
-                    double curDist =
-                        (new PointD(r - (double)kernelHalfWidth, c - (double)kernelHalfWidth)).Distance(
-                            new PointD(0.0d, 0.0d));
-                    return Math.Cos(curDist * Math.PI / (2.0d * maxL));
-                });
-            }
-            else if (kernelType == StandardConvolutionKernels.gauss)
-            {
-                dmKernel = DenseMatrix.Create(2 * kernelHalfWidth + 1, 2 * kernelHalfWidth + 1, (r, c) =>
-                {
-                    double curDist =
-                        (new PointD(r - (double)kernelHalfWidth, c - (double)kernelHalfWidth)).Distance(
-                            new PointD(0.0d, 0.0d));
-                    return Math.Exp(-curDist * curDist / (2.0d * (maxL / 3.0d)));
-                });
-            }
-            else if (kernelType == StandardConvolutionKernels.flat)
-            {
-                dmKernel = DenseMatrix.Create(2 * kernelHalfWidth + 1, 2 * kernelHalfWidth + 1, 1.0d);
-            }
-            else if (kernelType == StandardConvolutionKernels.linear)
-            {
-                // actually it will be cone
-                dmKernel = DenseMatrix.Create(2 * kernelHalfWidth + 1, 2 * kernelHalfWidth + 1, (r, c) =>
-                {
-                    double curDist =
-                        (new PointD(r - (double)kernelHalfWidth, c - (double)kernelHalfWidth)).Distance(
-                            new PointD(0.0d, 0.0d));
-
-                    return Math.Max(1.0d - curDist * (1.0d / (double)kernelHalfWidth), 0.0d);
-                });
-            }
-            else if (kernelType == StandardConvolutionKernels.bilinear)
-            {
-                dmKernel = DenseMatrix.Create(2 * kernelHalfWidth + 1, 2 * kernelHalfWidth + 1, (r, c) =>
-                {
-                    double curDist =
-                        (new PointD(r - (double)kernelHalfWidth, c - (double)kernelHalfWidth)).Distance(
-                            new PointD(0.0d, 0.0d));
-
-                    return Math.Max(1.0d - curDist * curDist * (1.0d / (double)(kernelHalfWidth * kernelHalfWidth)), 0.0d);
-                });
-            }
-
-            double kernelSum = dmKernel.Values.Sum();
-            dmKernel.MapInplace(dval => dval / kernelSum);
-
-            return dmSource.Conv2(dmKernel);
-        }
-
-
-
-
-
-        public static DenseVector Conv(this DenseVector dvSource, DenseVector dvKernel)
-        {
-            int kernelHalfSize = (dvKernel.Count - 1) / 2;
-
-            DenseVector dvRes = DenseVector.Create(dvSource.Count, (idx) =>
-            {
-                int startIdx = idx - kernelHalfSize;
-                int dvSourceStartIdx = Math.Max(startIdx, 0);
-                int kernelStartIdx = (startIdx >= 0) ? (0) : (-startIdx);
-                int endIdx = idx + kernelHalfSize;
-                int dvSourceEndIdx = Math.Min(endIdx, dvSource.Count - 1);
-                int elementsCount = dvSourceEndIdx - dvSourceStartIdx + 1;
-
-                DenseVector dvSourceSubvector = (DenseVector)dvSource.SubVector(dvSourceStartIdx, elementsCount);
-                DenseVector dvKernelSubvector =
-                    (DenseVector)dvKernel.SubVector(kernelStartIdx, elementsCount);
-                // renorm dvKernelSubvector values if it is shorter than original
-                if (dvKernelSubvector.Count < dvKernel.Count)
-                {
-                    double dvKernelSubvectorSum = dvKernelSubvector.Sum();
-                    dvKernelSubvector = (DenseVector) dvKernelSubvector/dvKernelSubvectorSum;
-                }
-
-                DenseVector sumVector = (DenseVector)(dvSourceSubvector.PointwiseMultiply(dvKernelSubvector));
-                return sumVector.Values.Sum();
-            });
-            return dvRes;
-        }
-
-
-
-
-
-        public static DenseVector ConvKernel(StandardConvolutionKernels kernelType, int kernelHalfWidth = 10)
-        {
-            double maxL = ((double)kernelHalfWidth) * 2.0d;
-            DenseVector dvKernel = DenseVector.Create(2 * kernelHalfWidth + 1, 1.0d);
-
-            if (kernelType == StandardConvolutionKernels.cos)
-            {
-                dvKernel = DenseVector.Create(2 * kernelHalfWidth + 1, (idx) =>
-                {
-                    double curDist =
-                        (new PointD(idx - (double)kernelHalfWidth, 0.0d)).Distance(
-                            new PointD(0.0d, 0.0d));
-                    return Math.Cos(curDist * Math.PI / (2.0d * maxL));
-                });
-            }
-            else if (kernelType == StandardConvolutionKernels.gauss)
-            {
-                dvKernel = DenseVector.Create(2 * kernelHalfWidth + 1, (idx) =>
-                {
-                    double curDist =
-                        (new PointD(idx - (double)kernelHalfWidth, 0.0d)).Distance(
-                            new PointD(0.0d, 0.0d));
-                    return Math.Exp(-curDist * curDist / (2.0d * (maxL * maxL / 9.0d)));
-                });
-            }
-            else if (kernelType == StandardConvolutionKernels.flat)
-            {
-                dvKernel = DenseVector.Create(2 * kernelHalfWidth + 1, 1.0d);
-            }
-            else if (kernelType == StandardConvolutionKernels.linear)
-            {
-                dvKernel = DenseVector.Create(2 * kernelHalfWidth + 1, (idx) =>
-                {
-                    double curDist =
-                        (new PointD(idx - (double)kernelHalfWidth, 0.0d)).Distance(
-                            new PointD(0.0d, 0.0d));
-
-                    return Math.Max(1.0d - curDist * (1.0d / (double)kernelHalfWidth), 0.0d);
-                });
-            }
-            else if (kernelType == StandardConvolutionKernels.bilinear)
-            {
-                dvKernel = DenseVector.Create(2 * kernelHalfWidth + 1, (idx) =>
-                {
-                    double curDist =
-                        (new PointD(idx - (double)kernelHalfWidth, 0.0d)).Distance(
-                            new PointD(0.0d, 0.0d));
-
-                    return Math.Max(1.0d - curDist * curDist * (1.0d / (double)(kernelHalfWidth * kernelHalfWidth)), 0.0d);
-                });
-            }
-
-            double kernelSum = dvKernel.Values.Sum();
-            dvKernel.MapInplace(dval => dval / kernelSum);
-            return dvKernel;
-        }
-
-
-
-
-
-
-        public static DenseVector ConvKernelAsymmetric(StandardConvolutionKernels kernelType, int kernelWidth = 10, bool centerToTheRight = true)
-        {
-            DenseVector dvKernel = ConvKernel(kernelType, kernelWidth-1);
-            if (centerToTheRight)
-            {
-                dvKernel = (DenseVector) dvKernel.SubVector(0, kernelWidth);
-            }
-            else
-            {
-                dvKernel = (DenseVector) dvKernel.SubVector(kernelWidth - 1, kernelWidth);
-            }
-
-            double kernelSum = dvKernel.Values.Sum();
-            dvKernel.MapInplace(dval => dval / kernelSum);
-            return dvKernel;
-        }
-
-
-
-
-
-        public static DenseVector Conv(this DenseVector dvSource, StandardConvolutionKernels kernelType, int kernelHalfWidth = 10)
-        {
-            DenseVector dvKernel = ConvKernel(kernelType, kernelHalfWidth);
-
-            return dvSource.Conv(dvKernel);
-        }
-
-
-
-
-
         public static DenseMatrix Copy(this DenseMatrix dmSource)
         {
             DenseMatrix dmRet = DenseMatrix.Create(dmSource.RowCount, dmSource.ColumnCount, (r, c) => dmSource[r, c]);
             return dmRet;
         }
 
-
-        #region // EmguCV 3.0
-        //public static bool InContour(this Contour<Point> c1, PointF pt)
-        //{
-        //    //Rectangle c1Rect = CvInvoke.BoundingRectangle(c1);
-        //    Rectangle c1Rect = c1.BoundingRectangle; // CvInvoke.BoundingRectangle(c1);
-
-        //    int width = Math.Max(c1Rect.Right, Convert.ToInt32(pt.X)+1);
-        //    int height = Math.Max(c1Rect.Bottom, Convert.ToInt32(pt.Y)+1);
-
-        //    Image<Gray, byte> img = new Image<Gray, byte>(width, height);
-        //    Gray white = new Gray(255);
-        //    img.Draw(c1, white, -1);
-        //    return img[0, 0].Intensity > 0;
-        //}
-        #endregion // EmguCV 3.0
-
+        
 
         public static bool ContainsContourInside(this Contour<Point> testingContour, Contour<Point> sampleContour)
         {
             List<Point> lpointsOfSampleContour = new List<Point>(sampleContour.ToArray());
             return lpointsOfSampleContour.TrueForAll(pt => (testingContour.InContour(new PointF(pt.X, pt.Y)) >= 0.0d));
         }
-        #region // EmguCV 3.0
-        //public static bool ContainsContourInside(this VectorOfPoint testingContour, VectorOfPoint sampleContour)
-        //{
-        //    List<Point> lpointsOfSampleContour = new List<Point>(sampleContour.ToArray());
-        //    return lpointsOfSampleContour.TrueForAll(pt => (testingContour.InContour(new PointF(pt.X, pt.Y))));
-        //}
-        #endregion // EmguCV 3.0
 
 
 
@@ -429,29 +175,7 @@ namespace SkyImagesAnalyzerLibraries
 
 
 
-
-        //public static Contour<Point> CopyWithTransform(this Contour<Point> sourceContour, Func<Point, Point> transform)
-        //{
-        //    MemStorage stor = new MemStorage();
-        //    Contour<Point> cpContour = new Contour<Point>(stor);
-        //    List<Point> lPointsToPush = new List<Point>();
-        //    foreach (Point pt in sourceContour) lPointsToPush.Add(transform(pt));
-        //    cpContour.PushMulti(lPointsToPush.ToArray(), Emgu.CV.CvEnum.BACK_OR_FRONT.BACK);
-        //    Contour<Point> copyContourTransformed = new Contour<Point>(0, stor);
-        //    return copyContourTransformed;
-        //}
-
-
-
-        //public static Contour<Point> Copy(this Contour<Point> sourceContour)
-        //{
-        //    Contour<Point> copyContour = new Contour<Point>(new MemStorage());
-        //    copyContour.PushMulti(sourceContour.ToArray(), Emgu.CV.CvEnum.BACK_OR_FRONT.BACK);
-        //    return copyContour;
-        //}
-
-
-
+        
 
         public static PointD MassCenter(this Contour<Point> theContour)
         {
@@ -767,4 +491,5 @@ namespace SkyImagesAnalyzerLibraries
             set { data[key] = value; }
         }
     }
+
 }

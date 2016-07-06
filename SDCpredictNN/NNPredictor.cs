@@ -72,7 +72,7 @@ namespace SDCpredictNN
                     lstr => (SunDiskCondition)Enum.Parse(typeof(SunDiskCondition), lstr.Last()));
 
             
-            List<int> trueAnswersInt = trueAnswers.ConvertAll(sdc => SunDiskConditionData.MatlabNumeralSDC(sdc));
+            //List<int> trueAnswersInt = trueAnswers.ConvertAll(sdc => SunDiskConditionData.MatlabNumeralSDC(sdc));
 
             List<List<string>> csvFileContentStringsFiltered_wo_sdc =
                 csvFileContentStringsFiltered.ConvertAll(list => list.Where((val, idx) => idx < list.Count - 1).ToList());
@@ -100,20 +100,21 @@ namespace SDCpredictNN
                 new List<double>(((DenseMatrix) ServiceTools.ReadDataFromCSV(NNconfigFile, 0, ",")).Row(0)).ConvertAll
                     (dVal => Convert.ToInt32(dVal));
 
-            List<int> predictedSDC =
-                NNclassificatorPredictor.NNpredict(dmObjectsFeatures, dvThetaValues, NNlayersConfig).ToList();
+            List<SunDiskCondition> predictedSDC =
+                NNclassificatorPredictor<SunDiskCondition>.NNpredict(dmObjectsFeatures, dvThetaValues, NNlayersConfig,
+                    SunDiskConditionData.MatlabEnumeratedSDCorderedList()).ToList();
 
-            List<Tuple<int, int>> PredictedVStrue = predictedSDC.Zip(trueAnswersInt,
-                (predVal, trueVal) => new Tuple<int, int>(predVal, trueVal)).ToList();
+            List<Tuple<SunDiskCondition, SunDiskCondition>> PredictedVStrue = predictedSDC.Zip(trueAnswers,
+                (predVal, trueVal) => new Tuple<SunDiskCondition, SunDiskCondition>(predVal, trueVal)).ToList();
 
 
             Console.WriteLine("=== Prediction result vs true ===");
-            foreach (Tuple<int, int> tpl in PredictedVStrue)
+            foreach (Tuple<SunDiskCondition, SunDiskCondition> tpl in PredictedVStrue)
             {
                 Console.WriteLine("pred: " + tpl.Item1.ToString() + ":" + tpl.Item2.ToString() + " :true");
             }
 
-            double accuracy = 100.0d* ((double) PredictedVStrue.Where(tpl => tpl.Item1 == tpl.Item2).Count())/
+            double accuracy = 100.0d* ((double) PredictedVStrue.Count(tpl => tpl.Item1 == tpl.Item2))/
                               (double) PredictedVStrue.Count();
             Console.WriteLine("accuracy: " + accuracy);
 

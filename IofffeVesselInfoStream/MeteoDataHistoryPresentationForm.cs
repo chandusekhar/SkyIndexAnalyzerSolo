@@ -15,6 +15,9 @@ using Emgu.CV.Structure;
 using MathNet.Numerics.LinearAlgebra.Double;
 using MathNet.Numerics.Statistics;
 using SkyImagesAnalyzerLibraries;
+using DataAnalysis;
+using Extensions = DataAnalysis.Extensions;
+
 
 namespace IofffeVesselInfoStream
 {
@@ -556,7 +559,7 @@ namespace IofffeVesselInfoStream
                 }
 
                 dvVarValues = DenseVector.OfEnumerable(currVarToShowValues);
-                dvVarValues = dvVarValues.Conv(StandardConvolutionKernels.gauss, aveMinuteEntriesCount * 10);
+                dvVarValues = dvVarValues.Conv(Extensions.StandardConvolutionKernels.gauss, aveMinuteEntriesCount * 10);
             }
 
 

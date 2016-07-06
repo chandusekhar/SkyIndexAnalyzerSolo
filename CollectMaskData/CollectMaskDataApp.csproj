@@ -120,6 +120,11 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Geometry\Geometry.csproj">
+      <Project>{7CBAC75D-650A-4FEB-856A-D329BD70FF33}</Project>
+      <Name>Geometry</Name>
+      <Private>False</Private>
+    </ProjectReference>
     <ProjectReference Include="..\MKLwrapper\MKLwrapper.csproj">
       <Project>{4b32fbed-9adb-43e3-a7dc-cf1ff1230d91}</Project>
       <Name>MKLwrapper</Name>

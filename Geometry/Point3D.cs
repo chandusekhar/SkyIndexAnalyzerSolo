@@ -9,7 +9,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SkyImagesAnalyzerLibraries
+namespace Geometry
 {
     [ComVisible(true)]
     [Serializable]

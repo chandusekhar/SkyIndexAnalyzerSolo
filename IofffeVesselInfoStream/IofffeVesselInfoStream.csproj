@@ -180,6 +180,11 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\DataAnalysis\DataAnalysis.csproj">
+      <Project>{bbf0d349-16c6-4b61-8e92-2f0d94224805}</Project>
+      <Name>DataAnalysis</Name>
+      <Private>False</Private>
+    </ProjectReference>
     <ProjectReference Include="..\SkyImagesAnalyzerLibraries\SkyImagesAnalyzerLibraries.csproj">
       <Project>{7beac8e4-e53f-466a-b824-1fe69e60d114}</Project>
       <Name>SkyImagesAnalyzerLibraries</Name>

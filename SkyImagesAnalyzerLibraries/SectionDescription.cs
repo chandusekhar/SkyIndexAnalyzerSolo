@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Drawing;
 using System.Windows;
+using Geometry;
 using MathNet.Numerics.LinearAlgebra.Double;
 
 namespace SkyImagesAnalyzerLibraries

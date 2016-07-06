@@ -397,12 +397,12 @@ namespace SkyImagesAnalyzerLibraries
 
             List<List<double>> lDecisionProbabilities = null;
 
-            List<int> predictedSDC =
-                NNclassificatorPredictor.NNpredict(dmObjectsFeatures, dvThetaValues, NNlayersConfig,
-                    out lDecisionProbabilities).ToList();
-            
             List<SunDiskCondition> predictedSDClist =
-                predictedSDC.ConvertAll(sdcInt => SunDiskConditionData.MatlabSDCenum(sdcInt));
+                NNclassificatorPredictor<SunDiskCondition>.NNpredict(dmObjectsFeatures, dvThetaValues, NNlayersConfig,
+                    out lDecisionProbabilities, SunDiskConditionData.MatlabEnumeratedSDCorderedList()).ToList();
+            
+            //List<SunDiskCondition> predictedSDClist =
+            //    predictedSDC.ConvertAll(sdcInt => SunDiskConditionData.MatlabSDCenum(sdcInt));
 
 
             decisionProbabilities = lDecisionProbabilities[0];
@@ -500,12 +500,12 @@ namespace SkyImagesAnalyzerLibraries
 
             List<List<double>> lDecisionProbabilities = null;
 
-            List<int> predictedSDC =
-                NNclassificatorPredictor.NNpredict(dmObjectsFeatures, dvThetaValues, NNlayersConfig,
-                    out lDecisionProbabilities).ToList();
-
             List<SunDiskCondition> predictedSDClist =
-                predictedSDC.ConvertAll(sdcInt => SunDiskConditionData.MatlabSDCenum(sdcInt));
+                NNclassificatorPredictor<SunDiskCondition>.NNpredict(dmObjectsFeatures, dvThetaValues, NNlayersConfig,
+                    out lDecisionProbabilities, SunDiskConditionData.MatlabEnumeratedSDCorderedList()).ToList();
+
+            //List<SunDiskCondition> predictedSDClist =
+            //    predictedSDC.ConvertAll(sdcInt => SunDiskConditionData.MatlabSDCenum(sdcInt));
 
 
             decisionProbabilitiesList = lDecisionProbabilities;

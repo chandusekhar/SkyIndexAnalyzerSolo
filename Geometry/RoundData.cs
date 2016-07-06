@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using System.Xml.Serialization;
 using Emgu.CV.Structure;
 
-namespace SkyImagesAnalyzerLibraries
+namespace Geometry
 {
     /// <summary>
     /// Class RoundData.

@@ -12,7 +12,7 @@ namespace RemoteWeatherStationBotApp
         {
             RemoteServerBotClass bot = new RemoteServerBotClass();
 
-            Console.CancelKeyPress += new ConsoleCancelEventHandler(bot.CancelHandler);
+            // Console.CancelKeyPress += new ConsoleCancelEventHandler(bot.CancelHandler);
 
             bot.Start();
         }

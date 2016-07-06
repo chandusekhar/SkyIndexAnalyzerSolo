@@ -1,0 +1,11 @@
+<?xml version="1.0" standalone="yes"?>
+<DataSet xmlns="NetFrameWork">
+  <table>
+    <key>CurrentDataStoreDirectory</key>
+    <value>/home/mk/cc_moscow_bot/data/</value>
+  </table>
+  <table>
+    <key>tgrm_token</key>
+    <value>224899642:AAHVJhzou7iW5WXILMICBalYZsAtrZOxhcU</value>
+  </table>
+</DataSet>

@@ -5,6 +5,7 @@ using System.Drawing;
 using Emgu.CV;
 using Emgu.CV.Structure;
 using System.Windows.Forms;
+using Geometry;
 using MathNet.Numerics.LinearAlgebra.Double;
 
 namespace SkyImagesAnalyzerLibraries

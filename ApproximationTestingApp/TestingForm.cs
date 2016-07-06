@@ -16,6 +16,8 @@ using SkyImagesAnalyzerLibraries;
 using Emgu.CV;
 using Emgu.CV.Structure;
 using System.CodeDom.Compiler;
+using DataAnalysis;
+using Geometry;
 using MathNet.Numerics.LinearAlgebra;
 //using MathNet.Numerics.Optimization;
 using Microsoft.CSharp;
@@ -566,7 +568,7 @@ namespace ApproximationTestingApp
             theFformLinSolv.dvScatterFuncValues = funcData.Copy();
             theFformLinSolv.xSpaceMin = theForm.xSpaceMin;
             theFformLinSolv.xSpaceMax = theForm.xSpaceMax;
-            theFformLinSolv.theRepresentingFunctions.Add(DataAnalysis.PolynomeValue);
+            theFformLinSolv.theRepresentingFunctions.Add(DataAnalysis.DataAnalysisStatic.PolynomeValue);
             theFformLinSolv.scaleFunctionValuesToMax.Add(false);
             theFformLinSolv.parameters.Add(dvCurrentParameters2);
             theFformLinSolv.lineColors.Add(new Bgr(Color.YellowGreen));
@@ -621,7 +623,7 @@ namespace ApproximationTestingApp
             lFixedPoints.Add(new PointD(0.0d, 0.98d));
             lFixedPoints.Add(new PointD(804.0d, 0.7d));
 
-            DenseVector dvCurrentParameters2 = DataAnalysis.NPolynomeApproximationLessSquareMethod(
+            DenseVector dvCurrentParameters2 = DataAnalysisStatic.NPolynomeApproximationLessSquareMethod(
                 funcData,
                 xData,
                 lFixedPoints,

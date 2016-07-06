@@ -10,12 +10,12 @@ using System.Windows.Forms;
 using MathNet.Numerics.LinearAlgebra.Double;
 using SkyImagesAnalyzerLibraries;
 using System.IO;
+using DataAnalysis;
 using MathNet.Numerics.LinearAlgebra;
 using MathNet.Numerics.Statistics;
 using Emgu.CV;
 using Emgu.CV.Structure;
-
-
+using Geometry;
 
 
 namespace SkyImagesAnalyzer
@@ -1781,7 +1781,7 @@ namespace SkyImagesAnalyzer
 
             DenseMatrix dmProcessingData = (DenseMatrix)currImagData.DmSourceData.Clone();
 
-            DenseVector dvDataToHist = DataAnalysis.DataVectorizedExcludingValues(dmProcessingData, 0.0d);
+            DenseVector dvDataToHist = DataAnalysisStatic.DataVectorizedExcludingValues(dmProcessingData, 0.0d);
             HistogramCalcAndShowForm histForm = new HistogramCalcAndShowForm("histogram: " + desc, defaultProperties);
             HistogramDataAndProperties theHist = new HistogramDataAndProperties(dvDataToHist, 100);
             theHist.color = Color.Red;

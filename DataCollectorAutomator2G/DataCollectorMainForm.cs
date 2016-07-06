@@ -282,6 +282,30 @@ namespace DataCollectorAutomator
 
 
 
+
+        void LogMessageToLogWindow(string message)
+        {
+            try
+            {
+                if (theLogWindow != null)
+                {
+                    if (!theLogWindow.IsDisposed)
+                    {
+                        theLogWindow = ServiceTools.LogAText(theLogWindow, message);
+                    }
+                }
+                
+            }
+            catch (Exception ex)
+            {
+                ;
+            }
+        }
+
+
+
+
+
         private void DataCollectorMainForm_Shown(object sender, EventArgs e)
         {
             readDefaultProperties();
@@ -511,7 +535,6 @@ namespace DataCollectorAutomator
                     spaCalc.spa.zenith);
                 spaCalc.spa.function = SPAFunctionType.SPA_ZA_RTS;
                 spaCalc.spa_calculate();
-
 
 
 
@@ -1263,9 +1286,8 @@ namespace DataCollectorAutomator
             {
                 ServiceTools.ExecMethodInSeparateThread(this, () =>
                 {
-                    theLogWindow = ServiceTools.LogAText(theLogWindow,
-                        "UDP packets catching job quit unexpectedly." + Environment.NewLine +
-                        ServiceTools.CurrentCodeLineDescription());
+                    LogMessageToLogWindow("UDP packets catching job quit unexpectedly." + Environment.NewLine +
+                                          ServiceTools.CurrentCodeLineDescription());
                 });
             }
 
@@ -1368,9 +1390,8 @@ namespace DataCollectorAutomator
 #if DEBUG
                     ServiceTools.ExecMethodInSeparateThread(this, () =>
                     {
-                        theLogWindow = ServiceTools.LogAText(theLogWindow,
-                            "exception has been thrown: " + ex.Message + Environment.NewLine +
-                            ServiceTools.CurrentCodeLineDescription());
+                        LogMessageToLogWindow("exception has been thrown: " + ex.Message + Environment.NewLine +
+                                              ServiceTools.CurrentCodeLineDescription());
                     });
 #else
                     ServiceTools.ExecMethodInSeparateThread(this, () =>
@@ -1538,7 +1559,7 @@ namespace DataCollectorAutomator
         private FixedTimeQueue<AccelerometerData> accID2tail = new FixedTimeQueue<AccelerometerData>(tailLength);
         private FixedTimeQueue<GyroData> gyroID1tail = new FixedTimeQueue<GyroData>(tailLength);
         private FixedTimeQueue<GyroData> gyroID2tail = new FixedTimeQueue<GyroData>(tailLength);
-        private DenseVector dvKernelFixedWidth = Extensions.ConvKernelAsymmetric(StandardConvolutionKernels.gauss,
+        private DenseVector dvKernelFixedWidth = DataAnalysis.Extensions.ConvKernelAsymmetric(DataAnalysis.Extensions.StandardConvolutionKernels.gauss,
             tailLength, false);
 
         private List<AccelerometerData> dataToPassToSensorsDataPresentation = new List<AccelerometerData>()
@@ -1986,9 +2007,8 @@ namespace DataCollectorAutomator
 #if DEBUG
                 ServiceTools.ExecMethodInSeparateThread(this, () =>
                 {
-                    theLogWindow = ServiceTools.LogAText(theLogWindow,
-                        "exception has been thrown: " + ex.Message + Environment.NewLine +
-                        ServiceTools.CurrentCodeLineDescription());
+                    LogMessageToLogWindow("exception has been thrown: " + ex.Message + Environment.NewLine +
+                                          ServiceTools.CurrentCodeLineDescription());
                 });
 #else
                 ServiceTools.ExecMethodInSeparateThread(this, () =>
@@ -2156,9 +2176,8 @@ namespace DataCollectorAutomator
 #if DEBUG
                 ServiceTools.ExecMethodInSeparateThread(this, () =>
                 {
-                    theLogWindow = ServiceTools.LogAText(theLogWindow,
-                        "exception has been thrown: " + ex.Message + Environment.NewLine +
-                        ServiceTools.CurrentCodeLineDescription());
+                    LogMessageToLogWindow("exception has been thrown: " + ex.Message + Environment.NewLine +
+                                          ServiceTools.CurrentCodeLineDescription());
                 });
 #else
                 ServiceTools.ExecMethodInSeparateThread(this, () =>
@@ -2291,9 +2310,8 @@ namespace DataCollectorAutomator
 #if DEBUG
                 ServiceTools.ExecMethodInSeparateThread(this, () =>
                 {
-                    theLogWindow = ServiceTools.LogAText(theLogWindow,
-                        "exception has been thrown: " + ex.Message + Environment.NewLine +
-                        ServiceTools.CurrentCodeLineDescription());
+                    LogMessageToLogWindow("exception has been thrown: " + ex.Message + Environment.NewLine +
+                                          ServiceTools.CurrentCodeLineDescription());
                 });
 #else
                 ServiceTools.ExecMethodInSeparateThread(this, () =>
@@ -2395,7 +2413,7 @@ namespace DataCollectorAutomator
                     {
                         if (dvKernelFixedWidth.Count != dvAccXvaluesTail.Count)
                         {
-                            dvKernelFixedWidth = Extensions.ConvKernelAsymmetric(StandardConvolutionKernels.gauss,
+                            dvKernelFixedWidth = DataAnalysis.Extensions.ConvKernelAsymmetric(DataAnalysis.Extensions.StandardConvolutionKernels.gauss,
                                 dvAccXvaluesTail.Count, false);
                         }
 
@@ -2414,9 +2432,8 @@ namespace DataCollectorAutomator
 #if DEBUG
                             ServiceTools.ExecMethodInSeparateThread(this, () =>
                             {
-                                theLogWindow = ServiceTools.LogAText(theLogWindow,
-                                    "exception has been thrown: " + ex.Message + Environment.NewLine +
-                                    ServiceTools.CurrentCodeLineDescription());
+                                LogMessageToLogWindow("exception has been thrown: " + ex.Message + Environment.NewLine +
+                                                      ServiceTools.CurrentCodeLineDescription());
                             });
 #else
                 ServiceTools.ExecMethodInSeparateThread(this, () =>
@@ -2456,7 +2473,7 @@ namespace DataCollectorAutomator
                     {
                         if (dvKernelFixedWidth.Count != dvAccXvaluesTail.Count)
                         {
-                            dvKernelFixedWidth = Extensions.ConvKernelAsymmetric(StandardConvolutionKernels.gauss,
+                            dvKernelFixedWidth = DataAnalysis.Extensions.ConvKernelAsymmetric(DataAnalysis.Extensions.StandardConvolutionKernels.gauss,
                                 dvAccXvaluesTail.Count, false);
                         }
 
@@ -2475,9 +2492,8 @@ namespace DataCollectorAutomator
 #if DEBUG
                             ServiceTools.ExecMethodInSeparateThread(this, () =>
                             {
-                                theLogWindow = ServiceTools.LogAText(theLogWindow,
-                                    "exception has been thrown: " + ex.Message + Environment.NewLine +
-                                    ServiceTools.CurrentCodeLineDescription());
+                                LogMessageToLogWindow("exception has been thrown: " + ex.Message + Environment.NewLine +
+                                                      ServiceTools.CurrentCodeLineDescription());
                             });
 #else
                 ServiceTools.ExecMethodInSeparateThread(this, () =>
@@ -2886,9 +2902,8 @@ namespace DataCollectorAutomator
 #if DEBUG
                 ServiceTools.ExecMethodInSeparateThread(this, () =>
                 {
-                    theLogWindow = ServiceTools.LogAText(theLogWindow,
-                        "exception has been thrown: " + ex.Message + Environment.NewLine +
-                        ServiceTools.CurrentCodeLineDescription());
+                    LogMessageToLogWindow("exception has been thrown: " + ex.Message + Environment.NewLine +
+                                          ServiceTools.CurrentCodeLineDescription());
                 });
 #else
                 ServiceTools.ExecMethodInSeparateThread(this, () =>
@@ -2950,9 +2965,8 @@ namespace DataCollectorAutomator
 #if DEBUG
                 ServiceTools.ExecMethodInSeparateThread(this, () =>
                 {
-                    theLogWindow = ServiceTools.LogAText(theLogWindow,
-                        "exception has been thrown: " + ex.Message + Environment.NewLine +
-                        ServiceTools.CurrentCodeLineDescription());
+                    LogMessageToLogWindow("exception has been thrown: " + ex.Message + Environment.NewLine +
+                                          ServiceTools.CurrentCodeLineDescription());
                 });
 #else
                 ServiceTools.ExecMethodInSeparateThread(this, () =>
@@ -3013,9 +3027,8 @@ namespace DataCollectorAutomator
 #if DEBUG
                 ServiceTools.ExecMethodInSeparateThread(this, () =>
                 {
-                    theLogWindow = ServiceTools.LogAText(theLogWindow,
-                        "exception has been thrown: " + ex.Message + Environment.NewLine +
-                        ServiceTools.CurrentCodeLineDescription());
+                    LogMessageToLogWindow("exception has been thrown: " + ex.Message + Environment.NewLine +
+                                          ServiceTools.CurrentCodeLineDescription());
                 });
 #else
                 ServiceTools.ExecMethodInSeparateThread(this, () =>
@@ -3443,9 +3456,8 @@ namespace DataCollectorAutomator
                         //pProcess.Start();
                         //string output = pProcess.StandardOutput.ReadToEnd(); //The output result
 
-                        theLogWindow = ServiceTools.LogAText(theLogWindow,
-                            "Local time: " + DateTime.Now.ToString("u") + Environment.NewLine +
-                            "It could be the time to organize and archive collected data.");
+                        LogMessageToLogWindow("Local time: " + DateTime.Now.ToString("u") + Environment.NewLine +
+                                              "It could be the time to organize and archive collected data.");
                     }
 
                 }
@@ -3669,9 +3681,8 @@ namespace DataCollectorAutomator
 #if DEBUG
                         ServiceTools.ExecMethodInSeparateThread(this, () =>
                         {
-                            theLogWindow = ServiceTools.LogAText(theLogWindow,
-                                "exception has been thrown: " + ex.Message + Environment.NewLine +
-                                ServiceTools.CurrentCodeLineDescription());
+                            LogMessageToLogWindow("exception has been thrown: " + ex.Message + Environment.NewLine +
+                                                  ServiceTools.CurrentCodeLineDescription());
                         });
 #else
                     ServiceTools.ExecMethodInSeparateThread(this, () =>
@@ -4209,10 +4220,7 @@ namespace DataCollectorAutomator
 
         private void ProcessCurrentSnapshot(object state)
         {
-            if (theLogWindow == null)
-            {
-                theLogWindow = ServiceTools.LogAText(theLogWindow, "");
-            }
+            LogMessageToLogWindow("");
 
             stwSnapshotsProcessingTimer.Restart();
 
@@ -4871,10 +4879,7 @@ namespace DataCollectorAutomator
 
         private void IpcPipeserver_OnDisconnected(object sender, PipeserverDisconnectedEventArgs e)
         {
-            if (theLogWindow != null)
-            {
-                theLogWindow = ServiceTools.LogAText(theLogWindow, "Client " + e.ConnectionId + " connected.");
-            }
+            LogMessageToLogWindow("Client " + e.ConnectionId + " connected.");
 
             ThreadSafeOperations.SetText(lblIPCpipeServerStatus, "ON (" + ((Pipeserver)sender).Connections.Count + ")",
                 false);
@@ -4884,10 +4889,7 @@ namespace DataCollectorAutomator
 
         private void IpcPipeserver_OnConnected(object sender, PipeserverConnectedEventArgs e)
         {
-            if (theLogWindow != null)
-            {
-                theLogWindow = ServiceTools.LogAText(theLogWindow, "Client " + e.ConnectionId + " connected.");
-            }
+            LogMessageToLogWindow("Client " + e.ConnectionId + " connected.");
 
             ThreadSafeOperations.SetText(lblIPCpipeServerStatus, "ON (" + ((Pipeserver) sender).Connections.Count + ")",
                 false);
@@ -4912,10 +4914,7 @@ namespace DataCollectorAutomator
 
         private void IpcPipeserver_OnDataIn(object sender, PipeserverDataInEventArgs e)
         {
-            if (theLogWindow != null)
-            {
-                theLogWindow = ServiceTools.LogAText(theLogWindow, "Echo '" + e.Text + "' from " + e.ConnectionId);
-            }
+            LogMessageToLogWindow("Echo '" + e.Text + "' from " + e.ConnectionId);
             
         }
 

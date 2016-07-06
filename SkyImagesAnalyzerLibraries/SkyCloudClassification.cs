@@ -17,8 +17,10 @@ using System.Management.Automation;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using ANN;
+using Geometry;
 using MathNet.Numerics.LinearAlgebra;
 using MKLwrapper;
+using DataAnalysis;
 
 
 namespace SkyImagesAnalyzerLibraries
@@ -449,7 +451,7 @@ namespace SkyImagesAnalyzerLibraries
             ServiceTools.FlushMemory();
 
 
-            randomFileName = "m" + System.IO.Path.GetRandomFileName().Replace(".", "");
+            randomFileName = "m" + Path.GetRandomFileName().Replace(".", "");
 
 
             string currentDirectory = "";
@@ -597,7 +599,7 @@ namespace SkyImagesAnalyzerLibraries
                     strCurrImgDT = strCurrImgDT.Substring(0, 11) + strCurrImgDT.Substring(11).Replace("-", ":");
 
                     DateTime currImgDT = DateTime.Parse(strCurrImgDT, null,
-                        System.Globalization.DateTimeStyles.AdjustToUniversal);
+                        DateTimeStyles.AdjustToUniversal);
 
                     nearestConcurrentData = lConcurrentData.Aggregate((cDt1, cDt2) =>
                     {
@@ -749,30 +751,30 @@ namespace SkyImagesAnalyzerLibraries
 
             List<List<double>> lDecisionProbabilities = null;
 
-            List<int> predictedSDC =
-                NNclassificatorPredictor.NNpredict(dmObjectsFeatures, dvThetaValues, NNlayersConfig,
-                    out lDecisionProbabilities).ToList();
+            List<SunDiskCondition> predictedSDClist =
+                NNclassificatorPredictor<SunDiskCondition>.NNpredict(dmObjectsFeatures, dvThetaValues, NNlayersConfig,
+                    out lDecisionProbabilities, SunDiskConditionData.MatlabEnumeratedSDCorderedList()).ToList();
 
-            List<SunDiskCondition> predictedSDClist = predictedSDC.ConvertAll(sdcInt =>
-            {
-                switch (sdcInt)
-                {
-                    case 4:
-                        return SunDiskCondition.NoSun;
-                        break;
-                    case 1:
-                        return SunDiskCondition.Sun0;
-                        break;
-                    case 2:
-                        return SunDiskCondition.Sun1;
-                        break;
-                    case 3:
-                        return SunDiskCondition.Sun2;
-                        break;
-                    default:
-                        return SunDiskCondition.Defect;
-                }
-            });
+            //List<SunDiskCondition> predictedSDClist = predictedSDC.ConvertAll(sdcInt =>
+            //{
+            //    switch (sdcInt)
+            //    {
+            //        case 4:
+            //            return SunDiskCondition.NoSun;
+            //            break;
+            //        case 1:
+            //            return SunDiskCondition.Sun0;
+            //            break;
+            //        case 2:
+            //            return SunDiskCondition.Sun1;
+            //            break;
+            //        case 3:
+            //            return SunDiskCondition.Sun2;
+            //            break;
+            //        default:
+            //            return SunDiskCondition.Defect;
+            //    }
+            //});
 
             detectedSDC = predictedSDClist[0];
 
@@ -975,7 +977,7 @@ namespace SkyImagesAnalyzerLibraries
 
                 int angleBinsCount = 180;
                 /// todo: регулировать размер сетки для свертки по гауссу
-                DenseMatrix dmPolarSystemGrIxDistribution = DataAnalysis.CartesianToPolar(dmSunburnProfileDetection,
+                DenseMatrix dmPolarSystemGrIxDistribution = DataAnalysisStatic.CartesianToPolar(dmSunburnProfileDetection,
                     sunCenterPoint, dmMask, angleBinsCount);
                 dmPolarSystemGrIxDistribution.MapIndexedInplace(
                     (r, c, dVal) => ((c > sunRadius) && (dVal == 1.0d)) ? (0.0d) : (dVal));
@@ -1309,7 +1311,7 @@ namespace SkyImagesAnalyzerLibraries
                         DenseVector dvPolynomeKoeffs =
                             DenseVector.OfEnumerable(
                                 DenseVector.Create(1, minSunburnGrIxValue).Concat(dvPolynomeKoeffs_except0th));
-                        return DataAnalysis.PolynomeValue(dvPolynomeKoeffs, dRVal);
+                        return DataAnalysisStatic.PolynomeValue(dvPolynomeKoeffs, dRVal);
                     });
 
 
@@ -1389,11 +1391,11 @@ namespace SkyImagesAnalyzerLibraries
                 envelopPlottingForm.scatterLineColors.Add(new Bgr(Color.Red));
                 envelopPlottingForm.scatterDrawingVariants.Add(SequencesDrawingVariants.circles);
 
-                envelopPlottingForm.theRepresentingFunctions.Add(DataAnalysis.PolynomeValue);
+                envelopPlottingForm.theRepresentingFunctions.Add(DataAnalysisStatic.PolynomeValue);
                 envelopPlottingForm.parameters.Add(approxPolyKoeffs3);
                 envelopPlottingForm.lineColors.Add(new Bgr(Color.Green));
 
-                envelopPlottingForm.theRepresentingFunctions.Add(DataAnalysis.PolynomeValue);
+                envelopPlottingForm.theRepresentingFunctions.Add(DataAnalysisStatic.PolynomeValue);
                 envelopPlottingForm.parameters.Add(approxPolyKoeffs6);
                 envelopPlottingForm.lineColors.Add(new Bgr(Color.Blue));
 
@@ -1645,7 +1647,7 @@ namespace SkyImagesAnalyzerLibraries
                 #endregion // debug plotting
 
 
-                List<Point3D> lLocalMinimumsPolar = DataAnalysis.GetLocalMinimumsDistribution(dmPolarSystemGrIxDistribution, sunRoundData,
+                List<Point3D> lLocalMinimumsPolar = DataAnalysisStatic.GetLocalMinimumsDistribution(dmPolarSystemGrIxDistribution, sunRoundData,
                         imgP.imageRD, dmSunburnProfileDetection.RowCount,
                         theImageCircleCropFactor);
 
@@ -2278,7 +2280,7 @@ namespace SkyImagesAnalyzerLibraries
                                 double startPointVal = 1.0d -
                                                             currentLinearKoeff *
                                                             (1.0d -
-                                                             DataAnalysis.PolynomeValue(approxPolyKoeffs3,
+                                                             DataAnalysisStatic.PolynomeValue(approxPolyKoeffs3,
                                                                  startPointRFromSunMargin / currentLinearKoeff));
                                 // УПС. Так далеко наша аппроксимация не действует. Тогда просто вычтем общий фон.
                                 //возьмем смещение общим уклоном dmValuesToSubtract_plate, посмотрим смещение в точке startPointX и
@@ -2308,7 +2310,7 @@ namespace SkyImagesAnalyzerLibraries
                                 scaledSubtractionValue = 1.0d -
                                                             currentLinearKoeff *
                                                             (1.0d -
-                                                             DataAnalysis.PolynomeValue(approxPolyKoeffs3,
+                                                             DataAnalysisStatic.PolynomeValue(approxPolyKoeffs3,
                                                                  currDistance / currentLinearKoeff));
                             }
 
@@ -2345,7 +2347,7 @@ namespace SkyImagesAnalyzerLibraries
                                 double startPointVal = 1.0d -
                                                             currentLinearKoeff *
                                                             (1.0d -
-                                                             DataAnalysis.PolynomeValue(approxPolyKoeffs6,
+                                                             DataAnalysisStatic.PolynomeValue(approxPolyKoeffs6,
                                                                  startPointRFromSunMargin / currentLinearKoeff));
                                 // УПС. Так далеко наша аппроксимация не действует. Тогда просто вычтем общий фон.
                                 //возьмем смещение общим уклоном dmValuesToSubtract_plate, посмотрим смещение в точке startPointX и
@@ -2375,7 +2377,7 @@ namespace SkyImagesAnalyzerLibraries
                                 scaledSubtractionValue = 1.0d -
                                                             currentLinearKoeff *
                                                             (1.0d -
-                                                             DataAnalysis.PolynomeValue(approxPolyKoeffs6,
+                                                             DataAnalysisStatic.PolynomeValue(approxPolyKoeffs6,
                                                                  currDistance / currentLinearKoeff));
                             }
 
@@ -2429,7 +2431,7 @@ namespace SkyImagesAnalyzerLibraries
                         return dVal * koeff;
                     });
 
-                    DenseVector dvValuesFilteredNaNs = DataAnalysis.DataVectorizedExcludingValues(dmResult, double.NaN);
+                    DenseVector dvValuesFilteredNaNs = DataAnalysisStatic.DataVectorizedExcludingValues(dmResult, double.NaN);
 
                     DescriptiveStatistics stats = new DescriptiveStatistics(dvValuesFilteredNaNs);
                     // удалим значения за пределами 3s
@@ -2971,16 +2973,16 @@ namespace SkyImagesAnalyzerLibraries
         {
             DenseMatrix dmSunburnData = imgP.eval("Y", null);
 
-            DenseVector dvGrIxDataEqualsOne = DataAnalysis.DataVectorizedWithCondition(dmSunburnData, dval => dval >= minSunburnYValue);
+            DenseVector dvGrIxDataEqualsOne = DataAnalysisStatic.DataVectorizedWithCondition(dmSunburnData, dval => dval >= minSunburnYValue);
             if (dvGrIxDataEqualsOne == null) return RoundData.nullRoundData();
             if (dvGrIxDataEqualsOne.Values.Sum() < imgP.significantMaskImageBinary.CountNonzero()[0] * minSunAreaPart) return RoundData.nullRoundData();
 
             Image<Gray, Byte> maskImageCircled85 = imgP.imageSignificantMaskCircled(dSunDetectorArcedCropFactor * 100.0d);
             DenseMatrix dmGrIxData =
                 (DenseMatrix)dmGrIx.PointwiseMultiply(ImageProcessing.DenseMatrixFromImage(maskImageCircled85));
-            DenseVector dvGrIxDataToStat = DataAnalysis.DataVectorizedExcludingValues(dmGrIxData, 0.0d);
+            DenseVector dvGrIxDataToStat = DataAnalysisStatic.DataVectorizedExcludingValues(dmGrIxData, 0.0d);
             
-            dvGrIxDataToStat = DataAnalysis.DataVectorizedWithCondition(dvGrIxDataToStat, dval => (dval <= minSunburnGrIxValue));
+            dvGrIxDataToStat = DataAnalysisStatic.DataVectorizedWithCondition(dvGrIxDataToStat, dval => (dval <= minSunburnGrIxValue));
 
 
             DenseMatrix dmSunDetectionDataByAnsamble = DenseMatrix.Create(dmGrIx.RowCount, dmGrIx.ColumnCount,
@@ -3090,7 +3092,7 @@ namespace SkyImagesAnalyzerLibraries
 
             while (finishedBGworkers.Sum(boolVal => (boolVal) ? ((int)1) : ((int)0)) < finishedBGworkers.Count)
             {
-                System.Windows.Forms.Application.DoEvents();
+                Application.DoEvents();
                 Thread.Sleep(100);
             }
             
@@ -3180,16 +3182,16 @@ namespace SkyImagesAnalyzerLibraries
             DenseMatrix dmSunburnData = imgP.eval("Y", null);
 
             //DenseVector dvGrIxDataEqualsOne = DataAnalysis.DataVectorizedWithCondition(dmSunburnData, dval => dval >= 254.0d);
-            DenseVector dvGrIxDataEqualsOne = DataAnalysis.DataVectorizedWithCondition(dmSunburnData, dval => dval >= minSunburnYValue);
+            DenseVector dvGrIxDataEqualsOne = DataAnalysisStatic.DataVectorizedWithCondition(dmSunburnData, dval => dval >= minSunburnYValue);
             if (dvGrIxDataEqualsOne == null) return RoundData.nullRoundData();
             if (dvGrIxDataEqualsOne.Values.Sum() < imgP.significantMaskImageBinary.CountNonzero()[0] * minSunAreaPart) return RoundData.nullRoundData();
 
             Image<Gray, Byte> maskImageCircled85 = imgP.imageSignificantMaskCircled(dSunDetectorArcedCropFactor * 100.0d);
             DenseMatrix dmGrIxData =
                 (DenseMatrix)dmGrIx.PointwiseMultiply(ImageProcessing.DenseMatrixFromImage(maskImageCircled85));
-            DenseVector dvGrIxDataToStat = DataAnalysis.DataVectorizedExcludingValues(dmGrIxData, 0.0d);
+            DenseVector dvGrIxDataToStat = DataAnalysisStatic.DataVectorizedExcludingValues(dmGrIxData, 0.0d);
             //dvGrIxDataToStat = DataAnalysis.DataVectorizedWithCondition(dvGrIxDataToStat, dval => (dval != 1.0d));
-            dvGrIxDataToStat = DataAnalysis.DataVectorizedWithCondition(dvGrIxDataToStat, dval => (dval <= minSunburnGrIxValue));
+            dvGrIxDataToStat = DataAnalysisStatic.DataVectorizedWithCondition(dvGrIxDataToStat, dval => (dval <= minSunburnGrIxValue));
 
 
             DenseMatrix dmSunDetectionDataByAnsamble = DenseMatrix.Create(dmGrIx.RowCount, dmGrIx.ColumnCount,
@@ -3417,7 +3419,7 @@ namespace SkyImagesAnalyzerLibraries
 
             while (finishedBGworkers.Sum(boolVal => (boolVal) ? ((int)1) : ((int)0)) < finishedBGworkers.Count)
             {
-                System.Windows.Forms.Application.DoEvents();
+                Application.DoEvents();
                 Thread.Sleep(100);
             }
 
@@ -3485,7 +3487,7 @@ namespace SkyImagesAnalyzerLibraries
                 Vector2D currVecFromSunCenter = new Vector2D(sunRD.pointDCircleCenter(), currPtd);
                 return (currVecFromSunCenter.VectorLength >= sunRD.DRadius) ? (0.0d) : (dVal);
             });
-            DenseVector dvValuesInside = DataAnalysis.DataVectorizedExcludingValues(dmSourceDataInsideSunDisk, 0.0d);
+            DenseVector dvValuesInside = DataAnalysisStatic.DataVectorizedExcludingValues(dmSourceDataInsideSunDisk, 0.0d);
             if (Statistics.Percentile(dvValuesInside, 95) <= minSunburnGrIxValue)
             {
                 // отфильтруем по значениям, получим центр масс и массу
@@ -3576,7 +3578,7 @@ namespace SkyImagesAnalyzerLibraries
             
 
             double curMedian = 0.0d;
-            DescriptiveStatistics stats = DataAnalysis.StatsOfDataExcludingValues(dmGradData, 0.0d, out curMedian);
+            DescriptiveStatistics stats = DataAnalysisStatic.StatsOfDataExcludingValues(dmGradData, 0.0d, out curMedian);
             if (stats == null) return RoundData.nullRoundData();
 
             //double gradMean = stats.Mean;

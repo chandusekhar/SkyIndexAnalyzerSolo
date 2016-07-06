@@ -12,10 +12,13 @@ using System.Windows.Forms;
 using System.Xml.Serialization;
 using Emgu.CV;
 using Emgu.CV.Structure;
+using Geometry;
 //using IoffeVesselDataReader;
 using MathNet.Numerics.LinearAlgebra.Double;
 using SkyImagesAnalyzerLibraries;
 using SolarPositioning;
+using Geometry;
+
 
 namespace SkyImagesAnalyzer
 {

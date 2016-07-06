@@ -21,6 +21,8 @@ using SolarPositioning;
 using Accord.Math;
 using ANN;
 using System.Management.Automation;
+using DataAnalysis;
+using Geometry;
 
 
 namespace SkyImagesAnalyzer
@@ -2193,7 +2195,7 @@ namespace SkyImagesAnalyzer
 
             DenseMatrix dmGrixData = imgP.eval("grix", null);
             dmGrixData = (DenseMatrix)dmGrixData.PointwiseMultiply(dmMaskCircled100);
-            DenseVector dvGrixData = DataAnalysis.DataVectorizedWithCondition(dmGrixData, dval => ((dval > 0.0d) && (dval < 1.0d)));
+            DenseVector dvGrixData = DataAnalysisStatic.DataVectorizedWithCondition(dmGrixData, dval => ((dval > 0.0d) && (dval < 1.0d)));
 
             HistogramDataAndProperties theHist = new HistogramDataAndProperties(dvGrixData, 500);
             theHist.quantilesCount = 20;
@@ -3522,7 +3524,7 @@ namespace SkyImagesAnalyzer
             HeatMap hm = new HeatMap(lPointsList, 200);
             hm.defaultProperties = defaultProperties;
             hm.SetEqualMeasures();
-            hm.SmoothDensityField(StandardConvolutionKernels.gauss);
+            hm.SmoothDensityField(DataAnalysis.Extensions.StandardConvolutionKernels.gauss);
             //hm.RepresentHeatMap();
 
 
@@ -3548,7 +3550,7 @@ namespace SkyImagesAnalyzer
 
             DenseMatrix dmGrixData = imgP.eval("grix", null);
             dmGrixData = (DenseMatrix)dmGrixData.PointwiseMultiply(dmMaskCircled100);
-            DenseVector dvGrixData = DataAnalysis.DataVectorizedWithCondition(dmGrixData, dval => ((dval > 0.0d) && (dval < 1.0d)));
+            DenseVector dvGrixData = DataAnalysis.DataAnalysisStatic.DataVectorizedWithCondition(dmGrixData, dval => ((dval > 0.0d) && (dval < 1.0d)));
             DescriptiveStatistics stats = new DescriptiveStatistics(dvGrixData, true);
             double median = Statistics.Median(dvGrixData);
             //double median = stats.Median;
@@ -4645,30 +4647,30 @@ namespace SkyImagesAnalyzer
 
             List<List<double>> lDecisionProbabilities = null;
 
-            List<int> predictedSDC =
-                NNclassificatorPredictor.NNpredict(dmObjectsFeatures, dvThetaValues, NNlayersConfig,
-                    out lDecisionProbabilities).ToList();
+            List<SunDiskCondition> predictedSDClist =
+                NNclassificatorPredictor<SunDiskCondition>.NNpredict(dmObjectsFeatures, dvThetaValues, NNlayersConfig,
+                    out lDecisionProbabilities, SunDiskConditionData.MatlabEnumeratedSDCorderedList()).ToList();
 
-            List<SunDiskCondition> predictedSDClist = predictedSDC.ConvertAll(sdcInt =>
-            {
-                switch (sdcInt)
-                {
-                    case 4:
-                        return SunDiskCondition.NoSun;
-                        break;
-                    case 1:
-                        return SunDiskCondition.Sun0;
-                        break;
-                    case 2:
-                        return SunDiskCondition.Sun1;
-                        break;
-                    case 3:
-                        return SunDiskCondition.Sun2;
-                        break;
-                    default:
-                        return SunDiskCondition.Defect;
-                }
-            });
+            //List<SunDiskCondition> predictedSDClist = predictedSDC.ConvertAll(sdcInt =>
+            //{
+            //    switch (sdcInt)
+            //    {
+            //        case 4:
+            //            return SunDiskCondition.NoSun;
+            //            break;
+            //        case 1:
+            //            return SunDiskCondition.Sun0;
+            //            break;
+            //        case 2:
+            //            return SunDiskCondition.Sun1;
+            //            break;
+            //        case 3:
+            //            return SunDiskCondition.Sun2;
+            //            break;
+            //        default:
+            //            return SunDiskCondition.Defect;
+            //    }
+            //});
 
             #endregion predict using LIST of data
 

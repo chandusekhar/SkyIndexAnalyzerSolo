@@ -7,6 +7,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using Geometry;
 using MathNet.Numerics.LinearAlgebra;
 using MathNet.Numerics.LinearAlgebra.Double;
 using SolarPositioning;
@@ -2759,6 +2760,20 @@ namespace SkyImagesAnalyzerLibraries
                     return 0;
             }
         }
+
+
+
+
+        public static List<SunDiskCondition> MatlabEnumeratedSDCorderedList()
+        {
+            List<int> sdcValuesNumbers = new List<int>();
+            for (int i = 1; i < 5; i++)
+            {
+                sdcValuesNumbers.Add(i);
+            }
+            return sdcValuesNumbers.ConvertAll(MatlabSDCenum);
+        }
+
 
 
 

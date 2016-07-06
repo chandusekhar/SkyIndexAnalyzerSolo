@@ -1,4 +1,6 @@
-﻿using System;
+﻿// ReSharper disable InconsistentNaming
+
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -8,10 +10,13 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using ANN;
 using MathNet.Numerics.LinearAlgebra.Double;
+using DataAnalysis;
+
+
 
 namespace SkyImagesAnalyzerLibraries
 {
-    public class CCpredictorNN
+    public class TCCpredictorNN
     {
         private bool bNeedToCalculateStats = false;
 
@@ -27,7 +32,7 @@ namespace SkyImagesAnalyzerLibraries
 
 
 
-        public CCpredictorNN(string strImageFilename, string strConcurrentDataXMLfilesBasePath, string strimageYRGBstatsXMLdataFilesDirectory)
+        public TCCpredictorNN(string strImageFilename, string strConcurrentDataXMLfilesBasePath, string strimageYRGBstatsXMLdataFilesDirectory)
         {
             if (!File.Exists(strImageFilename))
             {
@@ -45,9 +50,12 @@ namespace SkyImagesAnalyzerLibraries
 
 
 
-        public async Task<int> CalcCC_NN(string SDC_NNconfigFile, string SDC_NNtrainedParametersFile, string NormMeansFile,
-            string NormRangeFile, string CC_NNconfigFile, string CC_NNtrainedParametersFile)
+        public async Task<int> CalcTCC_NN(string SDC_NNconfigFile, string SDC_NNtrainedParametersFile,
+            string SDC_NormMeansFile,
+            string SDC_NormRangeFile, string TCC_NNconfigFile, string TCC_NNtrainedParametersFile,
+            string TCC_NormMeansFile, string TCC_NormRangeFile, string TCC_ExcludingVarsFile)
         {
+            #region check files existence
             if (!File.Exists(SDC_NNconfigFile))
             {
                 throw new FileNotFoundException("couldn`t find the file specified: " + SDC_NNconfigFile);
@@ -56,13 +64,34 @@ namespace SkyImagesAnalyzerLibraries
             {
                 throw new FileNotFoundException("couldn`t find the file specified: " + SDC_NNtrainedParametersFile);
             }
-            if (!File.Exists(NormMeansFile))
+            if (!File.Exists(SDC_NormMeansFile))
             {
-                throw new FileNotFoundException("couldn`t find the file specified: " + NormMeansFile);
+                throw new FileNotFoundException("couldn`t find the file specified: " + SDC_NormMeansFile);
             }
-            if (!File.Exists(NormRangeFile))
+            if (!File.Exists(SDC_NormRangeFile))
             {
-                throw new FileNotFoundException("couldn`t find the file specified: " + NormRangeFile);
+                throw new FileNotFoundException("couldn`t find the file specified: " + SDC_NormRangeFile);
+            }
+
+            if (!File.Exists(TCC_NNconfigFile))
+            {
+                throw new FileNotFoundException("couldn`t find the file specified: " + TCC_NNconfigFile);
+            }
+            if (!File.Exists(TCC_NNtrainedParametersFile))
+            {
+                throw new FileNotFoundException("couldn`t find the file specified: " + TCC_NNtrainedParametersFile);
+            }
+            if (!File.Exists(TCC_NormMeansFile))
+            {
+                throw new FileNotFoundException("couldn`t find the file specified: " + TCC_NormMeansFile);
+            }
+            if (!File.Exists(TCC_NormRangeFile))
+            {
+                throw new FileNotFoundException("couldn`t find the file specified: " + TCC_NormRangeFile);
+            }
+            if (!File.Exists(TCC_ExcludingVarsFile))
+            {
+                throw new FileNotFoundException("couldn`t find the file specified: " + TCC_ExcludingVarsFile);
             }
 
             if ((ImagesRoundMasksXMLfilesMappingList == "") || (ImagesRoundMasksXMLfilesMappingList == null))
@@ -75,6 +104,7 @@ namespace SkyImagesAnalyzerLibraries
             {
                 throw new FileNotFoundException("couldn`t find the file specified: " + ImagesRoundMasksXMLfilesMappingList);
             }
+            #endregion check files existence
 
 
 
@@ -221,18 +251,29 @@ namespace SkyImagesAnalyzerLibraries
 
 
 
-            DenseVector dvMeans = (DenseVector)((DenseMatrix)ServiceTools.ReadDataFromCSV(NormMeansFile, 0, ",")).Row(0);
-            DenseVector dvRanges = (DenseVector)((DenseMatrix)ServiceTools.ReadDataFromCSV(NormRangeFile, 0, ",")).Row(0);
-            DenseVector dvThetaValues = (DenseVector)ServiceTools.ReadDataFromCSV(SDC_NNtrainedParametersFile, 0, ",");
-            DenseVector dv_CC_ThetaValues = (DenseVector)ServiceTools.ReadDataFromCSV(CC_NNtrainedParametersFile, 0, ",");
-            List<int> NNlayersConfig =
+            DenseVector dvSDCmeans = (DenseVector)((DenseMatrix)ServiceTools.ReadDataFromCSV(SDC_NormMeansFile, 0, ",")).Row(0);
+            DenseVector dvSDCranges = (DenseVector)((DenseMatrix)ServiceTools.ReadDataFromCSV(SDC_NormRangeFile, 0, ",")).Row(0);
+            DenseVector dvSDCthetaValues = (DenseVector)ServiceTools.ReadDataFromCSV(SDC_NNtrainedParametersFile, 0, ",");
+            List<int> SDCnnLayersConfig =
                 new List<double>(((DenseMatrix)ServiceTools.ReadDataFromCSV(SDC_NNconfigFile, 0, ",")).Row(0)).ConvertAll
                     (dVal => Convert.ToInt32(dVal));
-            List<int> CC_NNlayersConfig =
-                new List<double>(((DenseMatrix)ServiceTools.ReadDataFromCSV(CC_NNconfigFile, 0, ",")).Row(0)).ConvertAll
+
+            DenseVector dvTCCmeans = (DenseVector)((DenseMatrix)ServiceTools.ReadDataFromCSV(TCC_NormMeansFile, 0, ",")).Row(0);
+            DenseVector dvTCCranges = (DenseVector)((DenseMatrix)ServiceTools.ReadDataFromCSV(TCC_NormRangeFile, 0, ",")).Row(0);
+            DenseVector dvTCCthetaValues = (DenseVector)ServiceTools.ReadDataFromCSV(TCC_NNtrainedParametersFile, 0, ",");
+            List<int> TCCnnLayersConfig =
+                new List<double>(((DenseMatrix)ServiceTools.ReadDataFromCSV(TCC_NNconfigFile, 0, ",")).Row(0)).ConvertAll
                     (dVal => Convert.ToInt32(dVal));
-            return PredictCC_NN(currImageStatsData, nearestConcurrentData, NNlayersConfig, dvThetaValues, dvMeans,
-                dvRanges, CC_NNlayersConfig, dv_CC_ThetaValues);
+            List<int> TCCnnConfigVarsToExclude =
+                new List<double>(((DenseMatrix)ServiceTools.ReadDataFromCSV(TCC_ExcludingVarsFile, 0, ",")).Row(0)).ConvertAll
+                    (dVal => Convert.ToInt32(dVal));
+
+
+            List<double> TCCdecisionProbabilities = null;
+            return PredictTCC_NN(currImageStatsData, nearestConcurrentData, SDCnnLayersConfig, dvSDCthetaValues,
+                dvSDCmeans,
+                dvSDCranges, TCCnnLayersConfig, dvTCCthetaValues, dvTCCmeans, dvTCCranges, TCCnnConfigVarsToExclude,
+                out TCCdecisionProbabilities);
 
         }
 
@@ -240,10 +281,12 @@ namespace SkyImagesAnalyzerLibraries
 
 
 
-        public static int CalcCC_NN(string statsXMLfile, string concurrentDataXMLfile, string SDC_NNconfigFile,
-            string SDC_NNtrainedParametersFile, string NormMeansFile, string NormRangeFile, string CC_NNconfigFile,
-            string CC_NNtrainedParametersFile)
+        public static int CalcTCC_NN(string statsXMLfile, string concurrentDataXMLfile, string SDC_NNconfigFile,
+            string SDC_NNtrainedParametersFile, string SDC_NormMeansFile, string SDC_NormRangeFile, string TCC_NNconfigFile,
+            string TCC_NNtrainedParametersFile, string TCC_NormMeansFile, string TCC_NormRangeFile, string TCC_ExcludingVarsFile,
+            out List<double> TCCdecisionProbabilities)
         {
+            #region check files existence
             if (!File.Exists(SDC_NNconfigFile))
             {
                 throw new FileNotFoundException("couldn`t find the file specified: " + SDC_NNconfigFile);
@@ -252,22 +295,38 @@ namespace SkyImagesAnalyzerLibraries
             {
                 throw new FileNotFoundException("couldn`t find the file specified: " + SDC_NNtrainedParametersFile);
             }
-            if (!File.Exists(NormMeansFile))
+            if (!File.Exists(SDC_NormMeansFile))
             {
-                throw new FileNotFoundException("couldn`t find the file specified: " + NormMeansFile);
+                throw new FileNotFoundException("couldn`t find the file specified: " + SDC_NormMeansFile);
             }
-            if (!File.Exists(NormRangeFile))
+            if (!File.Exists(SDC_NormRangeFile))
             {
-                throw new FileNotFoundException("couldn`t find the file specified: " + NormRangeFile);
+                throw new FileNotFoundException("couldn`t find the file specified: " + SDC_NormRangeFile);
             }
-            if (!File.Exists(CC_NNconfigFile))
+
+
+            if (!File.Exists(TCC_NNconfigFile))
             {
-                throw new FileNotFoundException("couldn`t find the file specified: " + CC_NNconfigFile);
+                throw new FileNotFoundException("couldn`t find the file specified: " + TCC_NNconfigFile);
             }
-            if (!File.Exists(CC_NNtrainedParametersFile))
+            if (!File.Exists(TCC_NNtrainedParametersFile))
             {
-                throw new FileNotFoundException("couldn`t find the file specified: " + CC_NNtrainedParametersFile);
+                throw new FileNotFoundException("couldn`t find the file specified: " + TCC_NNtrainedParametersFile);
             }
+            if (!File.Exists(TCC_NormMeansFile))
+            {
+                throw new FileNotFoundException("couldn`t find the file specified: " + TCC_NormMeansFile);
+            }
+            if (!File.Exists(TCC_NormRangeFile))
+            {
+                throw new FileNotFoundException("couldn`t find the file specified: " + TCC_NormRangeFile);
+            }
+            if (!File.Exists(TCC_ExcludingVarsFile))
+            {
+                throw new FileNotFoundException("couldn`t find the file specified: " + TCC_ExcludingVarsFile);
+            }
+
+
             if (!File.Exists(statsXMLfile))
             {
                 throw new FileNotFoundException("couldn`t find the file specified: " + statsXMLfile);
@@ -276,9 +335,10 @@ namespace SkyImagesAnalyzerLibraries
             {
                 throw new FileNotFoundException("couldn`t find the file specified: " + concurrentDataXMLfile);
             }
+            #endregion check files existence
 
 
-            #region read or calculate GrIxYRGB stats
+            #region read GrIxYRGB stats
 
             SkyImageIndexesStatsData currImageStatsData = null;
             try
@@ -298,7 +358,7 @@ namespace SkyImagesAnalyzerLibraries
                 throw new Exception("ERROR reading stats data for image. Will not proceed.");
             }
 
-            #endregion read or calculate GrIxYRGB stats
+            #endregion read GrIxYRGB stats
 
 
             #region search for concurrent data
@@ -326,19 +386,27 @@ namespace SkyImagesAnalyzerLibraries
 
 
 
-            DenseVector dvMeans = (DenseVector)((DenseMatrix)ServiceTools.ReadDataFromCSV(NormMeansFile, 0, ",")).Row(0);
-            DenseVector dvRanges = (DenseVector)((DenseMatrix)ServiceTools.ReadDataFromCSV(NormRangeFile, 0, ",")).Row(0);
-            DenseVector dvThetaValues = (DenseVector)ServiceTools.ReadDataFromCSV(SDC_NNtrainedParametersFile, 0, ",");
-            DenseVector dv_CC_ThetaValues = (DenseVector)ServiceTools.ReadDataFromCSV(CC_NNtrainedParametersFile, 0, ",");
-            List<int> NNlayersConfig =
+            DenseVector dvSDCmeans = (DenseVector)((DenseMatrix)ServiceTools.ReadDataFromCSV(SDC_NormMeansFile, 0, ",")).Row(0);
+            DenseVector dvSDCranges = (DenseVector)((DenseMatrix)ServiceTools.ReadDataFromCSV(SDC_NormRangeFile, 0, ",")).Row(0);
+            DenseVector dvSDCthetaValues = (DenseVector)ServiceTools.ReadDataFromCSV(SDC_NNtrainedParametersFile, 0, ",");
+            List<int> SDCnnLayersConfig =
                 new List<double>(((DenseMatrix)ServiceTools.ReadDataFromCSV(SDC_NNconfigFile, 0, ",")).Row(0)).ConvertAll
                     (dVal => Convert.ToInt32(dVal));
-            List<int> CC_NNlayersConfig =
-                new List<double>(((DenseMatrix)ServiceTools.ReadDataFromCSV(CC_NNconfigFile, 0, ",")).Row(0)).ConvertAll
+
+            DenseVector dvTCCmeans = (DenseVector)((DenseMatrix)ServiceTools.ReadDataFromCSV(TCC_NormMeansFile, 0, ",")).Row(0);
+            DenseVector dvTCCranges = (DenseVector)((DenseMatrix)ServiceTools.ReadDataFromCSV(TCC_NormRangeFile, 0, ",")).Row(0);
+            DenseVector dvTCCthetaValues = (DenseVector)ServiceTools.ReadDataFromCSV(TCC_NNtrainedParametersFile, 0, ",");
+            List<int> TCCnnLayersConfig =
+                new List<double>(((DenseMatrix)ServiceTools.ReadDataFromCSV(TCC_NNconfigFile, 0, ",")).Row(0)).ConvertAll
+                    (dVal => Convert.ToInt32(dVal));
+            List<int> TCCnnConfigVarsToExclude =
+                new List<double>(((DenseMatrix)ServiceTools.ReadDataFromCSV(TCC_ExcludingVarsFile, 0, ",")).Row(0)).ConvertAll
                     (dVal => Convert.ToInt32(dVal));
 
-            return PredictCC_NN(currImageStatsData, nearestConcurrentData, NNlayersConfig, dvThetaValues, dvMeans,
-                dvRanges, CC_NNlayersConfig, dv_CC_ThetaValues);
+            return PredictTCC_NN(currImageStatsData, nearestConcurrentData, SDCnnLayersConfig, dvSDCthetaValues,
+                dvSDCmeans,
+                dvSDCranges, TCCnnLayersConfig, dvTCCthetaValues, dvTCCmeans, dvTCCranges, TCCnnConfigVarsToExclude,
+                out TCCdecisionProbabilities);
         }
 
 
@@ -346,9 +414,13 @@ namespace SkyImagesAnalyzerLibraries
 
 
 
-        public static int PredictCC_NN(SkyImageIndexesStatsData imageStats, ConcurrentData snapshotConcurrentData,
-            IEnumerable<int> SDC_NNconfig, IEnumerable<double> SDC_NNtrainedParameters, IEnumerable<double> NNfeturesNormMeans,
-            IEnumerable<double> NNfeaturesNormRange, IEnumerable<int> CC_NNconfig, IEnumerable<double> CC_NNtrainedParameters)
+        public static int PredictTCC_NN(SkyImageIndexesStatsData imageStats, ConcurrentData snapshotConcurrentData,
+            IEnumerable<int> SDC_NNconfig, IEnumerable<double> SDC_NNtrainedParameters,
+            IEnumerable<double> SDC_NNfeturesNormMeans,
+            IEnumerable<double> SDC_NNfeaturesNormRange, IEnumerable<int> TCCnnLayersConfig,
+            IEnumerable<double> TCC_NNtrainedParameters, IEnumerable<double> TCC_NNfeturesNormMeans,
+            IEnumerable<double> TCC_NNfeaturesNormRange, IEnumerable<int> TCCnnConfigVarsToExclude,
+            out List<double> TCCdecisionProbabilities)
         {
             string currImageALLstatsDataCSVWithConcurrentData = imageStats.ToCSV() + "," +
                 snapshotConcurrentData.gps.SunZenithAzimuth().ElevationAngle.ToString().Replace(",", ".") + "," +
@@ -357,24 +429,23 @@ namespace SkyImagesAnalyzerLibraries
             List<string> lCalculatedData = new List<string>();
             lCalculatedData.Add(currImageALLstatsDataCSVWithConcurrentData);
 
-            string csvHeader = imageStats.CSVHeader() + ",SunElevationDeg,SunAzimuthDeg,CloudCover";
-
+            string csvHeader = imageStats.CSVHeader();
+            List<string> lCSVheader = csvHeader.Split(',').ToList();
+            List<int> columnsToDelete =
+                lCSVheader.Select((str, idx) => new Tuple<int, string>(idx, str))
+                    .Where(tpl => tpl.Item2.ToLower().Contains("filename")).ToList().ConvertAll(tpl => tpl.Item1);
 
 
             List<List<string>> csvFileContentStrings =
                 lCalculatedData.ConvertAll(str => str.Split(',').ToList()).ToList();
-            List<string> lCSVheader = csvHeader.Split(',').ToList();
-
-            List<int> columnsToDelete =
-                lCSVheader.Select((str, idx) => new Tuple<int, string>(idx, str))
-                    .Where(tpl => tpl.Item2.ToLower().Contains("filename")).ToList().ConvertAll(tpl => tpl.Item1);
             List<List<string>> csvFileContentStringsFiltered = new List<List<string>>();
             foreach (List<string> listDataStrings in csvFileContentStrings)
             {
                 csvFileContentStringsFiltered.Add(
                     listDataStrings.Where((str, idx) => !columnsToDelete.Contains(idx)).ToList());
             }
-            
+
+            #region SDC prediction
 
             List<List<string>> csvFileContentStringsFiltered_wo_CC = csvFileContentStringsFiltered;
 
@@ -382,60 +453,68 @@ namespace SkyImagesAnalyzerLibraries
             List<DenseVector> lDV_objects_features =
                 csvFileContentStringsFiltered_wo_CC.ConvertAll(
                     list =>
-                        DenseVector.OfEnumerable(list.ConvertAll<double>(str => Convert.ToDouble(str.Replace(".", ",")))));
+                        DenseVector.OfEnumerable(list.ConvertAll<double>(CommonTools.ParseDouble)));
+            DenseMatrix dmSDCpredictionObjectsFeatures = DenseMatrix.OfRows(lDV_objects_features);
 
+            // DenseVector dvMeans = DenseVector.OfEnumerable(SDC_NNfeturesNormMeans);
+            // DenseVector dvRanges = DenseVector.OfEnumerable(SDC_NNfeaturesNormRange);
+            DenseMatrix dmSDCpredictionObjectsFeaturesNormed =
+                ANNservice.FeatureNormalization(dmSDCpredictionObjectsFeatures, SDC_NNfeturesNormMeans,
+                    SDC_NNfeaturesNormRange);
 
-            DenseVector dvMeans = DenseVector.OfEnumerable(NNfeturesNormMeans);
-            DenseVector dvRanges = DenseVector.OfEnumerable(NNfeaturesNormRange);
+            
+            #region Predict SDC
 
-
-            #region normalize features
-
-            lDV_objects_features = lDV_objects_features.ConvertAll(dv =>
-            {
-                DenseVector dvShifted = dv - dvMeans;
-                DenseVector dvNormed = (DenseVector)dvShifted.PointwiseDivide(dvRanges);
-                return dvNormed;
-            });
-
-            #endregion normalize features
-
-
-            #region adding SDC feature
-
-            // добавить последнюю фичу - SDC
             List<int> sdcMatlabValues = new List<int>();
             List<double> lSDCpredictionProbabilities = new List<double>();
             SunDiskCondition sdc = SDCpredictorNN.PredictSDC_NN(imageStats, snapshotConcurrentData, SDC_NNconfig,
-                SDC_NNtrainedParameters, NNfeturesNormMeans, NNfeaturesNormRange, out lSDCpredictionProbabilities);
+                SDC_NNtrainedParameters, SDC_NNfeturesNormMeans, SDC_NNfeaturesNormRange, out lSDCpredictionProbabilities);
             sdcMatlabValues.Add(SunDiskConditionData.MatlabNumeralSDC(sdc));
 
-            lDV_objects_features = lDV_objects_features.Zip(sdcMatlabValues, (dv, intSDC) =>
-            {
-                List<double> lFeaturesWithSDCdata = lDV_objects_features[0].ToList();
-                lFeaturesWithSDCdata.Add((double) intSDC);
-                return DenseVector.OfEnumerable(lFeaturesWithSDCdata);
-            }).ToList();
+            //lDV_objects_features = lDV_objects_features.Zip(sdcMatlabValues, (dv, intSDC) =>
+            //{
+            //    List<double> lFeaturesWithSDCdata = lDV_objects_features[0].ToList();
+            //    lFeaturesWithSDCdata.Add((double)intSDC);
+            //    return DenseVector.OfEnumerable(lFeaturesWithSDCdata);
+            //}).ToList();
 
-            #endregion adding SDC feature
+            #endregion Predict SDC
 
-            DenseMatrix dmObjectsFeatures = DenseMatrix.OfRowVectors(lDV_objects_features);
+            #endregion SDC prediction
 
+            DenseMatrix dmTCCpredictionObjectsFeatures = dmSDCpredictionObjectsFeatures.Copy();
+            List<List<double>> rowsSDCprobabilitiesPerObject = new List<List<double>>();
+            rowsSDCprobabilitiesPerObject.Add(lSDCpredictionProbabilities);
+            DenseMatrix dmToAppend = DenseMatrix.OfRows(rowsSDCprobabilitiesPerObject);
+            dmTCCpredictionObjectsFeatures = (DenseMatrix)dmTCCpredictionObjectsFeatures.Append(dmToAppend);
+
+            // remove vars listed in TCCnnConfigVarsToExclude
+            List<int> TCCnnConfigVarsToExcludeIndexes = TCCnnConfigVarsToExclude.ToList();
+            TCCnnConfigVarsToExcludeIndexes = TCCnnConfigVarsToExcludeIndexes.ConvertAll(i => i - 1);           // based_1 indexes to based_0
+            DenseMatrix dmTCCpredictionObjectsFeatures_RemovedExcludingFeatures =
+                dmTCCpredictionObjectsFeatures.RemoveColumns(TCCnnConfigVarsToExcludeIndexes);
 
 
 
             List<List<double>> lDecisionProbabilities = null;
 
-            List<int> predictedCC =
-                NNclassificatorPredictor.NNpredict(dmObjectsFeatures, CC_NNtrainedParameters, CC_NNconfig,
-                    out lDecisionProbabilities).ToList();
+            List<int> TCCvaluesSet = new List<int>();
+            for (int i = 0; i < 9; i++)
+            {
+                TCCvaluesSet.Add(i);
+            }
+            List<int> predictedTCC =
+                NNclassificatorPredictor<int>.NNpredict(dmTCCpredictionObjectsFeatures_RemovedExcludingFeatures,
+                    TCC_NNtrainedParameters, TCCnnLayersConfig, out lDecisionProbabilities, TCCvaluesSet).ToList();
 
 
             // Matlab trained TCC model: classes 1-9
-            predictedCC = predictedCC.ConvertAll(iVal => iVal - 1);
+            //predictedTCC = predictedTCC.ConvertAll(iVal => iVal - 1);
+
+            TCCdecisionProbabilities = lDecisionProbabilities[0];
 
 
-            return predictedCC[0];
+            return predictedTCC[0];
         }
     }
 }

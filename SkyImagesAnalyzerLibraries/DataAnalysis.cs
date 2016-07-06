@@ -1,11 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Drawing;
-using System.IO;
 using System.Linq;
 using MathNet.Numerics.LinearAlgebra.Double;
-using MathNet.Numerics.LinearAlgebra.Double.Solvers;
-//using MathNet.Numerics.LinearAlgebra.Generic;
 using MathNet.Numerics.Statistics;
 
 
@@ -420,69 +416,7 @@ namespace SkyImagesAnalyzerLibraries
 
 
 
-        //public static DenseMatrix DecartToPolar(DenseMatrix dmData, PointD centerPoint, int angleGridNodesCount = 72,
-        //    int distanceGridNodesCount = 30)
-        //{
-        //    double angleValueDiff = 2 * Math.PI / (angleGridNodesCount - 1);
-
-        //    DenseMatrix dmDistances = DenseMatrix.Create(dmData.RowCount, dmData.ColumnCount,
-        //        new Func<int, int, double>(
-        //            (row, column) =>
-        //            {
-        //                double dy = row - centerPoint.Y;
-        //                double dx = column - centerPoint.X;
-        //                return Math.Sqrt(dx * dx + dy * dy);
-        //            }));
-
-        //    DenseMatrix dmAngles = DenseMatrix.Create(dmData.RowCount, dmData.ColumnCount,
-        //        new Func<int, int, double>(
-        //            (row, column) =>
-        //            {
-        //                double dx = (double)column - centerPoint.X;
-        //                double dy = (double)row - centerPoint.Y;
-        //                double r = dmDistances[row, column];
-        //                double cosPhi = dx / r;
-        //                double phi = Math.Acos(cosPhi);
-        //                if (dy > 0) phi = 2.0d * Math.PI - phi;
-        //                return phi;
-        //            }));
-
-
-        //    double distanceValueDiff = dmDistances.Values.Maximum() / (distanceGridNodesCount - 1);
-        //    DenseMatrix dmOutData = DenseMatrix.Create(angleGridNodesCount, distanceGridNodesCount,
-        //        new Func<int, int, double>(
-        //            (row, column) =>
-        //            {
-        //                double minAngleValue = row * angleValueDiff;
-        //                double maxAngleValue = (row + 1) * angleValueDiff;
-        //                double minDistanceValue = column * distanceValueDiff;
-        //                double maxDistanceValue = (column + 1) * distanceValueDiff;
-
-        //                DenseMatrix dmDataTemp = (DenseMatrix)dmData.Clone();
-        //                dmDataTemp.MapIndexedInplace(new Func<int, int, double, double>((row1, column1, dValue) =>
-        //                {
-        //                    double currAngle = dmAngles[row1, column1];
-        //                    double currDistance = dmDistances[row1, column1];
-        //                    if ((currAngle >= minAngleValue) && (currAngle < maxAngleValue) &&
-        //                        (currDistance >= minDistanceValue) && (currDistance < maxDistanceValue)) return dValue;
-        //                    else return 0.0d;
-        //                }));
-
-        //                DescriptiveStatistics stats = StatsOfDataExcludingValues(dmDataTemp, 0.0d);
-        //                if (stats == null) return 0.0d;
-        //                double dataMean = stats.Mean;
-        //                double dataStdDev = stats.StandardDeviation;
-        //                DenseVector dvDataFilteredByStdDev = DataVectorizedWithCondition(dmDataTemp,
-        //                    x => (Math.Abs(x - dataMean) <= 2 * dataStdDev));
-        //                return (dvDataFilteredByStdDev != null) ? (dvDataFilteredByStdDev.Minimum()) : (0.0d);
-        //            }));
-
-        //    return dmOutData;
-        //}
-
-
-
-
+        
         public static List<PointPolar> ListDecartToPolar(List<PointD> decartPointdList, PointD center, PointD zeroAnglePoint, out double zeroAngleValue)
         {
             double diffX = zeroAnglePoint.X - center.X;
@@ -940,6 +874,8 @@ namespace SkyImagesAnalyzerLibraries
 
 
 
+
+
         public static Dictionary<string, DenseVector> SavGolFilter(DenseVector dvInputData, DenseVector timeSamplingSeconds, int nLeft, int nRight, int derivOrder = 0,
             int polynomesOrder = 6)
         {
@@ -1038,6 +974,8 @@ namespace SkyImagesAnalyzerLibraries
 
 
 
+
+
         public static Dictionary<int, double> SavGolFilterKoefficients(int nLeft, int nRight, int derivOrder = 0, int polynomesOrder = 6)
         {
             Dictionary<int, double> retDictKoefficients = new Dictionary<int, double>();
@@ -1068,6 +1006,10 @@ namespace SkyImagesAnalyzerLibraries
 
             return retDictKoefficients;
         }
+
+
+
+
 
 
     }

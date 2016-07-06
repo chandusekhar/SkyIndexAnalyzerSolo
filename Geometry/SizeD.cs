@@ -5,7 +5,7 @@ using System.Runtime;
 using System.Runtime.InteropServices;
 using System.Drawing;
 
-namespace SkyImagesAnalyzerLibraries
+namespace Geometry
 {
   /// <summary>
   /// Содержит упорядоченную пару чисел с плавающей запятой, обычно ширину и высоту прямоугольника.

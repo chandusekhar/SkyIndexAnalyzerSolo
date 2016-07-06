@@ -4,8 +4,10 @@ using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using DataAnalysis;
 using Emgu.CV;
 using Emgu.CV.Structure;
+using Geometry;
 using MathNet.Numerics.LinearAlgebra.Double;
 
 namespace SkyImagesAnalyzerLibraries
@@ -98,7 +100,7 @@ namespace SkyImagesAnalyzerLibraries
 
 
 
-        public void SmoothDensityField(StandardConvolutionKernels kernelType, int kernelHalfWidth = 10)
+        public void SmoothDensityField(DataAnalysis.Extensions.StandardConvolutionKernels kernelType, int kernelHalfWidth = 10)
         {
             dmDensityMesh = dmDensityMesh.Conv2(kernelType, kernelHalfWidth);
         }

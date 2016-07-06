@@ -21,6 +21,9 @@ using ILNumerics.Drawing.Plotting;
 using MathNet.Numerics.LinearAlgebra.Double;
 using SkyImagesAnalyzerLibraries;
 using Point = System.Drawing.Point;
+using DataAnalysis;
+using Geometry;
+
 
 namespace SkyImagesAnalyzer
 {
@@ -160,7 +163,7 @@ namespace SkyImagesAnalyzer
             //});
 
 
-            DenseMatrix dmSmoothed = dmDensityMesh.Conv2(StandardConvolutionKernels.cos, kernelHalfLength);
+            DenseMatrix dmSmoothed = dmDensityMesh.Conv2(DataAnalysis.Extensions.StandardConvolutionKernels.cos, kernelHalfLength);
             dmDensityMesh = dmSmoothed.Copy();
         }
 

@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using Emgu.CV;
 using Emgu.CV.Structure;
+using Geometry;
 using MathNet.Numerics.LinearAlgebra.Double;
 using SkyImagesAnalyzerLibraries;
 

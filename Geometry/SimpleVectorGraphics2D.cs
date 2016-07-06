@@ -7,7 +7,7 @@ using MathNet.Numerics.LinearAlgebra.Double;
 
 //using MathNet.Numerics.LinearAlgebra.Generic;
 
-namespace SkyImagesAnalyzerLibraries
+namespace Geometry
 {
     public class SimpleVectorGraphics2D
     {

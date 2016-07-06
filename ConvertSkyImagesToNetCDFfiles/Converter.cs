@@ -12,6 +12,7 @@ using Emgu.CV.Structure;
 using SkyImagesAnalyzerLibraries;
 using System.Management.Automation;
 using System.Drawing;
+using Geometry;
 using MathNet.Numerics.LinearAlgebra.Double;
 
 namespace ConvertSkyImagesToNetCDFfiles

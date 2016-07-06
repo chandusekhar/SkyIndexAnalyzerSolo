@@ -4,6 +4,7 @@ using Emgu.CV.Structure;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using DataAnalysis;
 using MathNet.Numerics;
 using MathNet.Numerics.LinearAlgebra.Double;
 using MathNet.Numerics.Statistics;
@@ -44,7 +45,7 @@ namespace SkyImagesAnalyzerLibraries
         //        dmMask = (MathNet.Numerics.LinearAlgebra.Double.DenseMatrix)dmMask.Divide((double)255.0d);
         //    }
         //}
-
+        
         public DenseMatrix dmR = null;
         public DenseMatrix dmG = null;
         public DenseMatrix dmB = null;
@@ -639,7 +640,7 @@ namespace SkyImagesAnalyzerLibraries
                 //});
 
 
-                DenseMatrix dmSmoothed = a.DmImageComponent.Conv2(StandardConvolutionKernels.cos, kernelHalfLength);
+                DenseMatrix dmSmoothed = a.DmImageComponent.Conv2(DataAnalysis.Extensions.StandardConvolutionKernels.cos, kernelHalfLength);
                 res.DmImageComponent = dmSmoothed;
             }
             else

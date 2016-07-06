@@ -1,13 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices;
 using MathNet.Numerics.LinearAlgebra.Double;
 
 namespace ANN
 {
-    public class NNclassificatorPredictor
+    public class NNclassificatorPredictor<T>
     {
-        public static IEnumerable<int> NNpredict(DenseMatrix X, IEnumerable<double> ThetaValuesVector, IEnumerable<int> NNlayersConfig, out List<List<double>> lDecisionProbabilities)
+        public static IEnumerable<T> NNpredict(DenseMatrix X, IEnumerable<double> ThetaValuesVector, IEnumerable<int> NNlayersConfig, out List<List<double>> lDecisionProbabilities, List<T> lOrderedClasses)
         {
             bool bConsolePresent = console_present();
             List<DenseMatrix> Theta = ThetaMatricesTransformer.RollMatrices(ThetaValuesVector, NNlayersConfig);
@@ -68,17 +69,17 @@ namespace ANN
 
             DenseMatrix h = activations.Last().a;
             lDecisionProbabilities = h.EnumerateRows().ToList().ConvertAll(vect => new List<double>(vect));
-            List<int> res = h.EnumerateRows().ToList().ConvertAll(vec => vec.AbsoluteMaximumIndex()+1);
+            List<T> res = h.EnumerateRows().ToList().ConvertAll<T>(vec => lOrderedClasses[vec.AbsoluteMaximumIndex()]);
             return res;
         }
 
 
 
 
-        public static IEnumerable<int> NNpredict(DenseMatrix X, IEnumerable<double> ThetaValuesVector, IEnumerable<int> NNlayersConfig)
+        public static IEnumerable<T> NNpredict(DenseMatrix X, IEnumerable<double> ThetaValuesVector, IEnumerable<int> NNlayersConfig, List<T> lOrderedClasses)
         {
             List<List<double>> lDecisionProbabilities = null;
-            return NNpredict(X, ThetaValuesVector, NNlayersConfig, out lDecisionProbabilities);
+            return NNpredict(X, ThetaValuesVector, NNlayersConfig, out lDecisionProbabilities, lOrderedClasses);
         }
 
 
@@ -92,17 +93,5 @@ namespace ANN
 
             return _console_present;
         }
-    }
-
-
-    public class LayersActivations
-    {
-        public DenseMatrix a { get; set; }
-        public int m_a { get; set; }
-        public DenseMatrix a_biased { get; set; }
-        public DenseMatrix z { get; set; }
-
-
-        public LayersActivations() { }
     }
 }
