@@ -383,14 +383,20 @@ namespace SkyImagesAnalyzerLibraries
             DenseVector dvThetaValues = DenseVector.OfEnumerable(SDC_NNtrainedParameters);
             List<int> NNlayersConfig = SDC_NNconfig.ToList();
 
-            lDV_objects_features = lDV_objects_features.ConvertAll(dv =>
-            {
-                DenseVector dvShifted = dv - dvMeans;
-                DenseVector dvNormed = (DenseVector)dvShifted.PointwiseDivide(dvRanges);
-                return dvNormed;
-            });
 
-            DenseMatrix dmObjectsFeatures = DenseMatrix.OfRowVectors(lDV_objects_features);
+            DenseMatrix dmSDCpredictionObjectsFeatures = DenseMatrix.OfRows(lDV_objects_features);
+            DenseMatrix dmObjectsFeaturesNormed = ANNservice.FeatureNormalization(dmSDCpredictionObjectsFeatures, dvMeans,
+                    dvRanges);
+
+
+            //lDV_objects_features = lDV_objects_features.ConvertAll(dv =>
+            //{
+            //    DenseVector dvShifted = dv - dvMeans;
+            //    DenseVector dvNormed = (DenseVector)dvShifted.PointwiseDivide(dvRanges);
+            //    return dvNormed;
+            //});
+
+            // DenseMatrix dmObjectsFeatures = DenseMatrix.OfRowVectors(lDV_objects_features);
 
 
 
@@ -398,7 +404,7 @@ namespace SkyImagesAnalyzerLibraries
             List<List<double>> lDecisionProbabilities = null;
 
             List<SunDiskCondition> predictedSDClist =
-                NNclassificatorPredictor<SunDiskCondition>.NNpredict(dmObjectsFeatures, dvThetaValues, NNlayersConfig,
+                NNclassificatorPredictor<SunDiskCondition>.NNpredict(dmObjectsFeaturesNormed, dvThetaValues, NNlayersConfig,
                     out lDecisionProbabilities, SunDiskConditionData.MatlabEnumeratedSDCorderedList()).ToList();
             
             //List<SunDiskCondition> predictedSDClist =

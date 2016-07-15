@@ -495,8 +495,13 @@ namespace SkyImagesAnalyzerLibraries
                 dmTCCpredictionObjectsFeatures.RemoveColumns(TCCnnConfigVarsToExcludeIndexes);
 
 
+            DenseMatrix dmTCCpredictionObjectsFeatures_RemovedExcludingFeatures_Normed =
+                ANNservice.FeatureNormalization(dmTCCpredictionObjectsFeatures_RemovedExcludingFeatures,
+                    TCC_NNfeturesNormMeans,
+                    TCC_NNfeaturesNormRange);
 
-            List<List<double>> lDecisionProbabilities = null;
+
+            List<List<double>> lTCCdecisionProbabilities = null;
 
             List<int> TCCvaluesSet = new List<int>();
             for (int i = 0; i < 9; i++)
@@ -504,14 +509,14 @@ namespace SkyImagesAnalyzerLibraries
                 TCCvaluesSet.Add(i);
             }
             List<int> predictedTCC =
-                NNclassificatorPredictor<int>.NNpredict(dmTCCpredictionObjectsFeatures_RemovedExcludingFeatures,
-                    TCC_NNtrainedParameters, TCCnnLayersConfig, out lDecisionProbabilities, TCCvaluesSet).ToList();
+                NNclassificatorPredictor<int>.NNpredict(dmTCCpredictionObjectsFeatures_RemovedExcludingFeatures_Normed,
+                    TCC_NNtrainedParameters, TCCnnLayersConfig, out lTCCdecisionProbabilities, TCCvaluesSet).ToList();
 
 
             // Matlab trained TCC model: classes 1-9
             //predictedTCC = predictedTCC.ConvertAll(iVal => iVal - 1);
 
-            TCCdecisionProbabilities = lDecisionProbabilities[0];
+            TCCdecisionProbabilities = lTCCdecisionProbabilities[0];
 
 
             return predictedTCC[0];
